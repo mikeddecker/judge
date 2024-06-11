@@ -1,4 +1,4 @@
 # The judge repo where the magic happens
 
 ## TODO
-database, config files
+database, config files, jobs & docker

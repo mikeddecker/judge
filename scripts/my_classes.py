@@ -2,6 +2,8 @@ import numpy as np
 import keras
 import cv2
 
+!pip3 install opencv
+
 class DataGeneratorSkillBorders(keras.utils.Sequence):  # Corrected class inheritance
     'Generates data for Keras'
     def __init__(self, df_labels, video_folder, train=True, batch_size=32, dim=(128, 128), n_channels=3,

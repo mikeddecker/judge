@@ -1,4 +1,6 @@
 videos/*
+models/*
+
 __pycache__/*
 scripts/__pycache__/*
 
