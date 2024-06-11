@@ -26,7 +26,7 @@ import cv2
 import os
 import pickle
 
-from my_classes import DataGeneratorSkillBorders
+from DataGeneratorFrames import DataGeneratorSkillBorders
 
 
 # In[5]:
@@ -158,7 +158,6 @@ model.summary()
 # In[16]:
 
 
-from my_classes import DataGeneratorSkillBorders
 # Parameters
 params = {'dim': (64,64),
           'batch_size': 16,
@@ -169,29 +168,6 @@ params = {'dim': (64,64),
 
 training_generator = DataGeneratorSkillBorders(df_labels, video_folder=video_folder, **params)
 test_generator = DataGeneratorSkillBorders(df_labels, video_folder=video_folder, train=False)
-
-
-# In[17]:
-
-
-get_ipython().run_cell_magic('time', '', 'X, y = training_generator.__getitem__(3)\n')
-
-
-# In[18]:
-
-
-X
-
-
-# In[19]:
-
-
-y
-
-
-# In[ ]:
-
-
 
 
 

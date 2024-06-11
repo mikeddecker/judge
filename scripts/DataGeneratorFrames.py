@@ -38,7 +38,7 @@ class DataGeneratorSkillBorders(keras.utils.Sequence):  # Corrected class inheri
             self.df_labels = self.df_labels.sample(frac=1).reset_index(drop=True)
 
     def __data_generation(self, df_batch):
-        'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
+        'Generates data containing batch_size samples, returns numpy arrays'  # X : (n_samples, *dim, n_channels)
         # Initialization
         X = np.empty((self.batch_size, *self.dim, self.n_channels))
         y = np.empty((self.batch_size), dtype=int)
