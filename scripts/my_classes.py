@@ -4,12 +4,13 @@ import cv2
 
 class DataGeneratorSkillBorders(keras.utils.Sequence):  # Corrected class inheritance
     'Generates data for Keras'
-    def __init__(self, df_labels, train=True, batch_size=32, dim=(128, 128), n_channels=3,
+    def __init__(self, df_labels, video_folder, train=True, batch_size=32, dim=(128, 128), n_channels=3,
                  n_classes=10, shuffle=True, **kwargs):
         'Initialization'
         super().__init__(**kwargs)
         self.dim = dim
         self.train = train
+        self.videofolder = video_folder
         self.batch_size = batch_size
         self.df_labels = df_labels.sample(frac=0.8 if train else 0.2, axis=0)
         print(self.df_labels)
@@ -51,11 +52,11 @@ class DataGeneratorSkillBorders(keras.utils.Sequence):  # Corrected class inheri
         return X, y
 
     def load_frame(self, path, frame_nr, dx, dy):
-        cap = cv2.VideoCapture(path)
+        cap = cv2.VideoCapture(self.videofolder + path)
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_nr)
         res, frame = cap.read()
         if not res:
-            raise ValueError(f"Failed to read frame {frame_nr} from {path}")
+            raise ValueError(f"Failed to read frame {frame_nr} from {self.videofolder + path}")
         frame = cv2.resize(frame, (dx, dy))
         # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Uncomment if necessary
         cap.release()
