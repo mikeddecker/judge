@@ -10,7 +10,7 @@
 # In[2]:
 
 
-get_ipython().system('pip3 install tensorflow')
+# get_ipython().system('pip3 install tensorflow')
 
 
 # In[3]:
@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 import cv2
 import os
 import pickle
+from utils_misc import pickle_load_or_create
 
 from DataGeneratorFrames import DataGeneratorSkillBorders
 
@@ -32,7 +33,7 @@ from DataGeneratorFrames import DataGeneratorSkillBorders
 # In[5]:
 
 
-video_border_labels_path = '../data/df_video_border_labels.pkl'
+video_border_labels_path = 'df_video_border_labels'
 video_folder = '../videos/'
 
 video_names = [
@@ -48,23 +49,8 @@ video_names = [
 
 train_videos = [ video_folder + trainvid for trainvid in video_names]
 
-
-# In[6]:
-
-
-def pickle_load_or_create(path, cols):
-    if os.path.exists(path):
-        with open(path, 'rb') as file:
-            return pickle.load(file)
-    else:
-        return pd.DataFrame(columns=cols)
-
-
-# In[7]:
-
-
-df_labels = pickle_load_or_create(video_border_labels_path, [])
-df_labels
+config = pickle_load_or_create('cnn_default', lambda:{}, config=True)
+df_labels = pickle_load_or_create(video_border_labels_path, lambda: [], config=False)
 
 
 # In[8]:
@@ -113,34 +99,20 @@ input_shape
 
 # In[11]:
 
+convolution = config['convolution'][0]
 
 model = models.Sequential()
-model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(64,64,3)))
+model.add(layers.Conv2D(32, convolution, activation='relu', input_shape=(config['dim'], config['dim'], 3 if config['rgb'] else 1)))
 model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model.add(layers.Conv2D(64, convolution, activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-
-
-# In[12]:
-
-
-model.summary()
-
-
-# In[13]:
-
+model.add(layers.Conv2D(64, convolution, activation='relu'))
 
 unique_labels = df_labels['border'].unique()
-unique_labels
-
-
-# In[14]:
-
 
 model.add(layers.Flatten())
 model.add(layers.Dense(16, activation='relu'))
-model.add(layers.Dense(5))
+model.add(layers.Dense(len(unique_labels), activation='softmax'))
 
 
 # In[15]:
@@ -149,25 +121,20 @@ model.add(layers.Dense(5))
 model.summary()
 
 
-# In[ ]:
-
-
-
-
 
 # In[16]:
 
 
 # Parameters
-params = {'dim': (64,64),
-          'batch_size': 16,
+params = {'dim': (config['dim'], config['dim']),
+          'batch_size': 32,
           'n_classes': len(unique_labels),
-          'n_channels': 3,
-          'shuffle': True,
-          'train': True}
+          'n_channels': 3 if config['rgb'] else 1,
+          'shuffle': True
+         }
 
-training_generator = DataGeneratorSkillBorders(df_labels, video_folder=video_folder, **params)
-test_generator = DataGeneratorSkillBorders(df_labels, video_folder=video_folder, train=False)
+training_generator = DataGeneratorSkillBorders(df_labels, video_folder=video_folder, train=True, **params)
+test_generator = DataGeneratorSkillBorders(df_labels, video_folder=video_folder, train=False, **params)
 
 
 
@@ -191,12 +158,7 @@ history = model.fit(training_generator, epochs=10,
 # In[26]:
 
 
-pd.DataFrame(history.history)
-
-
-# In[ ]:
-
-
+print(pd.DataFrame(history.history))
 
 
 

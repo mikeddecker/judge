@@ -12,7 +12,7 @@ class DataGeneratorSkillBorders(keras.utils.Sequence):  # Corrected class inheri
         self.train = train
         self.videofolder = video_folder
         self.batch_size = batch_size
-        self.df_labels = df_labels.sample(frac=0.8 if train else 0.2, axis=0)
+        self.df_labels = df_labels.sample(frac=0.8 if train else 0.2, axis=0) # TODO fix
         print(self.df_labels)
         self.n_channels = n_channels  # RGB or gray
         self.n_classes = n_classes
