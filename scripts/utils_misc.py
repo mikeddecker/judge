@@ -8,7 +8,6 @@ def pickle_load_or_create(path, on_not_exists, config=False):
     """
     path = path if config else '../data/' + path 
     path += '.pkl'
-    print(path)
     if os.path.exists(path):
         with open(path, 'rb') as file:
             return pickle.load(file)
