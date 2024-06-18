@@ -147,7 +147,7 @@ def label_frames_seq():
     vid_len = get_video_length(vid_path)
     last_frame = df_labels[df_labels['path'] == vid_name]['frame'].max()
     print(last_frame)
-    frame_nr =  0 if np.isnan(last_frame) else last_frame
+    frame_nr =  0 if np.isnan(last_frame) else last_frame + 1
 
     while key_pressed != quit_key:
         if vid_len <= frame_nr:
