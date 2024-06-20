@@ -1,0 +1,19 @@
+{
+    "video": {
+      "df_frame_labels_path": "df_video_border_labels_seq",
+      "folder": "../videos/",
+      "train_names": [
+        "20240201_atelier_001.mp4",
+        "20240201_atelier_002.mp4",
+        "20240201_atelier_003.mp4",
+        "20240201_atelier_004.mp4",
+        "20240201_atelier_005.mp4",
+        "20240209_atelier_006.mp4",
+        "20240209_atelier_007.mp4",
+        "20240209_atelier_008.mp4"
+      ],
+      "test_names": [
+        "20240209_atelier_009.mp4"
+      ]
+    }
+}
