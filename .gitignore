@@ -6,3 +6,4 @@ scripts/__pycache__/*
 
 .ipynb_checkpoints/*
 scripts/.ipynb_checkpoints/*
+scripts/config/.ipynb_checkpoints/*
