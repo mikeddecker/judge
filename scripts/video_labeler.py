@@ -39,19 +39,19 @@ class VideoLabeler:
         self.show_frame()
         
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-        
+    
     def show_frame(self):
-        if self.playing:
-            ret, frame = self.cap.read()
-            if ret:
-                frame = self.resize_frame(frame)
-                self.display_frame(frame)
-                current_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
-                self.slider.set(current_frame)
-            else:
-                self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0) # (loop video)
+        ret, frame = self.cap.read()
+        if ret:
+            frame = self.resize_frame(frame)
+            self.display_frame(frame)
+            current_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+            self.slider.set(current_frame)
+        else:
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0) # (loop video)
         
-        self.root.after(100, self.show_frame)
+        if self.playing:
+            self.root.after(150, self.show_frame)
         
     def resize_frame(self, frame):
         height, width = frame.shape[:2]
@@ -82,6 +82,7 @@ class VideoLabeler:
 
     def play_video(self):
         self.playing = True
+        self.show_frame()
 
     def pause_video(self):
         self.playing = False
