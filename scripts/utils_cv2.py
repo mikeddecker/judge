@@ -131,7 +131,7 @@ def has_frame_received_new_or_the_equal_label(path, frame_nr, df_labels, label):
         return True
 
 def get_random_video_name():
-    vid_id = np.random.randint(0, len(video_names) - 2)
+    vid_id = np.random.randint(0, len(video_names))
     return video_names[vid_id]
 
 def label_frames_seq():
