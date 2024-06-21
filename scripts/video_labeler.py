@@ -41,7 +41,8 @@ class VideoLabeler:
 
         self.playing = True
         self.zoom_factor = 1.0  # Initial zoom factor
-        self.dragging = False
+        self.visible_range_start = 0  # Start of the visible range
+        self.visible_range_end = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)  # End of the visible range
 
         # Key bindings
         self.root.bind('<s>', self.select_start_key)
@@ -58,10 +59,10 @@ class VideoLabeler:
     def show_frame(self):
         ret, frame = self.cap.read()
         self.current_pos = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+
         if ret:
             frame = self.resize_frame(frame)
             self.display_frame(frame)
-            current_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
             self.update_slider()
         else:
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0) # (loop video)
@@ -91,7 +92,8 @@ class VideoLabeler:
 
     def slider_clicked(self, event):
         total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
-        self.current_pos = int((event.x / self.slider_canvas.winfo_width()) * total_frames / self.zoom_factor)
+        visible_frames = self.visible_range_end - self.visible_range_start
+        self.current_pos = int((event.x / self.slider_canvas.winfo_width()) * visible_frames + self.visible_range_start)
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_pos)
         ret, frame = self.cap.read()
         if ret:
@@ -107,35 +109,56 @@ class VideoLabeler:
             self.zoom_factor = min(self.zoom_factor * 1.1, 10.0)
         elif event.delta < 0:
             self.zoom_factor = max(self.zoom_factor / 1.1, 1.0)
+        self.adjust_visible_range()
         self.update_slider()
 
     def zoom_in_key(self, event):
         self.zoom_factor = min(self.zoom_factor * 1.1, 10.0)
+        self.adjust_visible_range()
         self.update_slider()
     
     def zoom_out_key(self, event):
         self.zoom_factor = max(self.zoom_factor / 1.1, 1.0)
+        self.adjust_visible_range()
         self.update_slider()
         
+    def adjust_visible_range(self):
+        total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        visible_frames = total_frames / self.zoom_factor
+        center_frame = self.current_pos
+        
+        # Calculate the start and end of the visible range to center the current frame
+        self.visible_range_start = max(center_frame - visible_frames // 2, 0)
+        self.visible_range_end = min(center_frame + visible_frames // 2, total_frames)
+        
+        # Adjust current position if out of new visible range
+        if self.current_pos < self.visible_range_start:
+            self.current_pos = self.visible_range_start
+        if self.current_pos > self.visible_range_end:
+            self.current_pos = self.visible_range_end
+        
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_pos)
+
     def update_slider(self):
         self.slider_canvas.delete("all")
         total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
-        visible_frames = total_frames / self.zoom_factor
-        slider_pos = (self.current_pos / visible_frames) * self.slider_canvas.winfo_width()
+        visible_frames = self.visible_range_end - self.visible_range_start
+        slider_pos = ((self.current_pos - self.visible_range_start) / visible_frames) * self.slider_canvas.winfo_width()
         
         # Draw slider background
         self.slider_canvas.create_rectangle(0, 0, self.slider_canvas.winfo_width(), 30, fill='white')
         
         # Draw selected ranges
         for start, end in self.selected_ranges:
-            start_pos = (start / visible_frames) * self.slider_canvas.winfo_width()
-            end_pos = (end / visible_frames) * self.slider_canvas.winfo_width()
-            self.slider_canvas.create_rectangle(start_pos, 0, end_pos, 30, fill='lightblue')
+            if end > self.visible_range_start and start < self.visible_range_end:
+                start_pos = max((start - self.visible_range_start) / visible_frames, 0) * self.slider_canvas.winfo_width()
+                end_pos = min((end - self.visible_range_start) / visible_frames, 1) * self.slider_canvas.winfo_width()
+                self.slider_canvas.create_rectangle(start_pos, 0, end_pos, 30, fill='lightblue')
 
         # Draw current range
         if self.selected_start_frame is not None and self.selected_end_frame is None:
-            start_pos = (self.selected_start_frame / visible_frames) * self.slider_canvas.winfo_width()
-            end_pos = (self.cap.get(cv2.CAP_PROP_POS_FRAMES) / visible_frames) * self.slider_canvas.winfo_width()
+            start_pos = max((self.selected_start_frame - self.visible_range_start) / visible_frames, 0) * self.slider_canvas.winfo_width()
+            end_pos = min((self.cap.get(cv2.CAP_PROP_POS_FRAMES) - self.visible_range_start) / visible_frames, 1) * self.slider_canvas.winfo_width()
             self.slider_canvas.create_rectangle(start_pos, 0, end_pos, 30, fill='lightgreen')
         
         # Draw current position marker
@@ -149,7 +172,8 @@ class VideoLabeler:
         self.playing = False
 
     def next_frame(self, event):
-        self.show_frame()
+        if not self.playing:
+            self.show_frame()
 
     def select_start_key(self, event):
         self.select_start()
@@ -168,7 +192,7 @@ class VideoLabeler:
             self.selected_end_frame = None
             print(f"Selected range: {self.selected_ranges[-1]}")
 
-    def on_closing(self):
+    def on_closing(self, event=None):
         self.playing = False
         self.cap.release()
         self.root.destroy()
