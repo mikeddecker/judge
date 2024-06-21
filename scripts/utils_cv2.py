@@ -153,9 +153,6 @@ def label_frames_seq():
         if vid_len <= frame_nr:
             break
         
-        # while is_already_labeled(vid_name, frame_nr, df_labels):
-            # vid_name, frame_nr, frame = get_random_frame(video_names, video_folder, df_labels)
-        
         frame = get_frame(vid_path, frame_nr, release_cap=True)
 
         key_pressed = chr(show_frame_and_await_key(frame, 0.5))
@@ -168,6 +165,34 @@ def label_frames_seq():
     cv2.destroyAllWindows()
 
     return df_labels
+
+def label_frames_from_df(df):
+    quit_key = 'q'
+    key_pressed = 'none'
+
+    df_new = None
+
+    for _, row in df.iterrows():
+        vid_name = row['path']
+        vid_path = video_folder + vid_name
+        frame_nr = row['frame']
+        frame = get_frame(vid_path, frame_nr, release_cap=True)
+
+        key_pressed = chr(show_frame_and_await_key(frame))
+
+        if key_pressed in allowed_keys():
+            label = match_label(key_pressed)
+            print(df_new)
+            if df_new is not None:
+                df_new.loc[len(df_new)] = [vid_name, frame_nr, label]
+            else:
+                df_new = pd.DataFrame(data={'path':[vid_name], 'frame': [frame_nr], 'border': [label]})
+
+    # Close the frame window
+    cv2.destroyAllWindows()
+
+    return df_new
+
 
 def remove_last_labels(n):
     df_labels = df_labels.loc[0:len(df_labels)-n-1]
