@@ -2,7 +2,6 @@ import cv2
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
-import threading
 
 class VideoLabeler:
     def __init__(self, root, video_path, display_width=800, display_height=600):
@@ -11,12 +10,17 @@ class VideoLabeler:
         self.cap = cv2.VideoCapture(video_path)
         self.display_width = display_width
         self.display_height = display_height
+        self.current_pos = 0
         
         self.frame_label = tk.Label(root)
         self.frame_label.pack()
 
-        self.slider = ttk.Scale(root, from_=0, to=self.cap.get(cv2.CAP_PROP_FRAME_COUNT), orient=tk.HORIZONTAL, command=self.slider_changed)
-        self.slider.pack(fill=tk.X, expand=1)
+        # Custom slider using Canvas
+        self.slider_canvas = tk.Canvas(root, height=30, bg='white')
+        self.slider_canvas.pack(fill=tk.X, expand=1)
+        self.slider_canvas.bind('<Button-1>', self.slider_clicked)
+        self.slider_canvas.bind('<B1-Motion>', self.slider_dragged)
+        self.slider_canvas.bind('<MouseWheel>', self.slider_zoomed)
         
         self.play_button = tk.Button(root, text="Play", command=self.play_video)
         self.play_button.pack(side=tk.LEFT, padx=10)
@@ -34,24 +38,36 @@ class VideoLabeler:
         self.selected_end_frame = None
         
         self.selected_ranges = []  # List to store selected ranges
-        
+
         self.playing = True
+        self.zoom_factor = 1.0  # Initial zoom factor
+        self.dragging = False
+
+        # Key bindings
+        self.root.bind('<s>', self.select_start_key)
+        self.root.bind('<n>', self.next_frame)
+        self.root.bind('<e>', self.select_end_key)
+        self.root.bind('<z>', self.zoom_in_key)
+        self.root.bind('<o>', self.zoom_out_key)
+        self.root.bind('<q>', self.on_closing)
+        
         self.show_frame()
         
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
     
     def show_frame(self):
         ret, frame = self.cap.read()
+        self.current_pos = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         if ret:
             frame = self.resize_frame(frame)
             self.display_frame(frame)
             current_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
-            self.slider.set(current_frame)
+            self.update_slider()
         else:
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0) # (loop video)
         
         if self.playing:
-            self.root.after(150, self.show_frame)
+            self.root.after(30, self.show_frame)
         
     def resize_frame(self, frame):
         height, width = frame.shape[:2]
@@ -72,13 +88,58 @@ class VideoLabeler:
         imgtk = ImageTk.PhotoImage(image=img)
         self.frame_label.imgtk = imgtk
         self.frame_label.configure(image=imgtk)
-        
-    def slider_changed(self, value):
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, int(float(value)))
+
+    def slider_clicked(self, event):
+        total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        self.current_pos = int((event.x / self.slider_canvas.winfo_width()) * total_frames / self.zoom_factor)
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_pos)
         ret, frame = self.cap.read()
         if ret:
             frame = self.resize_frame(frame)
             self.display_frame(frame)
+        self.update_slider()
+
+    def slider_dragged(self, event):
+        self.slider_clicked(event)
+        
+    def slider_zoomed(self, event):
+        if event.delta > 0:
+            self.zoom_factor = min(self.zoom_factor * 1.1, 10.0)
+        elif event.delta < 0:
+            self.zoom_factor = max(self.zoom_factor / 1.1, 1.0)
+        self.update_slider()
+
+    def zoom_in_key(self, event):
+        self.zoom_factor = min(self.zoom_factor * 1.1, 10.0)
+        self.update_slider()
+    
+    def zoom_out_key(self, event):
+        self.zoom_factor = max(self.zoom_factor / 1.1, 1.0)
+        self.update_slider()
+        
+    def update_slider(self):
+        self.slider_canvas.delete("all")
+        total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        visible_frames = total_frames / self.zoom_factor
+        slider_pos = (self.current_pos / visible_frames) * self.slider_canvas.winfo_width()
+        
+        # Draw slider background
+        self.slider_canvas.create_rectangle(0, 0, self.slider_canvas.winfo_width(), 30, fill='white')
+        
+        # Draw selected ranges
+        for start, end in self.selected_ranges:
+            start_pos = (start / visible_frames) * self.slider_canvas.winfo_width()
+            end_pos = (end / visible_frames) * self.slider_canvas.winfo_width()
+            self.slider_canvas.create_rectangle(start_pos, 0, end_pos, 30, fill='lightblue')
+
+        # Draw current range
+        if self.selected_start_frame is not None and self.selected_end_frame is None:
+            start_pos = (self.selected_start_frame / visible_frames) * self.slider_canvas.winfo_width()
+            end_pos = (self.cap.get(cv2.CAP_PROP_POS_FRAMES) / visible_frames) * self.slider_canvas.winfo_width()
+            self.slider_canvas.create_rectangle(start_pos, 0, end_pos, 30, fill='lightgreen')
+        
+        # Draw current position marker
+        self.slider_canvas.create_line(slider_pos, 0, slider_pos, 30, fill='red')
 
     def play_video(self):
         self.playing = True
@@ -86,7 +147,16 @@ class VideoLabeler:
 
     def pause_video(self):
         self.playing = False
-    
+
+    def next_frame(self, event):
+        self.show_frame()
+
+    def select_start_key(self, event):
+        self.select_start()
+
+    def select_end_key(self, event):
+        self.select_end()
+
     def select_start(self):
         self.selected_start_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
     
