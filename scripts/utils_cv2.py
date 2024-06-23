@@ -94,6 +94,27 @@ def get_frame(path, frame_nr, release_cap=True):
 
     return frame
 
+def get_frames(path, first_frame_nr, last_frame_nr, dim=(200,200), rgb=True):
+    frames = []
+    cap = cv2.VideoCapture(path)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, first_frame_nr)
+    current_frame = first_frame_nr
+    
+    while current_frame <= last_frame_nr:
+        ret, frame = cap.read()
+
+        if ret:
+            frame = cv2.resize(frame, dim) / 255
+        else:
+            frame = np.zeros((dim[0], dim[1], 3 if rgb else 1))
+
+        frames.append(frame)
+        current_frame += 1
+
+    cap.release()
+
+    return np.array(frames)
+
 def get_video_length(path):
     """Returns the framelength of the video"""
     # TODO : Add frame length to DB
@@ -146,7 +167,6 @@ def label_frames_seq():
     vid_path = video_folder + vid_name
     vid_len = get_video_length(vid_path)
     last_frame = df_labels[df_labels['path'] == vid_name]['frame'].max()
-    print(last_frame)
     frame_nr =  0 if np.isnan(last_frame) else last_frame + 1
 
     while key_pressed != quit_key:
