@@ -2,18 +2,25 @@ import cv2
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
+from DataRepository import DataRepository
 
 class VideoLabeler:
-    def __init__(self, root, video_path, display_width=800, display_height=600):
+    def __init__(self, root, video_id, display_width=800, display_height=600):
+        self.repo = DataRepository()
+        self.video_id = video_id
+        self.video_path = '../' + self.repo.get_path(video_id)
+
         self.root = root
-        self.video_path = video_path
-        self.cap = cv2.VideoCapture(video_path)
+        self.root.title(self.video_path)
+
+        self.cap = cv2.VideoCapture(self.video_path)
         self.display_width = display_width
         self.display_height = display_height
         self.current_pos = 0
         
         self.frame_label = tk.Label(root)
         self.frame_label.pack()
+
 
         # Custom slider using Canvas
         self.slider_canvas = tk.Canvas(root, height=30, bg='white')
@@ -37,7 +44,7 @@ class VideoLabeler:
         self.selected_start_frame = None
         self.selected_end_frame = None
         
-        self.selected_ranges = []  # List to store selected ranges
+        self.selected_ranges = self.repo.get_borders(video_id)  # List to store selected ranges
 
         self.playing = True
         self.zoom_factor = 1.0  # Initial zoom factor
@@ -51,6 +58,8 @@ class VideoLabeler:
         self.root.bind('<z>', self.zoom_in_key)
         self.root.bind('<o>', self.zoom_out_key)
         self.root.bind('<q>', self.on_closing)
+        self.root.bind('<r>', self.remove_border)
+        self.root.bind('<space>', self.toggle_play_pause)
         
         self.show_frame()
         
@@ -149,7 +158,10 @@ class VideoLabeler:
         self.slider_canvas.create_rectangle(0, 0, self.slider_canvas.winfo_width(), 30, fill='white')
         
         # Draw selected ranges
-        for start, end in self.selected_ranges:
+        for idx, row in self.selected_ranges[['frame_start', 'frame_end']].iterrows():
+            start = row['frame_start']
+            end = row['frame_end']
+            
             if end > self.visible_range_start and start < self.visible_range_end:
                 start_pos = max((start - self.visible_range_start) / visible_frames, 0) * self.slider_canvas.winfo_width()
                 end_pos = min((end - self.visible_range_start) / visible_frames, 1) * self.slider_canvas.winfo_width()
@@ -171,6 +183,11 @@ class VideoLabeler:
     def pause_video(self):
         self.playing = False
 
+    def toggle_play_pause(self, event=None):
+        self.playing = not self.playing
+        if self.playing:
+            self.show_frame()
+
     def next_frame(self, event):
         if not self.playing:
             self.show_frame()
@@ -183,22 +200,40 @@ class VideoLabeler:
 
     def select_start(self):
         self.selected_start_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        self.selected_end_frame = None
     
     def select_end(self):
         self.selected_end_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         if self.selected_start_frame is not None and self.selected_end_frame is not None:
-            self.selected_ranges.append((self.selected_start_frame, self.selected_end_frame))
-            self.selected_start_frame = None
-            self.selected_end_frame = None
-            print(f"Selected range: {self.selected_ranges[-1]}")
+            if self.repo.is_valid_border(self.video_id, self.selected_start_frame, self.selected_end_frame):
+                print('valid')
+                idx = len(self.selected_ranges)
+                self.repo.add_border(self.video_id, self.selected_start_frame, self.selected_end_frame, 1)
+                self.selected_ranges.loc[idx] = [self.video_id, self.selected_start_frame, self.selected_end_frame, 1]
+                self.selected_start_frame = None
+                self.selected_end_frame = None
+                print(f"Selected range: {2}")
+            else:
+                print('invalid')
+                self.selected_start_frame = None
+                self.selected_end_frame = None
+
+    def remove_border(self, event):
+        df_skill = self.selected_ranges[(self.selected_ranges['frame_start'] <= self.current_pos) & (self.current_pos <= self.selected_ranges['frame_end'])]
+        if len(df_skill) > 0:
+            self.repo.remove_border(self.video_id, df_skill.iloc[0]['frame_start'], df_skill.iloc[0]['frame_end'])
+            self.selected_ranges = self.repo.get_borders(self.video_id)        
 
     def on_closing(self, event=None):
         self.playing = False
+        
+        print(self.selected_ranges)
+        
         self.cap.release()
         self.root.destroy()
 
 if __name__ == "__main__":
-    video_path = '/home/miked/code/judge/videos/20240201_atelier_005.mp4'  # Replace this with your video file path
+    video_id = 5 # 5, 8 (val) done, 9 als test
     root = tk.Tk()
-    app = VideoLabeler(root, video_path, display_width=1200, display_height=900)  # Adjust display width and height as needed
+    app = VideoLabeler(root, video_id, display_width=1200, display_height=900)  # Adjust display width and height as needed
     root.mainloop()
