@@ -3,6 +3,10 @@
 ## TODO
 database, config files, jobs & docker
 
+## Requirements
+
+pip3 install tensorflow
+
 ## Judge questions
 
 EBwrap - release - wrap afwerken, daarna nog eens, maar zonder release

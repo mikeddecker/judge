@@ -233,7 +233,7 @@ class VideoLabeler:
         self.root.destroy()
 
 if __name__ == "__main__":
-    video_id = 5 # 5, 8 (val) done, 9 als test
+    video_id = 9 # 5, 8 (val) done, 9 als test
     root = tk.Tk()
     app = VideoLabeler(root, video_id, display_width=1200, display_height=900)  # Adjust display width and height as needed
     root.mainloop()
