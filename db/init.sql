@@ -27,9 +27,12 @@ CREATE TABLE Videos (
 
 CREATE TABLE FrameLabels ( -- CNN based
     videoID INT NOT NULL,
-    frameNr SMALLINT NOT NULL,
+    frameNr SMALLINT NOT NULL, -- max 32k
     label TINYINT NOT NULL, -- 0 - 9 currently (on ground, air, release, power...)
     manual_insert BOOLEAN NOT NULL, -- 0 not, 1 manual
+    rect_center_x FLOAT(3) DEFAULT NULL,
+    rect_center_y FLOAT(3) DEFAULT NULL,
+    rect_size FLOAT(3) DEFAULT NULL,
     
     FOREIGN KEY (videoID) REFERENCES Videos(videoID)
 );
@@ -42,12 +45,3 @@ CREATE TABLE BorderLabels ( -- Interval based
     
     FOREIGN KEY (videoID) REFERENCES Videos(videoID)
 );
-
-CREATE TABLE Borders (
-    videoID INT NOT NULL,
-    frame_start SMALLINT NOT NULL,
-    frame_end SMALLINT NOT NULL,
-    manual_insert BOOLEAN NOT NULL, -- 0 not, 1 manual
-    
-    FOREIGN KEY (videoID) REFERENCES Videos(videoID)
-)

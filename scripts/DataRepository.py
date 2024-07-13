@@ -128,8 +128,8 @@ class DataRepository:
         qry = f"SELECT COUNT(*) as count FROM FrameLabels WHERE videoID = {vid_id} AND frameNr = {frame_nr} AND label = {label};"
         return (pd.read_sql_query(qry, self.con) > 0)['count'][0]
     
-    def query_framelabels(self):
-        qry=sqlal.text(f"""SELECT DISTINCT * FROM FrameLabels""")
+    def query_framelabels(self, videoID):
+        qry=sqlal.text(f"""SELECT * FROM FrameLabels WHERE videoID = {videoID} ORDER BY FrameNr""")
         return pd.read_sql_query(qry, self.con)
     
     def get_randomized_borderlabels_and_batches_per_video(self, batch_size=16, training=True):
@@ -220,22 +220,22 @@ class DataRepository:
         """)
         df_borders = self.fetch_qry(qry)
         video_ids = df_borders.videoID.unique()
+        print(video_ids)
 
         def frameNrs_for_column(df_borders, video_id, column, sign):
             return pd.concat([df_borders[df_borders.videoID == video_id][column], df_borders[df_borders.videoID == video_id][column] + sign]).sort_values().values
         
         for vid_id in video_ids:
-            print('video', vid_id)
+            print('doing video', vid_id)
             path = '../' + self.get_path(vid_id)
             length = get_video_length(path)
-            labels = np.array([0 for i in np.arange(length)])
+            labels = np.array([0 for _ in np.arange(length)])
             
             start_indexes = frameNrs_for_column(df_borders, vid_id, 'frame_start', 1)
             end_indexes = frameNrs_for_column(df_borders, vid_id, 'frame_end', -1)
             skill_indexes = []
             for _, row in df_borders[df_borders.videoID == vid_id].iterrows():
                 skill_indexes.extend(range(row['frame_start'] + 1, row['frame_end']))
-            skill_indexes
         
             labels[skill_indexes] = 2
             labels[start_indexes] = 1
@@ -246,6 +246,17 @@ class DataRepository:
             command = sqlal.text(f"""INSERT INTO FrameLabels (videoID, frameNr, label, manual_insert) VALUES {values}""")
             self.execute_command(command)
 
+            # Fixin 0 to be at the end. last frame should always be no skipping, just like the first frame.
+            # Or that may be our bias :)
+            command = sqlal.text(f"UPDATE FrameLabels SET frameNr = {len(labels)} WHERE videoID = {vid_id} AND frameNr = 0")
+            self.execute_command(command)
+
             command = sqlal.text(f"UPDATE Videos SET borderlabels_added = 1 WHERE videoID = {vid_id}")
             self.execute_command(command)
+
+    def update_rectangle(self, vid_id, frame_nr, rx, ry, rsize):
+        command = sqlal.text(f"""
+        UPDATE FrameLabels SET rect_center_x = {rx}, rect_center_y = {ry}, rect_size = {rsize}  
+        WHERE videoID = {vid_id} AND frameNr = {frame_nr}""")
+        self.execute_command(command)
 
