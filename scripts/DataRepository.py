@@ -23,6 +23,8 @@ from utils_cv2 import get_frame, show_frame_and_await_key, label_frames_from_df,
 
 
 class DataRepository:
+    # TODO : Exceptions, on wrong query, rollback transaction
+    
     def __init__(self):  
         self.con = self.get_connection()
         print('connection established')
@@ -50,6 +52,11 @@ class DataRepository:
                 self.con.commit()
             except OperationalError as msg:
                 print("Command skipped: ", msg)
+
+    def read_sql(self, qry):
+        df = pd.read_sql_query(qry, self.con)
+        self.con.commit()
+        return df
 
     def initDatabase(self):
         try:
@@ -95,7 +102,7 @@ class DataRepository:
     def get_video_name_id_dict(self):    
         qry = sqlal.text("SELECT name, videoID FROM Videos")
         dict_videos = {}
-        for idx, row in pd.read_sql_query(qry, self.con).iterrows():
+        for idx, row in self.read_sql(qry).iterrows():
             dict_videos[row['name']] = row['videoID']
         return dict_videos
 
@@ -126,11 +133,11 @@ class DataRepository:
     
     def label_exists(self, vid_id, frame_nr, label):
         qry = f"SELECT COUNT(*) as count FROM FrameLabels WHERE videoID = {vid_id} AND frameNr = {frame_nr} AND label = {label};"
-        return (pd.read_sql_query(qry, self.con) > 0)['count'][0]
+        return (self.read_sql(qry) > 0)['count'][0]
     
     def query_framelabels(self, videoID):
         qry=sqlal.text(f"""SELECT * FROM FrameLabels WHERE videoID = {videoID} ORDER BY FrameNr""")
-        return pd.read_sql_query(qry, self.con)
+        return self.read_sql(qry)
     
     def get_randomized_borderlabels_and_batches_per_video(self, batch_size=16, training=True):
         qry = f"""
@@ -146,11 +153,27 @@ class DataRepository:
         SUM(batches_in_video) OVER (ORDER BY random_order ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as total_batches
         FROM batches_per_video ORDER BY random_order
         """
-        df = pd.read_sql_query(qry, self.con)
+        df = self.read_sql(qry)
         df['total_batches'] = df.total_batches.astype(int)
     
         return df
-        
+
+    def get_batch_order_frames(self, batch_size=16, training=True):
+        qry = f"""CALL GetFrameBatchNrs({batch_size}, {training})"""
+        df = self.read_sql(qry)
+        df['batch_nr_video'] = df.batch_nr_video.astype(int)
+        df['batch_id'] = df.batch_id.astype(int)
+    
+        return df
+    
+    def get_rectangles_from_batch(self, videoID, batch_nr, batch_size=16):
+        qry = f"""
+        CALL GetRectLabels({videoID}, {batch_nr}, {batch_size})
+        """
+        df = self.read_sql(qry)
+
+        return df
+    
     def get_borderlabels_batch(self, videoID, batch_nr, batch_size=16):    
         min = batch_size * batch_nr
         max = min + batch_size - 1
@@ -159,7 +182,7 @@ class DataRepository:
         FROM FrameLabels 
         WHERE videoID = {videoID} AND frameNr BETWEEN {min} AND {max}
         """
-        df = pd.read_sql_query(qry, self.con)
+        df = self.read_sql(qry)
 
         return df
 
@@ -171,7 +194,7 @@ class DataRepository:
         ON v.folderID = f.folderID
         WHERE videoID = {videoID}
         """
-        df = pd.read_sql_query(qry, self.con)['path'][0]
+        df = self.read_sql(qry)['path'][0]
         return df
 
     def execute_command(self, command):
@@ -179,7 +202,7 @@ class DataRepository:
         self.con.commit()
 
     def fetch_qry(self, qry):
-        return pd.read_sql_query(qry, self.con)
+        return self.read_sql(qry)
 
     def add_border(self, videoID, frame_start, frame_end, manual_insert):
         if not self.is_valid_border(videoID, frame_start, frame_end):

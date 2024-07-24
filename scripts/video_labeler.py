@@ -384,7 +384,7 @@ class VideoLabeler:
         self.repo.update_rectangle(self.video_id, self.current_pos, rel_x, rel_y, self.rect_size)
 
 if __name__ == "__main__":
-    video_id = 6
+    video_id = 8
     root = tk.Tk()
     app = VideoLabeler(root, video_id, display_width=500, display_height=900)  # Adjust display width and height as needed
     root.mainloop()

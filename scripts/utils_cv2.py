@@ -96,6 +96,7 @@ def get_frame(path, frame_nr, release_cap=True):
 
 def get_frames(path, first_frame_nr, last_frame_nr, dim=(200,200), rgb=True):
     frames = []
+    # print(path, first_frame_nr, last_frame_nr, dim, rgb)
     cap = cv2.VideoCapture(path)
     cap.set(cv2.CAP_PROP_POS_FRAMES, first_frame_nr)
     current_frame = first_frame_nr

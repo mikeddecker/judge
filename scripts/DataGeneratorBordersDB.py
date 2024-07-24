@@ -59,7 +59,7 @@ class DataGeneratorSkillBorders(keras.utils.Sequence):
         path = '../' + self.repo.get_path(video_id)
         X = get_frames(path, min_frame, max_frame, dim=self.dim)
 
-        X = np.expand_dims(X, axis=0)  # Add batch dimension
+        X = np.expand_dims(X, axis=0)  # Add batch dimension        
         
         return X, y
 
