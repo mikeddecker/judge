@@ -45,3 +45,48 @@ CREATE TABLE BorderLabels ( -- Interval based
     
     FOREIGN KEY (videoID) REFERENCES Videos(videoID)
 );
+
+
+DELIMITER $$
+
+/**
+    Procedure: Frame batch_nrs order
+    e.g.
+    1) video_id 2, batch 5
+    2) video_id 8, batch 66
+    3) video_id 3, batch 27
+    4) video_id 1, batch 21
+    5) video_id 2, batch 66
+    ...
+*/
+
+DROP PROCEDURE IF EXISTS GetFrameBatchNrs$$
+CREATE PROCEDURE GetFrameBatchNrs (IN batch_size INT, IN train BOOLEAN)
+BEGIN
+	WITH train_or_val_idxs AS (
+		SELECT videoID FROM Videos WHERE training = train
+    ), frame_batch_nrs AS (
+		SELECT *, FLOOR((frameNr-1) / 16) as batch_nr_video FROM FrameLabels 
+        WHERE videoID IN (SELECT * FROM train_or_val_idxs) AND rect_center_x IS NOT NULL
+	)
+	SELECT videoID, batch_nr_video, ROW_NUMBER() OVER (ORDER BY RAND()) - 1 AS batch_id
+	FROM frame_batch_nrs 
+    GROUP by videoID, batch_nr_video
+    ORDER BY batch_id;
+END$$
+
+
+/**
+    Procedure: getting the i'th batch
+    VideoID = 2, batch_nr = 3, batch_size = 16
+    --> frameLabels list from [33, 48] 
+*/
+DROP PROCEDURE IF EXISTS GetRectLabels$$
+CREATE PROCEDURE GetRectLabels(video_id INT, batch_nr INT, batch_size INT)
+BEGIN
+	SELECT * FROM FrameLabels 
+    WHERE videoID = video_id AND FrameNr BETWEEN batch_nr * batch_size + 1 AND (batch_nr + 1) * batch_size AND rect_center_x IS NOT NULL
+    ORDER BY FrameNr;
+END$$
+
+DELIMITER ;
