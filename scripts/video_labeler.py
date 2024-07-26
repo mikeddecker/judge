@@ -4,9 +4,10 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 from DataRepository import DataRepository
+from DataGeneratorFrames import DataGeneratorRectangles
 
 class VideoLabeler:
-    def __init__(self, root, video_id, display_width=800, display_height=600):
+    def __init__(self, root, video_id):
         self.repo = DataRepository()
         self.video_id = video_id
         self.video_path = '../' + self.repo.get_path(video_id)
@@ -19,8 +20,12 @@ class VideoLabeler:
         print('framecount: ', self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.original_width = self.cap.get(3)  # float `width`
         self.original_height = self.cap.get(4)  # float `height`
-        self.display_width = display_width
-        self.display_height = display_height
+        if self.original_height > self.original_width:
+            self.display_height = 850
+            self.display_width = self.original_width / (self.original_height / 850)
+        else:
+            self.display_width = 1200
+            self.display_height = self.original_height / (self.original_width / 1200)
         self.current_pos = 0
         
         self.rectangles = True
@@ -83,7 +88,7 @@ class VideoLabeler:
         self.root.bind('<q>', self.on_closing)
         self.root.bind('<r>', self.remove_border)
         self.root.bind('<t>', self.toggle_textbox)
-        self.root.bind('<y>', self.reset_border)
+        self.root.bind('<y>', self.reset_rectangle)
         self.root.bind('<space>', self.toggle_play_pause)
         
         if self.rectangles:
@@ -340,7 +345,7 @@ class VideoLabeler:
     def is_non_or_nan(self, x):
         return x is None or np.isnan(x)
     
-    def reset_border(self, event):
+    def reset_rectangle(self, event):
         print('reset borders from', self.rect_center_x, self.rect_center_y, self.rect_size)
         self.rect_center_x = int(0.5 * self.original_width)
         self.rect_center_y = int(0.5 * self.original_height)
@@ -384,7 +389,9 @@ class VideoLabeler:
         self.repo.update_rectangle(self.video_id, self.current_pos, rel_x, rel_y, self.rect_size)
 
 if __name__ == "__main__":
+    watch_predictions = False
+    prediction_model = '../models/frames_skillborder_CNN_model_96pixels_history.pkl'
     video_id = 8
     root = tk.Tk()
-    app = VideoLabeler(root, video_id, display_width=500, display_height=900)  # Adjust display width and height as needed
+    app = VideoLabeler(root, video_id)  # Adjust display width and height as needed
     root.mainloop()
