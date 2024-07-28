@@ -11,6 +11,26 @@ CREATE TABLE Folders (
     path NVARCHAR(50) NOT NULL
 );
 
+CREATE TABLE CompetitionType (
+    competitionID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    competitionName CHAR(255) NOT NULL
+);
+
+CREATE TABLE Club (
+    clubID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    clubName CHAR(255) NOT NULL
+);
+
+CREATE TABLE Discipline (
+    disciplineID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    disciplineName CHAR(255) NOT NULL
+);
+
+CREATE TABLE Age (
+    ageID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    ageCategory CHAR(255) NOT NULL
+);
+
 CREATE TABLE Videos (
     videoID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     folderID INT NOT NULL,
@@ -19,16 +39,22 @@ CREATE TABLE Videos (
     obstruction TINYINT NOT NULL, -- 0 geen - 100 high obstruction
     quality TINYINT NOT NULL, -- 0 zeer wazig - 100 goed
     type TINYINT NOT NULL, -- 0 = competitie, 1 = distant, sporthal-like, 2 = dicht & vrij, 3 = distant, sporthallike, ruis, 4 = dicht & achtergrondruis
-    dimensionX SMALLINT NOT NULL, -- 1920 of 1080
-    dimensionY SMALLINT NOT NULL, -- 1080 of 1920 of 3k...
+    competitionID INT NOT NULL, -- PK, BK, WK, EK, Olympics, no competition
+    clubID INT NOT NULL, -- sipiro, moving, unknown...
+    disciplineID INT NOT NULL, -- SR, CW, SR2, DD3...
+    ageID INT NOT NULL, -- senioren, junioren, junsen (= junioren of senioren)
+    vid_frame_length INT NULL,
 
-    FOREIGN KEY (folderID) REFERENCES Folders(folderID)
+    FOREIGN KEY (folderID) REFERENCES Folders(folderID),
+    FOREIGN KEY (competitionID) REFERENCES CompetitionType(competitionID),
+    FOREIGN KEY (clubID) REFERENCES Club(clubID),
+    FOREIGN KEY (ageID) REFERENCES Age(ageID)
 );
 
 CREATE TABLE FrameLabels ( -- CNN based
     videoID INT NOT NULL,
     frameNr SMALLINT NOT NULL, -- max 32k
-    label TINYINT NOT NULL, -- 0 - 9 currently (on ground, air, release, power...)
+    label TINYINT NULL, -- 0 no skill, 1 skillborder, 2 skill
     manual_insert BOOLEAN NOT NULL, -- 0 not, 1 manual
     rect_center_x FLOAT(3) DEFAULT NULL,
     rect_center_y FLOAT(3) DEFAULT NULL,
@@ -37,14 +63,15 @@ CREATE TABLE FrameLabels ( -- CNN based
     FOREIGN KEY (videoID) REFERENCES Videos(videoID)
 );
 
-CREATE TABLE BorderLabels ( -- Interval based
-    videoID INT NOT NULL,
-    frameNr SMALLINT NOT NULL,
-    label TINYINT NOT NULL, -- 0 no skill, 1 start, 2 executing skill, 3 skill end
-    manual_insert BOOLEAN NOT NULL, -- 0 not, 1 manual
-    
+CREATE TABLE `Borders` (
+    videoID int NOT NULL,
+    frame_start smallint NOT NULL,
+    frame_end smallint NOT NULL,
+    manual_insert tinyint(1) NOT NULL,
+    skip_in_learning BOOLEAN NOT NULL DEFAULT 0, -- wheter or not to skipp a part when learning.
+
     FOREIGN KEY (videoID) REFERENCES Videos(videoID)
-);
+)
 
 
 DELIMITER $$

@@ -4,7 +4,7 @@
 # In[1]:
 
 
-get_ipython().system('pip3 install sqlalchemy PyMySQL')
+# get_ipython().system('pip3 install sqlalchemy PyMySQL')
 
 
 # In[2]:
@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 import sqlalchemy as sqlal
 from pymysql import OperationalError
+import os
 
 from utils_misc import pickle_load_or_create, pickle_save
 from utils_cv2 import get_frame, show_frame_and_await_key, label_frames_from_df, get_video_length
@@ -58,16 +59,16 @@ class DataRepository:
         self.con.commit()
         return df
 
+    def execute(self, cmd):
+        """Execute function, to make sure it's always commited."""
+        self.con.execute(sqlal.text(cmd))
+        self.con.commit()
+
     def initDatabase(self):
         try:
             self.executeSqlScriptsFromFile('../db/init.sql')
         except Exception as e:
             print(e)
-
-    def insert_folders(self):
-        qry = "INSERT INTO Folders (path) VALUES ('videos'), ('belgium/bk'), ('belgium/pk')"
-        self.con.execute(sqlal.text(qry))
-        self.con.commit()
 
     def add_video(self, folder_id, name, training, obstruction, quality, type, dimensionX, dimensionY):
         command = sqlal.text(f"""
@@ -159,6 +160,7 @@ class DataRepository:
         return df
 
     def get_batch_order_frames(self, batch_size=16, training=True):
+        # TODO : Update procedure in workbench: case when deleted frames --> partition over rank - group by ...
         qry = f"""CALL GetFrameBatchNrs({batch_size}, {training})"""
         df = self.read_sql(qry)
         df['batch_nr_video'] = df.batch_nr_video.astype(int)
@@ -167,6 +169,7 @@ class DataRepository:
         return df
     
     def get_rectangles_from_batch(self, videoID, batch_nr, batch_size=16):
+        # TODO : Update procedure : videoID, frameStart, frameEnd is most simple
         qry = f"""
         CALL GetRectLabels({videoID}, {batch_nr}, {batch_size})
         """
@@ -262,9 +265,9 @@ class DataRepository:
         
             labels[skill_indexes] = 2
             labels[start_indexes] = 1
-            labels[end_indexes] = 3
+            labels[end_indexes] = 1
         
-            values = ", ".join([f'({vid_id}, {idx}, {lbl},1)' for idx, lbl in enumerate(labels)])
+            values = ", ".join([f'({vid_id if vid_id > 0 else len(labels)}, {idx}, {lbl},1)' for idx, lbl in enumerate(labels)])
 
             command = sqlal.text(f"""INSERT INTO FrameLabels (videoID, frameNr, label, manual_insert) VALUES {values}""")
             self.execute_command(command)
@@ -274,12 +277,138 @@ class DataRepository:
             command = sqlal.text(f"UPDATE FrameLabels SET frameNr = {len(labels)} WHERE videoID = {vid_id} AND frameNr = 0")
             self.execute_command(command)
 
+            # Mark as labeled
             command = sqlal.text(f"UPDATE Videos SET borderlabels_added = 1 WHERE videoID = {vid_id}")
             self.execute_command(command)
 
+
+    
     def update_rectangle(self, vid_id, frame_nr, rx, ry, rsize):
         command = sqlal.text(f"""
         UPDATE FrameLabels SET rect_center_x = {rx}, rect_center_y = {ry}, rect_size = {rsize}  
         WHERE videoID = {vid_id} AND frameNr = {frame_nr}""")
         self.execute_command(command)
 
+# ------------------------------- 
+#   Folders
+# ------------------------------- 
+    def exists_folder(self, foldername):
+        qry = ""
+        self.con.execute(sqlal.text(qry))
+        self.con.commit()
+
+    def add_folder(self, foldername):
+        pass
+
+    def get_folderID(self, foldername):
+        pass
+
+    def get_folder(self, folderID):
+        pass
+
+# -------------------------------
+#    Club
+# ------------------------------- 
+    def exists_club(self, club):
+        qry = ""
+        self.execute(qry)
+
+    def add_club(self, club):
+        pass
+
+    def get_clubID(self, club):
+        pass
+# -------------------------------
+#    Competition
+# ------------------------------- 
+    def exists_competition(self, competition):
+        """Does EK, BK, PK... already exists in DB?"""
+        qry = ""
+        self.execute(qry)
+
+    def add_competition(self, competition):
+        pass
+
+    def get_competitionID(self, competition):
+        pass
+
+# -------------------------------
+#    Discipline
+# ------------------------------- 
+    def exists_discipline(self, discipline):
+        """Does SR, DD4, SR4, CW... already exists in DB?"""
+        qry = ""
+        self.execute(qry)
+
+    def add_discipline(self, discipline):
+        pass
+
+    def get_disciplineID(self, discipline):
+        pass
+
+
+# -------------------------------
+#    Age
+# ------------------------------- 
+    def exists_age(self, categorie):
+        """Does junioren, senioren... already exists in DB?"""
+        qry = ""
+        self.execute(qry)
+
+    def add_age(self, categorie):
+        pass
+
+    def get_ageID(self, categorie):
+        pass
+
+
+# -------------------------------
+#    Video
+# ------------------------------- 
+    def exists_video(self, videoname):
+        qry = ""
+        self.execute(qry)
+
+    def add_video(self, folder, videoname, competition, club, discipline, age):
+        vid_length = 0
+
+        # Add and/or get folderID + vid_length
+        if isinstance(folder, str):
+            vid_length = get_video_length(os.path.join(folder, videoname))
+        
+            if not self.exists_folder(folder):
+                self.add_folder(folder)
+            folder = self.get_folderID(folder)
+        else:
+            path = os.path.join(self.get_folder(folder).iloc[0]['path'], videoname)
+            vid_length = get_video_length(path)
+
+        # Add and/or get competitionID
+        if isinstance(competition, str):
+            if not self.exists_competition(competition):
+                self.add_competition(competition)
+            competition = self.get_competitionID(competition)
+        
+        # Add and/or get clubID
+        if isinstance(club, str):
+            if not self.exists_club(club):
+                self.add_club(club)
+            club = self.get_clubID(club)
+        
+        # Add and/or get ageID
+        if isinstance(age, str):
+            if not self.exists_age(age):
+                self.add_age(age)
+            age = self.get_ageID(age)
+
+        # Add and/or get disciplineID
+        if isinstance(discipline, str):
+            if not self.exists_discipline(discipline):
+                self.add_discipline(discipline)
+            discipline = self.get_disciplineID(discipline)
+
+    # TODO : qry = ... & excecute + testings
+
+
+    def explore_and_add_videos(self):
+        pass
