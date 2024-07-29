@@ -17,9 +17,10 @@ visualisation_frame_color = "#ffffff"
 class VideoLabeler:
     def __init__(self, root, video_id, batch_size, predict=False):
         # --- Video config & Y values ---
+        video_root_folder = '/media/miked/Elements/Judge/FINISHED-DB-READY/'
         self.repo = DataRepository()
         self.video_id = video_id
-        self.video_path = '../' + self.repo.get_path(video_id)
+        self.video_path = video_root_folder + self.repo.get_path(video_id)
         self.y_frames = self.repo.query_framelabels(video_id) # frame list: rectangle, skillstatus
         self.y_skills = self.repo.get_borders(video_id)  # Skill-list: toad, start = 100, end = 120
 
@@ -56,7 +57,7 @@ class VideoLabeler:
         self.footer.place(relx=0.2, rely=0.88, relwidth=0.8, relheight=0.12)
 
 
-        # --- Loading video ---
+        # --- Loading video & stats---
         self.cap = cv2.VideoCapture(self.video_path)
         self.original_width = self.cap.get(3)  # float `width`
         self.original_height = self.cap.get(4)  # float `height`
@@ -78,7 +79,7 @@ class VideoLabeler:
             self.frame_label = tk.Label(self.main_frame)
             self.frame_label.pack()
             self.frame_label.bind("<Button-1>", self.on_click)
-            
+
         first_frame = self.y_frames.loc[0]
         print(first_frame)
         print((0.5 if first_frame['rect_center_x'] is None else first_frame['rect_center_x']))
@@ -271,6 +272,7 @@ class VideoLabeler:
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr)
 
     def update_slider(self):
+        """Updates the coloring of the slider"""
         self.slider_canvas.delete("all")
         total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
         visible_frames = self.visible_range_end - self.visible_range_start
@@ -336,7 +338,7 @@ class VideoLabeler:
                 print('valid')
                 idx = len(self.y_skills)
                 self.repo.add_border(self.video_id, self.selected_start_frame, self.selected_end_frame, 1)
-                self.y_skills.loc[idx] = [self.video_id, self.selected_start_frame, self.selected_end_frame, 1]
+                self.y_skills.loc[idx] = [self.video_id, self.selected_start_frame, self.selected_end_frame, 1, 0]
                 self.selected_start_frame = None
                 self.selected_end_frame = None
                 print(f"Selected range: {2}")
@@ -353,9 +355,10 @@ class VideoLabeler:
 
     def on_closing(self, event=None):
         self.playing = False
+
+        self.repo.uninserted_borders_to_framelabels(self.video_id)
         
-        print(self.y_skills)
-        print(self.y_frames)
+        print('done')
         
         self.cap.release()
         self.root.destroy()
@@ -437,7 +440,7 @@ class VideoLabeler:
 if __name__ == "__main__":
     watch_predictions = False
     prediction_model = '../models/frames_skillborder_CNN_model_96pixels_history.pkl'
-    video_id = 8
+    video_id = 16
     batch_size = 9999
     root = tk.Tk()
     app = VideoLabeler(root, video_id, batch_size)  # Adjust display width and height as needed

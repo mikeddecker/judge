@@ -35,7 +35,7 @@ CREATE TABLE Videos (
     videoID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     folderID INT NOT NULL,
     name NVARCHAR(255) NOT NULL,
-    training BOOLEAN NOT NULL DEFAULT 1,
+    training BOOLEAN NULL DEFAULT NULL,
     obstruction TINYINT NOT NULL, -- 0 geen - 100 high obstruction
     manually_bordered TINYINT NOT NULL DEFAULT 0,
     borderlabels_added TINYINT NOT NULL DEFAULT 0,
@@ -68,7 +68,7 @@ CREATE TABLE `Borders` (
     frame_start smallint NOT NULL,
     frame_end smallint NOT NULL,
     manual_insert tinyint(1) NOT NULL,
-    skip_in_learning BOOLEAN NOT NULL DEFAULT 0, -- wheter or not to skipp a part when learning.
+    skip_in_learning BOOLEAN NOT NULL DEFAULT 0, -- whether or not to skipp a part when learning.
 
     FOREIGN KEY (videoID) REFERENCES Videos(videoID)
 )
