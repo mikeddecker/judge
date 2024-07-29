@@ -14,6 +14,8 @@ import pandas as pd
 import numpy as np
 import sqlalchemy as sqlal
 from pymysql import OperationalError
+from datetime import datetime
+
 import os
 
 from utils_misc import pickle_load_or_create, pickle_save
@@ -58,10 +60,10 @@ class DataRepository:
         df = pd.read_sql_query(qry, self.con)
         self.con.commit()
         return df
-
-    def execute(self, cmd):
+    
+    def execute_command(self, command):
         """Execute function, to make sure it's always commited."""
-        self.con.execute(sqlal.text(cmd))
+        self.con.execute(sqlal.text(command))
         self.con.commit()
 
     def initDatabase(self):
@@ -200,10 +202,6 @@ class DataRepository:
         df = self.read_sql(qry)['path'][0]
         return df
 
-    def execute_command(self, command):
-        self.con.execute(command)
-        self.con.commit()
-
     def fetch_qry(self, qry):
         return self.read_sql(qry)
 
@@ -293,58 +291,72 @@ class DataRepository:
 #   Folders
 # ------------------------------- 
     def exists_folder(self, foldername):
-        qry = ""
-        self.con.execute(sqlal.text(qry))
-        self.con.commit()
-
+        qry = f"SELECT COUNT(path) as count FROM Folders WHERE path=\"{foldername}\""
+        return self.read_sql(qry).iloc[0]['count'] > 0
+        
     def add_folder(self, foldername):
-        pass
+        cmd = f"INSERT INTO Folders (path) VALUES (\"{foldername}\")"
+        self.execute_command(cmd)
 
     def get_folderID(self, foldername):
-        pass
+        qry = f"SELECT folderID FROM Folders WHERE path=\"{foldername}\""
+        return self.read_sql(qry).iloc[0]['folderID']
 
     def get_folder(self, folderID):
-        pass
+        """Returns foldername"""
+        qry = f"SELECT * FROM Folders WHERE folderID=\"{folderID}\""
+        return self.read_sql(qry).iloc[0]['path']
+
 
 # -------------------------------
 #    Club
 # ------------------------------- 
     def exists_club(self, club):
-        qry = ""
-        self.execute(qry)
+        qry = f"SELECT COUNT(clubName) as count FROM Club WHERE clubName = \"{club}\""
+        return self.read_sql(qry).iloc[0]['count'] > 0
 
     def add_club(self, club):
-        pass
+        cmd = f"INSERT INTO Club (clubName) VALUES (\"{club}\")"
+        self.execute_command(cmd)
 
     def get_clubID(self, club):
-        pass
+        assert self.exists_club(club), f"Club {club} doesn't exist"
+        qry = f"SELECT clubID FROM Club WHERE clubName=\"{club}\""
+        return self.read_sql(qry).iloc[0]['clubID']
+
 # -------------------------------
 #    Competition
 # ------------------------------- 
     def exists_competition(self, competition):
         """Does EK, BK, PK... already exists in DB?"""
-        qry = ""
-        self.execute(qry)
+        qry = f"SELECT COUNT(competitionName) as count FROM CompetitionType WHERE competitionName = \"{competition}\""
+        return self.read_sql(qry).iloc[0]['count'] > 0
 
     def add_competition(self, competition):
-        pass
+        cmd = f"INSERT INTO CompetitionType (competitionName) VALUES (\"{competition}\")"
+        self.execute_command(cmd)
 
     def get_competitionID(self, competition):
-        pass
+        assert self.exists_competition(competition), f"CompetitionType {competition} doesn't exist"
+        qry = f"SELECT competitionID FROM CompetitionType WHERE competitionName=\"{competition}\""
+        return self.read_sql(qry).iloc[0]['competitionID']
 
 # -------------------------------
 #    Discipline
 # ------------------------------- 
     def exists_discipline(self, discipline):
         """Does SR, DD4, SR4, CW... already exists in DB?"""
-        qry = ""
-        self.execute(qry)
+        qry = f"SELECT COUNT(disciplineName) as count FROM Discipline WHERE disciplineName = \"{discipline}\""
+        return self.read_sql(qry).iloc[0]['count'] > 0
 
     def add_discipline(self, discipline):
-        pass
+        cmd = f"INSERT INTO Discipline (disciplineName) VALUES (\"{discipline}\")"
+        self.execute_command(cmd)
 
     def get_disciplineID(self, discipline):
-        pass
+        assert self.exists_discipline(discipline), f"Discipline {discipline} doesn't exist"
+        qry = f"SELECT disciplineID FROM Discipline WHERE disciplineName=\"{discipline}\""
+        return self.read_sql(qry).iloc[0]['disciplineID']
 
 
 # -------------------------------
@@ -352,35 +364,42 @@ class DataRepository:
 # ------------------------------- 
     def exists_age(self, categorie):
         """Does junioren, senioren... already exists in DB?"""
-        qry = ""
-        self.execute(qry)
+        qry = f"SELECT COUNT(ageCategory) as count FROM Age WHERE ageCategory = \"{categorie}\""
+        return self.read_sql(qry).iloc[0]['count'] > 0
 
     def add_age(self, categorie):
-        pass
+        cmd = f"INSERT INTO Age (ageCategory) VALUES (\"{categorie}\")"
+        self.execute_command(cmd)
 
     def get_ageID(self, categorie):
-        pass
+        assert self.exists_age(categorie), f"Categorie {categorie} doesn't exist"
+        qry = f"SELECT ageID FROM Age WHERE ageCategory=\"{categorie}\""
+        return self.read_sql(qry).iloc[0]['ageID']
 
 
 # -------------------------------
 #    Video
 # ------------------------------- 
     def exists_video(self, videoname):
-        qry = ""
-        self.execute(qry)
+        qry = f"SELECT COUNT(name) as count FROM Videos WHERE name = \"{videoname}\""
+        return self.read_sql(qry).iloc[0]['count'] > 0
 
-    def add_video(self, folder, videoname, competition, club, discipline, age):
+    def add_video(self, rootfolder, folder, videoname, competition, club, discipline, age):
         vid_length = 0
+
+        # Exists?
+        if self.exists_video(videoname):
+            return
 
         # Add and/or get folderID + vid_length
         if isinstance(folder, str):
-            vid_length = get_video_length(os.path.join(folder, videoname))
+            vid_length = get_video_length(os.path.join(rootfolder, folder, videoname))
         
             if not self.exists_folder(folder):
                 self.add_folder(folder)
             folder = self.get_folderID(folder)
         else:
-            path = os.path.join(self.get_folder(folder).iloc[0]['path'], videoname)
+            path = os.path.join(rootfolder, self.get_folder(folder).iloc[0]['path'], videoname)
             vid_length = get_video_length(path)
 
         # Add and/or get competitionID
@@ -407,8 +426,64 @@ class DataRepository:
                 self.add_discipline(discipline)
             discipline = self.get_disciplineID(discipline)
 
-    # TODO : qry = ... & excecute + testings
+        self.execute_command(f"""
+        INSERT INTO Videos (folderID, name, training, obstruction, competitionID, clubID, disciplineID, ageID, vid_frame_length)
+        VALUES ({folder}, \"{videoname}\", 1, 0, {competition}, {club}, {discipline}, {age}, {vid_length})
+        """)
 
+    def explore_and_add_videos(self, root):
+        """
+        Explores the video_folder for videos
+        TODO : Find renamed files
+        TODO : Find removed files
+        TODO : Find moved files
+        """        
+        for path, subdirs, files in os.walk(root):
+            for name in files:
+                age = 'unknown'
+                competition = 'Free video'
+                club = 'unknown'
+                discipline = 'unknown'
+                year = datetime.now().year
+                extra = 'unknown'
+                        
+                if name.find('.txt') == -1: # Skip dummy format files;
+                    if path.find('competition') != -1:
+                        video_specifics = name.split('.')
+                        assert len(video_specifics) == 2, f"Filenames may not contain dots in their name: {name}"
+                        assert video_specifics[1].lower() in ['avi', 'mp4', 'm2ts'], f"Filetype .{video_specifics[1]} not supported"
+                        video_specifics = video_specifics[0].split('-')
+                        assert len(video_specifics) >= 7, f"Missing some information: {name}"
+                        assert not isinstance(video_specifics[3], int), f"{video_specifics[3]} is not a year"
+                        competition = video_specifics[0].upper()
+                        club = video_specifics[1].lower()
+                        discipline = video_specifics[2].upper()
+                        year = video_specifics[3]
+                        age = video_specifics[4].lower()
+                        extra = video_specifics[5]
 
-    def explore_and_add_videos(self):
-        pass
+                    else:
+                        # Free videos
+                        splitted = name.split('.')
+                        assert splitted[1].lower() in ['mp4', 'avi', 'm2ts'], f"Videofile {splitted[1]} not yet supported"
+                        splitted = splitted[0].split('-')
+
+                        club = splitted[0]
+                        years = {
+                            'tricktionary' : 2020,
+                            'swiss' : 2021
+                        }
+                        if club in years.keys():
+                            year = years[club]
+                            age = 'junsen'
+                        extra = splitted[1]
+
+                    relative_path = path[len(root):]
+                    print(relative_path, competition, club, discipline, year, age, extra, get_video_length(os.path.join(path, name)))
+                    self.add_video(rootfolder=root, 
+                                   folder=relative_path, 
+                                   videoname=name, 
+                                   competition=competition, 
+                                   club=club, 
+                                   discipline=discipline,
+                                   age=age)

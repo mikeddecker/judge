@@ -35,10 +35,10 @@ CREATE TABLE Videos (
     videoID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     folderID INT NOT NULL,
     name NVARCHAR(255) NOT NULL,
-    training BOOLEAN NOT NULL,
+    training BOOLEAN NOT NULL DEFAULT 1,
     obstruction TINYINT NOT NULL, -- 0 geen - 100 high obstruction
-    quality TINYINT NOT NULL, -- 0 zeer wazig - 100 goed
-    type TINYINT NOT NULL, -- 0 = competitie, 1 = distant, sporthal-like, 2 = dicht & vrij, 3 = distant, sporthallike, ruis, 4 = dicht & achtergrondruis
+    manually_bordered TINYINT NOT NULL DEFAULT 0,
+    borderlabels_added TINYINT NOT NULL DEFAULT 0,
     competitionID INT NOT NULL, -- PK, BK, WK, EK, Olympics, no competition
     clubID INT NOT NULL, -- sipiro, moving, unknown...
     disciplineID INT NOT NULL, -- SR, CW, SR2, DD3...
