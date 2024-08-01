@@ -49,7 +49,7 @@ class VideoLabeler:
 
         # -- Mainframe ---
         self.main_frame = tk.Frame(root)
-        self.main_frame.place(relx=0.2, rely=0.04, relwidth=0.8, relheight=0.84)
+        self.main_frame.place(relx=0.0, rely=0.04, relwidth=1.0, relheight=0.84)
 
         # --- Footer ---
         # Slider & buttons
@@ -139,7 +139,11 @@ class VideoLabeler:
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def update_framesize(self):
+        
         self.root.update()
+        print(self.main_frame.winfo_width(), self.original_width)
+        print(self.main_frame.winfo_height(), self.original_height)
+
         prop_relx = self.main_frame.winfo_width() / self.original_width
         prop_rely = self.main_frame.winfo_height() / self.original_height
         smallest_rel_size = min(prop_relx, prop_rely)
@@ -149,6 +153,7 @@ class VideoLabeler:
     def show_frame(self):
         ret, frame = self.cap.read()
         self.current_frameNr = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
+        print('self.current_frameNr', self.current_frameNr)
 
         if ret:
             if self.current_modus == 'watch':
@@ -161,23 +166,14 @@ class VideoLabeler:
             self.update_slider()
 
         else:
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0) # (loop video)
+            pass
+            # self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0) # (loop video)
         
         if self.playing:
             self.root.after(30, self.show_frame)
         
     def resize_frame(self, frame):
-        height, width = frame.shape[:2]
-        aspect_ratio = width / height
-        if width > self.display_width or height > self.display_height:
-            if width > height:
-                new_width = self.display_width
-                new_height = int(new_width / aspect_ratio)
-            else:
-                new_height = self.display_height
-                new_width = int(new_height * aspect_ratio)
-            frame = cv2.resize(frame, (new_width, new_height))
-        return frame
+        return cv2.resize(frame, (self.display_width, self.display_height))
         
     def add_rectangle_to_frame(self, frame):
         width = min(self.original_height, self.original_width)
@@ -313,6 +309,7 @@ class VideoLabeler:
             self.show_frame()
 
     def next_frame(self, event):
+        print('next')
         if not self.playing:
             self.show_frame()
 
@@ -335,15 +332,13 @@ class VideoLabeler:
         self.selected_end_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         if self.selected_start_frame is not None and self.selected_end_frame is not None:
             if self.repo.is_valid_border(self.video_id, self.selected_start_frame, self.selected_end_frame):
-                print('valid')
                 idx = len(self.y_skills)
                 self.repo.add_border(self.video_id, self.selected_start_frame, self.selected_end_frame, 1)
                 self.y_skills.loc[idx] = [self.video_id, self.selected_start_frame, self.selected_end_frame, 1, 0]
                 self.selected_start_frame = None
                 self.selected_end_frame = None
-                print(f"Selected range: {2}")
             else:
-                print('invalid')
+                print('invalid skillborder')
                 self.selected_start_frame = None
                 self.selected_end_frame = None
 
@@ -403,7 +398,6 @@ class VideoLabeler:
 
     def follow_rectangle(self):
         # just needs two params
-        print('current pos: ', self.current_frameNr)
         curr_frame = self.y_frames.loc[self.current_frameNr-1]
         if not self.is_non_or_nan(curr_frame['rect_size']):
             self.rect_center_x = int(curr_frame['rect_center_x'] * self.original_width)
@@ -440,7 +434,13 @@ class VideoLabeler:
 if __name__ == "__main__":
     watch_predictions = False
     prediction_model = '../models/frames_skillborder_CNN_model_96pixels_history.pkl'
-    video_id = 16
+    # DD3 labels: 11, 16, 30, 52, 75, 100, 109, 110, 120, 149, 152, 
+    # DD4 labels: 222, 240, 245
+    # DD count: 11 + 3 = 14 / 178
+    # DD3: [11, 152] = 142
+    # DD4: [153, 288] = 136
+    # Stukje om evt te verwijderen: 16 (einde)
+    video_id = 100
     batch_size = 9999
     root = tk.Tk()
     app = VideoLabeler(root, video_id, batch_size)  # Adjust display width and height as needed
