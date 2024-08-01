@@ -440,8 +440,27 @@ if __name__ == "__main__":
     # DD3: [11, 152] = 142
     # DD4: [153, 288] = 136
     # Stukje om evt te verwijderen: 16 (einde)
-    video_id = 100
+    video_id = 101
     batch_size = 9999
     root = tk.Tk()
     app = VideoLabeler(root, video_id, batch_size)  # Adjust display width and height as needed
     root.mainloop()
+
+
+
+
+    # 11 : jury mp4 handles junioren Train
+    # 16 : zij  m2ts handles senioren (out of bounds) Train
+    # 30 : jury mp4 sportac Train
+    # 52 : jury m2ts silus matthe Train
+    # 75 : jury mp4 recrean elias junioren Train
+    # 100 : jury m2ts loco ruben Train
+    # 110 : jury m2ts sipiro lore train
+    # 120 : jury mp4 skippies mare Train
+    # 152 : pk mp4 zero nathan Train
+    # 240 : jury m2ts moving arne Train
+    # 245 : jury m2ts sipiro lore Train
+
+    # 109 : zij m2ts sipiro finne Test
+    # 149 : pk mp4 skippies lorena Test
+    # 222 : jury mp4 zero yaro Test

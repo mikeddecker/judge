@@ -11,7 +11,7 @@ from keras.utils import to_categorical
 class DataGeneratorRectangles(keras.utils.Sequence):
     'Generates data for Keras'
     def __init__(self, train=True, dim=(128, 128), n_channels=3, batch_size=32,
-                 n_classes=3, shuffle=True, axis=0, **kwargs):
+                 n_classes=3, shuffle=True, axis=0, rootfolder='../', **kwargs):
         'Initialization'
         super().__init__(**kwargs)
         self.dim = dim
@@ -22,6 +22,7 @@ class DataGeneratorRectangles(keras.utils.Sequence):
         self.shuffle = shuffle
         self.len = None
         self.axis=axis
+        self.rootfolder=rootfolder
 
         self.repo = DataRepository()
 
@@ -37,10 +38,12 @@ class DataGeneratorRectangles(keras.utils.Sequence):
         # Generate batch df view
         print(f" __getitem__({batch_nr})")
         video_id = self.batch_order.iloc[batch_nr]['videoID']
-        video_batch_nr = self.batch_order.iloc[batch_nr]['batch_nr_video']
+        frame_start = self.batch_order.iloc[batch_nr]['frame_start']
+        frame_end = self.batch_order.iloc[batch_nr]['frame_end']
+
 
         # print(f"get_rects: {video_id}", video_batch_nr, self.batch_size)
-        df_labels = self.repo.get_rectangles_from_batch(videoID=video_id, batch_nr=video_batch_nr, batch_size=self.batch_size)
+        df_labels = self.repo.get_rectangles_from_batch(videoID=video_id, frame_start=frame_start, frame_end=frame_end)
         if (len(df_labels) < self.batch_size):
             pass
             # print('df_labels: ', df_labels)
@@ -51,13 +54,12 @@ class DataGeneratorRectangles(keras.utils.Sequence):
         # y = np.expand_dims(y, axis=0)
         # y = np.expand_dims(y, axis=-1)
          
-        min_frame = df_labels.iloc[0]['frameNr']
-        max_frame = df_labels.iloc[-1]['frameNr']
-        path = '../' + self.repo.get_path(video_id)
-        X = get_frames(path, min_frame, max_frame, dim=self.dim)
+        path = self.rootfolder + self.repo.get_path(video_id)
+        X = get_frames(path, frame_start, frame_end, dim=self.dim)
 
         # X = np.expand_dims(X, axis=0)  # Add batch dimension
         
+        # print(f"__getitem__ end: videoID={video_id}, start={frame_start}, end={frame_end}, shapes: {X.shape}, {y.shape}")
         return X, y
 
     def fill_time_length_dimension(self, df_labels):

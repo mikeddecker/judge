@@ -135,7 +135,7 @@ class DataRepository:
             return df
 
     
-    def get_randomized_borderlabels_and_batches_per_video(self, batch_size=16, training=True):
+    def get_randomized_borderlabels_and_batches_per_video(self, batch_size=32, training=True):
         qry = f"""
         WITH batches_per_video AS (
             SELECT f.videoID, CEILING(max(frameNr) / {batch_size}) as batches_in_video,
@@ -155,7 +155,6 @@ class DataRepository:
         return df
 
     def get_batch_order_frames(self, batch_size=16, training=True):
-        # TODO : Update procedure in workbench: case when deleted frames --> partition over rank - group by ...
         qry = f"""CALL GetFrameBatchNrs({batch_size}, {training})"""
         df = self.read_sql(qry)
         df['batch_nr_video'] = df.batch_nr_video.astype(int)
@@ -163,16 +162,15 @@ class DataRepository:
     
         return df
     
-    def get_rectangles_from_batch(self, videoID, batch_nr, batch_size=16):
-        # TODO : Update procedure : videoID, frameStart, frameEnd is most simple
+    def get_rectangles_from_batch(self, videoID, frame_start, frame_end):
         qry = f"""
-        CALL GetRectLabels({videoID}, {batch_nr}, {batch_size})
+        CALL GetRectLabels({videoID}, {frame_start}, {frame_end})
         """
         df = self.read_sql(qry)
 
         return df
     
-    def get_borderlabels_batch(self, videoID, batch_nr, batch_size=16):    
+    def get_borderlabels_batch(self, videoID, batch_nr, batch_size=32):    
         min = batch_size * batch_nr
         max = min + batch_size - 1
         qry = f"""

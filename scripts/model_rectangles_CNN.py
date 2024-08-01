@@ -24,33 +24,53 @@ import os
 import pickle
 from utils_misc import pickle_load_or_create
 
+# Suppres warnings from positioning like
+# [h264 @ 0x56bf4fb5da40] reference picture missing during reorder
+os.environ['OPENCV_LOG_LEVEL'] = 'OFF'
+os.environ['OPENCV_FFMPEG_LOGLEVEL'] = "-8"
 
-# In[3]:
+
+# In[19]:
 
 
-model = pickle_load_or_create('../models/rectangles_CNN_model_history', lambda: None, True)
+models = [
+    'frames_skillborder_CNN_model_96pixels_history'
+]
+model_name = models[0]
+
+
+# In[ ]:
+
+
+
+
+
+# In[21]:
+
+
+model = pickle_load_or_create('../models/frames_skillborder_CNN_model_96pixels_history', lambda: None, True)
 print(model)
 
 
-# In[4]:
+# In[22]:
 
 
 from DataGeneratorFrames import DataGeneratorRectangles
 
 
-# In[5]:
+# In[24]:
 
 
-config = pickle_load_or_create('CNN_rectangles_3x3_rgb', lambda:{
+config = pickle_load_or_create(model_name, lambda:{
     'convolution': (3,3),
-    'dim':64,
+    'dim':256,
     'rgb':True,
     'unique_labels': 3,
 }, config=True)
 config
 
 
-# In[6]:
+# In[25]:
 
 
 from tensorflow.keras.models import Sequential
@@ -59,12 +79,17 @@ from tensorflow.keras.optimizers import Adam
 
 if model is None:
     model = Sequential()
-    model.add(Conv2D(filters=16, kernel_size=config['convolution'],
+    model.add(Conv2D(filters=24, kernel_size=config['convolution'],
                      input_shape=(config['dim'], config['dim'], 3 if config['rgb'] else 1)))
     model.add(MaxPool2D())
     model.add(BatchNormalization())
     
     model.add(Conv2D(filters=32, kernel_size=(3, 3)))
+    model.add(MaxPool2D())
+    model.add(BatchNormalization())
+    
+    model.add(Conv2D(filters=48, kernel_size=(3, 3)))
+    model.add(MaxPool2D())
     model.add(BatchNormalization())
     
     model.add(Flatten())  # Flatten each frame
@@ -78,7 +103,7 @@ else:
     model = model.model
 
 
-# In[7]:
+# In[26]:
 
 
 model.summary()
@@ -96,7 +121,7 @@ model.summary()
 
 
 
-# In[8]:
+# In[27]:
 
 
 # Parameters
@@ -110,7 +135,7 @@ training_generator = DataGeneratorRectangles(train=True, **params)
 test_generator = DataGeneratorRectangles(train=False, **params)
 
 
-# In[9]:
+# In[28]:
 
 
 training_generator.batch_order
@@ -122,13 +147,13 @@ training_generator.batch_order
 
 
 
-# In[10]:
+# In[29]:
 
 
 get_ipython().run_cell_magic('time', '', 'X, y = training_generator.__getitem__(25)\n')
 
 
-# In[11]:
+# In[30]:
 
 
 X.shape
@@ -140,13 +165,13 @@ X.shape
 
 
 
-# In[12]:
+# In[31]:
 
 
 y.shape
 
 
-# In[13]:
+# In[32]:
 
 
 y[:5]
@@ -158,41 +183,35 @@ y[:5]
 
 
 
-# In[ ]:
+# In[33]:
 
 
-get_ipython().run_cell_magic('time', '', 'history = model.fit(training_generator, epochs=5, \n                    validation_data=test_generator, shuffle=False)\n')
+get_ipython().run_cell_magic('time', '', 'history = model.fit(training_generator, epochs=3,\n                    validation_data=test_generator, shuffle=False)\n')
 
 
-# In[15]:
-
-
-training_generator.batch_order
-
-
-# In[16]:
-
-
-training_generator.__getitem__(4)
-
-
-# In[17]:
+# In[34]:
 
 
 pd.DataFrame(history.history)
 
 
-# In[18]:
+# In[50]:
 
 
 get_ipython().run_line_magic('pinfo', 'model.fit')
 
 
-# In[19]:
+# In[36]:
 
 
-# with open('../models/frames_skillborder_CNN_model_history.pkl', 'wb') as handle:
-    # pickle.dump(history, handle)
+with open(f"../models/{model_name}.pkl", 'wb') as handle:
+    pickle.dump(history, handle)
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
@@ -207,16 +226,22 @@ get_ipython().run_line_magic('pinfo', 'model.fit')
 
 
 
-# In[20]:
+# In[ ]:
 
 
-X, y = test_generator.__getitem__(15)
 
 
-# In[21]:
+
+# In[ ]:
 
 
-model.predict(X), y
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:

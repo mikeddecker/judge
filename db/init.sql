@@ -92,27 +92,34 @@ CREATE PROCEDURE GetFrameBatchNrs (IN batch_size INT, IN train BOOLEAN)
 BEGIN
 	WITH train_or_val_idxs AS (
 		SELECT videoID FROM Videos WHERE training = train
-    ), frame_batch_nrs AS (
-		SELECT *, FLOOR((frameNr-1) / 16) as batch_nr_video FROM FrameLabels 
-        WHERE videoID IN (SELECT * FROM train_or_val_idxs) AND rect_center_x IS NOT NULL
+	), frame_batch_nrs AS (
+		SELECT *, FLOOR((frameNr-1) / batch_size) as batch_nr_video
+		FROM FrameLabels 
+		WHERE rect_center_x IS NOT NULL AND videoID IN (SELECT * FROM train_or_val_idxs)
+	), grouped_frame_batchnrs AS (
+		SELECT *, ROW_NUMBER() OVER (ORDER BY videoID, frameNr) - frameNr  AS groupnr
+		FROM frame_batch_nrs
 	)
-	SELECT videoID, batch_nr_video, ROW_NUMBER() OVER (ORDER BY RAND()) - 1 AS batch_id
-	FROM frame_batch_nrs 
-    GROUP by videoID, batch_nr_video
-    ORDER BY batch_id;
+	SELECT videoID, batch_nr_video, 
+	MIN(frameNr) AS frame_start, 
+	MAX(frameNr) AS frame_end,
+	COUNT(batch_nr_video) as frames, 
+	ROW_NUMBER() OVER (ORDER BY RAND()) - 1 AS batch_id
+	FROM grouped_frame_batchnrs 
+	GROUP by videoID, batch_nr_video, groupnr
+	ORDER BY batch_id;
 END$$
-
 
 /**
     Procedure: getting the i'th batch
-    VideoID = 2, batch_nr = 3, batch_size = 16
-    --> frameLabels list from [33, 48] 
+    VideoID = 2, frame_start = 3, frame_end = 20
+    --> frameLabels list from [3, 20] 
 */
 DROP PROCEDURE IF EXISTS GetRectLabels$$
-CREATE PROCEDURE GetRectLabels(video_id INT, batch_nr INT, batch_size INT)
+CREATE PROCEDURE GetRectLabels(video_id INT, frame_start INT, frame_end INT)
 BEGIN
 	SELECT * FROM FrameLabels 
-    WHERE videoID = video_id AND FrameNr BETWEEN batch_nr * batch_size + 1 AND (batch_nr + 1) * batch_size AND rect_center_x IS NOT NULL
+    WHERE videoID = video_id AND rect_center_x IS NOT NULL AND FrameNr BETWEEN frame_start AND frame_end 
     ORDER BY FrameNr;
 END$$
 
