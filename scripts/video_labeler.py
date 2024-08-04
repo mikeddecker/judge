@@ -82,9 +82,8 @@ class VideoLabeler:
 
         first_frame = self.y_frames.loc[0]
         print(first_frame)
-        print((0.5 if first_frame['rect_center_x'] is None else first_frame['rect_center_x']))
-        self.rect_center_x = int((0.5 if first_frame['rect_center_x'] is None else first_frame['rect_center_x']) * self.original_width)
-        self.rect_center_y = int((0.5 if first_frame['rect_center_y'] is None else first_frame['rect_center_y']) * self.original_height)
+        self.rel_rect_center_x = int((0.5 if first_frame['rect_center_x'] is None else first_frame['rect_center_x']))
+        self.rel_rect_center_y = int((0.5 if first_frame['rect_center_y'] is None else first_frame['rect_center_y']))
         self.rect_size = 1 if first_frame['rect_size'] is None else first_frame['rect_size']
 
         # Custom slider using Canvas
@@ -139,6 +138,7 @@ class VideoLabeler:
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def update_framesize(self):
+        """Updates the display size of the frame"""
         
         self.root.update()
         print(self.main_frame.winfo_width(), self.original_width)
@@ -149,6 +149,10 @@ class VideoLabeler:
         smallest_rel_size = min(prop_relx, prop_rely)
         self.display_height = int(smallest_rel_size * self.original_height)
         self.display_width = int(smallest_rel_size * self.original_width)
+        self.max_size = max(self.original_height, self.original_width)
+        self.offset_x = (self.max_size - self.original_width) // 2
+        self.offset_y = (self.max_size - self.original_height) // 2
+
     
     def show_frame(self):
         ret, frame = self.cap.read()
@@ -160,7 +164,7 @@ class VideoLabeler:
                 self.follow_rectangle()
             else:
                 self.update_framelabels_rectangles()
-            self.add_rectangle_to_frame(frame)
+            frame = self.add_rectangle_to_frame(frame)
             frame = self.resize_frame(frame)
             self.display_frame(frame)
             self.update_slider()
@@ -176,11 +180,16 @@ class VideoLabeler:
         return cv2.resize(frame, (self.display_width, self.display_height))
         
     def add_rectangle_to_frame(self, frame):
-        width = min(self.original_height, self.original_width)
-        xmin = int(self.rect_center_x - (self.rect_size * width / 2))
-        ymin = int(self.rect_center_y - (self.rect_size * width / 2))
-        xmax = int(xmin + self.rect_size * width)
-        ymax = int(ymin + self.rect_size * width)
+        size = self.max_size
+        # rect_center_x = x position in pixels within the frame (rectangle, not square)
+        # Offset = the difference between height and width divided by 2
+
+        # Xmin/max and Ymin/max in rectangle position
+        rect_size_pixels = self.rect_size * size
+        xmin = int(self.rel_rect_center_x * size - self.offset_x - (rect_size_pixels / 2))
+        ymin = int(self.rel_rect_center_y * size - self.offset_y - (rect_size_pixels / 2))
+        xmax = int(xmin + rect_size_pixels)
+        ymax = int(ymin + rect_size_pixels)
 
         xmin = max(5, xmin)
         ymin = max(5, ymin)
@@ -190,7 +199,10 @@ class VideoLabeler:
         frame[ymin:ymax, xmin:xmax] = wanted_frame
 
         # Dot
-        frame[self.rect_center_y-10:self.rect_center_y+10, self.rect_center_x-10:self.rect_center_x+10] = [0,0,255]
+        dotx = int(self.rel_rect_center_x * size - self.offset_x)
+        doty = int(self.rel_rect_center_y * size - self.offset_y)
+        frame[doty-10:doty+10, dotx-10:dotx+10] = [0,0,255]
+        
         return frame
 
     def on_click(self, event):
@@ -219,7 +231,6 @@ class VideoLabeler:
         self.frame_label.configure(image=imgtk)
 
     def slider_clicked(self, event):
-        total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
         visible_frames = self.visible_range_end - self.visible_range_start
         self.current_frameNr = int((event.x / self.slider_canvas.winfo_width()) * visible_frames + self.visible_range_start)
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr)
@@ -270,7 +281,6 @@ class VideoLabeler:
     def update_slider(self):
         """Updates the coloring of the slider"""
         self.slider_canvas.delete("all")
-        total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
         visible_frames = self.visible_range_end - self.visible_range_start
         slider_pos = ((self.current_frameNr - self.visible_range_start) / visible_frames) * self.slider_canvas.winfo_width()
         
@@ -351,7 +361,7 @@ class VideoLabeler:
     def on_closing(self, event=None):
         self.playing = False
 
-        self.repo.uninserted_borders_to_framelabels(self.video_id)
+        #self.repo.uninserted_borders_to_framelabels(self.video_id)
         
         print('done')
         
@@ -390,46 +400,46 @@ class VideoLabeler:
         return x is None or np.isnan(x)
     
     def reset_rectangle(self, event):
-        print('reset borders from', self.rect_center_x, self.rect_center_y, self.rect_size)
-        self.rect_center_x = int(0.5 * self.original_width)
-        self.rect_center_y = int(0.5 * self.original_height)
+        print('reset borders from', self.rel_rect_center_x, self.rel_rect_center_y, self.rect_size)
+        self.rel_rect_center_x = 0.5
+        self.rel_rect_center_y = 0.5
         self.rect_size = 1
-        print('borders resetted', self.rect_center_x, self.rect_center_y, self.rect_size)
+        print('borders resetted', self.rel_rect_center_x, self.rel_rect_center_y, self.rect_size)
 
     def follow_rectangle(self):
         # just needs two params
         curr_frame = self.y_frames.loc[self.current_frameNr-1]
         if not self.is_non_or_nan(curr_frame['rect_size']):
-            self.rect_center_x = int(curr_frame['rect_center_x'] * self.original_width)
-            self.rect_center_y = int(curr_frame['rect_center_y'] * self.original_height)
+            self.rel_rect_center_x = curr_frame['rect_center_x']
+            self.rel_rect_center_y = curr_frame['rect_center_y']
             self.rect_size = curr_frame['rect_size']
 
 
     def move_rectangle(self, x, y):
+        # Gets x, y clicked in original frame
         print('rectangle moved', x, y)
-        self.rect_center_x = int(x)
-        self.rect_center_y = int(y)
+        self.rel_rect_center_x = (x + self.offset_x) / self.max_size
+        self.rel_rect_center_y = (y + self.offset_y) / self.max_size
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr - 1)
     
     def resize_rectangle(self, x, y):
+        # Gets x, y clicked in original frame
         print('rectangle resized')
-        rel_dist_x = abs(x - self.rect_center_x) / self.original_width
-        rel_dist_y = abs(y - self.rect_center_y) / self.original_height
-        grens_x = abs(self.rect_size * min(self.original_width, self.original_height) / 2) / self.original_width
-        grens_y = abs(self.rect_size * min(self.original_width, self.original_height) / 2) / self.original_height
-        if rel_dist_x < grens_x and rel_dist_y < grens_y:
+        dist_x = abs(x - self.rel_rect_center_x * self.max_size + self.offset_x)
+        dist_y = abs(y - self.rel_rect_center_y * self.max_size + self.offset_y)
+        grensafstand_x = abs(self.rect_size * self.max_size / 2)
+        grensafstand_y = abs(self.rect_size * self.max_size / 2)
+        if dist_x < grensafstand_x and dist_y < grensafstand_y:
             self.rect_size *= 0.97
         else:
             self.rect_size *= 1.03
     
     def update_framelabels_rectangles(self):
         print('update label ', self.current_frameNr)
-        rel_x = self.rect_center_x / self.original_width
-        rel_y = self.rect_center_y / self.original_height
-        self.y_frames.loc[self.current_frameNr-1, 'rect_center_x'] = rel_x
-        self.y_frames.loc[self.current_frameNr-1, 'rect_center_y'] = rel_y
+        self.y_frames.loc[self.current_frameNr-1, 'rect_center_x'] = self.rel_rect_center_x
+        self.y_frames.loc[self.current_frameNr-1, 'rect_center_y'] = self.rel_rect_center_y
         self.y_frames.loc[self.current_frameNr-1, 'rect_size'] = self.rect_size
-        self.repo.update_rectangle(self.video_id, self.current_frameNr, rel_x, rel_y, self.rect_size)
+        self.repo.update_rectangle(self.video_id, self.current_frameNr, self.rel_rect_center_x, self.rel_rect_center_y, self.rect_size)
 
 if __name__ == "__main__":
     watch_predictions = False
@@ -440,7 +450,7 @@ if __name__ == "__main__":
     # DD3: [11, 152] = 142
     # DD4: [153, 288] = 136
     # Stukje om evt te verwijderen: 16 (einde)
-    video_id = 101
+    video_id = 149
     batch_size = 9999
     root = tk.Tk()
     app = VideoLabeler(root, video_id, batch_size)  # Adjust display width and height as needed

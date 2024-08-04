@@ -3,13 +3,13 @@
 
 # # keras CNN predict rectangle box
 
-# In[1]:
+# In[ ]:
 
 
 # !pip3 install tensorflow
 
 
-# In[2]:
+# In[ ]:
 
 
 import tensorflow as tf
@@ -30,11 +30,11 @@ os.environ['OPENCV_LOG_LEVEL'] = 'OFF'
 os.environ['OPENCV_FFMPEG_LOGLEVEL'] = "-8"
 
 
-# In[19]:
+# In[ ]:
 
 
 models = [
-    'frames_skillborder_CNN_model_96pixels_history'
+    'rectangles_portrait_landscaped_padded_history'
 ]
 model_name = models[0]
 
@@ -45,20 +45,20 @@ model_name = models[0]
 
 
 
-# In[21]:
+# In[ ]:
 
 
-model = pickle_load_or_create('../models/frames_skillborder_CNN_model_96pixels_history', lambda: None, True)
+model = pickle_load_or_create(f"../models/{model_name}", lambda: None, True)
 print(model)
 
 
-# In[22]:
+# In[ ]:
 
 
 from DataGeneratorFrames import DataGeneratorRectangles
 
 
-# In[24]:
+# In[ ]:
 
 
 config = pickle_load_or_create(model_name, lambda:{
@@ -70,7 +70,7 @@ config = pickle_load_or_create(model_name, lambda:{
 config
 
 
-# In[25]:
+# In[ ]:
 
 
 from tensorflow.keras.models import Sequential
@@ -81,7 +81,6 @@ if model is None:
     model = Sequential()
     model.add(Conv2D(filters=24, kernel_size=config['convolution'],
                      input_shape=(config['dim'], config['dim'], 3 if config['rgb'] else 1)))
-    model.add(MaxPool2D())
     model.add(BatchNormalization())
     
     model.add(Conv2D(filters=32, kernel_size=(3, 3)))
@@ -89,6 +88,10 @@ if model is None:
     model.add(BatchNormalization())
     
     model.add(Conv2D(filters=48, kernel_size=(3, 3)))
+    model.add(MaxPool2D())
+    model.add(BatchNormalization())
+    
+    model.add(Conv2D(filters=64, kernel_size=(3, 3)))
     model.add(MaxPool2D())
     model.add(BatchNormalization())
     
@@ -103,7 +106,7 @@ else:
     model = model.model
 
 
-# In[26]:
+# In[ ]:
 
 
 model.summary()
@@ -121,7 +124,7 @@ model.summary()
 
 
 
-# In[27]:
+# In[ ]:
 
 
 # Parameters
@@ -135,7 +138,7 @@ training_generator = DataGeneratorRectangles(train=True, **params)
 test_generator = DataGeneratorRectangles(train=False, **params)
 
 
-# In[28]:
+# In[ ]:
 
 
 training_generator.batch_order
@@ -147,13 +150,13 @@ training_generator.batch_order
 
 
 
-# In[29]:
+# In[ ]:
 
 
 get_ipython().run_cell_magic('time', '', 'X, y = training_generator.__getitem__(25)\n')
 
 
-# In[30]:
+# In[ ]:
 
 
 X.shape
@@ -165,13 +168,13 @@ X.shape
 
 
 
-# In[31]:
+# In[ ]:
 
 
 y.shape
 
 
-# In[32]:
+# In[ ]:
 
 
 y[:5]
@@ -183,25 +186,25 @@ y[:5]
 
 
 
-# In[33]:
+# In[ ]:
 
 
-get_ipython().run_cell_magic('time', '', 'history = model.fit(training_generator, epochs=3,\n                    validation_data=test_generator, shuffle=False)\n')
+get_ipython().run_cell_magic('time', '', 'history = model.fit(training_generator, epochs=2,\n                    validation_data=test_generator, shuffle=False)\n')
 
 
-# In[34]:
+# In[ ]:
 
 
 pd.DataFrame(history.history)
 
 
-# In[50]:
+# In[ ]:
 
 
-get_ipython().run_line_magic('pinfo', 'model.fit')
 
 
-# In[36]:
+
+# In[ ]:
 
 
 with open(f"../models/{model_name}.pkl", 'wb') as handle:

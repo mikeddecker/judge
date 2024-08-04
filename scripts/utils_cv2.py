@@ -3,7 +3,7 @@
 
 # # OpenCV help methods
 
-get_ipython().system('pip3 install opencv-python pandas')
+# get_ipython().system('pip3 install opencv-python pandas')
 
 # Imports
 import os
@@ -94,19 +94,44 @@ def get_frame(path, frame_nr, release_cap=True):
 
     return frame
 
-def get_frames(path, first_frame_nr, last_frame_nr, dim=(200,200), rgb=True):
+def frame_to_square(frame):
+    """Pads the given frame to a square
+    portrait or landscape: Boolean"""
+    height = frame.shape[0]
+    width = frame.shape[1]
+    size = max(height, width)
+    
+    y_left = (size - height) // 2
+    x_left = (size - width) // 2
+    y_right = y_left + height
+    x_right = x_left + width 
+    
+    centered_frame = np.zeros(shape=(size, size, frame.shape[2]))
+    centered_frame[y_left:y_right, x_left:x_right] = frame
+
+    return centered_frame
+
+def get_squared_frames(path, first_frame_nr, last_frame_nr, dim=(200,200), rgb=True):
+    """
+    Path: full or relative path to the video.
+    First / Last frame: [first_frame_nr, last_frame_nr]
+    Dim : squashed to the given dimension, default (200,200)
+    """
     frames = []
-    # print(path, first_frame_nr, last_frame_nr, dim, rgb)
     cap = cv2.VideoCapture(path)
     cap.set(cv2.CAP_PROP_POS_FRAMES, first_frame_nr)
     current_frame = first_frame_nr
+
+    assert dim[0] == dim[1], 'This function requires a squared dimension'
     
     while current_frame <= last_frame_nr:
         ret, frame = cap.read()
 
         if ret:
+            frame = frame_to_square(frame)
             frame = cv2.resize(frame, dim) / 255
         else:
+            print("added frames with only zeros, utils cv2")
             frame = np.zeros((dim[0], dim[1], 3 if rgb else 1))
 
         frames.append(frame)
@@ -115,6 +140,7 @@ def get_frames(path, first_frame_nr, last_frame_nr, dim=(200,200), rgb=True):
     cap.release()
 
     return np.array(frames)
+
 
 def get_video_length(path):
     """Returns the framelength of the video"""

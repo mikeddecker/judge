@@ -4,7 +4,7 @@ import keras
 import cv2
 import sqlalchemy as sqlal
 from pymysql import OperationalError
-from utils_cv2 import get_frames
+from utils_cv2 import get_squared_frames
 from DataRepository import DataRepository
 from keras.utils import to_categorical
 
@@ -36,7 +36,7 @@ class DataGeneratorRectangles(keras.utils.Sequence):
     def __getitem__(self, batch_nr):
         'Generate one batch of data'
         # Generate batch df view
-        print(f" __getitem__({batch_nr})")
+        # print(f" __getitem__({batch_nr})")
         video_id = self.batch_order.iloc[batch_nr]['videoID']
         frame_start = self.batch_order.iloc[batch_nr]['frame_start']
         frame_end = self.batch_order.iloc[batch_nr]['frame_end']
@@ -55,7 +55,7 @@ class DataGeneratorRectangles(keras.utils.Sequence):
         # y = np.expand_dims(y, axis=-1)
          
         path = self.rootfolder + self.repo.get_path(video_id)
-        X = get_frames(path, frame_start, frame_end, dim=self.dim)
+        X = get_squared_frames(path, frame_start, frame_end, dim=self.dim)
 
         # X = np.expand_dims(X, axis=0)  # Add batch dimension
         

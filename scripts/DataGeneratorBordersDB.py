@@ -4,7 +4,7 @@ import keras
 import cv2
 import sqlalchemy as sqlal
 from pymysql import OperationalError
-from utils_cv2 import get_frames
+from utils_cv2 import get_squared_frames
 from DataRepository import DataRepository
 from keras.utils import to_categorical
 
@@ -57,7 +57,7 @@ class DataGeneratorSkillBorders(keras.utils.Sequence):
         min_frame = df_labels.iloc[0]['frameNr']
         max_frame = min_frame + self.time_length - 1
         path = '../' + self.repo.get_path(video_id)
-        X = get_frames(path, min_frame, max_frame, dim=self.dim)
+        X = get_squared_frames(path, min_frame, max_frame, dim=self.dim)
 
         X = np.expand_dims(X, axis=0)  # Add batch dimension        
         
