@@ -34,7 +34,7 @@ os.environ['OPENCV_FFMPEG_LOGLEVEL'] = "-8"
 
 
 models = [
-    'rectangles_portrait_landscaped_padded_history'
+    'rectangles_august_5_history'
 ]
 model_name = models[0]
 
@@ -42,7 +42,7 @@ model_name = models[0]
 # In[ ]:
 
 
-
+root = '/media/miked/Elements/Judge/FINISHED-DB-READY/'
 
 
 # In[ ]:
@@ -80,18 +80,23 @@ from tensorflow.keras.optimizers import Adam
 if model is None:
     model = Sequential()
     model.add(Conv2D(filters=24, kernel_size=config['convolution'],
-                     input_shape=(config['dim'], config['dim'], 3 if config['rgb'] else 1)))
+                     input_shape=(config['dim'], config['dim'], 3 if config['rgb'] else 1),
+                     activation='sigmoid'))
     model.add(BatchNormalization())
     
-    model.add(Conv2D(filters=32, kernel_size=(3, 3)))
+    model.add(Conv2D(filters=32, kernel_size=(5, 5), activation='sigmoid'))
+    model.add(MaxPool2D())
+    model.add(BatchNormalization())
+
+    model.add(Conv2D(filters=32, kernel_size=(5, 5), activation='sigmoid'))
     model.add(MaxPool2D())
     model.add(BatchNormalization())
     
-    model.add(Conv2D(filters=48, kernel_size=(3, 3)))
+    model.add(Conv2D(filters=48, kernel_size=(3, 3), activation='sigmoid'))
     model.add(MaxPool2D())
     model.add(BatchNormalization())
     
-    model.add(Conv2D(filters=64, kernel_size=(3, 3)))
+    model.add(Conv2D(filters=64, kernel_size=(3, 3), activation='sigmoid'))
     model.add(MaxPool2D())
     model.add(BatchNormalization())
     
@@ -100,8 +105,8 @@ if model is None:
     model.add(Dense(config['unique_labels'], activation='linear'))
     
     model.compile(optimizer=Adam(), 
-                  loss='mean_absolute_error', 
-                  metrics=['mean_absolute_error', 'mean_squared_error'])
+                  loss='mean_squared_error', 
+                  metrics=['mean_absolute_error'])
 else:
     model = model.model
 
@@ -134,8 +139,8 @@ params = {'dim': (config['dim'],config['dim']),
           'shuffle': True,
 }
 
-training_generator = DataGeneratorRectangles(train=True, **params)
-test_generator = DataGeneratorRectangles(train=False, **params)
+training_generator = DataGeneratorRectangles(rootfolder=root, batch_size=8, train=True, **params)
+test_generator = DataGeneratorRectangles(rootfolder=root, batch_size=8, train=False, **params)
 
 
 # In[ ]:
@@ -147,13 +152,7 @@ training_generator.batch_order
 # In[ ]:
 
 
-
-
-
-# In[ ]:
-
-
-get_ipython().run_cell_magic('time', '', 'X, y = training_generator.__getitem__(25)\n')
+X, y = training_generator.__getitem__(25)
 
 
 # In[ ]:
@@ -165,31 +164,24 @@ X.shape
 # In[ ]:
 
 
-
-
-
-# In[ ]:
-
-
 y.shape
 
 
 # In[ ]:
 
 
-y[:5]
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6)
 
 
 # In[ ]:
 
 
-
-
-
-# In[ ]:
-
-
-get_ipython().run_cell_magic('time', '', 'history = model.fit(training_generator, epochs=2,\n                    validation_data=test_generator, shuffle=False)\n')
+history = model.fit(training_generator, epochs=3,
+                    validation_data=test_generator, shuffle=False,
+                    callbacks=[early_stopping, reduce_lr])
 
 
 # In[ ]:

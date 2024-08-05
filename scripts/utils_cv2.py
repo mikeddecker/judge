@@ -131,7 +131,8 @@ def get_squared_frames(path, first_frame_nr, last_frame_nr, dim=(200,200), rgb=T
             frame = frame_to_square(frame)
             frame = cv2.resize(frame, dim) / 255
         else:
-            print("added frames with only zeros, utils cv2")
+            print(frame, len(frames), last_frame_nr - first_frame_nr)
+            print("added frames with only zeros, utils cv2", path, first_frame_nr, current_frame, last_frame_nr)
             frame = np.zeros((dim[0], dim[1], 3 if rgb else 1))
 
         frames.append(frame)

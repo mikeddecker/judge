@@ -1,3 +1,4 @@
+import random
 import numpy as np
 import pandas as pd
 import keras
@@ -10,8 +11,8 @@ from keras.utils import to_categorical
 
 class DataGeneratorRectangles(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, train=True, dim=(128, 128), n_channels=3, batch_size=32,
-                 n_classes=3, shuffle=True, axis=0, rootfolder='../', **kwargs):
+    def __init__(self, rootfolder, train=True, dim=(128, 128), n_channels=3, batch_size=16,
+                 n_classes=3, shuffle=True, axis=0, **kwargs):
         'Initialization'
         super().__init__(**kwargs)
         self.dim = dim
@@ -23,6 +24,7 @@ class DataGeneratorRectangles(keras.utils.Sequence):
         self.len = None
         self.axis=axis
         self.rootfolder=rootfolder
+        self.previous_whole_division = None
 
         self.repo = DataRepository()
 
@@ -35,31 +37,48 @@ class DataGeneratorRectangles(keras.utils.Sequence):
 
     def __getitem__(self, batch_nr):
         'Generate one batch of data'
-        # Generate batch df view
-        # print(f" __getitem__({batch_nr})")
+        
+        whole_division = batch_nr // self.batch_size
+        modulo = batch_nr % self.batch_size
+        if whole_division != self.previous_whole_division:
+            # Fetch next {batch_size} frames and labels
+            items = []
+
+            for i in np.arange(self.batch_size):
+                # Create tuples (x, y) using zip
+                X, y = self.get_batch(whole_division * self.batch_size + i)
+                data_pairs = list(zip(X, y))
+                
+                for i, pair in enumerate(data_pairs):
+                    items.append(pair)
+
+            # shuffle
+            random.shuffle(items)
+
+            # divide in {batch_size}d groups
+            # Extract shuffled X and y
+            self.X_whole_division, self.y_whole_division = zip(*items)
+            self.previous_whole_division = whole_division
+            
+        # return {X and y[modulo]}
+        start_index = whole_division * self.batch_size
+        row_start = self.batch_order.loc[start_index:start_index + modulo - 1, 'frames'].sum()
+        row_end = self.batch_order.loc[start_index:start_index + modulo, 'frames'].sum()
+        #print(row_start, row_end, len(self.X_whole_division), len(self.y_whole_division))
+        return np.array(self.X_whole_division[row_start:row_end]), np.array(self.y_whole_division[row_start:row_end])
+    
+    def get_batch(self, batch_nr):
         video_id = self.batch_order.iloc[batch_nr]['videoID']
         frame_start = self.batch_order.iloc[batch_nr]['frame_start']
         frame_end = self.batch_order.iloc[batch_nr]['frame_end']
 
-
-        # print(f"get_rects: {video_id}", video_batch_nr, self.batch_size)
         df_labels = self.repo.get_rectangles_from_batch(videoID=video_id, frame_start=frame_start, frame_end=frame_end)
-        if (len(df_labels) < self.batch_size):
-            pass
-            # print('df_labels: ', df_labels)
-            # df_labels = self.fill_time_length_dimension(df_labels)
 
         y = np.array(df_labels[['rect_center_x', 'rect_center_y', 'rect_size']])
 
-        # y = np.expand_dims(y, axis=0)
-        # y = np.expand_dims(y, axis=-1)
-         
         path = self.rootfolder + self.repo.get_path(video_id)
         X = get_squared_frames(path, frame_start, frame_end, dim=self.dim)
 
-        # X = np.expand_dims(X, axis=0)  # Add batch dimension
-        
-        # print(f"__getitem__ end: videoID={video_id}, start={frame_start}, end={frame_end}, shapes: {X.shape}, {y.shape}")
         return X, y
 
     def fill_time_length_dimension(self, df_labels):

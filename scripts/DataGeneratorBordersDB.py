@@ -10,7 +10,7 @@ from keras.utils import to_categorical
 
 class DataGeneratorSkillBorders(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, train=True, time_length=32, dim=(128, 128), n_channels=3,
+    def __init__(self, rootfolder, train=True, time_length=32, dim=(128, 128), n_channels=3,
                  n_classes=10, shuffle=True, axis=0, **kwargs):
         'Initialization'
         super().__init__(**kwargs)

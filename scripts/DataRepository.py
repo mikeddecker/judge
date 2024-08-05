@@ -126,7 +126,7 @@ class DataRepository:
             vid_length = self.get_vid_length(videoID)
             insert_query = f"""INSERT INTO FrameLabels (videoID, frameNr, label, manual_insert) VALUES """
             insert_values = []
-            for i in np.arange(1, vid_length+1):
+            for i in np.arange(vid_length):
                 insert_values.append(f"({videoID},{i},0,1)")
             insert_query += ', '.join(insert_values)
             self.execute_command(insert_query)

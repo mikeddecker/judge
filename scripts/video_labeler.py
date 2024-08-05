@@ -155,8 +155,8 @@ class VideoLabeler:
 
     
     def show_frame(self):
-        ret, frame = self.cap.read()
         self.current_frameNr = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
+        ret, frame = self.cap.read()
         print('self.current_frameNr', self.current_frameNr)
 
         if ret:
