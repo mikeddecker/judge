@@ -367,6 +367,30 @@ class DataRepository:
     def exists_video(self, videoname):
         qry = f"SELECT COUNT(name) as count FROM Videos WHERE name = \"{videoname}\""
         return self.read_sql(qry).iloc[0]['count'] > 0
+    
+    def is_video_moved(self, videoname, walked_folder):
+        folderID = self.get_folderID(walked_folder)
+        qry = f"SELECT COUNT(*) as count FROM Videos WHERE name = \"{videoname}\" AND folderID = {folderID}"
+        return self.read_sql(qry).iloc[0]['count'] == 0 and self.exists_video(videoname)
+    
+    def get_count_videos_like(self, attributes, videolength):
+        sublikes_strings = []
+        for a in attributes:
+            sublikes_strings.append("name LIKE \'%" + a + "%\'")
+        qry = f"SELECT COUNT(*) as count FROM Videos WHERE {' AND '.join(sublikes_strings)} AND vid_frame_length = {videolength}"
+        print(qry)
+        return self.read_sql(qry.replace('%', '%%')).iloc[0]['count']
+    
+    def get_videoID_like(self, attributes, videolength):
+        sublikes_strings = []
+        for a in attributes:
+            sublikes_strings.append("name LIKE \'%" + a + "%\'")
+        qry = f"SELECT * FROM Videos WHERE {' AND '.join(sublikes_strings)} AND vid_frame_length = {videolength}"
+        return self.read_sql(qry).iloc[0]['videoID']
+    
+    def update_videoName(self, videoID, new_name):
+        cmd = f"UPDATE Videos SET name = \"{new_name}\" WHERE videoID = {videoID}"
+        self.execute_command(cmd)
 
     def add_video(self, rootfolder, folder, videoname, competition, club, discipline, age):
         vid_length = 0
@@ -421,7 +445,12 @@ class DataRepository:
         TODO : Find renamed files
         TODO : Find removed files
         TODO : Find moved files
-        """        
+        """
+        def check_dubbel_names():
+            pass
+
+        check_dubbel_names()
+
         for path, subdirs, files in os.walk(root):
             for name in files:
                 age = 'unknown'
@@ -430,44 +459,49 @@ class DataRepository:
                 discipline = 'unknown'
                 year = datetime.now().year
                 extra = 'unknown'
-                        
-                if name.find('.txt') == -1: # Skip dummy format files;
-                    if path.find('competition') != -1:
-                        video_specifics = name.split('.')
-                        assert len(video_specifics) == 2, f"Filenames may not contain dots in their name: {name}"
-                        assert video_specifics[1].lower() in ['avi', 'mp4', 'm2ts'], f"Filetype .{video_specifics[1]} not supported"
-                        video_specifics = video_specifics[0].split('-')
-                        assert len(video_specifics) >= 7, f"Missing some information: {name}"
-                        assert not isinstance(video_specifics[3], int), f"{video_specifics[3]} is not a year"
-                        competition = video_specifics[0].upper()
-                        club = video_specifics[1].lower()
-                        discipline = video_specifics[2].upper()
-                        year = video_specifics[3]
-                        age = video_specifics[4].lower()
-                        extra = video_specifics[5]
+                
+                if name.find('.txt') != -1: # Skip dummy format files;
+                    continue
 
+                video_specifics = name.split('.')
+                assert len(video_specifics) == 2, f"Filenames may not contain dots in their name: {name}"
+                assert video_specifics[1].lower() in ['avi', 'mp4', 'm2ts'], f"Filetype .{video_specifics[1]} not yet supported"
+                video_specifics = video_specifics[0].split('-')
+                # assert len(video_specifics) >= 7, f"Missing some information: {name}"
+                for info in video_specifics:
+                    if info.isdigit() and int(info) > 2008 and int(info) <= datetime.now().year:
+                        year = info
+                    elif self.exists_club(info):
+                        club = info.lower()
+                    elif self.exists_competition(info):
+                        competition = info.lower()
+                    elif self.exists_discipline(info):
+                        discipline = info.lower()
+                    elif self.exists_age(info):
+                        age = info.lower()
                     else:
-                        # Free videos
-                        splitted = name.split('.')
-                        assert splitted[1].lower() in ['mp4', 'avi', 'm2ts'], f"Videofile {splitted[1]} not yet supported"
-                        splitted = splitted[0].split('-')
+                        pass #print("Walking video's extra info:", info, name)
 
-                        club = splitted[0]
-                        years = {
-                            'tricktionary' : 2020,
-                            'swiss' : 2021
-                        }
-                        if club in years.keys():
-                            year = years[club]
-                            age = 'junsen'
-                        extra = splitted[1]
+                relative_path = path[len(root):]
 
-                    relative_path = path[len(root):]
-                    print(relative_path, competition, club, discipline, year, age, extra, get_video_length(os.path.join(path, name)))
+                if self.exists_video(name):
+                    if self.is_video_moved(name, relative_path):
+                        # TODO : update folderID
+                        print('video moved : TODO implement')
+                        pass
+                    else:
+                        continue
+                else:
+                    # new, renamed, renamed + moved or deleted?
+                    # TODO : renamed, renamed + moved or deleted?
+                    length = get_video_length(os.path.join(path, name))
+
+                    print('new, renamed or deleted video:', relative_path, competition, club, discipline, year, age, extra, length)
+                
                     self.add_video(rootfolder=root, 
-                                   folder=relative_path, 
-                                   videoname=name, 
-                                   competition=competition, 
-                                   club=club, 
-                                   discipline=discipline,
-                                   age=age)
+                                    folder=relative_path, 
+                                    videoname=name, 
+                                    competition=competition, 
+                                    club=club, 
+                                    discipline=discipline,
+                                    age=age)
