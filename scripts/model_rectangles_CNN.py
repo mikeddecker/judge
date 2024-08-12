@@ -34,7 +34,7 @@ os.environ['OPENCV_FFMPEG_LOGLEVEL'] = "-8"
 
 
 models = [
-    'rectangles_august_5_history'
+    'rectangles_poging_3'
 ]
 model_name = models[0]
 
@@ -79,30 +79,18 @@ from tensorflow.keras.optimizers import Adam
 
 if model is None:
     model = Sequential()
-    model.add(Conv2D(filters=24, kernel_size=config['convolution'],
+    model.add(Conv2D(filters=32, kernel_size=config['convolution'],
                      input_shape=(config['dim'], config['dim'], 3 if config['rgb'] else 1),
                      activation='sigmoid'))
     model.add(BatchNormalization())
     
-    model.add(Conv2D(filters=32, kernel_size=(5, 5), activation='sigmoid'))
+    model.add(Conv2D(filters=32, kernel_size=(3, 3), activation='sigmoid'))
     model.add(MaxPool2D())
     model.add(BatchNormalization())
 
-    model.add(Conv2D(filters=32, kernel_size=(5, 5), activation='sigmoid'))
-    model.add(MaxPool2D())
-    model.add(BatchNormalization())
-    
-    model.add(Conv2D(filters=48, kernel_size=(3, 3), activation='sigmoid'))
-    model.add(MaxPool2D())
-    model.add(BatchNormalization())
-    
-    model.add(Conv2D(filters=64, kernel_size=(3, 3), activation='sigmoid'))
-    model.add(MaxPool2D())
-    model.add(BatchNormalization())
-    
     model.add(Flatten())  # Flatten each frame
-    model.add(Dense(64, activation='relu'))
-    model.add(Dense(config['unique_labels'], activation='linear'))
+    model.add(Dense(128, activation='sigmoid'))
+    model.add(Dense(config['unique_labels'], activation='sigmoid'))
     
     model.compile(optimizer=Adam(), 
                   loss='mean_squared_error', 
@@ -179,7 +167,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr
 # In[ ]:
 
 
-history = model.fit(training_generator, epochs=3,
+history = model.fit(training_generator, epochs=1,
                     validation_data=test_generator, shuffle=False,
                     callbacks=[early_stopping, reduce_lr])
 

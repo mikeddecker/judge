@@ -2,12 +2,8 @@ import random
 import numpy as np
 import pandas as pd
 import keras
-import cv2
-import sqlalchemy as sqlal
-from pymysql import OperationalError
 from utils_cv2 import get_squared_frames
 from DataRepository import DataRepository
-from keras.utils import to_categorical
 
 class DataGeneratorRectangles(keras.utils.Sequence):
     'Generates data for Keras'
@@ -44,9 +40,13 @@ class DataGeneratorRectangles(keras.utils.Sequence):
             # Fetch next {batch_size} frames and labels
             items = []
 
-            for i in np.arange(self.batch_size):
+            # Images leftover
+            batch_starting_index = whole_division * self.batch_size
+            leftover_images = len(self.batch_order) - batch_starting_index
+            for i in np.arange(min(self.batch_size, leftover_images)):
                 # Create tuples (x, y) using zip
-                X, y = self.get_batch(whole_division * self.batch_size + i)
+                
+                X, y = self.get_batch(batch_starting_index + i)
                 data_pairs = list(zip(X, y))
                 
                 for i, pair in enumerate(data_pairs):
