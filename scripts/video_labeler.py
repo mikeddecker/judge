@@ -216,7 +216,7 @@ class VideoLabeler:
         print(f"Clicked at ({event.x}, {event.y}), corresponding to ({original_x}, {original_y}) in original frame")
 
         self.get_textbox_function()(original_x, original_y)
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr - 1)
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr)
 
         if not self.playing:
             self.show_frame()
@@ -325,7 +325,7 @@ class VideoLabeler:
 
     def previous_frame(self, event):
         if not self.playing:
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr - 2)
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr - 1)
             self.show_frame()
 
     def select_start_key(self, event):
@@ -335,11 +335,11 @@ class VideoLabeler:
         self.select_end()
 
     def select_start(self):
-        self.selected_start_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        self.selected_start_frame = self.current_frameNr
         self.selected_end_frame = None
     
     def select_end(self):
-        self.selected_end_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        self.selected_end_frame = self.current_frameNr
         if self.selected_start_frame is not None and self.selected_end_frame is not None:
             if self.repo.is_valid_border(self.video_id, self.selected_start_frame, self.selected_end_frame):
                 idx = len(self.y_skills)
@@ -361,7 +361,7 @@ class VideoLabeler:
     def on_closing(self, event=None):
         self.playing = False
 
-        #self.repo.uninserted_borders_to_framelabels(self.video_id)
+        self.repo.uninserted_borders_to_framelabels(self.video_id)
         
         print('done')
         
@@ -408,7 +408,7 @@ class VideoLabeler:
 
     def follow_rectangle(self):
         # just needs two params
-        curr_frame = self.y_frames.loc[self.current_frameNr-1]
+        curr_frame = self.y_frames.loc[self.current_frameNr]
         if not self.is_non_or_nan(curr_frame['rect_size']):
             self.rel_rect_center_x = curr_frame['rect_center_x']
             self.rel_rect_center_y = curr_frame['rect_center_y']
@@ -420,7 +420,7 @@ class VideoLabeler:
         print('rectangle moved', x, y)
         self.rel_rect_center_x = (x + self.offset_x) / self.max_size
         self.rel_rect_center_y = (y + self.offset_y) / self.max_size
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr - 1)
+        # self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr - 1)
     
     def resize_rectangle(self, x, y):
         # Gets x, y clicked in original frame
@@ -444,21 +444,33 @@ class VideoLabeler:
 if __name__ == "__main__":
     watch_predictions = False
     prediction_model = '../models/frames_skillborder_CNN_model_96pixels_history.pkl'
-    # DD3 labels: 11, 16, 30, 52, 75, 100, 109, 110, 120, 149, 152, 
-    # DD4 labels: 222, 240, 245
+    # DD3 labels: 11, 16, 20, 30, 43, 52, 74, 75, 100, 101, 109, 110, 120, 122, 130, 149, 152, 
+    # DD4 labels: 222, 240, 245, 255
     # DD count: 11 + 3 = 14 / 178
     # DD3: [11, 152] = 142
     # DD4: [153, 288] = 136
     # Stukje om evt te verwijderen: 16 (einde)
-    video_id = 149
+    video_id = 28
     batch_size = 9999
     root = tk.Tk()
     app = VideoLabeler(root, video_id, batch_size)  # Adjust display width and height as needed
     root.mainloop()
 
 
+    # --------------------------- nog splitten in skills
+    # 20 : done
+    # 28 : done zij sportac junioren elias
+    # 43 : done jm2ts rom beloften (zwart)
+    # 74 : done
+    # 101 : jury m2ts moving arne Train 
+    # 122 : jury mp4 skippies girls done
+    # 130 : proefjury mp4 junsen  done
+    # 145 : zij mp4 jolly's oreo Train
+
+    # 255 : jury mp4 skippies mare
 
 
+    # --------- INSERTED AS TRAIN AND TEST IN DB -------------
     # 11 : jury mp4 handles junioren Train
     # 16 : zij  m2ts handles senioren (out of bounds) Train
     # 30 : jury mp4 sportac Train
