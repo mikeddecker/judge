@@ -107,6 +107,7 @@ class VideoLabeler:
         
         self.selected_start_frame = None
         self.selected_end_frame = None
+        self.borders_have_changed = False
         
 
         self.playing = True
@@ -126,6 +127,10 @@ class VideoLabeler:
         self.root.bind('<t>', self.toggle_textbox)
         self.root.bind('<y>', self.reset_rectangle)
         self.root.bind('<space>', self.toggle_play_pause)
+        self.root.bind('<Left>', self.left_button)
+        self.root.bind('<Right>', self.right_button)
+        self.root.bind('<Up>', self.up_button)
+        self.root.bind('<Down>', self.down_button)
         root.bind("<Configure>", lambda event: self.update_framesize())
 
         
@@ -216,11 +221,13 @@ class VideoLabeler:
         print(f"Clicked at ({event.x}, {event.y}), corresponding to ({original_x}, {original_y}) in original frame")
 
         self.get_textbox_function()(original_x, original_y)
+        self.redraw_frame()
+
+    def redraw_frame(self):
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr)
 
         if not self.playing:
             self.show_frame()
-
         
     def display_frame(self, frame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -340,6 +347,7 @@ class VideoLabeler:
     
     def select_end(self):
         self.selected_end_frame = self.current_frameNr
+        self.borders_have_changed = True
         if self.selected_start_frame is not None and self.selected_end_frame is not None:
             if self.repo.is_valid_border(self.video_id, self.selected_start_frame, self.selected_end_frame):
                 idx = len(self.y_skills)
@@ -361,7 +369,8 @@ class VideoLabeler:
     def on_closing(self, event=None):
         self.playing = False
 
-        self.repo.uninserted_borders_to_framelabels(self.video_id)
+        if self.borders_have_changed:
+            self.repo.uninserted_borders_to_framelabels(self.video_id)
         
         print('done')
         
@@ -420,7 +429,27 @@ class VideoLabeler:
         print('rectangle moved', x, y)
         self.rel_rect_center_x = (x + self.offset_x) / self.max_size
         self.rel_rect_center_y = (y + self.offset_y) / self.max_size
-        # self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.current_frameNr - 1)
+        self.update_framelabels_rectangles()
+
+    def left_button(self, event):
+        self.rel_rect_center_x -= 0.003
+        self.update_framelabels_rectangles()
+        self.redraw_frame()
+    
+    def right_button(self, event):
+        self.rel_rect_center_x += 0.0025
+        self.update_framelabels_rectangles()
+        self.redraw_frame()
+    
+    def up_button(self, event):
+        self.rel_rect_center_y -= 0.0025
+        self.update_framelabels_rectangles()
+        self.redraw_frame()
+
+    def down_button(self, event):
+        self.rel_rect_center_y += 0.003
+        self.update_framelabels_rectangles()
+        self.redraw_frame()
     
     def resize_rectangle(self, x, y):
         # Gets x, y clicked in original frame
@@ -436,21 +465,21 @@ class VideoLabeler:
     
     def update_framelabels_rectangles(self):
         print('update label ', self.current_frameNr)
-        self.y_frames.loc[self.current_frameNr-1, 'rect_center_x'] = self.rel_rect_center_x
-        self.y_frames.loc[self.current_frameNr-1, 'rect_center_y'] = self.rel_rect_center_y
-        self.y_frames.loc[self.current_frameNr-1, 'rect_size'] = self.rect_size
+        self.y_frames.loc[self.current_frameNr, 'rect_center_x'] = self.rel_rect_center_x
+        self.y_frames.loc[self.current_frameNr, 'rect_center_y'] = self.rel_rect_center_y
+        self.y_frames.loc[self.current_frameNr, 'rect_size'] = self.rect_size
         self.repo.update_rectangle(self.video_id, self.current_frameNr, self.rel_rect_center_x, self.rel_rect_center_y, self.rect_size)
 
 if __name__ == "__main__":
     watch_predictions = False
     prediction_model = '../models/frames_skillborder_CNN_model_96pixels_history.pkl'
-    # DD3 labels: 11, 16, 20, 30, 43, 52, 74, 75, 100, 101, 109, 110, 120, 122, 130, 149, 152, 
+    # DD3 labels: 11, 16, 20, 28, 30, 43, 51, 52, 55, 66, 74, 75, 100, 101, 109, 110, 120, 122, 130, 149, 152, 
     # DD4 labels: 222, 240, 245, 255
     # DD count: 11 + 3 = 14 / 178
     # DD3: [11, 152] = 142
     # DD4: [153, 288] = 136
     # Stukje om evt te verwijderen: 16 (einde)
-    video_id = 28
+    video_id = 113
     batch_size = 9999
     root = tk.Tk()
     app = VideoLabeler(root, video_id, batch_size)  # Adjust display width and height as needed
@@ -458,31 +487,36 @@ if __name__ == "__main__":
 
 
     # --------------------------- nog splitten in skills
-    # 20 : done
-    # 28 : done zij sportac junioren elias
-    # 43 : done jm2ts rom beloften (zwart)
-    # 74 : done
-    # 101 : jury m2ts moving arne Train 
-    # 122 : jury mp4 skippies girls done
-    # 130 : proefjury mp4 junsen  done
-    # 145 : zij mp4 jolly's oreo Train
-
-    # 255 : jury mp4 skippies mare
 
 
     # --------- INSERTED AS TRAIN AND TEST IN DB -------------
     # 11 : jury mp4 handles junioren Train
+    # 12 : jury m2ts handles junioren
     # 16 : zij  m2ts handles senioren (out of bounds) Train
+    # 20 : done
+    # 28 : done zij sportac junioren elias
     # 30 : jury mp4 sportac Train
+    # 43 : done jm2ts rom beloften (zwart)
+    # 51 : done jmp4 silus ella 
     # 52 : jury m2ts silus matthe Train
+    # 55 : zij silus jelle
+    # 66 : done j zeroskip
+    # 74 : done
     # 75 : jury mp4 recrean elias junioren Train
     # 100 : jury m2ts loco ruben Train
+    # 101 : jury m2ts moving arne Train 
+    # 109 : zij m2ts sipiro finne Test
     # 110 : jury m2ts sipiro lore train
+    # 113 : sipiro luka
     # 120 : jury mp4 skippies mare Train
+    # 122 : jury mp4 skippies girls done
+    # 130 : proefjury mp4 junsen  done
+    # 145 : zij mp4 jolly's oreo Train
+    # 149 : pk mp4 skippies lorena Test
     # 152 : pk mp4 zero nathan Train
+    # 180 : jury silus jelle
+    # 222 : jury mp4 zero yaro Test
     # 240 : jury m2ts moving arne Train
     # 245 : jury m2ts sipiro lore Train
+    # 255 : jury mp4 skippies mare
 
-    # 109 : zij m2ts sipiro finne Test
-    # 149 : pk mp4 skippies lorena Test
-    # 222 : jury mp4 zero yaro Test

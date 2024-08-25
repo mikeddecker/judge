@@ -23,6 +23,7 @@ import cv2
 import os
 import pickle
 from utils_misc import pickle_load_or_create
+from keras import backend as K
 
 # Suppres warnings from positioning like
 # [h264 @ 0x56bf4fb5da40] reference picture missing during reorder
@@ -161,13 +162,14 @@ y.shape
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=0, min_lr=1e-8)
 
 
 # In[ ]:
+model.optimizer.learning_rate = 0.00008
 
 
-history = model.fit(training_generator, epochs=1,
+history = model.fit(training_generator, epochs=1, 
                     validation_data=test_generator, shuffle=False,
                     callbacks=[early_stopping, reduce_lr])
 
