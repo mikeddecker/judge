@@ -8,6 +8,9 @@ scripts/__pycache__/*
 scripts/.ipynb_checkpoints/*
 scripts/config/.ipynb_checkpoints/*
 
+# Pycache
+*/__pycache__/*
+
 # Ignore database trash
 db_data/*
 
