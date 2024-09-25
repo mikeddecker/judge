@@ -7,3 +7,9 @@ scripts/__pycache__/*
 .ipynb_checkpoints/*
 scripts/.ipynb_checkpoints/*
 scripts/config/.ipynb_checkpoints/*
+
+# Ignore database trash
+db_data/*
+
+# Ignore venv (virtual environment)
+venv/*
