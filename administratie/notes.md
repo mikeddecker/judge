@@ -134,6 +134,10 @@ Bijproduct: Uniforme databank (waarin videos worden beheerd d.m.v. permissies)
 
 Schetsen zoeken
 
+### Beeldmateriaal PK B Teams 2024
+
+Overzetten via harde schijf i.p.v. over het net
+
 ### CN, EM, (inverse)-AS-weave
 
 CN ugly
