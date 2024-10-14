@@ -140,9 +140,9 @@ Overzetten via harde schijf i.p.v. over het net
 
 ### CN, EM, (inverse)-AS-weave
 
-CN ugly
+[CN ugly](https://www.youtube.com/shorts/j7w8YqFmwDA)
 
-EM ?= (inverse)-AS-weave
+[EM ?= (inverse)-AS-weave](https://www.youtube.com/watch?v=QlOsPbQrUO0) seconde 20
 
 Naam van kip waarbij je vrijwel plat op de rug ligt
 
