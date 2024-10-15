@@ -83,10 +83,12 @@ Alternatieven
   - [Erik Kyselica](https://www.linkedin.com/in/erik-kyselica-8645a2232/) (ex-)springer
   - [Andrej Kyselica](https://www.linkedin.com/in/akyselica/)
   - [Dylan Plummer](https://www.linkedin.com/in/dylan-plummer/) - (ex-)Springer
+- [Svante Bengtson](svanteb@ijru.sport)
 - Via via kennis, die dat bezig waren met robots.
 - Belgisch bedrijf met ervaring binnen het domein computer vision
   - Robovision (= Gents)
   - ML2grow
+  - Captic (ML6's dockerbedrijf)
 - A.I. bedrijf niet gespecialiseerd in computer vision of onbekend.
   - growingPAI (LLM's)
 
@@ -98,6 +100,10 @@ Alternatieven
 - tot waar wil je een wissel in DD benoemen?
 - Verfijnen pointified notation (edge-cases)
 - Verfijnen skilltabel, skill = unieke lijn in de tabel, overeenstemmend met 1 uitgebreide pointified notation = tekst
+
+30 november - 14 december niet beschikbaar
+
+PV A zaterdag even langer blijven.
 
 #### Intentieverklaring co-promotor
 
@@ -118,7 +124,9 @@ Semester 2 rest: Finale draftversie (= inclusief Proef of Concept & testresultat
 
 (Persoonlijk heb ik geen stage, vrijstelling, maar wel twee tweedejaarsvakken = 2 halve dagen les)
 
-Zie PDF + [user story map](https://www.canva.com)
+Zie PDF + [user story map](https://www.canva.com) --> doorsturen.
+
+Waarschijnlijk zaterdag CI teams en zondag B teams (eigen wedstrijd)
 
 ### Product & focus
 
