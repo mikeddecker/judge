@@ -12,11 +12,10 @@ Dear Andrej Kyselica,
 
 ## Who am I?
 
-Mike De Decker (22 years old) \
-Student @ HOGENT (University of Applied Sciences and Arts in Flanders Belgium) \
+I'm Mike De Decker, a 22 years old student at the University of Applied Sciences and Arts in Flanders Belgium. (dutch abreviation: HOGENT)
 My line of study is Applied Information Technologie - specializing in Artificial Intelligence & Data engineering
 
-Years of recreative jump rope experience, first two years competition.
+I'm jumping the rope for over half my life, now more addictive then ever as it's my second year B-level competition in Belgium and judging experience.
 
 ## Why this information?
 
@@ -36,7 +35,7 @@ Through the NextJumpApp and Pieter Gibens, one of Belgium's head judges, I came 
 
 The goal of the artificial judge is to recognize jump rope skills through computer vision, mainly focussed on DD3, which will be a base for other disciplines.
 
-This way, judges can verify or edit jumped skills/combinations live at a competition to improve the reliability of the judges and system.
+This way, judges can verify or edit jumped skills/combinations/scores live at a competition to improve the reliability of ranking given to jumpers.
 
 ### First research - current main flow
 
@@ -48,7 +47,7 @@ To keep it simple and omitting multi actors disciplines like single rope pairs, 
 - Recognize the start and end frame of a skill.
 - Recognize the whole skill
 
-All three using deep neural networks. Winners of last year were CNNs and convLSTMs in addition to some abbreviations, a self-attention convLSTM and a memory-in-memory model.
+All three would be using deep neural networks. Winners of last year research were CNNs and convLSTMs in addition to some abbreviations, a self-attention convLSTM and a memory-in-memory model or YOLO as other possibilities. Multiple models can be testen if time allows it.
 
 ### Roles
 
@@ -56,12 +55,10 @@ All three using deep neural networks. Winners of last year were CNNs and convLST
 
 Promotor: A teacher at school, allocated 6th December
 
-- following the thesis
-- ensuring the quality of the thesis
-- some feedback about the way of planning, way of research methods, drafts
-- evaluate proposal
-- administrative things like deadlines, appointments
-- being a judge at the defending presentation of the thesis and allocating a score(+/- 50 minutes in June or August/early September if the submission was not accepted)
+- following and ensuring the quality of the thesis
+- general feedback and evaluation of the thesis
+- checking administrative things like deadlines & appointments
+- being a judge at the defending presentation of the thesis and allocating a score (+/- 50 minutes in June or August/early September if the submission was not accepted)
 
 Co-promotor:
 
@@ -75,11 +72,7 @@ International person allowed, (needs to be approved by head thesis coördinator)
 
 Student:
 
-- Research (literature, methodology, models...)
-- Write a proposal
-- Building a methodology, concepts...
-- Making a Proof of Concept (PoC)
-- Writing the thesis (with literature, method, PoC, test results...)
+- Research, writing, methodology, building Proof of Concept... 
 - Following deadlines
 - ...
 - update unique skill names
@@ -97,31 +90,25 @@ Pieter Gibens:
 
 ### Timeline
 
-The school provided us with a main timeline.
-The first semester will be used to write a proposal, adjust based on feedback, making an appointment with the promotor.
+The school provided us with a main timeline (I included the team competitions, as the PoC preferably needs to be ready by then.)
+The first semester will be used to write a proposal, adjusted based on feedback and making an appointment with the promotor.
 
-24th of January - final version of proposal + deadline for having a co-promotor. (Filling in a paper and uploading, I'll ask if there are English versions of thesis guidelines and such if you're interested)
-
-(12-15 years team competition)
-
-7th of March - submit the introduction, literature & methodology of the thesis itself
-
-Rest of March - feedback, 2 major Team competitions (A-level teams + national teams contest)
-
-Last weekend April - BC-level 16+ teams
-
-2nd of May - final draft of thesis.
-
-23rd of May - submit the thesis.
+- 24th of January - final version of proposal + deadline for having a co-promotor. (Filling in a paper and uploading, I'll ask if there are English versions of thesis guidelines and such if you're interested)
+- 22nd of February (12-15 years A-team competition)
+- 7th of March - submit the introduction, literature & methodology of the thesis itself
+- Rest of March - feedback + 2 major Team competitions (A-level teams 16years+ & national teams contest)
+- 27th or 28th of April - BC-level 16+ teams
+- 2nd of May - final draft of thesis.
+- 23rd of May - submit the thesis.
 
 So between the competitions of March and April, there is some time to adjust my models. Afterwards, in May not so much time or new competitions to test out, unless I search other countries for test results. This means my PoC needs to be ready by March.
 
-Due to a personal trajectory, I have more time in my second semester than others. Not that there is enough time at hand.
+Due to a personal trajectory, I have more time in my second semester than others, 3-4 days a week. Not that there is enough time at hand.
 
 ## Conclusion
 
 A challenging project, in a fun context.
-Would you like to be my partner in crime and see the possibilities of AI in Jump Rope or if you'd like more information, I'm happy to provide more information. (written or videocall).
+Would you or one of your NextJumpApp peers like to be my partner in crime and see the possibilities of AI in Jump Rope or would you like more information, I'm happy to provide more information. (written or videocall).
 
 By jumpers for jumpers.
 
