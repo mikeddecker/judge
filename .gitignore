@@ -1,6 +1,8 @@
 videos/*
 models/*
 
+.env
+
 __pycache__/*
 scripts/__pycache__/*
 
