@@ -4,7 +4,7 @@ import pandas as pd
 
 
 pages = {
-    "Your account": [
+    "The judge": [
         st.Page("pages/browse.py", title="Browse"),
         st.Page("pages/label.py", title="Label"),
         st.Page("pages/record.py", title="Record"),
