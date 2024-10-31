@@ -53,6 +53,9 @@ import SupportIcon from './icons/IconSupport.vue'
     <br />
 
     More instructions are available in <code>README.md</code>.
+    But if you really want to, this text is just some lorem ipsum to have more lines in the box.
+    But if you really want to, this text is just some lorem ipsum to have more lines in the box.
+    But if you really want to, this text is just some lorem ipsum to have more lines in the box.
   </WelcomeItem>
 
   <WelcomeItem>

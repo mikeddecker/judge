@@ -17,6 +17,7 @@
 
   --vt-c-text-light-1: var(--vt-c-indigo);
   --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
+  --vt-c-ligth-green: rgba(30, 83, 61, 0.795);
   --vt-c-text-dark-1: var(--vt-c-white);
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
 }
@@ -33,7 +34,9 @@
   --color-heading: var(--vt-c-text-light-1);
   --color-text: var(--vt-c-text-light-1);
 
-  --section-gap: 160px;
+  --color-nav: var(--vt-c-ligth-green);
+
+  --section-gap: 100px;
 }
 
 @media (prefers-color-scheme: dark) {

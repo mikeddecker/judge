@@ -5,43 +5,56 @@ import HelloWorld from './components/HelloWorld.vue'
 
 <template>
   <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="@/assets/logo.svg"
-      width="125"
-      height="125"
-    />
-
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <img
+        alt="Vue logo"
+        class="logo"
+        src="@/assets/logo.svg"
+        width="100"
+        height="100"
+      />
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+      <HelloWorld msg="AI Judge" />
     </div>
-  </header>
 
-  <RouterView />
+    <nav>
+      <RouterLink to="/">Home</RouterLink>
+      <RouterLink to="/about">About</RouterLink>
+      <RouterLink to="/about">About</RouterLink>
+      <RouterLink to="/about">About</RouterLink>
+      <RouterLink to="/about">About</RouterLink>
+    </nav>
+  </header>
+  <main>
+    <RouterView />
+  </main>
 </template>
 
 <style scoped>
 header {
-  line-height: 1.5;
+  line-height: 1;
   max-height: 100vh;
+  background-color: var(--color-nav);
+  padding: 1rem;
 }
 
 .logo {
   display: block;
-  margin: 0 auto 2rem;
+  margin: 0 1rem;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem auto;
 }
 
 nav {
   width: 100%;
   font-size: 12px;
   text-align: center;
-  margin-top: 2rem;
+  padding-top: 1rem;
 }
 
 nav a.router-link-exact-active {
@@ -64,19 +77,23 @@ nav a:first-of-type {
 
 @media (min-width: 1024px) {
   header {
-    display: flex;
+    display:block;
     place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+    /* padding-right: calc(var(--section-gap) / 2); */
+    flex-direction: column;
+    height:100vw;
   }
 
   .logo {
-    margin: 0 2rem 0 0;
+    padding: 0.5rem 0 1rem 0;
   }
 
   header .wrapper {
     display: flex;
-    place-items: flex-start;
+    place-items: center;
+    flex-direction: column;
     flex-wrap: wrap;
+    width: max-content;
   }
 
   nav {
@@ -84,8 +101,11 @@ nav a:first-of-type {
     margin-left: -1rem;
     font-size: 1rem;
 
-    padding: 1rem 0;
-    margin-top: 1rem;
+    padding: 1rem;
+    margin: 1rem auto 0 auto;
+
+    display: flex;
+    flex-direction: column
   }
 }
 </style>
