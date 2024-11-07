@@ -2,10 +2,6 @@
 
 Een kleine documentatie die helpt bij het labelen van freestyles
 
-## MIC release from/to restriction
-
-croogermiccrooger-croogerwrap --> mic loslaten vanuit crooger + vangen in croogerwrap
-
 ## Shorter notations
 
 ❗watch out: c for crooger and c for cross
@@ -92,7 +88,7 @@ VW.TU.s.stop.o (3)
 
 VW.TUP.s.EB.o.split.stay (zonder rechtkomen)
 VW.TUP.s.EB.o.split.up (met rechtkomen)
-VW.P.frog.up
+VW.P.frog
 VW.P.frog.cross
 VW.P.frog.DU.o.o
 VW.P.frog.DU.AS.o
