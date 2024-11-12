@@ -1,0 +1,12 @@
+services:
+  detectron2-denspose:
+    image: detectron2-cuda  # The custom image name
+    runtime: nvidia         # Enable NVIDIA GPU support
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all  # Make all GPUs available (for Docker 19.03+)
+    ports:
+      - "7860:7860"  # Expose port 7860
+    volumes:
+      - ./app.py:/home/ubuntu/detectron2/app.py  # Bind mount the app.py file
+    stdin_open: true  # Equivalent to -it (interactive)
+    tty: true         # Keep the terminal open (equivalent to -it)
