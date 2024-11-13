@@ -7,7 +7,7 @@
 \documentclass[english]{hogent-article}
 
 % makes sure words will be splitted in multiple lines
-\emergencystretch=1em 
+\emergencystretch=1em
 
 % Invoegen bibliografiebestand
 \addbibresource{voorstel.bib}
@@ -24,16 +24,17 @@
 \author{Mike De Decker}
 \email{mike.dedecker@student.hogent.be}
 
-% TODO: Geef de co-promotor op
 \supervisor[Co-promotor]{D. Plummer (Case Western Reserve University, \href{mailto:dylanmplummer@gmail.com}{dylanmplummer@gmail.com})}
 
 \specialisation{AI \& Data Engineering}
-\keywords{Computer vision, DensePose, Human Action Recognition}
+\keywords{Computer vision, Machine Learning, Neural networks, Human Activity Recognition, video classification, LSTM-CNN, convLSTM, SAM, Jump Rope, Rope Skipping, Judging, sport}
 
 \begin{document}
 
 \begin{abstract}
-  Hier schrijf je de samenvatting van je voorstel, als een doorlopende tekst van één paragraaf. Let op: dit is geen inleiding, maar een samenvattende tekst van heel je voorstel met inleiding (voorstelling, kaderen thema), probleemstelling en centrale onderzoeksvraag, onderzoeksdoelstelling (wat zie je als het concrete resultaat van je bachelorproef?), voorgestelde methodologie, verwachte resultaten en meerwaarde van dit onderzoek (wat heeft de doelgroep aan het resultaat?).
+Het jureren van Rope Skipping freestyles op hoog niveau wordt door de evolutie van de sport steeds uitdagender voor de jury. In het bijzonder wordt de moeilijkheidsgraad (difficulty) van double dutch-oefeningen vaak op halve snelheid afgespeeld om een correcte score toe te kennen tijdens wedstrijden. Door de verhoogde toegankelijkheid van kunstmatige intelligentie, met name neurale netwerken, rijst de vraag of er geen AI-tool kan worden ontwikkeld om routines te jureren. Dit onderzoek verkent de mogelijkheid en de ontwikkeling van een juryassistent, evenals de benodigde technieken en uitdagingen om de objectiviteit en nauwkeurigheid van het jureren te behouden.
+
+Het proefconcept, de AI-judge, wordt een machine learning-model, meer specifiek een deep learning-model, dat tijd-ruimtelijke data kan verwerken binnen het domein van computer vision. In een voorbereidende fase wordt extra informatie aan frames toegevoegd, waarna trucs geïsoleerd worden om vervolgens deze reeks afbeeldingen te classificeren als specifieke trucs. Door het gebruik van verschillende camerastandpunten en een uitgebreide literatuurstudie wordt verwacht dat minstens 85 procent van de trucs correct herkend zal worden. Met de hulp van de juryassistent kunnen scores van routines op een eenvoudige manier tijdens en na de wedstrijd geverifieerd worden.
 \end{abstract}
 
 \tableofcontents
