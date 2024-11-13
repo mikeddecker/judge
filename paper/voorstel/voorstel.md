@@ -83,3 +83,117 @@ Until now, only the scope has been narrowed. The literature, implementation & la
 - How much data is expected to increase the accuracy off the Judge.
 - How can we use the AI-Judge to improve judges?
 - What needs to changed to a working model, to apply it on other judgesports such as gymnastics, synchronized swimming...
+
+## Literature
+
+Small overview
+
+- Jump rope intro: Explaining some disciplines, SR, DD, CW, and mention other variants. (SR2, SR4, DD3, DD4, speed, DU, TU, box...).
+- Skills intro: define (sub)skills we want to label?
+- Computervision, techniques & available models.
+
+### Jump rope intro
+
+Disciplines...
+
+### Skills intro
+
+Translate 2.1, 2.1.1, 2.1.2
+
+### Computer vision
+
+Computer vision because availability of videographic material.
+The studyfield related to images, videos... is computer vision.
+More specific HAR: **(Pareek & Thakkar, 2020)**
+
+Human Gait Recognition **(Alharthi et al., 2019)** & Human pose estimation **(Song et al., 2021)**. Pose recognition can be used to assist a full activity recognition.
+
+### HAR general progress
+
+TODO find paper, reference to come to steps.
+
+Step 3-4 are in betweens to make the progress trackable and can be omitted.
+
+1) Jumper Localisation
+2) Skill segmentation, start of skill, end of skill
+3) Counting rotations (DU, TU, QU, Wrap with 3 rotations?)
+4) ... (unknown in betweens)
+5) Label the effective skill
+
+### Jumper localization (2.4)
+
+CNN good for working with image data,
+Based on paper X, paper Y, ... would be good.
+Like **Zaidi et al., 2021** (survey) talks about different models, YOLO, SSD, CenterNet and their variants. Based on the convolutions.
+
+Could be assisted by seperating foreground and background. This is called VOS. **Gao et al. (2022)** compares and discusses some models.
+
+Or models like [cutie](https://arxiv.org/pdf/2310.12982), [github-cutie](https://github.com/hkchengrex/Cutie) or densepose can be used. Densepose can even provide bouding boxes of the main poses deteced. Perhaps just a convex hull and some padding will be enough to smart crop the images.
+
+### Video action segmentation
+
+Split video in small identifiable actions, like skills or subskills.
+Zahan et al. (2023) translate 2.8
+
+add:
+
+See [paperswithcode](https://paperswithcode.com/task/action-segmentation),
+[LTContext](https://arxiv.org/pdf/2308.11358v2)
+
+TODO : find clear implementation or relatively followable instruction for usage. (Or don't read when tired)
+
+Additional pre-processing like masking the jumpers, using denspepose or cutie can be used.
+
+### Skillrecognition (2.5)
+
+Temporal & space information. To recognize skills themselves.
+Walk the path & verify / find (better) sources
+CNN-LSTM
+LSTM-CNN
+convLSTM
+SAM (Self-Attention convLSTM) (2020)
+SAM vergeleek met MIM (2019) - Memory in Memory
+read/translate 2.6
+
+TODO : verify if convLSTM/SAM/MIM are FCN's
+TODO : add more understanding of transformers (using self attention?)
+
+### Skill complexity & levels
+
+Translate 2.7
+split in general info
+2.7.1 single rope & single rope skillmatrix (translate)
+2.7.2 double dutch singles & skillmatrix (TODO)
+
+maybe 2.7.1 - 2.7.4
+
+### Group activities (wrong order)
+
+Translation, maybe omit Issa & Shanable (2023) and add tip of the veil volleybal (spikes, servings, waiting, talking...)
+
+TODO : research stagNet
+[group-activity-volleybal](https://openaccess.thecvf.com/content_ECCV_2018/papers/Mengshi_Qi_stagNet_An_Attentive_ECCV_2018_paper.pdf)
+
+### Unknown activities (wrong order)
+
+Skillmatrix should cover it, but ... zero-shot
+
+TODO : Research zero-shot learning (unknown activities)
+[zeroshot](https://www.researchgate.net/publication/339028828_Zero-Shot_Human_Activity_Recognition_Using_Non-Visual_Sensors)
+
+## Methodology
+
+Modify & translate to follow user story map
+
+### add accuracy/metric judge vs ai
+
+## Expected results
+
+- Localization - perfectly doable
+- Video action segmention, could probably pose a problem as results could not be what's to be expected. But if it the segmentation is slowly increasing nearing the end of the paper, I'll be happy.
+- Recognize skill actually seems slightly less or equal in difficulty compared to segmenting the actions.
+- When skills are starting to be recognized, expected results are to be close to the scores of the judges or real label. (10-15% deviation)
+
+## Expected conclusion
+
+translate
