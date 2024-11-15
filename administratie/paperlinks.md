@@ -20,3 +20,13 @@ HAR in team sports survey (Yin H. 2024-9) [springer](https://link.springer.com/a
 
 ASTRA: An Action Spotting TRAnsformer for Soccer Videos [acm](https://dl.acm.org/doi/10.1145/3606038.3616153)
 
+## Others
+
+[Localize humans in crowded space](https://arxiv.org/pdf/2003.07080v1)
+
+[Densely Connected Convolutional Networks](https://www.researchgate.net/publication/306885833_Densely_Connected_Convolutional_Networks)
+
+[Adapting Short-Term Transformers for Action Detection in Untrimmed Videos](https://arxiv.org/abs/2312.01897)
+
+[Spatiotemporal Self-attention Modeling with
+Temporal Patch Shift for Action Recognition](https://arxiv.org/pdf/2207.13259)
