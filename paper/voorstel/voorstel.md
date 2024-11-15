@@ -46,7 +46,7 @@ Individual freestyles from 2024 own recordings only will amount to a minimum of 
 #### Which discipline will be focused on?
 
 Only one discipline for this thesis will be chosen.
-There are two main disciplines to chose from. Either single freestyles (Single Rope, SR) or Double Dutch Single Freestyles (DD3)
+There are two main disciplines to choice from. Either single freestyles (Single Rope, SR) or Double Dutch Single Freestyles (DD3)
 Given the previous calculation and availability of data, it seems individual freestyles seem easier to get and the most likely path, however, in first thought, the variety and possible skills also increases, resulting in a more complex labeling (see skillmatrix later). One possibility for both DD3 & SR is to omit certain special cases simplifying the entire problem in a minimum viable product (MVP).
 Skill label example DD3 & Single freestyle
 
@@ -116,9 +116,8 @@ Step 3-4 are in betweens to make the progress trackable and can be omitted.
 
 1) Jumper Localisation
 2) Skill segmentation, start of skill, end of skill
-3) Counting rotations (DU, TU, QU, Wrap with 3 rotations?)
-4) ... (unknown in betweens)
-5) Label the effective skill
+3) Predict level or variation element (multiple, cross, gym...)
+4) Predict the effective skill
 
 ### Jumper localization (2.4)
 
@@ -126,19 +125,27 @@ CNN good for working with image data,
 Based on paper X, paper Y, ... would be good.
 Like **Zaidi et al., 2021** (survey) talks about different models, YOLO, SSD, CenterNet and their variants. Based on the convolutions.
 
-Could be assisted by seperating foreground and background. This is called VOS. **Gao et al. (2022)** compares and discusses some models.
+Explain VGG-16
 
-Or models like [cutie](https://arxiv.org/pdf/2310.12982), [github-cutie](https://github.com/hkchengrex/Cutie) or densepose can be used. Densepose can even provide bouding boxes of the main poses deteced. Perhaps just a convex hull and some padding will be enough to smart crop the images.
+Could be assisted by seperating foreground and background. This is called VOS or VIS. **Gao et al. (2022)** compares and discusses some models.
+
+Transferlearning on a pre-trained-model like ResNet or GoogleNet?
+
+Smoothing out box predictions
+
+TODO : shortlist like densepose, VGG-16, ResNet...
+
+Or models like [cutie](https://arxiv.org/pdf/2310.12982), [github-cutie](https://github.com/hkchengrex/Cutie), densepose or meta sam2 can be used. Densepose can even provide bouding boxes of the main poses deteced. Perhaps just a convex hull and some padding will be enough to smart crop the images.
 
 ### Video action segmentation
 
 Split video in small identifiable actions, like skills or subskills.
 Zahan et al. (2023) translate 2.8
 
-add:
+add: smoothing info
 
 See [paperswithcode](https://paperswithcode.com/task/action-segmentation),
-[LTContext](https://arxiv.org/pdf/2308.11358v2)
+[LTContext](https://arxiv.org/pdf/2308.11358v2) (cooking)
 
 TODO : find clear implementation or relatively followable instruction for usage. (Or don't read when tired)
 
@@ -146,6 +153,7 @@ Additional pre-processing like masking the jumpers, using denspepose or cutie ca
 
 ### Skillrecognition (2.5)
 
+After segmented action videos.
 Temporal & space information. To recognize skills themselves.
 Walk the path & verify / find (better) sources
 CNN-LSTM
@@ -155,11 +163,14 @@ SAM (Self-Attention convLSTM) (2020)
 SAM vergeleek met MIM (2019) - Memory in Memory
 read/translate 2.6
 
+footnote: the same or other models, like densepose with clear bodypart distinction could/will be used/tried to assist recognizing the skills.
+
 TODO : verify if convLSTM/SAM/MIM are FCN's
 TODO : add more understanding of transformers (using self attention?)
 
 ### Skill complexity & levels
 
+Now that we better now a part of the information, let's talk more about skills.
 Translate 2.7
 split in general info
 2.7.1 single rope & single rope skillmatrix (translate)
@@ -185,14 +196,61 @@ TODO : Research zero-shot learning (unknown activities)
 
 Modify & translate to follow user story map
 
-### add accuracy/metric judge vs ai
+Proposal now or version 2 in :
+
+1) Determine shortlist Localization: like Denspose, VGG-16 based model or YOLO or ... (max 3) + argument choses why?
+2) Additional model for video action segmentation besides LTContext
+3) Try search more recent models for recognition other than SAM (using transformers?), maybe skip MiM or normal convLSTM (not putting in shortlist). SAM seems to be the current first choice
+4) Additional or deeper search in SAM2 for second alternative like densepose. (more difference in mask of person, arms, legs...) to assist localization, segmentation & recognition. (Applies to all 3 steps.)
+5) Better understand stagNet (group activities) as DD3 is a team recognition. (Improving model.)
+
+Thus, following user story map. ([canva-story-map](https://www.canva.com/design/DAGVz44QCgc/_Mr9BrOqwwdy9cf-ieYFVg/edit?utm_content=DAGVz44QCgc&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton))
+
+Mind that releases are indicative.
+
+Release 1 : general + label location
+
+1) overview videos: navigate, filter, rename
+2) view video info, could have edit
+3) label inappropriate/blurry moments (idea: could be used, rather not)
+4) label passage/empty (livestream/wait) moments (idea: no skills)
+5) label jumper location
+6) Statistics distribution of data
+
+Release 2 : predict location
+
+1) visualize location predictions
+2) ...
+
+Release 3 : label action segments + label skills
+
+TODO
+
+Release 4.1 : predict level - variation element
+
+TODO
+
+Release 4.2 : predict action segments
+
+TODO
+
+Release 4.3 : predict skills
+
+### add talk about accuracy/metric judge vs ai
+
+Comparing judge scores on competion vs (correctly) labeled freestyle. (Should have some difference), calculate average difference = target.
+
+### Training & Hardware
+
+Laptop has GPU.
+Ideal: Ask server at school (with GPU) (TODO), training can be done at night (low peak usage)
 
 ## Expected results
 
 - Localization - perfectly doable
 - Video action segmention, could probably pose a problem as results could not be what's to be expected. But if it the segmentation is slowly increasing nearing the end of the paper, I'll be happy.
-- Recognize skill actually seems slightly less or equal in difficulty compared to segmenting the actions.
-- When skills are starting to be recognized, expected results are to be close to the scores of the judges or real label. (10-15% deviation)
+- Recognizing the skill actually seems slightly less or equal in difficulty compared to segmenting the actions.
+- When skills are starting to be recognized, expected results are to be close to the scores of the judges or real label.
 
 ## Expected conclusion
 
