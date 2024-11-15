@@ -397,216 +397,6 @@ Predicted skills will then be mapped to their corresponding level.
 \section{Methodologie}%
 \label{sec:methodologie}
 
-Aan dit proefconcept kan rustig gewerkt worden in de zomer en veel in het tweede semester, (geen stage, enkel BP, ITP\&CO, Data science en big data). Aangezien het labelen veel tijd in beslag kan nemen, zal dit iteratief en semi-supervised gebeuren doorheen het onderzoek, gefocust op individuele skills (SR) en double dutch single freestyles (DD3). Hierdoor zal slechts een deel van de reeds verzamelde 500GB aan beeldmateriaal gebruikt worden. Echter is dit niet het enige beschikbare materiaal. Een ruwe schatting denkt dit aantal nog makkelijk te verdubbelen in de toekomst door online te zoeken en rond te vragen binnen de rope skipping community.
-    
-Verder wordt het project iteratief opgebouwd. Een eerste diepere duik in de wereld van deep learning werd reeds gemaakt, zoals gezien in de literatuurstudie. Deze zal regelmatig opknapbeurten of aanvullingen krijgen door opduikende moeilijkheden en/of problemen.
-
-\subsection{Iteratief proces}
-Om de proef te starten wordt de nieuwe kennis toegepast op een beperkte set video's om deze te bakenen in mini-video's. Nadien wordt de borstel door de huidige data gehaald om er later beter op te kunnen filteren. Zo kunnen we ook statistieken maken die een kleine vergelijking geeft tussen wedstrijddata vs andere data, meest gesprongen truc, club, land, jaar met meeste data\dots
-Als volgende moeten de modellen meer performantie bieden, dit kunnen we doen door de dimensionaliteit te verkleinen via en de best mogelijke techniek(en) voor videoherkenning en beter rekening houden met meerdere springers al dan niet door gebruik van één of meerdere VOS technieken. Hierdoor kunnen we de skillafbakening verbeteren en omtoveren tot een semi-supervised model dat stilaan zelf extra trainingslabels voorziet, met verificatie en aanvullingen van trucs.
-    
-Losse stukken code en probeersels maken de code snel onoverzichtelijk, foutgevoelig en niet bevorderend om te analyseren. Daarom wordt een speciaal moment voorzien die de cohesie, portabiliteit en structuur van de code verbetert. Hieruit volgt dat nadien de volledige focus gelegd kan worden op implementatie van een eerste HAR-model, verfijning en vergelijking met andere modellen om het beste eruit te halen. Tot slot wordt het onderzoek aangevuld met alle de bevindingen, resultaten en de conclusie.
-    
-In figuur~\ref{fig:../graphics/gantt} wordt een schatting van de tijdsplanning gegeven en in de oplijsting hieronder vind je meer details per fase.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=.8\columnwidth]{img/gantt}
-    \caption{\label{fig:gantt}Indicatie tijd en indeling per fase}
-\end{figure}
-
-\subsection{Fasering}
-
-\begin{itemize}
-    \item \textbf{Fase 0: Verbeteren onderzoeksvoorstel}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Kwaliteit verhogen
-        \begin{itemize}
-            \item Structuur begint aan te voelen als: een novel aanpak voor HAR in jurysporten
-            \item of
-            \item Toepassing van recente HAR technieken op complexere rope skipping data
-        \end{itemize}
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Meer vorm geven aan try-outs en effectieve uitvoering
-            \item Extra literatuurstudie, op basis van extra ondervindingen
-            \item Blijven bouwen aan dat proefconcept
-        \end{itemize}
-        \item \textbf{Must have}: Verhoogde kwaliteit (literatuur, proeven)
-        \item \textbf{Should have}:
-        \begin{itemize}
-            \item semi-supervised border labeling
-            \item meer kennis over self-attention, lstm memory cells
-        \end{itemize}
-        \item \textbf{Could have}:
-        \begin{itemize}
-            \item Een eerste HAR model
-            \item afgewerkte HAR- \& dimensionaliteit-literatuur
-        \end{itemize}
-        \item \textbf{Will not have}: Nieuwe eigen modellen
-    \end{itemize}
-    \item \textbf{Fase 1: Basic probeersel skillgrenzen}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Mini model, standaard CNN en/of LSTM, die door een tiental video's kan proberen om frames aan te duiden die de grens van een skill zijn.
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Eigen testvideo's verder labelen
-            \item Data preprocessing - opsplitsen video's
-            \item Train \& test
-            \item Bouwen/zoeken visual die de video-opdeling van een nieuwe testvideo kan tonen
-        \end{itemize}
-        \item \textbf{Resultaat, deliverable(s)}:
-        \begin{itemize}
-            \item \textbf{Must have}: skillsafbakening in video als oplijsting van framenummers
-            \item \textbf{Should have}: Verhoogd begrip computer vision \& skillafbakening
-            \item \textbf{Could have}: modelkeuze (LSTM, CNN, YOLO...)
-            \item \textbf{Will not have}: Opgeslagen mini-video's
-        \end{itemize}
-    \end{itemize}
-    \item \textbf{Fase 2: Cleaning \& ordenen huidige RS data - database}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Opkuisen structuur en huidige video's
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Aanmaken databank waarbij elke video 'extra' info krijgt, wie, wat, waar, kwaliteit, obstructielevel/ruis, competitie/voorbeeldoefening, landscape/portret, bestandslocatie... (om dubbels te vermijden)
-            \item Data van Arne (groot bk, bk 23 en bk 24) herbenoemen
-            \item Eigen opnames verder knippen en benoemen
-            \item Gescrapete video's herbenoemen
-            \item DB voorbereiding skilltabel (mogelijke skills, makkelijk te vinden in video)
-            \item DB voorbereiding skillborders voor bevestigde of semi-supervised splits + skill\_key
-        \end{itemize}
-        \item \textbf{Must have}: alles
-    \end{itemize}
-    \item \textbf{Fase 3: Dimensionaliteit}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Aanvullen literatuurstudie m.b.t. dimensionalieitreductie voor computer vision video machine learning
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Zoektocht voor specifiek HAR
-            \item Lijst van technieken of het best mogelijke
-            \item Voorbeeld met convLSTM, SAM of MIM?
-        \end{itemize}
-        \item \textbf{Must Have}: Minstens één techniek
-        \item \textbf{Could have}: Voorbeeld met HAR
-        \item \textbf{Will not have}: gecompresseerde video's
-    \end{itemize}
-    \item \textbf{Fase 4: Literatuur video object segmentation \& multi actors}
-    \begin{itemize}
-        \item \textbf{Doelstelling}:
-        \begin{itemize}
-            \item Literatuur multi actors verbeteren
-            \item Literatuur VOS longlist technieken
-            \item Invloed multi actors op VOS weten
-            \item Shortlist van VOS technieken die omkunnen met meerdere actoren
-        \end{itemize}
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Huidige source, multi actoren daarvoor beter doornemen
-            \item VOS Technieken zoeken die hiermee om kunnen
-            \item Armen, benen, touw, handvaten of enkel het geheel?
-            \item Shortlist van maken
-        \end{itemize}
-        \item \textbf{Must have}: Shortlist VOS
-        \item \textbf{Should have}: Techniek die het touw accuraat in beeld brengt
-        \item \textbf{Will not have}: 'aparte' video's die door per actor door het HAR-model moet
-    \end{itemize}
-    \item \textbf{Fase 5: Bijlagen en methodologie}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Bijhouden methodologie en bijlagen opstellen
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Volgen van deze methodologie
-            \item Afwijkingen noteren
-            \item Bijlagen toevoegen, skillist, skillmatrix met foto's
-        \end{itemize}
-    \end{itemize}
-    \item \textbf{Fase 6: Skillborders deel 2 (semi-supervised)}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Verbeteren en vereenvoudigen eigen werk
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Overschakelen op semi-supervised
-            \item Verbeteren probeersel skillgrenzen, m.b.v. VOS \& dimensionaliteitsreductie
-            \item Toevoegen grenzen testvideo's - manual, verified, semi-supervised
-            \item Zo zorgen testen tussendoor voor extra labels
-            \item Toevoegen andere modellen YOLO, SSD...
-        \end{itemize}
-        \item \textbf{Must have}:
-        \begin{itemize}
-            \item split video optie
-            \item verifieer grenzen (alle, volgens bepaald zekerheidspercentage)
-        \end{itemize}
-        \item \textbf{Should have}: /
-        \item \textbf{Could have}: Verifieer niet bevestigde labels en toon grootste onzekerheden
-        \item \textbf{Will not have}: Niet alles moet gelabeld zijn
-    \end{itemize}
-    \item \textbf{Fase 7: Procesautomatisatie}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Verhogen weergave, keuzeopties modellen, begrip en staat van het proefconcept
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Configuratiebestanden: run info, modelselection, keuze labels train...
-            \item Portabiliteit: Docker?
-            \item Logs, run en modelstatistieken, datastatistieken
-            \item Documentatie
-            \item Toevoegen nieuwe video, geeft skillgrenzen en verifieeropties
-        \end{itemize}
-        \item \textbf{Must have}: portabiliteit, configuratie
-        \item \textbf{Should have}: toon meest onzekere niet-geverifieerde skills
-        \item \textbf{Could have}: statistieken
-    \end{itemize}
-    \item \textbf{Fase 8: Literatuur HAR deel 2 (september/oktober)}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Extra zoektocht naar HAR-modellen, op het einde van de zoektocht kwam (Lin, 2020) tevoorschijn, beste paper voor HAR tot nu gevonden, maar dat wil zeggen dat er nog 4 jaar aan evolutie kan zijn
-        \item \textbf{Aanpak}: zoeken
-        \item \textbf{Should have}:
-        \begin{itemize}
-            \item Extra modellen
-            \item Aangepaste shortlist
-            \item recenter model
-            \item generiek idee hoeveel literatuurstudie er nog bijkomt
-        \end{itemize}
-    \end{itemize}
-    \item \textbf{Fase 9: Eerste HAR model (target september)}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Eerste implementatie HAR-model
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Implementatie van de code van het gekozen model
-            \item Volledig begrip van het gekozen model. (Niet blackboxen)
-            \item Preprocessing video's, splitsen, VOS, padding
-            \item branching vs binaire classificatie voor alle kolommen
-        \end{itemize}
-        \item \textbf{Must have}: trucvoorspelling
-        \item \textbf{Should have}: Keuze optie branch of binair
-        \item \textbf{Could have}: Procentuele modelstatistieken (per testrun)
-    \end{itemize}
-    \item \textbf{Fase 10: Uitbreiden HAR}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Verbeteren model \& vergelijkingen
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Andere v/d twee als optie in config toevoegen: branching of niet
-            \item Toevoeging gewenste config opties discovered along the way
-            \item Toevoegen modellen SAM, MIM, convST-LSTM
-            \item Semi-supervised skills aan trainingsset DB (verified or not)
-        \end{itemize}
-    \end{itemize}
-    \item \textbf{Fase 11: bachelorproef scriptie}
-    \begin{itemize}
-        \item \textbf{Doelstelling}: Afwerking bachelorproef
-        \item \textbf{Aanpak}:
-        \begin{itemize}
-            \item Bijwerken methodologie
-            \item Methodologie finetunen (tussendoor bijhouden)
-            \item Conclusie
-            \item Dankwoord
-            \item Bijlagen finetunen
-            \item Inleiding en abstract finetunen, die overeenkomen met literatuur en resultaat
-        \end{itemize}
-        \item \textbf{Must have}: Alles
-    \end{itemize}
-\end{itemize}
 
 
 \subsection{Aanpak beantwoording deelvragen}
@@ -625,30 +415,32 @@ Werken met beeldmateriaal alleen al vraagt veel resources, laat staan het traine
 
 
 %---------- Verwachte resultaten ----------------------------------------------
-\section{Verwachte resultaten}
+\section{Expected results}
 \label{sec:verwachte-resultaten}
 
-    Het PoC is veel werk, in het goede geval wordt alles perfect afgewerkt. Het is uitbreidbaar en in te krimpen. Zo kan SR of DD3 overgeslagen worden tot slechts één onderdeel of kan de skillafbakening meteen zorgen voor problemen. Echter bleek uit de literatuurstudie dat dit wel moet lukken. Ook voor het herkennen van trucs zelf worden positieve resultaten verwacht. De hybride modellen van X, Y, Z en anderen tonen vaak resultaten van +90\% op bekende datasets zoals WISDQM of .... Hoewel de ropeskipping data veel gevarieerder is en wat complexer worden toch scores van +85\% verwacht met het SAM model van X.
-    
-    Wat het beste model is om de trucs te herkennen en hoe het geheel is opgebouwd, is nog onbekend. De verwachting is dat SAM of het convST-LSTM de beste resultaten behaald. Of het totale idee semi-supervised, CNN-afbakeningen, SAM/convST-LSTM skills met behulp van Docker overeind blijft, zullen we over een jaar weten.
-    
-    Wanneer de voorspellingen goed genoeg om te dienen als extra jurylid of als steunmiddel wordt op meer dan 95\% geschat en wanneer die goed kan aangeven dat hij het niet weet.
-    
-    Kunnen we de AI-Judge gebruiken om juryleden te verbeteren?
-    Ja, er ontstaat uiteindelijk een verzamelde en gelabelde database, met vele oefenvideo's om uit te leren. Daarbij zou er in de database gefilterd kunnen worden op skill om makkelijk en een eenduidig antwoord moeten geven op de vraag: ``Wat is het level van ...?''
-    
-    Indien een AI een oefening kan jureren, kunnen we hieruit afleiden dat dit voor alle jurysporten kan? Indien wel, wat zou de beste aanpak zijn?
-    Volgen van het semi-supervised model, een goede beoordelingsmatrix toevoegen, iteratief data toevoegen \& labelen, configuratie kiezen.
+Localization of the jumper shouldn't pose an issue. It's would be safe to say that a quick progression towards video action segmentation can be made. Even if segmented actions do not overlap with their actual skills, it's not that hard of a block for the skill recognition part. It would just mean, that skillrecognition can not be applied on new unsegmented videos.
+It's expected that SAM will prove to give better results than his base convLSTM model and a transformer probably even better if correctly integrated.
+
+On the long run, it's expected to surpass judges in accuracy.
+
+To answer the questions asked in the introduction a list of unknown or potential answers.
+
+\begin{itemize}
+    \item How will the model be built? --> unknown
+    \item What would be the main structure of the model? --> unknown
+    \item Which human activity recognition examples can be used or altered as the base of the model? --> aligns with modelselection
+    \item When are AI-recognitions acceptable to potentially use on competitions? --> when they score equally as good as a judge and can flag or anticipate unknowns.
+    \item How much data is expected to increase the accuracy off the Judge. --> we'll know later
+    \item How can we use the AI-Judge to improve judges? --> correcting/assisting them.
+    \item What needs to changed to a working model, to apply it on other judge-sports such as gymnastics, synchronized swimming... --> define a skill-matrix \& data
+\end{itemize}
 
 
-\section{Verwachte conclusie}%
-\label{sec:conclusie}
+\section{Expected conclusion}%
+\label{sec:conclusion}
 
-    Juryleden kunnen verminderd en/of het werk van het jurylid vereenvoudigd. Daarbij kan het ingezet om nieuwe juryleden op te leiden.
+The AI-Judge can improve fairness of judging on competitions by annotating skills and, when expanded, giving confidence levels to the skills it predicted. Using AI-Judge, more transparency towards scores can increase competitiveness or enable the public to better understand the scores. Even using the model to display snapshots of freestyles along the predicted skill and confidence score in total.
+
+This AI-Judge can be extended towards other disciplines or different sports like acro, figure skating, gymnastics or dressage, to achieve similar results.
     
-    Waar resources zijn kan het, computationeel kan het nog beter en stilaan zouden de resultaten verhoogd kunnen worden. Dit kan m.b.v. betere modellen of meer data.
-    
-    Kan eventueel toegepast worden op andere jurysporten met gelijkaardige routines zoals gymnastiek, kunstschaatsen, acro of dressuur.
-    
-    Volgende stappen zijn het trainen en beoordelen van DD4, SR2 of SR4 waarbij iedere springer gelijktijdig de skill moet uitvoeren om punten te krijgen. Dit is dan weer meer gelijkaardig aan synchroonzwemmen, diving, of acrobatic tumbling.
-    
+The next steps will be extending freestyle judging into DD4, SR2 and special skills.
