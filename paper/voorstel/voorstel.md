@@ -207,7 +207,7 @@ Proposal now or version 2 in :
 
 Thus, following user story map. ([canva-story-map](https://www.canva.com/design/DAGVz44QCgc/_Mr9BrOqwwdy9cf-ieYFVg/edit?utm_content=DAGVz44QCgc&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton))
 
-Mind that releases are indicative.
+Mind that releases are not bound.
 
 Release 1 : general + label location
 
@@ -216,26 +216,50 @@ Release 1 : general + label location
 3) label inappropriate/blurry moments (idea: could be used, rather not)
 4) label passage/empty (livestream/wait) moments (idea: no skills)
 5) label jumper location
-6) Statistics distribution of data
+6) Statistics of the general data distribution
 
 Release 2 : predict location
 
-1) visualize location predictions
-2) ...
+1) visualize jumpoer location predictions
+2) edit borders from new predictions
+3) visualize biggest localization mistakes (within video)
+4) visualize biggest localization mistakes (over all videos)
+5) localization model statistics
+6) data augmentation (if needed)
 
 Release 3 : label action segments + label skills
 
-TODO
+1) Label video action segment
+2) Loop-replay action segment
+3) Label segmented skills names
+4) mark false skills
+5) skills to level mapper (should have)
+6) search skills by name (could have)
+7) mark execution scale (could have)
+8) skilldistribution statistics (+/- distributionmatrix)
 
-Release 4.1 : predict level - variation element
+Release 4.1 : predict action segments
 
-TODO
+1) visualize & compare AI segmented skills
+2) visualize AI segmented skills from new videos (with confidence levels?)
 
-Release 4.2 : predict action segments
+Release 4.2 : predict skills
 
-TODO
+1) model predicts levels (1-8 classes)
+2) model predicts variation element (4/6 classes)
+3) model predicts skill
+4) visualize & compare AI labeled skills & compare with total (judge)score
+5) validate AI recognized skills & save as new training input
+6) label AI recognized skills as new or "i dont know"
+7) action segmentation stats
+8) skillrecognition stats
 
-Release 4.3 : predict skills
+Release Bis
+
+1) Language
+2) add competition jump order (easy recordings)
+3) stats competition
+4) insert multiple judge systems
 
 ### add talk about accuracy/metric judge vs ai
 
