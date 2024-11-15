@@ -193,7 +193,7 @@ Some examples:
 
 Each skill will then be assigned a level contributing to a score. 
 
-\subsubsection{Double Dutch}
+\subsubsection{Double Dutch - DD}
 \label{subsubsec:double dutch}
 
 Double Dutch consists of two turners and one jumper alternating rope rotations. Elements in Double Dutch are similar, but different at the same time. The jumper does all the skills, mainly powers, gymnastics or footwork, since he doesn't need to hold the rope. Turners can manipulate the rope using multiple unders, turnerskills like crossed arms, EB, toad\dots or even involve gymnastics themselves.
@@ -396,6 +396,76 @@ Predicted skills will then be mapped to their corresponding level.
 %---------- Methodologie ------------------------------------------------------
 \section{Methodologie}%
 \label{sec:methodologie}
+
+After some more research about transformers and how to apply them for skill recognition and another non-transformer model besides convLSTM \& SAM to predict skills, the building process can started.
+Using Canva, a user story map is created to effectively see which tasks need to be done. % TODO : link
+
+\subsection{General \& label location}
+
+\begin{itemize}
+    \item overview videos: navigate, filter, rename
+    \item view video info, could have edit
+    \item label inappropriate/blurry moments (idea: could be used, rather not)
+    \item label passage/empty (livestream/wait) moments (idea: no skills)
+    \item label jumper location
+    \item Statistics of the general data distribution
+\end{itemize}
+
+\subsection{Predict location}
+
+\begin{itemize}
+    \item visualize jumpoer location predictions
+    \item edit borders from new predictions
+    \item visualize biggest localization mistakes (within video)
+    \item visualize biggest localization mistakes (over all videos)
+    \item localization model statistics
+    \item data augmentation (if needed)
+\end{itemize}
+
+\subsection{Label action segments + label skills}
+
+\begin{itemize}
+    \item Label video action segment
+    \item Loop-replay action segment
+    \item Label segmented skills names
+    \item mark false skills
+    \item skills to level mapper (should have)
+    \item search skills by name (could have)
+    \item mark execution scale (could have)
+    \item skilldistribution statistics (+/- distributionmatrix)
+\end{itemize}
+
+\subsection{Predict action segments}
+
+\begin{itemize}
+    \item visualize \& compare AI segmented skills
+    \item visualize AI segmented skills from new videos (with confidence levels?)
+\end{itemize}
+
+
+\subsection{Predict skills}
+
+\begin{itemize}
+    \item model predicts levels (1-8 classes)
+    \item model predicts variation element (4/6 classes)
+    \item model predicts skill
+    \item add judge scores to freestyles
+    \item visualize \& compare AI labeled skills \& compare with total (judge)score
+    \item validate AI recognized skills \& save as new training input
+    \item label AI recognized skills as new or "i don't know"
+    \item action segmentation stats
+    \item skillrecognition stats
+\end{itemize}
+
+
+\subsection{Bis}
+
+\begin{itemize}
+    \item Language
+    \item add competition jump order (easy recordings)
+    \item stats competition
+    \item insert multiple judge systems
+\end{itemize}
 
 
 
