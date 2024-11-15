@@ -56,6 +56,7 @@ Pro's & con's
 | :------- | :------- | :------ |
 | #Freestyles | 782-1000+| 286-352 |
 | Hours    | 13h-16h+ | 5-6h    |
+| Years    | 782 in 2024 | mainly 2020-2024 |
 | MVP      | basic crosses, releases, multiples, gyms... | basic powers, gyms, turnerskills |
 | skillmatrix | more complex | simpeler compared to SR |
 | longer sequences | / | / |
