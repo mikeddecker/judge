@@ -93,8 +93,9 @@ Until now, only the scope has been narrowed. The literature, implementation & la
 Small overview
 
 - Jump rope intro: Explaining some disciplines, SR, DD, CW, and mention other variants. (SR2, SR4, DD3, DD4, speed, DU, TU, box...).
-- Skills intro: define (sub)skills we want to label?
+- Skills intro: define (sub)skills we want to label
 - Computervision, techniques & available models.
+- Skillmatrix
 
 ### Jump rope intro
 
