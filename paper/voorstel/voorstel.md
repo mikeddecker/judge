@@ -10,7 +10,7 @@ In order for the judges to keep up with the jumpers and to correctly asses score
 
 Head judges around the world question the best way to correctly judge athletes as to give an accurate ranking on national or international competitions.
 Many solutions have been provided: other judging rule-set, splitting judge responsibility, replaying the routine at half speed...
-However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022} or applications detecting simple human actions \autocite{LUQMAN_2022}, they wondered about the possibility to incorporate Artificial Intelligence into jump rope to assist judging routinees.
+However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022} or applications detecting simple human actions \autocite{LUQMAN_2022}, they wondered about the possibility to incorporate Artificial Intelligence into jump rope to assist judging routines.
 
 ### Different disciplines
 
@@ -40,7 +40,7 @@ These skills can then be mapped to their corresponding level and summed up to ac
 
 Both individual and team freestyles are mostly recorded on competitions. All A-level team freestyles from the last three years (2022, 2023 & 2024) are already available and provided by Gymfed (Belgium) for training. Additionally some clubs posted some of their competition videos on social media which provides more data from the last 8 years and other camera perspectives.
 
-To put into perspective, safely guessing DD3 data = 286-357 video's of length 1 to 1min15 (2022-2024 Belgium teams, virtual world contest, two other world livestreams)
+To give more perspective, safely guessing DD3 data = 286-357 video's of length 1 to 1min15 (2022-2024 Belgium teams, virtual world contest, two other world livestreams)
 Individual freestyles from 2024 own recordings only will amount to a minimum of 782 freestyles (includes 2 camera perspectives, so about half of it different routines). So collecting more individual freestyles will amount to a minimum of 1000 freestyles or minimum 15h of freestyle data, whereas DD3 freestyles are close to 5h of freestyles.
 
 #### Which discipline will be focused on?
@@ -58,6 +58,9 @@ Pro's & con's
 | Hours    | 13h-16h+ | 5-6h    |
 | Years    | 782 in 2024 | mainly 2020-2024 |
 | MVP      | basic crosses, releases, multiples, gyms... | basic powers, gyms, turnerskills |
+| Levelguessing | 0 to 8 | 0 to 6-8 |
+| Theoretical level limit | 8+ levels possible | 8+ levels possible |
+| Variation elements | 6 | 4 |
 | skillmatrix | more complex | simpeler compared to SR |
 | longer sequences | / | / |
 | individuals      | 1 | 3 |
