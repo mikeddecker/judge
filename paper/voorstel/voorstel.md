@@ -115,14 +115,14 @@ Human Gait Recognition **(Alharthi et al., 2019)** & Human pose estimation **(So
 
 ### HAR general progress
 
-TODO find paper, reference to come to steps.
+TODO find paper, reference to come to steps or use pareek again?
 
-Step 3-4 are in betweens to make the progress trackable and can be omitted.
+Step 3 is an in between to make the progress trackable and can be omitted.
 
-1) Jumper Localisation
-2) Skill segmentation, start of skill, end of skill
-3) Predict level or variation element (multiple, cross, gym...)
-4) Predict the effective skill
+    \item Jumper Localisation
+    \item Skill segmentation, start of skill, end of skill
+    \item Predict level or variation element (multiple, cross, gym...)
+    \item Predict the effective skill
 
 ### Jumper localization (2.4)
 

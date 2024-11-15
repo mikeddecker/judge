@@ -53,7 +53,7 @@ So splitting responsibility, fine-tuning the rule-set or replaying are already i
 
 % TODO : footnote nextjump
 The preferred solution in this proposal is an AI-model recognizing (sub)skills in a SR or DD3 freestyle (final decision has yet to be made). As of august 2023, NextJump tested their AI-speed-counter on the world competition acquiring, really accurate results.
-Using this as a base and examples of human action recognition (har in sports, https://link.springer.com/article/10.1007/s10462-024-10934-9), the likelihood to succeed implementing skill-recognition in freestyles grows.
+Using this as a base and examples of human action recognition (har in sports, https://link.springer.com/article/10.1007/s10462-024-10934-9), the likelihood to succeed implementing skill-recognition in freestyles grows. % TODO : source
 
 When skills are recognized, they can be mapped to their corresponding level and summed up to achieve the total score of a freestyle.
 
@@ -194,6 +194,7 @@ Some examples:
 Each skill will then be assigned a level contributing to a score. 
 
 \subsubsection{Double Dutch}
+\label{subsubsec:double dutch}
 
 Double Dutch consists of two turners and one jumper alternating rope rotations. Elements in Double Dutch are similar, but different at the same time. The jumper does all the skills, mainly powers, gymnastics or footwork, since he doesn't need to hold the rope. Turners can manipulate the rope using multiple unders, turnerskills like crossed arms, EB, toad\dots or even involve gymnastics themselves.
 To judge double dutch, snapshots are taken, then the level will be given depending on the combination of turnerskills, jumperskills and roperotations.
@@ -204,49 +205,100 @@ Like any discipline, mistakes can happen, they'll be deducted from the total sco
 \subsection{Computer vision}
 \label{subsec:computer vision}
 
-Om de skills automatisch te herkennen hebben we input nodig, data. Online zijn er reeds vele video's te vinden, maar ook eigen opnames en die van Gymfed/Arne zijn beschikbaar, waardoor de keuze om te leren uit beelden snel gemaakt werd. Het studiegebied waarbij computers kenmerken, personen of andere objecten in digitaal beeldmateriaal herkennen, noemt men computer vision. Meer specifiek ligt de focust bij het herkennen van menselijke activiteiten in deze beelden, ook wel human activitity recognition of HAR \autocite{Pareek_2020}.
-Voor het herkennen van mensenlijke activiteiten worden ook Human Gait Recognition, HGR, of Human Pose Recognition, HPR, gebruikt. Hoewel de drie technieken dicht bij elkaar aanleunen, hebben ze elk een andere nuance. HGR kijkt naar de typische bewegingen, gestiek of gedragspatronen van een mens \autocite{Alharthi_2019}, terwijl HPR specifieke kijkt naar poses of speciale uitdrukkingen \autocite{Song_2021}. Ze vertellen ook hoe poseherkenning, skeletgebaseerd, als hulpmiddel kan gebruikt worden zijn om het labelen van activiteiten te verbeteren.
+% TODO : footnote refer to table above for numeric data
+To recognize the skills automatically input data is needed. As there are quite some videos already on socials, as well as in-house recordings, the choice of learning from videos was made quickly. The field of study in which computers recognize features, people or other objects in digital imagery is called computer vision. More specifically, the focus is recognizing human actions in these recordings, called human activitity recognition or HAR \autocite{Pareek_2020}.
 
+Human Gait Recognition, HGR, or Human Pose Estimation, HPE, are also used to recognize human activities. Although the three techniques are closely related, each has a different nuance. Gait recognition looks at a person's typical movements, gestures or behavioral patterns \autocite{Alharthi_2019}, while pose estimation looks specifically at poses or special expressions \autocite{Song_2021}. They also talk about how pose recognition, skeleton-based, can be used as a tool are to improve activity labeling.
 
-\subsection{Uitdagingen}
-\label{subsec:uitdagingen}
+Models providing skeleton-structure or others can be used to improve action recognition, mainly because crosses, powers, releases\dots are build from these poses.
 
-Naast de drie gebieden van menselijke herkenning, gestiek, acties en poses, beschrijven \textcite{Pareek_2020} een andere verdeling; gestiek, acties, interacties en groepsactiviteiten. De laatste twee vergen nader onderzoek bij het verhogen van de accuraatheid van teamoefeningen. Verder vertellen ze de uitdagingen van dimensionaliteit, grootte van de videobestanden, similariteit van de acties etc en voorzien ze een algemeen overzicht voor human activity recognition. \textcite{Issa_2023} beschreven hoe ze een video tot één vector reduceerden met kenmerken om een LSTM-model te vermijden, een model dat aan de hand van geheugencellen gespecialiseerd is in het verwerken van sequentiële data. Hoewel de accuraatheid van 68 tot 74\% minder is dan volgend beschreven methoden, kan dit een handig inzicht zijn voor later.
+\subsection{HAR general progress}
 
+% TODO : find paper, reference to come to steps or use pareek again?
+The following approach is mainly based on the survey of \textcite{Pareek_2020}, he describes the recent updates in human activity recognition. 
 
-\subsection{Herkennen van de atleet}
-\label{subsec:herkennen van de atleet}
+\begin{enumerate}
+    \item Jumper localization
+    \item Action segmentation, start of skill, end of skill
+    \item Predict level or variation element (multiple, cross, gym...)
+    \item Predict the effective skill
+\end{enumerate}
 
-Het eerste doel van het proefconcept is het herkennen van de springer. \autocite{Zaidi_2021} deed een onderzoek naar de moderne deep learning technieken voor het herkennen van objecten en besprak verscheidene modellen, zoals YOLO, SSD, CenterNet, CNN, hun varianten en de nood aan compactere modellen voor dagelijks gebuik. Echter vergt het onderzoek niet het herkennnen van rope skippers op één afbeelding, maar gedurende de gehele video of videofragmenten. Om dit proces mogelijk te vereenvoudigen vergelijkt \textcite{Gao_2022} recente deep learning technieken die de voor- en achtergrond in video's van elkaar onderscheiden, genaamd video object segmentation of VOS. Gaande van het herkennen van een persoon, tot het herkennen van armen, benen, voeten, handvaten en touwen. Hoewel \textcite{Bharadiya_2023} aangeeft dat CNN kenmerken herkent ongeacht de positie in de afbeelding, zouden we de gemaskeerde beelden kunnen schalen en centreren. Vooral bij wedstrijddata springen atleten dichtbij of ver in het veld ten opzichte van de camera. In het volgende deel kunnen we dit dan gebruiken voor volledige trucherkenning.
+Jumpers can stand everywhere in the field, in order to perform better, locating and cutting out the athlete can improve the segmentation model. When the skippers are centered, better action segmentation can be performed. This allows predicting skills on newly recorded videos, without needing to cut out the different skills.
+
+\subsection{Jumper localization}
+\label{subsec:jumper localization}
+
+% Het eerste doel van het proefconcept is het herkennen van de springer. \autocite{Zaidi_2021} deed een onderzoek naar de moderne deep learning technieken voor het herkennen van objecten en besprak verscheidene modellen, zoals YOLO, SSD, CenterNet, CNN, hun varianten en de nood aan compactere modellen voor dagelijks gebuik. Echter vergt het onderzoek niet het herkennnen van rope skippers op één afbeelding, maar gedurende de gehele video of videofragmenten. Om dit proces mogelijk te vereenvoudigen vergelijkt \textcite{Gao_2022} recente deep learning technieken die de voor- en achtergrond in video's van elkaar onderscheiden, genaamd video object segmentation of VOS. Gaande van het herkennen van een persoon, tot het herkennen van armen, benen, voeten, handvaten en touwen. Hoewel \textcite{Bharadiya_2023} aangeeft dat CNN kenmerken herkent ongeacht de positie in de afbeelding, zouden we de gemaskeerde beelden kunnen schalen en centreren. Vooral bij wedstrijddata springen atleten dichtbij of ver in het veld ten opzichte van de camera. In het volgende deel kunnen we dit dan gebruiken voor volledige trucherkenning.
     
+% TODO : general source? https://arxiv.org/pdf/1905.05055
+Many research towards image recognition has been done. The best models mostly utilize Convolutional Neural Networks pertaining spacial information in the image \autocite{Zaidi_2021}. In their paper, they compare some recent models for object detection such as YOLO(v4), CenterNet, SSD, EfficientDet-D2, each using some backbone architecture like VGG-16, AlexNet, GoogleNet or lightweight models such as ShuffleNet or MobileNet (all using CNN's). Some of them being real-time models (fps > 30).
+The goal of localizing the jumper is to center the athletes in the middle of the screen/video. \textcite{Bharadiya_2023} elaborates that the position of objects in images doesn't really matter, but their are no clear statements about the size of objects. It could be that a jumper takes up 80 percent of the screen, while moments later he moved backwards and only takes up 30 percent of the video. Instincts tell us that centered and scaled data will work better later.
+
+One of these models can be taken as a base, using transfer learning to fine-tune the results to localize the jumper. % TODO : footnote bharadiy explains transfer-learning
+
+To improve localization, video object segmentation or video instance segmentation can be used. \textcite{Gao_2022} lists some object segmentation models, like SwitNet using ResNet18 as a backbone to be the fastest.
+Other possibilities would be Cutie % TODO : source
+or DensePose % TODO : source + image
+or meta sam2 % TODO : source
+
+Densepose seems to be able to give the bounding boxes of the main poses detected. Perhaps just a convex hull and some padding will be enough for smart cropping and you will not need to train a network from scratch. However, a local tryout (without boxes) was rather slow (1.2 fps on GPU within a Docker container).
+
+As a video is basically sequence of images, some smoothing can be applied to the guessed boxed, improve the next parts.
+
+% TODO : VGG-16? Rather expensive calculations
+
+\subsection{Video action segmentation}
+
+When we have our jumpers centered, we can try splitting the video in (sub)skills, because splitting new videos manually takes to much time and is impractical on competitions.
+A model like LTContext % TODO source
+or others would be appropriate. % TODO : footnote paperswithcode
+Just like the localization, denseposing, extracting poses, foreground, background\dots would improve the segmentation.
+
+Another interesting approach was \textcite{Zaidi_2021} modifying the LSTM-model to incorporate longer time sequences, to predict a gymnastic score of a full routine.
 
 \subsection{Skillherkenning}
 \label{subsec:skillherkenning}
 
-Voor herkennen van acties verschenen de laatste jaren verschillende combinaties die het Long Short Term Memory neuraal netwerk (LSTM) combineren met het convolutional neural network (CNN). \textcite{LUQMAN_2022} maakten zo een CNN-LSTM waarbij de video's eerst door convolutielagen gingen en nadien pas door de LSTM lagen. Ook \textcite{Sun_2023} en \textcite{Ullah_2024} gebruikten deze structuur voor het herkennen van voorgekookte pastatypes of classificatie van een tennisacties, respectievelijk a.d.h.v. infrarood of beeldmateriaal.
-Omgekeerd bereikten \textcite{Xia_2020} met hun LSTM-CNN architectuur scores van 92-95\% op drie populaire publieke datasets UCI, WISDM en OPPORTUNITY en in \textcite{Aksan_2023} werden het LSTM, CNN, CNN-LSTM en LSTM-CNN met elkaar vergeleken op hoogspanningsnetdata als case study. Daarentegen vergeleken \textcite{Ellouze_2024} de geconcateneerde versie met een hybride versie, genaamd het convolutional LSTM, waarbij de convolutionele operator verwerkt zit in het LSTM netwerk zelf, met betere prestaties tot gevolg. Ook in \autocite{Sharma_2023} werd dit toegepast met behulp van een skeletextractie (HPR), waarbij de lichaamskenmerken, armen, ellebogen, knieën etc. in kaart werden gebracht als skelet en als parameter in het model werd toegevoegd. Nochtans kwamen \textcite{Lin_2020} in 2020 al met een Self-Attention ConvLSTM (SAM) die betere resultaten gaven dan andere convolutional LSTM samenstelling en vergeleken ze hun model met \textcite{Wang_2019}'s Memory in Memory model.
+translate 2.8
 
-\subsection{SAM \& MIM}
-\label{subsec:SAM&MIM}
+To recognize actions in videos, lots of research has been done. % TODO : that general source
+% TODO sportHAR ref
+sportHAR clearly states the evolution from normal CNN architectures, to recurrent neural networks for time sequences, remembering context, like the Long Short Term Memory model (LSTM). Then combining CNN output into LSTM or even implementing a convolutional filter in the memory cell \autocite{Shi et all}. % TODO : source
 
-\textcite{Wang_2019} onderzochten een verbetering voor de huidige modellen voor tijdruimtelijke data. Ze vonden dat LSTM-geheugencellen te simpel waren om complexheden van hogere orde te bevatten. Hierdoor ontwierpen ze een memory in memory component, ter vervanging van de normale geheugencel, die datasets met een hogere moeilijkheidsgraad beter konden voorspellen. Hieruit vloeide de naam Memory in Memory, MIM.
-\textcite{Lin_2020} daarentegen gebruiken een self-attention memory cell binnenin het convLSTM die globale aspecten in de tijd en ruimte kan onthouden. Met ongeveer 35\% het aantal parameters t.o.v. Wang's MIM, bereikte SAM een gelijkaardige score als op o.a. de movingMNIST dataset, maar sneller. Hoewel de focus van deze papers lagen op het voorspellen van toekomstige acties, kan de output weer omgevormd worden, naar een classificatie i.p.v. een voorspelling.
+\textcite{Wang_2019} investigated an improvement for current convolutional or recurrent models. They found that LSTM memory cells were too simple to contain higher-order complexities. As a result, they designed a memory in memory component, to replace the previous cell, which could predict actions on complexer data sets. This quickly formed the name Memory in Memory, MIM. Later, \textcite{Lin_2020} used
+a self-attention memory cell inside the convLSTM that can memorize global aspects in time and space. With about 35\% the number of parameters compared to Wang's MIM-model, SAM achieved a similar score as on the moving MNIST dataset, but faster. Although the focus of these papers was predicting future actions, the output can again be transformed to a classification rather than a prediction.
+
+Another approach would be using transformers as a described possibility in % TODO : sportshar.
+ViT-TAD yang m. (https://arxiv.org/pdf/2312.01897), Swin transformer or VideoMAE v2 seem good options, but further research/try-outs will be required to ensure the models can predict actions.
+
+So using convLSTM, SAM or a transformer brings us to how exactly we want to predict.
+
+% TODO : find other model besides sam that is not a transformer to try-out, as SAM is already convLSTM improved.
 
 
-\subsection{Skill complexiteit \& levels}
+%\subsection{SAM \& MIM}
+%\label{subsec:SAM&MIM}
+
+% \textcite{Wang_2019} onderzochten een verbetering voor de huidige modellen voor tijdruimtelijke data. Ze vonden dat LSTM-geheugencellen te simpel waren om complexheden van hogere orde te bevatten. Hierdoor ontwierpen ze een memory in memory component, ter vervanging van de normale geheugencel, die datasets met een hogere moeilijkheidsgraad beter konden voorspellen. Hieruit vloeide de naam Memory in Memory, MIM.
+% \textcite{Lin_2020} daarentegen gebruiken een self-attention memory cell binnenin het convLSTM die globale aspecten in de tijd en ruimte kan onthouden. Met ongeveer 35\% het aantal parameters t.o.v. Wang's MIM, bereikte SAM een gelijkaardige score als op o.a. de movingMNIST dataset, maar sneller. Hoewel de focus van deze papers lagen op het voorspellen van toekomstige acties, kan de output weer omgevormd worden, naar een classificatie i.p.v. een voorspelling.
+
+
+\subsection{Skill complexity \& levels}
 \label{subsec:skillcomplexiteit}
 
-Eerder werd al een basisuitleg van skills gegeven, met enkele voorbeelden. Om alle skills te herkennen dienen ze zo goed mogelijk uitgewerkt te worden. Dit deel legt de basis uit van het levelsysteem volgens de Gymfed juryreglement 2023-2024.
-Een kruis, toad, of crouger zijn 'voorwaartse' skills die uitgevoerd worden zonder een voorbereidende rotatie, er zijn geen restricties achter het lichaam waarbij een voorbereidende rotatie nodig is. Trucs waarvoor dit wel geldt zijn bijvoorbeeld AS, CL, TS of meghan, ze bestaan uit het gaan naar en komen uit, om de volledige skill uit te voeren. Scores worden gegeven aan de hand van levels, zo krijg je per restrictie van de armen een level. Zo krijg je voor een toad, crouger en EB 1 level, terwijl een TS, elephant of CL 2 levels oplevert.
-Gewone kruisjes zijn te eenvoudig en leveren niets of slechts een half level op en zijn verder niet additief bij combinaties. Combineer je veelvuldig zo basisoefeningen tot een reeks, dan krijg je voor iedere unieke overgang het level. Bijvoorbeeld;
+A basic explanation of skills was given earlier, with some examples. In order to recognize all skills, they should be worked out as well as possible. This section explains the basics of the level system based on Gymfed judging rules 2024-2025.
+A cross, toad, or crouger are “forward” skills performed without a preparatory rotation, there are no restrictions behind the body requiring a preparatory rotation. Tricks for which this does apply are AS, CL, TS, or meghan, for example, they consist of going to and coming out, to perform the full skill. So we label both parts as a sub-skill. Scores are given based on levels, so you get a level for each restriction of the arms. For example, a toad, crouger and EB all get you 1 level, while a TS, elephant or CL gives you 2 levels.
+Ordinary crosses are too simple and yield nothing or only half a level and are otherwise not additive to combinations. If you frequently combine such basic exercises into a sequence, you get the level for each unique transition. For example;
+
 
 \begin{itemize}
     \item toad-crouger-toad (1-1-1)
     \item toad-toad-toad (1-1-herhaling)
-    \item CL en even later toad-CL (1-2) mag ook, ook al kan je niet rechtstreeks van toad naar CL
+    \item CL (2) and later toad-CL (1-2) although you need 3 rotations (toad, go-to-CL, come-from-CL)
 \end{itemize}
 
-Wissel je bovendien van armen, switch crosses, aangeduid met een x, dan krijg je 1 of 2 extra levels.
+Arm switches, called switch crosses, gets you bonus points (1 or 2), marked with an x.
 
 \begin{itemize}
     \item toad-xtoad (1-2)
@@ -255,67 +307,84 @@ Wissel je bovendien van armen, switch crosses, aangeduid met een x, dan krijg je
     \item AS-xCL (2-3)
 \end{itemize}
 
-Al deze crosses kan je combineren met andere categorieën. Met 2 springers kan je iemand meenemen in een toad, kruis of TS, multiples worden opgebouwd uit unieke rotatiecombinaties. Voor quads komt dit bijvoorbeeld neer op:
+All these crosses can be combined with other categories, even with pair interactions, you can apply crosses, take someone in a toad, cross or TS.
+Multiples are built from unique rotation combinations. Some quads as example:
+
 \begin{itemize}
-    \item QU.s.o.AS.o (QU = 3, AS = 2, totaal = 5)
+    \item QU.s.o.AS.o (QU = 3, AS = 2, total = 5)
     \item QU.s.AS.o.o (5)
     \item QU.s.c.AS.o (5)
-    \item QU.s.EB.AS.o (6)
+    \item QU.s.toad.AS.o (6)
+    \item QU.s.EB.CL.o (5 or 6 depends if your EB-arm sticked to your back)
 \end{itemize}
+% TODO: \usepackage{graphicx} required
 
-Bovendien kunnen deze skills gecombineerd worden met powers, releases of achteruit gesprongen worden en zijn er nog een aantal speciale gevallen of uitzonderingen die minder of extra punten opleveren. Dit brengt ons to het volgende onderdeel video segmentation en branching.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/doubledutch-matrix}
+    \caption[skillmatrix-DD]{Representation of a skillmatrix used for Doube Dutch}
+    \label{fig:doubledutch-skillmatrix}
+\end{figure}
 
-\subsection{Skillafbakening \& branching}
-\label{subsec:video segmentation & branching}
+In addition, these skills can be combined with powers, releases\dots, and there are a number of special cases or exceptions that earn fewer or extra points. (Omitted in the MVP)
+Put it all together, to create a skill matrix (work in progress), see double-dutch-matrix fig\ref{fig:doubledutch-skillmatrix}.
 
-In \textcite{Zahan_2023} wordt het standaard LSTM uitgebreid om beter langdurige informatie te verwerken om resultaten van gehele gymnastiekoefening te voorspellen. Aangezien het jurysysteem van die data hierdoor één-op-één gekoppeld is aan het model, is dit niet robuust genoeg voor veranderende versies. Het proefconcept wenst dus de skills te leren waarop de levels gemapt worden via een functie.
+The skillmatrix for SR is still a little in progress since last year, knowing that some special cases can be omitted.
+
+%\subsection{Skillafbakening \& branching}
+%\label{subsec:video segmentation & branching}
+
+% In \textcite{Zahan_2023} wordt het standaard LSTM uitgebreid om beter langdurige informatie te verwerken om resultaten van gehele gymnastiekoefening te voorspellen. Aangezien het jurysysteem van die data hierdoor één-op-één gekoppeld is aan het model, is dit niet robuust genoeg voor veranderende versies. Het proefconcept wenst dus de skills te leren waarop de levels gemapt worden via een functie.
     
-Om alle trucs en combinaties van elkaar te onderscheiden werd stap per stap een skillmatrix opgebouwd. Deze matrix tracht zo veel mogelijk, om niet te zeggen alle, oefeningen op te delen volgens kenmerkende eigenschappen. Dit denkproces bracht de afbakening van skills en combinaties in kaart.
-Freestyles en ander beeldmateriaal moet gesplitst worden in eenduidig, atomair benoembare (sub-)skills, minivideo's, die slechts één representatieve voorstelling hebben in de skillmatrix.
-Concreet betekent dit dat na afbakening van skills, iedere mini-video, nog herstelbaar moet zijn tot zijn combinatie.
-Doorgaans geeft het verlaten van de grond aan dat een truc begint, analoog bij het landen en in de lucht zijn. Dit is echter niet altijd het geval bij wraps of releases. Tevens moeten de geknipte video's, na de afbakening van de trucs, even lang zijn (gelijke dimensies). Een simpele truc hiervoor is het toevoegen van \emph{lege} informatie, zwarte frames, genaamd padden (Engelse term). Vaak zullen langdurige intervallen wraps of herstel van fouten zijn. Deze lange sequenties kunnen apart gemodelleerd worden of verder opgesplitst om de padding niet te lang te maken.
+% Om alle trucs en combinaties van elkaar te onderscheiden werd stap per stap een skillmatrix opgebouwd. Deze matrix tracht zo veel mogelijk, om niet te zeggen alle, oefeningen op te delen volgens kenmerkende eigenschappen. Dit denkproces bracht de afbakening van skills en combinaties in kaart.
+% Freestyles en ander beeldmateriaal moet gesplitst worden in eenduidig, atomair benoembare (sub-)skills, minivideo's, die slechts één representatieve voorstelling hebben in de skillmatrix.
+% Concreet betekent dit dat na afbakening van skills, iedere mini-video, nog herstelbaar moet zijn tot zijn combinatie.
+% Doorgaans geeft het verlaten van de grond aan dat een truc begint, analoog bij het landen en in de lucht zijn. Dit is echter niet altijd het geval bij wraps of releases. Tevens moeten de geknipte video's, na de afbakening van de trucs, even lang zijn (gelijke dimensies). Een simpele truc hiervoor is het toevoegen van \emph{lege} informatie, zwarte frames, genaamd padden (Engelse term). Vaak zullen langdurige intervallen wraps of herstel van fouten zijn. Deze lange sequenties kunnen apart gemodelleerd worden of verder opgesplitst om de padding niet te lang te maken.
 
 \subsubsection{Skillmatrix}
 
 De de skillmatrix is voor verandering vatbaar, wanneer combinaties ontdekt worden die er niet in passen en ziet er op dit moment voor single rope als volgt uit:
 
 \begin{itemize}
-    \item \textbf{Beschrijving}: louter informatief
-    \item \textbf{Puntnotatie}: eigen notatie voor bestandsbenoemingen, nog niet optimaal met wraps, ongeveer skillmatrix in compacte vorm
-    \item \textbf{Categorie}: I, G, P, W, R, B, M, C, F
-    \item \textbf{Personen}: aantal skippers die de skill hebben uitgevoerd, soms 3 van de 4 bij een teamoefening
-    \item \textbf{Rotaties}: aantal rotaties van het touw, 0-7, 0 bij gaan naar of valse powers of wrapjes
-    \item \textbf{Touwrichting eerste rotatie}: voorwaarts, achterwaarts, zijwaarts eventueel voor buddybounce
-    \item \textbf{Touwrichting laatste rotatie}: idem
-    \item \textbf{touw rot wissels}: 0 of 1, theoretisch 2, 3, 4 mogelijk
-    \item \textbf{PLR}: 0,1,2+ parallelle lichaamsrotaties met grond (e.g. crab rond body as, evt. frog to crab niet doorsteken, pushup body-as)
-    \item \textbf{LLR}: 0.25 -> 2+ loodrechte lichaamsrotaties met grond (e.g. hummingbird, 360, halve draai, turn table crab, turn table pushup)
-    \item \textbf{multiplepart} 8x gedupliceerd, invulling per rotatie van de multiple, wrapstatus, powers landen in multiple \dots
+    \item \textbf{Description}: solely informative
+    \item \textbf{Pointified notation}: Own notation for unique naming of skills
+    \item \textbf{Category}: I, G, P, W, R, B, M, C, F
+    \item \textbf{People}: skippers executing the skill (could be 2 or 3 in a team exercise)
+    \item \textbf{mistakes}: skippers that made a mistake
+    \item \textbf{Rotations}: rope rotations, 0-8
+    \item \textbf{Rope direction first rotation}: forward, backward, side
+    \item \textbf{Rope direction first rotation}: idem
+    \item \textbf{Rope rotations switches}: 0 of 1, theoretical 2, 3, 4 possible
+    \item \textbf{PBR}: 0,1,2+ parallel body-rotations with the ground (e.g. crab, push-up)
+    \item \textbf{TTs}: 0.25 -> 2+ 'turntables' (e.g. hummingbird, 360, halve draai, turn table crab, turn table pushup)
+    \item \textbf{multiplepart} 8x duplicated, one for each rope rotation, wrapstatus\dots
     \begin{itemize}
-        \item \textbf{categorisch} s, o, c, toad, EB, AS, TS, knie, open-toe, mic, 1-H-release, powers, gyms \dots
-        \item gaan naar (AS, wrap op), komen uit (AS, unwrap), switch cross (ASxAS), sticky (AS-AS)
-        \item \textbf{wrapped bodyparts}: arm, been, tussen been rond arm...
-        \item \textbf{Interaction type}: schep, pak voor, pak achter
-        \item \textbf{combinatietype}:
-        \begin{itemize}
-            \item pre skill: multiple landen in power
-            \item mid skill: e.g. salto met multiple of release, release while wrapped
-            \item post skill: e.g. power doortrekken in kruis of multiple
-        \end{itemize}
+        \item \textbf{element} s, o, c, toad, EB, AS, TS, knee, straddle, mic, 1-H-release, powers, gyms \dots
+        \item \textbf{switch} xAS, switch cross
+        \item \textbf{wrapped bodyparts}: arm, leg, between leg around arm...
+        \item \textbf{Interaction type}: scoop, take forward, take backward
     \end{itemize}
 \end{itemize}
 
     
-Meteen valt te zien dat er theoretisch veel meer mogelijkheden zijn dan die daadwerkelijk gesprongen. Wraps kunnen eventueel nog buiten beschouwing gelaten worden aangezien deze niet moeilijk te jureren zijn, maar moeilijker eenduidig te benoemen.
+Skillmatrixes can change over time, initial skills not fitting the matrix will be left out for the MVP.
+Furthermore, you see some labels can happen one at a time (cross-type), others (e.g. category) can happen at the same time (multi-branch output as described in section 4.4.1 \autocite{Coulibaly_2022}), others require softmax.
 
-Verder zie je een soort hiërarchische structuur opduiken. We kunnen hiermee twee kanten opgaan. Ofwel beschouwen we het geheel als alle mogelijke klassen die we kunnen voorspellen en wensen we meerdere labels te geven in zijn geheel, ongeveer 1 label per categorie, rotaties, PLR, combinatietype\dots als een , ofwel passen we een soort branching toe per onderdeel zoals \textcite{Coulibaly_2022} beschreven in sectie 4.4.1. Immers draaien we ofwel voorwaarts, ofwel achterwaarts.
-Dit kan potentieel de accuraatheid bij meerdere springers verhogen, één branch per atleet.
+\subsection{Group activity}
 
-\subsection{Samenvatting literatuurstudie}
-\label{subsec:samenvatting literatuur}
+As DD3 is a group activity, problems could arise while trying to detect skills. However, the hypothesis is that a DD3 freestyle always acts as one unit, thus not really requiring much special attention. This could pose a problem when adapting SR to SR2 where two individuals are not exactly one unit. Some further research can be done in models like stagNet (\autocite{stagnet-volleybal}) fix this.
 
-Het proefconcept moet rope skipping skills labelen uit videos. Vele video's, namelijk freestyles, bestaan uit verschillende skills die elk een level krijgen, voorbehouden aan wijzigingen in het juryregelement. De freestyles dienen geknipt te worden in minivideo's per skill die op hun beurt weer een label toegekend krijgen aan de hand van de skillmatrix waarbij meerdere springers mogelijk zijn in het geval van DD3.
+\subsection{Challenges}
+\label{subsec:challenges}
 
+Unknown skills or special cases pose a problem. That's why the skillmatrix needs to defined in such a way that new combinations can fit the matrix as much as possible and/or in combination with zero-shot learning. (Sort of marking unique skills as 'I don't know' so that others new/unique ones will also be marked as 'I don't know')
+
+
+\subsection{Summary literature}
+\label{subsec:summary literature}
+
+The PoC needs to localize the jumper, using existing models fine-tuned, segment actions, preferably through transfer-learning and using own splits or guessed splits to predict (sub)skills.
+Predicted skills will then be mapped to their corresponding level.
 
 % Refereren naar de literatuur kan met:
 % \autocite{BIBTEXKEY} => (Auteur, jaartal): voor een referentie tussen
