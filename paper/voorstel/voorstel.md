@@ -62,7 +62,7 @@ Pro's & con's
 | individuals      | 1 | 3 |
 | competitions     | Okt-Nov | March-Apr |
 
-Both datasets are skewed, there are common skills which can be found in 30-60% of the routines, where others occur only once, twice each competition, if they ocur at all.
+Both datasets are skewed, there are common skills which can be found in 30-70% of the routines (educated broad guess based on experience), where others occur only once, twice each competition, if they'll ocur at all.
 
 #### What would be a minimal Proof of Concept (PoC)?
 
