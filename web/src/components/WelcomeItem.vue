@@ -41,10 +41,10 @@ h3 {
 }
 
 @media (min-width: 1024px) {
-  .item {
+  /* .item { */
     /* margin-top: 0; */
     /* padding: 0.4rem 0 1rem calc(var(--section-gap) / 3); */
-  }
+  /* } */
 
   i {
     border: 1px solid var(--color-border);

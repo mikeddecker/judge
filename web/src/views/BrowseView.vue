@@ -1,7 +1,17 @@
+<script>
+import BrowseContainer from '@/components/BrowseContainer.vue';
+export default {
+  components: {
+    BrowseContainer,
+  },
+};
+</script>
+
 <template>
   <div class="browse">
     <h1>This is the video browse page</h1>
-
+    <BrowseContainer/>
+    <BrowseContainer title="HELLOKES"/>
     <div class="flexcontainer">
       <img class="timet" src="/home/miked/Pictures/Screenshots/timetable.png"/>
       <img class="timet" src="/home/miked/Pictures/Screenshots/Screenshot from 2024-10-10 17-36-38.png"/>
