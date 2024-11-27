@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Skillsegment {
+  id            Int     @id @default(autoincrement())
+  videoID       Int
+  frameStart    Int     @db.SmallInt
+  frameEnd      Int     @db.SmallInt
+  label         Int     @db.TinyInt
+  manual_insert Boolean
+  Videos        Videos  @relation(fields: [videoID], references: [videoID], onDelete: NoAction, onUpdate: NoAction, map: "BorderLabels_ibfk_1")
+
+  @@index([videoID], map: "videoID")
+}
+
+model Folders {
+  folderID Int      @id @default(autoincrement())
+  path     String   @db.VarChar(127)
+  Videos   Videos[]
+}
+
+model FrameLabel {
+  id            Int     @id @default(autoincrement())
+  videoID       Int
+  frameNr       Int     @db.SmallInt  // Max 32k
+  label         Int     @db.TinyInt
+  rect_center_x Float   @db.Float
+  rect_center_y Float   @db.Float
+  rect_size_x   Float   @db.Float
+  rect_size_y   Float   @db.Float
+  Videos        Videos  @relation(fields: [videoID], references: [videoID], onDelete: NoAction, onUpdate: NoAction, map: "FrameLabels_ibfk_1")
+
+  @@index([videoID], map: "videoID")
+}
+
+model Videos {
+  videoID      Int            @id @default(autoincrement())
+  folderID     Int
+  name         String         @db.VarChar(255)
+  width        Int            @db.SmallInt
+  height       Int            @db.SmallInt
+  fps          Int            @db.TinyInt
+  training     Boolean
+  quality      Int            @db.TinyInt
+  obstruction  Boolean
+  Skills       Skillsegment[]
+  FrameLabels  FrameLabel[]
+  Folders      Folders        @relation(fields: [folderID], references: [folderID], onDelete: NoAction, onUpdate: NoAction, map: "Videos_ibfk_1")
+
+  @@index([folderID], map: "folderID")
+}

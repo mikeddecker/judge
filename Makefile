@@ -4,5 +4,8 @@ init:
 checks:
 	python3 -m unittest discover
 
+remove-old:
+	sudo rm -rf db_data
+
 hello:
 	echo "Hello world"

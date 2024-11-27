@@ -16,9 +16,7 @@ HAR in team sports survey (Yin H. 2024-9) [springer](https://link.springer.com/a
 
 > The transformer approach would consume a tremendous amount of calculation resources during the training process, and the video itself contains a large amount of redundant information. Moreover, the transformer also highly relies on the extra dataset to achieve good performance. Video masked autoencoders (**VideoMAE**) (Tong et al. 2022) proposed a highly efficient masked autoencoder, which aimed to solve the problem of training transformer models without additional pre-training weights and data. It utilised plain ViT backbones and a high mask ratio to lower the dimensions of inputs, which makes it able to feed into the spatio-temporal self-attention model without requiring a large amount of calculation. Video masked autoencoder v2 (**VideoMAE v2**) (Wang et al. 2023a) further improved the efficiency by redesigning the masking decoder. It finally became a ViT model with a billion parameters, and it achieved a better result than the original version. Due to the high efficiency of the encoder-decoder and excellent performance on a variety of downstream tasks, many studies have treated VideoMAE v2 as one of the benchmark models.
 
-### refers to
-
-ASTRA: An Action Spotting TRAnsformer for Soccer Videos [acm](https://dl.acm.org/doi/10.1145/3606038.3616153)
+--> refers to : ASTRA: An Action Spotting TRAnsformer for Soccer Videos [acm](https://dl.acm.org/doi/10.1145/3606038.3616153)
 
 ## Others
 
@@ -30,3 +28,7 @@ ASTRA: An Action Spotting TRAnsformer for Soccer Videos [acm](https://dl.acm.org
 
 [Spatiotemporal Self-attention Modeling with
 Temporal Patch Shift for Action Recognition](https://arxiv.org/pdf/2207.13259)
+
+[Small models : SqueezeNet](https://arxiv.org/pdf/1602.07360)
+
+[Google Learn2compress](https://research.google/blog/custom-on-device-ml-models-with-learn2compress/)

@@ -17,3 +17,5 @@ db_data/*
 
 # Ignore venv (virtual environment)
 **/venv/*
+
+node_modules
