@@ -1,2 +1,4 @@
-def random_hello():
-    return "Hello"
+from models import db
+
+class VideoRepository:
+    pass

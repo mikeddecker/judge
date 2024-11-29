@@ -1,6 +1,5 @@
 import os
 import urllib.parse
-from repos.videoRepo import random_hello
 
 API_URL="127.0.0.1:8123"
 VIDEO_FOLDER="/home/miked/Pictures/Screenshots"
@@ -16,8 +15,6 @@ def browse_videos(subFolder = "", page = 1, limit = 10):
         "folders" : get_folders(subFolder=subFolder),
         "videos" : get_videos(subFolder=subFolder),
     }
-
-
 
 
 ## Help functions
