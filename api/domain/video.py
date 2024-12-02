@@ -1,5 +1,5 @@
 # from typing import Optional
-from folder import Folder
+from .folder import Folder
 
 class Video:
     def __init__(self, id: int, name: str, folder: Folder):
