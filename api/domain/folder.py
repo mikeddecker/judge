@@ -18,6 +18,6 @@ class Folder:
     def __setattr__(self, name, value):
         if hasattr(self, name):
             # Prevent setting 'id' after it is set in __init__
-            if name in ["id", "name"]:
+            if name in ["id", "name", "parent"]:
                 raise AttributeError(f"Cannot modify '{name}' once it is set")
         super().__setattr__(name, value)

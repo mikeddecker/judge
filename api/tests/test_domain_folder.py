@@ -44,6 +44,9 @@ class DomainFolderTestSuite(unittest.TestCase):
             folder.name = "free"
 
     def test_change_parent_immutable(self):
+        with self.assertRaises(AttributeError):
+            folder = Folder(1, "competition", None)
+            folder.parent = Folder(2, "main", None)
         pass # TODO
 
 if __name__ == '__main__':
