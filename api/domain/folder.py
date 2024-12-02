@@ -2,7 +2,6 @@ from typing import Optional, Final
 
 class Folder:
     def __init__(self, id: Optional[int], name: str, parent: Optional['Folder'] = None):
-        # Initialize the instance with values (this won't change the class-level variables)
         self.__setId(id)
         if not name or name.isspace():
             raise ValueError("Name may not be an empty string")
