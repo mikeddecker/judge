@@ -61,5 +61,10 @@ class DomainVideoTestSuite(unittest.TestCase):
             video = Video(1, "dd3-nationals", FOLDER_INSTANCE_VALID)
             video.Folder = Folder(2, "main", FOLDER_INSTANCE_VALID)
 
+    def test_change_id_private_method(self):
+        with self.assertRaises(AttributeError):
+            video = Video(1, "dd3-nationals", None)
+            video.__setId(88)
+
 if __name__ == '__main__':
     unittest.main()
