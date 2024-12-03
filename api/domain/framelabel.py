@@ -1,2 +1,0 @@
-class Framelabel:
-    pass

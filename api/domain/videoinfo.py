@@ -1,7 +1,13 @@
-# from typing import Optional
-from .folder import Folder
+from typing import Dict
 
-class Video:
+from .folder import Folder
+from .frameinfo import Frame
+
+class VideoInfo:
+    # Frame does not 
+    type LoadedFrames = Dict[int, Frame] # Key = frameId, value is Frame
+    type
+
     def __init__(self, id: int, name: str, folder: Folder):
         # Initialize the instance with values (this won't change the class-level variables)
         self.__setId(id)
