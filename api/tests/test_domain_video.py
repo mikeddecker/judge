@@ -3,6 +3,7 @@ import unittest
 from parameterized import parameterized
 from domain.folder import Folder
 from domain.videoinfo import VideoInfo
+from domain.skill import Skill
 
 def generate_empty_strings():
     return [ 
@@ -65,6 +66,75 @@ class DomainVideoTestSuite(unittest.TestCase):
         with self.assertRaises(AttributeError):
             video = VideoInfo(1, "dd3-nationals", None)
             video.__setId(88)
+
+    # Section : No labels
+    def test_frames_empty_when_no_labled_frames(self):
+        video = VideoInfo(1, "dd3-nationals", None)
+        self.assertTrue(len(video.Frames) == 0)
+
+
+    def test_skills_empty_when_no_labled_skills(self):
+        video = VideoInfo(1, "dd3-nationals", None)
+        self.assertTrue(len(video.Skills) == 0)
+    
+
+    ####################
+    # Section : Frames #
+    ####################
+    def test_add_frame_valid(self):
+        pass
+
+    def test_add_frame_invalid_none(self):
+        pass
+
+    def test_add_frame_invalid_duplicate(self):
+        pass
+
+    def test_add_frame_invalid_frameidx_already_exists(self):
+        pass
+
+    def test_add_frame_invalid_frameidx_out_of_bounds(self):
+        # TODO : e.g. video is 3080 frames, but frame has idx 3080 or 5555
+        pass
+
+    def test_has_frame_contained(self):
+        pass
+
+    def test_has_frame_not_contained(self):
+        pass
+
+    def test_get_frame_valid(self):
+        pass
+
+    def test_get_frame_invalid_not_contained_none(self):
+        # TODO : when frameidx not contained, return None or KeyError
+        pass
+
+    def test_update_frame(self):
+        # TODO : current framelabels = localization only? 
+        # TODO : make decision if update frame only is for videoService & frame, or a 'copy' in video?
+        pass
+
+    def test_remove_frame_valid(self):
+        pass
+
+    def test_remove_frame_invalid_not_in_dict(self):
+        pass
+    
+
+    ####################
+    # Section : Skills #
+    ####################
+    def test_add_skill_valid(self):
+        video = VideoInfo(1, "dd3-nationals", None)
+        skill = Skill()
+        video.add_skill(skill)
+        self.assertIn(skill, video.Skills, f"Skill is not in property Skills")
+
+    # TODO : add tests
+    
+
+
 
 if __name__ == '__main__':
     unittest.main()
