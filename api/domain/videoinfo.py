@@ -1,15 +1,18 @@
-from typing import Dict
+from typing import Dict, Set
 
 from .folder import Folder
 from .frameinfo import Frame
+from .skill import Skill
 
 class VideoInfo:
     # Frame does not 
-    type LoadedFrames = Dict[int, Frame] # Key = frameId, value is Frame
-    type
+    Frames = Dict[int, Frame] # Key = frameId, value is Frame
+    Skills = Set[Skill]
 
     def __init__(self, id: int, name: str, folder: Folder):
-        # Initialize the instance with values (this won't change the class-level variables)
+        self.Frames: self.Frames = {}  # Initialize frames as an empty dictionary
+        self.Skills: self.Skills = set()  # Initialize skills as an empty set
+
         self.__setId(id)
         if not name or name.isspace():
             raise ValueError("Name may not be an empty string")
@@ -33,4 +36,15 @@ class VideoInfo:
         if id is None or id <= 0:
             raise ValueError("Id must be strict positive")
         self.Id = id
+
+    # Section : Frame functions
+
+    # Section : Skill functions
+
+    def add_skill(self, skill: Skill):
+        if skill is None:
+            raise ValueError("Skill may not be None")
+        if skill in self.Skills:
+            raise ValueError(f"Skill {skill} is already in the list.")
+        self.Skills.add(skill)
 
