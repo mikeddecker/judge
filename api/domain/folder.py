@@ -1,6 +1,8 @@
-from typing import Optional, Final
+import os
+from typing import Optional
 
 class Folder:
+    PROPERTIES = ["Id", "Name", "Parent"]
     def __init__(self, id: Optional[int], name: str, parent: Optional['Folder'] = None):
         self.__setId(id)
         if not name or name.isspace():
@@ -17,6 +19,8 @@ class Folder:
                 self.__setId(value)
             if name in ["Name", "Parent"]:
                 raise AttributeError(f"Cannot modify '{name}' once it is set")
+        elif name not in self.PROPERTIES:
+            raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
     def __setId(self, id):
@@ -26,3 +30,7 @@ class Folder:
             raise ValueError("Id must be strict positive")
         self.Id = id
 
+    def get_relative_path(self):
+        if self.Parent:
+            return os.path.join(self.Parent.get_relative_path(), self.Name)
+        return self.Name
