@@ -127,7 +127,7 @@ class DomainVideoTestSuite(unittest.TestCase):
     ####################
     def test_add_skill_valid(self):
         video = VideoInfo(1, "dd3-nationals", None)
-        skill = Skill()
+        skill = Skill(5, "crouger")
         video.add_skill(skill)
         self.assertIn(skill, video.Skills, f"Skill is not in property Skills")
 

@@ -5,6 +5,7 @@ from .frameinfo import Frame
 from .skill import Skill
 
 class VideoInfo:
+    PROPERTIES = ["Frames", "Skills", "Id", "Name", "Folder"]
     # Frame does not 
     Frames = Dict[int, Frame] # Key = frameId, value is Frame
     Skills = Set[Skill]
@@ -28,6 +29,8 @@ class VideoInfo:
                 self.__setId(value)
             if name in ["Name", "Folder"]:
                 raise AttributeError(f"Cannot modify '{name}' once it is set")
+        elif name not in self.PROPERTIES:
+            raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
     def __setId(self, id):

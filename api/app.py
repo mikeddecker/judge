@@ -24,7 +24,7 @@ db.init_app(app)
 
 api = Api(app)
 
-from routers.folderRouter import FolderRouter
+from routers.browseRouter import FolderRouter
 # use api.add_resource to add the paths
 api.add_resource(FolderRouter, '/folders', '/folders/<int:user_id>')
 

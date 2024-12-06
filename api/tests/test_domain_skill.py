@@ -44,7 +44,7 @@ class DomainSkillTestSuite(unittest.TestCase):
     def test_change_name_immutable(self):
         with self.assertRaises(AttributeError):
             video = Skill(1, "toad", None)
-            video.Name = "elephant"
+            video.DottedName = "elephant"
 
     def test_change_id_private_method(self):
         with self.assertRaises(AttributeError):

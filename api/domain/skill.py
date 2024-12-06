@@ -1,7 +1,11 @@
 
 class Skill:
-    FrameStart = int
-    FrameEnd = int # Included
+    PROPERTIES = [
+        'Id', 'DottedName',
+        'FrameStart', 'FrameEnd'
+    ]
+    FrameStart: int
+    FrameEnd: int # Included
 
     def __init__(self, id: int, dottedName: str, frameStart: int = None, frameEnd: int = None):
         self.__setId(id)
@@ -11,9 +15,13 @@ class Skill:
         if hasattr(self, name):
             if name == 'Id':
                 self.__setId(value)
+            if name == 'DottedName':
+                self.__setDottedName(value)
             # Prevent setting immutable attributes after it is set in __init__
-            if name in ["Name", "Folder"]:
+            if name in ["DottedName", "Folder"]:
                 raise AttributeError(f"Cannot modify '{name}' once it is set")
+        elif name not in self.PROPERTIES:
+            raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
     def __setId(self, id):
