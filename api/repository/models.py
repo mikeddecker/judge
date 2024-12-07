@@ -4,18 +4,24 @@ db = SQLAlchemy()
 class Folder(db.Model):
     __tablename__ = 'Folders'
     id = db.Column(db.Integer, primary_key=True)
-    path = db.Column(db.String(127), unique=True, nullable=False)
+    name = db.Column(db.String(127), unique=True, nullable=False)
+    parentId = db.Column(db.Integer, db.ForeignKey('Folders.id'), nullable=True)
+    parent = db.relationship('Folder', remote_side=[id], backref='children', lazy='joined')
+    videos = db.relationship('Videoinfo', backref='folder', lazy='dynamic') # Loaded lazily, so videoIDs are accecible, but full fetch only when explicitly asked
 
     def to_dict(self):
         return {
             'id': self.id,
-            'path': self.path,
+            'name': self.path,
+            'parentId' : self.parentId,
+            'children': [child.id for child in self.children],
+            'videoIds': [video.id for video in self.videos] 
         }
     
 class Video(db.Model):
     __tablename__ = 'Videos'
     id = db.Column(db.Integer, primary_key=True)
-    folderId = db.Column(db.Integer, nullable=False)
+    folderId = db.Column(db.Integer, db.ForeignKey('Folders.id'), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
@@ -23,6 +29,7 @@ class Video(db.Model):
     training = db.Column(db.Boolean, nullable=False)
     quality = db.Column(db.Integer, nullable=False)
     obstruction = db.Column(db.Boolean, nullable=False)
+    private = db.Column(db.Boolean, nullable=False, default=False)
 
     def to_dict(self):
         return {
