@@ -32,3 +32,13 @@ Temporal Patch Shift for Action Recognition](https://arxiv.org/pdf/2207.13259)
 [Small models : SqueezeNet](https://arxiv.org/pdf/1602.07360)
 
 [Google Learn2compress](https://research.google/blog/custom-on-device-ml-models-with-learn2compress/)
+
+## Biblatex template website
+
+@Online{citekey,
+    author = {Author/Organization},
+    title = {Title of Webpage},
+    url = {URL},
+    urldate = {Date Accessed},
+    year = {Year Published/ Last Updated}
+}
