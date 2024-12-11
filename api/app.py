@@ -1,30 +1,36 @@
-from flask import Flask, request, jsonify
+import os
+
+from flask import Flask, request, jsonify, current_app, g
 from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
-
-from repository.models import Folder, Video, db
-import os
-from dotenv import load_dotenv
-load_dotenv()
+from repository.db import db
+from routers.folderRouter import FolderRouter
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-app = Flask(__name__)
-# applies CORS headers to all routes, enabling resources to be accessed
-CORS(app)
-print(DATABASE_URL)
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.json.compact = False
+# db = SQLAlchemy()
+migrate = Migrate()
 
-migrate = Migrate(app, db)
-db.init_app(app)
+def create_app(config_object="config.Config"):
+    app = Flask(__name__)
+    CORS(app)
+    
+    # Load configuration from config file or environment variable
+    app.config.from_object(config_object)
+    
+    # Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    
+    from repository.models import Folder as FolderDB, Video as VideoDB
 
+    return app
+
+app = create_app()
 api = Api(app)
 
-from routers.browseRouter import FolderRouter
 # use api.add_resource to add the paths
 api.add_resource(FolderRouter, '/folders', '/folders/<int:user_id>')
 

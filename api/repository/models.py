@@ -1,5 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
+# from flask_sqlalchemy import SQLAlchemy
+from repository.db import db
 
 class Folder(db.Model):
     __tablename__ = 'Folders'
@@ -7,12 +7,12 @@ class Folder(db.Model):
     name = db.Column(db.String(127), unique=True, nullable=False)
     parentId = db.Column(db.Integer, db.ForeignKey('Folders.id'), nullable=True)
     parent = db.relationship('Folder', remote_side=[id], backref='children', lazy='joined')
-    videos = db.relationship('Videoinfo', backref='folder', lazy='dynamic') # Loaded lazily, so videoIDs are accecible, but full fetch only when explicitly asked
+    videos = db.relationship('Video', backref='folder', lazy='dynamic') # Loaded lazily, so videoIDs are accecible, but full fetch only when explicitly asked
 
     def to_dict(self):
         return {
             'id': self.id,
-            'name': self.path,
+            'name': self.name,
             'parentId' : self.parentId,
             'children': [child.id for child in self.children],
             'videoIds': [video.id for video in self.videos] 

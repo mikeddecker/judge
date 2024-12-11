@@ -1,25 +1,28 @@
 from domain.folder import Folder
-from models import db, Folder as FolderDB
+from flask_sqlalchemy import SQLAlchemy
+from repository.models import Folder as FolderDB
+from repository.MapToDomain import MapToDomain
 from typing import List
-from MapToDomain import MapToDomain
 
 class FolderRepository:
+    def __init__(self, db : SQLAlchemy):
+        self.db = db
+    
     def add(self, name: str, parent: Folder) -> Folder:
         new_folder = FolderDB(name=name, parent_id=parent.Id)
-        db.session.add(new_folder)
-        db.session.commit()
+        self.db.session.add(new_folder)
+        self.db.session.commit()
         return MapToDomain.map_folder(new_folder)
     
     def exists_by_id(self, id: int) -> bool:
-        if not isinstance(int, id) or id <= 0:
+        if not isinstance(id, int) or id <= 0:
             raise ValueError(f"Id must be a strictly positive integer, got {id}")
-        return db.session.query(FolderDB.id).filter_by(id=id).scalar() is not None
+        return self.db.session.query(FolderDB.id).filter_by(id=id).scalar() is not None
     
     def exists_name(self, name: str, parent: Folder) -> bool:
-        if not isinstance(str, id) or name.isspace():
-            raise ValueError(f"Id must be a strictly positive integer, got {id}")
-        return db.session.query(FolderDB.id).filter_by(id=id).scalar() is not None
-    
+        if not isinstance(name, str) or name.isspace():
+            raise ValueError(f"parentId must be a strictly positive integer, got {parent.Id}")
+        return self.db.session.query(FolderDB).filter_by(name=name, parentId=parent.Id).scalar() is not None
     
     def get(self, id: int) -> Folder:
         """
@@ -53,8 +56,8 @@ class FolderRepository:
             raise LookupError(f"Folder {id} doesn't exist")
         
         folder = FolderDB.query.get(id)
-        db.session.delete(folder)
-        db.session.commit()
+        self.db.session.delete(folder)
+        self.db.session.commit()
         return True
 
     def rename(self, id: int, new_name):
@@ -63,5 +66,5 @@ class FolderRepository:
         
         folder = FolderDB.query.get(id)
         folder.name = new_name
-        db.session.commit()
+        self.db.session.commit()
         return MapToDomain.map_folder(folder)

@@ -1,5 +1,6 @@
-from models import db, Folder as FolderDB
 from domain.folder import Folder
+from domain.videoinfo import VideoInfo
+from repository.models import Folder as FolderDB
 
 class MapToDomain:
     def map_folder(folderDB: FolderDB) -> Folder:
