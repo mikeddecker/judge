@@ -9,17 +9,22 @@ class FolderRepository:
         self.db = db
     
     def add(self, name: str, parent: Folder) -> Folder:
-        new_folder = FolderDB(name=name, parent_id=parent.Id)
+        if parent:
+            new_folder = FolderDB(name=name, parent_id=parent.Id) if parent else Folder(name=name)
+        else:
+            new_folder = FolderDB(name=name)
         self.db.session.add(new_folder)
         self.db.session.commit()
         return MapToDomain.map_folder(new_folder)
     
-    def exists_by_id(self, id: int) -> bool:
+    def exists(self, id: int) -> bool:
         if not isinstance(id, int) or id <= 0:
             raise ValueError(f"Id must be a strictly positive integer, got {id}")
         return self.db.session.query(FolderDB.id).filter_by(id=id).scalar() is not None
     
-    def exists_name(self, name: str, parent: Folder) -> bool:
+    def exists_by_name(self, name: str, parent: Folder) -> bool:
+        # Only when needed
+        raise NotImplementedError
         if not isinstance(name, str) or name.isspace():
             raise ValueError(f"parentId must be a strictly positive integer, got {parent.Id}")
         return self.db.session.query(FolderDB).filter_by(name=name, parentId=parent.Id).scalar() is not None
@@ -48,6 +53,10 @@ class FolderRepository:
         folder = FolderDB.query.get(id)  # Using primary key for lookup
         return MapToDomain.map_folder(folder)
 
+    def get_by_name(self, name: str) -> Folder:
+        # Only when needed
+        raise NotImplementedError
+
     def delete(self, id):
         """
         Hard deletes the folder from the database.
@@ -61,7 +70,7 @@ class FolderRepository:
         return True
 
     def rename(self, id: int, new_name):
-        if not self.exists_by_id(id):
+        if not self.exists(id):
             raise LookupError(f"Folder {id} doesn't exist")
         
         folder = FolderDB.query.get(id)

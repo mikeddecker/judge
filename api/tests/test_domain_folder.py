@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-import unittest
-from parameterized import parameterized
-from domain.folder import Folder
 import os
+import unittest
+
+from domain.folder import Folder
+from parameterized import parameterized
 
 def generate_empty_strings():
     return [ 
@@ -82,9 +83,45 @@ class DomainFolderTestSuite(unittest.TestCase):
         self.assertEqual(path, folder.get_relative_path())
 
     ############################################
+    # General Methods
+    ############################################
+    @parameterized.expand([
+        (1, 1, "competition", "competition"),
+        (2, 2, "competition", "competition"),
+        (1, 1, "belgium", "belgium"),
+    ])
+    def test_equals_valid_name(self, id_1, id_2, name_1, name_2):
+        folder1 = Folder(id=id_1, name=name_1)
+        folder2 = Folder(id=id_2, name=name_2)
+        self.assertEqual(folder1, folder2)
+
+    def test_equals_valid_with_parent(self):
+        parent_1 = Folder(id=3, name="parentfolder_hahaha")
+        parent_2 = Folder(id=3, name="parentfolder_hahaha")
+        folder1 = Folder(id=1, name="name_1", parent=parent_1)
+        folder2 = Folder(id=1, name="name_1", parent=parent_2)
+        self.assertEqual(folder1, folder2)
+        pass
+
+    def test_equals_valid_nested_parent(self):
+        pass
+
+    def test_equals_invalid_name_and_id(self):
+        pass
+
+    def test_equals_invalid_with_parent(self):
+        pass
+
+    def test_equals_invalid_nested_parent(self):
+        pass
+
+    ############################################
     # Nice to haves
     ############################################
-    def test_ctor_invalid_same_folderId(self):
+    def test_ctor_invalid_parent_has_same_folderId(self):
+        pass
+
+    def test_ctor_invalid_nested_parent_has_same_folderId(self):
         pass
 
 if __name__ == '__main__':

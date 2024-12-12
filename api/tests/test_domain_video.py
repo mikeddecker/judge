@@ -67,7 +67,7 @@ class DomainVideoTestSuite(unittest.TestCase):
             video = VideoInfo(1, "dd3-nationals", None)
             video.__setId(88)
 
-    # Section : No labels
+    # Section : No labels when just loaded
     def test_frames_empty_when_no_labled_frames(self):
         video = VideoInfo(1, "dd3-nationals", None)
         self.assertTrue(len(video.Frames) == 0)

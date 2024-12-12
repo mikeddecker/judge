@@ -9,3 +9,4 @@ class MapToDomain:
             parent_folder = Folder(folderDB.parent.id, folderDB.parent.name, None)
             folder.Parent = parent_folder
             folderDB = folderDB.parent
+        return folder
