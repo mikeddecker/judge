@@ -4,4 +4,5 @@ See [Flask testing](https://flask.palletsprojects.com/en/stable/testing/) when c
 
 ## Repo tests vs Integration test
 
-As it is only a proof of concept, no further distinction between service tests and repo tests will be made.
+As it is only a proof of concept, no further distinction between service tests and repo tests will be made. \
+In essence, the service should check the same things, but some could be more strict.
