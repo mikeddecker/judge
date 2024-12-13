@@ -4,11 +4,8 @@ import unittest
 
 from domain.folder import Folder
 from parameterized import parameterized
+from tests.TestHelper import TestHelper
 
-def generate_empty_strings():
-    return [ 
-        None, "", " ", "\n", "\r", "  ", "\t ", "\t", " \r\n "
-    ]
 class DomainFolderTestSuite(unittest.TestCase):
     """Domain folder test cases."""
     @parameterized.expand([
@@ -25,7 +22,7 @@ class DomainFolderTestSuite(unittest.TestCase):
         self.assertEqual(id, folder.Id, f"Folder id incorrectly initialized {id}, {folder.Id}")
         self.assertEqual(folderparent, folder.Parent, f"Parent of folder incorrectly initialized")
 
-    @parameterized.expand(generate_empty_strings())
+    @parameterized.expand(TestHelper.generate_empty_strings())
     def test_ctor_invalid_name_none(self, name):
         with self.assertRaises(ValueError):
             Folder(1, name, None)
@@ -56,8 +53,14 @@ class DomainFolderTestSuite(unittest.TestCase):
 
     def test_change_parent_immutable(self):
         with self.assertRaises(AttributeError):
-            folder = Folder(1, "competition", None)
+            folder = Folder(1, "competition", Folder(3, "not_none", None))
             folder.Parent = Folder(2, "main", None)
+    
+    def test_change_parent_immutable_except_none_is_changeable(self):
+        parent_folder = Folder(2, "main", None)
+        folder = Folder(1, "competition", None)
+        folder.Parent = parent_folder
+        self.assertEqual(folder.Parent, parent_folder)
 
     ############################################
     # Methods

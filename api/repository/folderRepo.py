@@ -10,7 +10,7 @@ class FolderRepository:
     
     def add(self, name: str, parent: Folder) -> Folder:
         if parent:
-            new_folder = FolderDB(name=name, parent_id=parent.Id) if parent else Folder(name=name)
+            new_folder = FolderDB(name=name, parentId=parent.Id) if parent else Folder(name=name)
         else:
             new_folder = FolderDB(name=name)
         self.db.session.add(new_folder)
@@ -24,11 +24,13 @@ class FolderRepository:
     
     def exists_by_name(self, name: str, parent: Folder) -> bool:
         # Only when needed
-        raise NotImplementedError
         if not isinstance(name, str) or name.isspace():
             raise ValueError(f"parentId must be a strictly positive integer, got {parent.Id}")
-        return self.db.session.query(FolderDB).filter_by(name=name, parentId=parent.Id).scalar() is not None
-    
+        if parent:
+            return self.db.session.query(FolderDB).filter_by(name=name, parentId=parent.Id).scalar() is not None
+        else:
+            return self.db.session.query(FolderDB).filter_by(name=name).scalar() is not None
+        
     def get(self, id: int) -> Folder:
         """
         Query the database and get the folder and all its parents (until its in the root folder, marked NULL in db)
@@ -77,3 +79,6 @@ class FolderRepository:
         folder.name = new_name
         self.db.session.commit()
         return MapToDomain.map_folder(folder)
+    
+    def count(self):
+        return self.db.session.query(FolderDB).count()

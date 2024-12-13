@@ -4,5 +4,7 @@ class ServiceHelper:
             raise ValueError(f"Id must be strict positive integer, got {id}")
         
     def check_raise_string(val: str):
-        if val.isspace():
-            raise ValueError(f"Strings may not consist of spaces spaces")
+        if val is None:
+            raise ValueError(f"Strings may not be none")
+        if val.isspace() or val == "":
+            raise ValueError(f"Strings may not be empty")

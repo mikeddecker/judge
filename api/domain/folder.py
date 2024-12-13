@@ -17,8 +17,9 @@ class Folder:
             # Prevent setting immutable attributes after it is set in __init__
             if name == 'Id':
                 self.__setId(value)
-            if name == "Parent" and self.Parent is not None:
-                raise AttributeError(f"Cannot modify '{name}' once it is set")
+            if name == "Parent" and self.Parent is None:
+                super().__setattr__(name, value)
+                return
             if name in ["Name", "Parent"]:
                 raise AttributeError(f"Cannot modify '{name}' once it is set")
         elif name not in self.PROPERTIES:
@@ -31,7 +32,7 @@ class Folder:
         if id is None or id <= 0:
             raise ValueError("Id must be strict positive")
         self.Id = id
-
+    
     def get_relative_path(self):
         if self.Parent:
             return os.path.join(self.Parent.get_relative_path(), self.Name)
