@@ -1,4 +1,4 @@
-# The judge repo where the magic happens
+# The AI judge repo where the magic happens
 
 Content:
 
@@ -10,16 +10,17 @@ Content:
 
 ## Main focus (MVP)
 
-Focus = DD3.
-How?
+Focus = DD3. (Double Dutch Single Freestyle)
 
-1) Jumper Localisation
-2) Skill segmentation, start of skill, end of skill
-3) Counting rotations (DU, TU, QU, Wrap with 3 rotations?)
+1) Jumper Localisation (CNN based)
+2) Skill segmentation, start of skill, end of skill (Using something like LTContext or others using [papers-with-code](https://paperswithcode.com/task/action-segmentation))
+3) Counting rotations (DU, TU, QU, Wrap with 3 rotations?) (ConvLSTM, MiM, (Vision)transformer)
 4) ... (unknown in betweens)
-5) Label the effective skill
+5) Label the effective skill (ConvLSTM, MiM, (Vision)transformer)
 
-### Data
+For full details see [proposal](./paper/voorstel/voorstel-inhoud.tex), preferably compile it from [full-proposal](./paper/voorstel/DeDeckerMike-BPvoorstel.tex)
+
+### DD3 Data
 
 Current estimation of data: 440GB
 
@@ -41,7 +42,7 @@ TODO : scrape insta videos (=mainly SR)
 ### Physical devices for training
 
 Laptop: GPU (not ideal, but good for try-outs)
-School: Ask for server (with GPU)
+School: Ask for server (with GPU) --> probably not.
 
 ### Resources (Papers & Models & additional sources)
 
@@ -54,14 +55,7 @@ Install requirements
 
 `pip3 install -r requirements.txt`
 
-Run webapp:
+Then start up the API and the web app.
 
-`TODO`
-
-Run API: ...
-
-`TODO`
-
-Or use docker:
-
-`TODO`
+- [API](./api/README.md) (Includes docker)
+- [Web](./web/README.md)
