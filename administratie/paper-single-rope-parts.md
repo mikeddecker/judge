@@ -67,3 +67,87 @@ By starting with a simplified notation, hereafter called pointified notation, do
 Afterwards, levels can be given to each (sub)skill in the matrix.
 An educated, quick guess based on my own experiences would be that, at least, 85-95\% or more skills on competitions could be labeled using the simplified notation, not including special cases.
 
+## Literature
+
+### Single rope skill definition
+
+\subsubsection{Single Rope - SR}
+
+Single Rope is the style defined where jumpers use their individual rope to execute different skills belonging divided in categories: gymnastics G, powers P, wraps W, releases R, backwards B, multiples M, crosses C, footwork F, Interactions I and an endless possibility of combinations. Multiples for example are actually multiple crosses in one jump. Likewise, releases can be combined with wraps, multiples with powers and so on.
+
+Some examples:
+
+% TODO : bijlage bij BP
+\begin{itemize}
+    \item Crosses
+    \begin{itemize}
+        \item side swing (s - swing next to the body)
+        \item open (o - normal jump)
+        \item cross (c - crossed arms on the stomach)
+        \item toad (raise knee, other arm under your knee)
+        \item EB (arm on stomach + arm on back)
+        \item AS (arms crossed behind the knees)
+        \item CL (one arm behind the knees, other on the back)
+        \item TS (arms crossed behind the back)
+    \end{itemize}
+    \item Multiples
+    \begin{itemize}
+        \item double - DU - 2 rotations
+        \item triple - TU - 3 rotations
+        \item quad - QU - 4 rotations
+        \item quint - 5 rotations
+        \item TU.s.EB.o - first rotation on the side, next EB, next open
+    \end{itemize}
+    \item Powers
+    \begin{itemize}
+        \item push-up - to plank position and pushing upwards while pulling the rope underneath your feet.
+        \item split - idem push-up, but to split
+        \item frog - handstand
+    \end{itemize}
+\end{itemize}
+
+Each skill will then be assigned a level contributing to a score. 
+
+### 2.8 Further definitions
+
+A cross, toad, or crouger are “forward” skills performed without a preparatory rotation, there are no restrictions behind the body requiring a preparatory rotation. Tricks for which this does apply are AS, CL, TS, or meghan, for example, they consist of going to and coming out, to perform the full skill. So we label both parts as a sub-skill. Scores are given based on levels, so you get a level for each restriction of the arms. For example, a toad, crouger and EB all get you 1 level, while a TS, elephant or CL gives you 2 levels.
+Ordinary crosses are too simple and yield nothing or only half a level and are otherwise not additive to combinations. If you frequently combine such basic exercises into a sequence, you get the level for each unique transition. For example;
+
+
+\begin{itemize}
+    \item toad-crouger-toad (1-1-1)
+    \item toad-toad-toad (1-1-herhaling)
+    \item CL (2) and later toad-CL (1-2) although you need 3 rotations (toad, go-to-CL, come-from-CL)
+\end{itemize}
+
+Arm switches, called switch crosses, gets you bonus points (1 or 2), marked with an x.
+
+\begin{itemize}
+    \item toad-xtoad (1-2)
+    \item AS-xAS (2-4)
+    \item AS-CL (2-2)
+    \item AS-xCL (2-3)
+\end{itemize}
+
+All these crosses can be combined with other categories, even with pair interactions, you can apply crosses, take someone in a toad, cross or TS.
+Multiples are built from unique rotation combinations. Some quads as example:
+
+\begin{itemize}
+    \item QU.s.o.AS.o (QU = 3, AS = 2, total = 5)
+    \item QU.s.AS.o.o (5)
+    \item QU.s.c.AS.o (5)
+    \item QU.s.toad.AS.o (6)
+    \item QU.s.EB.CL.o (5 or 6 depends if your EB-arm sticked to your back)
+\end{itemize}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/doubledutch-matrix}
+    \caption[skillmatrix-DD]{Representation of a skillmatrix used for Doube Dutch}
+    \label{fig:doubledutch-skillmatrix}
+\end{figure}
+
+In addition, these skills can be combined with powers, releases\dots, and there are a number of special cases or exceptions that earn fewer or extra points. (Omitted in the MVP)
+Put it all together, to create a skill matrix (work in progress), see double-dutch-matrix fig\ref{fig:doubledutch-skillmatrix}.
+
+The skillmatrix for SR is still a little in progress since last year, knowing that some special cases can be omitted.

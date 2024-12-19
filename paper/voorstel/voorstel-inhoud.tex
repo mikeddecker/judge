@@ -3,19 +3,14 @@
 \section{Introduction}
 \label{sec:introduction}
 
-% Rope skipping is een evoluerende jurysport. Jaar na jaar neemt de concurrentie toe met moeilijkere en meer gevarieerde skills. 
-% Door de toenemende populariteit van beeldherkenning, krachtigere CPU's en GPU's, en toepassingen die objecten in afbeeldingen herkennen \autocite{Singh_Gill_2022} 
-% of acties in video's detecteren \autocite{LUQMAN_2022}, werd zich afgevraagd of dit ook van toepassing kan zijn op meer gecompliceerde en gevarieerd beeldmateriaal.
-    
-% Op rope skipping competities worden winnaars bekroond door een panel  juryleden die de freestyle van een springer beoordelen. Door groeiende concurrentie, meer gevarieerde trucs, snellere uitvoering en stijgende moeilijkheidsgraad, wordt het jureren lastiger. We onderzoeken of huidige \emph{computer vision}~\ref{subsec:computer vision} technieken klaar zijn om op basis van beeldmateriaal skills te herkennen en deze in te zetten om de objectiviteit en correctheid van scores te verhogen. Verder kan de trucherkenning gebruikt worden om de toeschouwer meer transparantie te bieden de puntentelling, door een replay af te spelen met skill- en scorebenoeming.
 Jump rope is an evolving sport.
 Year after year, an increasing amount of high-level competitors are pushing the limits of jump rope.
 % TODO : source?
 This results in new skills, new combinations, better physiques, better rope material, and faster movements. For the judges to keep up with the jumpers and to correctly assess scores to a routine, Double Dutch freestyles\footnote{Two turners, with one or more jumpers} are reviewed at half speed in International competitions or even at nationals in Belgium.
 
 Head judges around the world question the best way to judge athletes correctly as to give an accurate and objective ranking on national or international competitions.
-Many solutions have been provided: another judging rule-set\footnote{The current rule-set is enforced and maintained by \href{https://www.gymfed.be/}{Gymfed}, closely related to the international judging-rules from the \href{https://ijru.sport/}{International Jump Rope Federation}}, splitting judge responsibility, replaying the routine at half speed \dots
-However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022}, implementations detecting simple human actions \autocite{LUQMAN_2022} and the successful test of \href{https://nextjump.app/}{NextJump}s AI speed-counter, they wondered about the possibility of incorporating artificial intelligence into jump rope freestyles.
+Many solutions have been provided: another judging rule-set\footnote{The current rule-set is enforced and maintained by \href{https://www.gymfed.be/}{Gymfed}, closely related to the international judging-rules from the \href{https://ijru.sport/}{International Jump Rope Union}}, splitting judge responsibility, replaying the routine at half speed \dots
+However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022}, implementations detecting simple human actions \autocite{LUQMAN_2022} and the successful test of \href{https://nextjump.app/}{NextJump}'s AI speed-counter, they wondered about the possibility of incorporating artificial intelligence into jump rope freestyles.
 
 This raises some questions when trying to answer the main research question of this paper: \textbf{``How can artificial intelligence be incorporated into jump rope freestyles to increase the objectiveness and accuracy of judging?''}.
 
@@ -25,7 +20,7 @@ Jump rope, like gymnastics or athletics, exists in many disciplines, e.g. Speed,
 
 \subsubsection{What are the challenges for judges today?}
 
-On competitions, judges watch the routine live to annotate the difficulty or creativity. Each judge pays attention to his assigned part with the athletes, all contributing to the total score of the freestyle. to keep up, double dutch diff judges\footnote{Those judges judging the difficulty of double dutch routines.} are already allowed to review routines at half speed in order to accurately score them.
+On competitions, judges watch the routine live to annotate the difficulty or creativity. Each judge pays attention to his assigned part with the athletes, all contributing to the total score of the freestyle. To keep up, double dutch diff judges\footnote{Those judges judging the difficulty of double dutch routines.} are already allowed to review routines at half speed in order to accurately score them.
 
 \subsubsection{How is difficulty scored?}
 
@@ -61,7 +56,7 @@ For double dutch, there are two turners and a jumper. All three of them act as a
 \subsubsection{What would be a minimal Proof of Concept (PoC)?}
 
 The PoC would be a model recognizing the most common skills and transitions.
-This means omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. But the PoC should preferably be able to generalize uncommon skills that are still definable as normal. Better described would be knocking on the door three times, someones at the door, but knocking four times or with a bonk in between is also recognizable.
+This could mean omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. But the PoC should preferably be able to generalize uncommon skills that are still definable as normal. Better described would be knocking on the door three times, someones at the door, but knocking four times or with a bonk in between is also recognizable.
 
 \subsubsection{Which human activity recognition examples can be used or altered as the base of the model/research to pick out the best ones?}
 % TODO : source source source
@@ -94,99 +89,189 @@ With basic knowledge about jump rope and the goal of paper, further research, (l
 \section{Literature review}%
 \label{sec:literature}
 
-% TODO: (TAAL controle literatuur)
+% TODO: (LANG CHECK literatuur and further)
 
-% TODO BP: volgorde en uitbreiding literatuur.
-% Convolutielagen in een nutshell -> van matrix naar matrix (afbeelding), maar cellen van een nieuwe matrix zijn een som van andere rijen en kolommen (initieel pixels)
-% LSTM in een nutshell -> geheugencellen, activatiefunctie -> input, memory, activativering output.
-    
-Het onderzoek naar skillherkenning wordt stapsgewijs opgebouwd. Beginnen doen we met een introductie en definitie van skills, waarna gepast onderzoek naar technieken kan gebeuren. Stilaan bouwen we dit op tot we beter definiëren waar de moeilijkheden liggen bij het herkennen van skills om zo de gevonden modellen te verfijnen tot het gewenste resultaat.
+The research towards skillrecognition will be done step by step. First will be an introduction to NextJump's speedcounter, afterwards a better definition of skills will be given. This enables a better (model)research to recognize skills, to further fine-tune how skills and data need to be transformed to have representable input and output data. Along the way, literature is organized to represent the flow of a video, e.g. localize, segment, skill.
 
-The research towards skillrecognition will be done in step by step. First is an introduction and definition of skills, secondly which challenges and how the data will be repre ... % TODO : further translate depening on the shuffled introduction and literature
+\subsection{NextJump Speedcounter}
 
-\subsubsection{Speed record table}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{img/nextjump-off-by-feet}
+    \caption[nextjump-results]{Comparison of avg scores given to a jumper, compared to the effective score}
+    \label{fig:nextjump-off-by-feet}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{img/nextjump-off-by-feet-judges}
+    \caption[nextjump-results-multi]{Comparison of avg scores given to a jumper, compared to the effective score}
+    \label{fig:nextjump-off-by-feet-judges}
+\end{figure}
+
+As of august 2023, \href{https://nextjump.app/}{NextJump} tested their AI-speed-counter on the world competition acquiring, really accurate results\footnote{95\% off by one}. They found that 10 hours was sufficient for a single event (e.g. just single rope speed) but to count all kinds of events more (diverse) data is needed\footnote{The current dataset entails 36h video material}. Using this as a base and examples of human action recognition \autocite{Yin_2024}, the likelihood to succeed implementing skill-recognition in freestyles grows.
+When skills are recognized, they can be mapped to their corresponding level and summed up to achieve the total score of a freestyle.
 
 \subsection{Skills intro}
 \label{subsec:basisskills}
 
-% Eerder beschreven we al de aanwezigheid van verschillende onderdelen in Rope Skipping. Om het onderzoek doenbaar te houden, leggen we de focus op single rope individuele freestyle (SR) en double dutch single freestyle (DD3). Beide onderdelen hebben een ander jurysysteem, waarbij verschillende elementen terugkeren, maar ook anders zijn. Soms wordt ook enkel over SR gesproken om niet in herhaling te vallen.
+Earlier we described the presence of multiple disciplines in Jump Rope. To keep the research doable, skill recognition will be started for one discipline, namely DD3 freestyles, which already contains some Chinese wheel integration.
 
-Earlier we described the presence of multiple disciplines in Jump Rope. To keep the research doable, freestyle skill recognition will be start on one discipline. The main candidates for freestyle skill labeling will be single rope and double dutch single freestyles. Bot judging systems incorporate their own rules, where overlap/similarity of skill movements are common. 
+\subsubsection{Double Dutch Single Freestyle - DD3}
+\label{subsubsec:dd3}
 
-\subsubsection{Single Rope - SR}
+% TODO : add DD figure for clarification
+DD3 consists of two turners and one jumper alternating ropes. Elements in Double Dutch are similar to single rope, but different at the same time. The jumper does all the skills, mainly powers, gymnastics or footwork, since he doesn't need to hold the rope. Turners can manipulate the rope using multiple unders, turner-skills like crossed arms, EB, toad\dots or even involve gymnastics themselves.
+To judge double dutch, `snapshots` are taken, then the corresponding level will be given depending on the combination of turners, skills and rope-rotations.
 
-Single Rope is the style defined where jumpers use their individual rope to execute different skills belonging divided in categories: gymnastics G, powers P, wraps W, releases R, backwards B, multiples M, crosses C, footwork F, Interactions I and an endless possibility of combinations. Multiples for example are actually multiple crosses in one jump. Likewise, releases can be combined with wraps, multiples with powers and so on.
+Like any discipline, mistakes can happen, they'll be deducted from the total score.
 
-Some examples:
+Some examples with their current corresponding levels in double dutch.
 
-% TODO : bijlage bij BP
+% TODO : bijlage bij BP?
 \begin{itemize}
-    \item Crosses
+    \item Powers
     \begin{itemize}
-        \item side swing (s - swing next to the body)
-        \item open (o - normal jump)
-        \item cross (c - crossed arms on the stomach)
-        \item toad (raise knee, other arm under your knee)
-        \item EB (arm on stomach + arm on back)
-        \item AS (arms crossed behind the knees)
-        \item CL (one arm behind the knees, other on the back)
-        \item TS (arms crossed behind the back)
+        \item push-up - to plank position and pushing upwards while pulling the rope underneath your feet. (lvl 2)
+        \item split (2)
+        \item frog - handstand (2)
+        \item swift/V-kick (3)
+    \end{itemize}
+    \item Gymnastics
+    \begin{itemize}
+        \item cartwheel (2)
+        \item kip (3)
+        \item salto (4)
+    \end{itemize}
+    \item Turners
+    \begin{itemize}
+        \item cross (c - crossed arms on the stomach) (+2/+0)
+        \item crouger (raise knee, put your arm underneath it) (+1)
+        \item EB (arm on stomach + arm on back) (+1)
+        \item TS (arms crossed behind the back) (+1/+1)
     \end{itemize}
     \item Multiples
     \begin{itemize}
-        \item double - DU - 2 rotations
-        \item triple - TU - 3 rotations
-        \item quad - QU - 4 rotations
-        \item quint - 5 rotations
-        \item TU.s.EB.o - first rotation on the side, next EB, next open
-    \end{itemize}
-    \item Powers
-    \begin{itemize}
-        \item push-up - to plank position and pushing upwards while pulling the rope underneath your feet.
-        \item split - idem push-up, but to split
-        \item frog - handstand
+        \item double - DU - 2 rotations (+1)
+        \item triple - TU - 3 rotations (+2)
+        \item quad - QU - 4 rotations (+2)
+        \item quint - 5 rotations (+3)
     \end{itemize}
 \end{itemize}
 
-Each skill will then be assigned a level contributing to a score. 
+Each power can then be varied one handed, as a turntable, as a consecutive \dots, which gains extra levels. Judges calculate or memorize the whole level of each skill/transition. Without further context, annotations like (+1/+1) can already seem confusing, well it is.
 
-\subsubsection{Double Dutch - DD}
-\label{subsubsec:double dutch}
 
-Double Dutch consists of two turners and one jumper alternating rope rotations. Elements in Double Dutch are similar, but different at the same time. The jumper does all the skills, mainly powers, gymnastics or footwork, since he doesn't need to hold the rope. Turners can manipulate the rope using multiple unders, turnerskills like crossed arms, EB, toad\dots or even involve gymnastics themselves.
-To judge double dutch, snapshots are taken, then the level will be given depending on the combination of turnerskills, jumperskills and roperotations.
-Switching turners also contributes to scoring.
 
-Like any discipline, mistakes can happen, they'll be deducted from the total score.
+\subsection{Challenges of judging}
+
+\begin{table*}[]
+    \begin{tabular}{lllllllll}
+        Year & World & Europe & Belgium & Canada & Usa & Hungary & Germany & China \\
+        1998 &       &        &         &        &     &         &         &       \\
+        1999 & 80    &        & 80      &        &     &         &         &       \\
+        2012 &       &        &         &        &     &         &         &       \\
+        2015 &       &        &         &        &     &         &         &       \\
+        2016 & 111   & 103    &         &        &     &         & 103     &       \\
+        2019 &       &        & 102     &        &     &         &         &       \\
+        2020 &       &        &         &        &     &         &         &       \\
+        2021 &       &        & 103.5   &        &     &         &         &       \\
+        2022 &       &        &         &        &     &         &         &       \\
+        2023 & 113   &        &         &        &     &         &         & 113   \\
+        2024 & 113   & 108    & 103.5   &        &     &         &         & 113
+    \end{tabular}
+    \caption{History of speed records males}
+    \label{tbl:speed-records-male}
+\end{table*}
+
+\begin{table*}[]
+    \begin{tabular}{lllllllll}
+        Year & World & Europe & Belgium & Canada & Usa & Hungary & Germany & China \\
+        1998 & 83    &        &         &        &     & 83      &         &       \\
+        1999 &       &        &         &        &     &         &         &       \\
+        2012 &       &        & 102     &        &     &         &         &       \\
+        2015 & 105   & 105    &         &        &     & 105     &         &       \\
+        2016 &       &        & 102     &        &     &         &         &       \\
+        2019 & 108.5 &        & 102     &        &     &         &         & 108.5 \\
+        2020 &       &        &         &        &     &         &         &       \\
+        2021 &       &        &         &        &     &         &         &       \\
+        2022 &       &        &         &        &     &         &         &       \\
+        2023 &       &        &         &        &     &         &         &       \\
+        2024 & 108.5 &        & 102     &        &     &         &         & 108.5
+    \end{tabular}
+    \caption{History of speed records females}
+    \label{tbl:speed-records-female}
+\end{table*}
+
+As introduced earlier, based on own experiences, statements of colleagues and livestream-commentory from championships, % TODO : sources
+the sport is evolving \autocite{IJRU_yt_2023_livestream_day1}, \autocite{IJRU_yt_2023_livestream_day8}.
+Speed records are slowly rising, quads or quints in single rope freestyles are the norm, where 10 to 15 years ago, it was considered a wow factor. This is also the case for double dutch; more variations, more turner involvements, faster and longer skill-sequences \dots
+All which need to be perceived using the same old brain capacity of a judge.
+To help judges and improve, some actions already took place. 
+
+\textbf{Splitting responsibility:} With the current rules, judges are devided in two main categories, those judging difficulty and those judging creativity. Creativity is further split into execution, entertainment, musicality and variation. This breakdown allows increased attention on different aspects of a routine, thus decreasing potential observation mistakes.
+
+\textbf{Multiple panels:} Using two or more judge-panels, more freestyles can be evaluated at the same time. While one panel is watching a freestyle, the other can summarize and calculate the total score. Having the same panel judge the same category, e.g. juniors vs seniors, also decreases the effect of differences as a people between judges, e.g. being more strict, less observational skills, incorrectly memorized a skill-level etc.
+
+\textbf{Adapting the rules:} Changing the rules about how a freestyle must be evaluate, can impact the way of thinking, memorizing or calculating the level, score or deduction of a skill. This was tried by using the current 'snapshot' system for double dutch. This was still perceived as hard based on reactions of fellow exam takers in 2023, 2024.
+
+% TODO : add VAR note gymfed doc
+\textbf{Review at slower speed:} In recent years, on world competitions or on some local competitions in Belgium, the video replay was introduced to review a double dutch freestyle at slower speed to accurately assign level performed. As this can be time consuming, another separation in the judge panel, extra diff judges, was created to give judges enough time to review the routine.
+
+\medskip
+
+Incorporating all these things brought jump rope to where it is. To make our lives easier, we try to find improvements. One of these is exploring automatic skill-recognition by using AI. When skills are recognizable by a program, they can be mapped to a corresponding level contributing towards the end score. Knowing what's represented in an image or a video is called computer vision. % TODO : source
 
 \subsection{Computer vision}
 \label{subsec:computer vision}
 
+\begin{table*}[t]
+    \centering
+    \begin{tabular}{|l|l|l|}
+        \hline
+        & SR & DD3 \\ \hline
+        \#Freestyles & 500-1000+ & 286-352 \\ \hline
+        Hours & 8h-16h+ & 5-6h \\ \hline
+        Years & 500 from 2024 & mainly 2020-2024 \\ \hline
+        MVP & basic variation elements & basic powers, gyms, turnerskills \\ \hline
+        Level-guessing & 0 to 8 & 0 to 8 \\ \hline
+        Theoretical level limit & 8+ levels possible & 8+ levels possible \\ \hline
+        Variation elements & 6 & 4 \\ \hline
+        skillmatrix & more complex & simpeler compared to SR \\ \hline
+        longer sequences & / & / \\ \hline
+        individuals & 1 & 3 \\ \hline
+        competitions & Oct-Nov & March-Apr \\ \hline
+    \end{tabular}
+    \caption{Data comparison}
+    \label{tbl:data-comparison}
+\end{table*}
+
 % TODO : footnote refer to table above for numeric data
-To recognize the skills automatically input data is needed. There are quite some videos on socials, as well as in-house recordings \ref{tbl:data-comparison}, so the choice to learn from videos was made quickly. The field of study in which computers recognize features, people or other objects in digital imagery is called computer vision. More specifically, the focus is recognizing human actions in these recordings, called human activitity recognition or HAR \autocite{Pareek_2020}.
+To recognize the skills automatically input data is needed. There are quite some videos on socials, as well as in-house recordings \ref{tbl:data-comparison}, so the choice to learn from videos was made quickly. Computer vision is the field of study in which computers recognize features, people or other objects in digital imagery. More specifically, the focus is recognizing human actions in these recordings, called human activity recognition or HAR \autocite{Pareek_2020}.
 
-Human Gait Recognition, HGR, or Human Pose Estimation, HPE, are also used to recognize human activities. Although the three techniques are closely related, each has a different nuance. Gait recognition looks at a person's typical movements, gestures or behavioral patterns \autocite{Alharthi_2019}, while pose estimation looks specifically at poses or special expressions \autocite{Song_2021}. They also talk about how pose recognition, skeleton-based, can be used as a tool are to improve activity labeling.
-
-Models providing skeleton-structure or others can be used to improve action recognition, mainly because crosses, powers, releases\dots are build from these poses.
+Other adaptations like Human Gait Recognition, HGR, or Human Pose Estimation, HPE, are also used to recognize human activities. Although the three techniques are closely related, each of them has a different nuance. Gait recognition looks at a person's typical movements, gestures or behavioral patterns \autocite{Alharthi_2019}, while pose estimation looks specifically at poses or special expressions \autocite{Song_2021}. They also talk about how pose recognition, e.g. skeleton-based, can be used as a tool are to improve activity labeling.
 
 \subsection{HAR general progress}
 
 % TODO : find paper, reference to come to steps or use pareek again?
-The following approach is mainly formed after reading the survey of \textcite{Pareek_2020}, he describes the recent updates in human activity recognition.
+\textcite{Pareek_2020} did some research about the recent updates in human activity recognition, which mainly gave form to the following general approach.
+
+As jumpers can stand everywhere in a field\footnote{A field is generally 12x12 or 15x15 meters}, locating and cropping athletes can improve the segmentation model\footnote{If time allows it, the final model can be compared with or without localization}. When the skippers are centered, action segmentation can be performed. This allows predicting skills on newly recorded videos, without needing to cut out the different skills. Finally predicting the skill, which can be broken down into multiple, parallel runnable sections.
 
 \begin{enumerate}
     \item Jumper localization
-    \item Action segmentation, start of skill, end of skill
-    \item Predict level or variation element (multiple, cross, gym...)
+    \item Action segmentation, start/end of skill
     \item Predict the effective skill
+        \begin{enumerate}
+            \item Predicting the level
+            \item Predict skill (power/gymnestic - pushup, split, cartwheel)
+            \item Predict turner involvement (cross, EB, TS)
+            \item Predict multiple (single, double, triple)
+        \end{enumerate}
 \end{enumerate}
-
-Jumpers can stand everywhere in the field, in order to perform better, locating and cutting out the athlete can improve the segmentation model. When the skippers are centered, better action segmentation can be performed. This allows predicting skills on newly recorded videos, without needing to cut out the different skills. Finally predicting the skill.
 
 \subsection{Jumper localization}
 \label{subsec:jumper localization}
-
-% Het eerste doel van het proefconcept is het herkennen van de springer. \autocite{Zaidi_2021} deed een onderzoek naar de moderne deep learning technieken voor het herkennen van objecten en besprak verscheidene modellen, zoals YOLO, SSD, CenterNet, CNN, hun varianten en de nood aan compactere modellen voor dagelijks gebuik. Echter vergt het onderzoek niet het herkennnen van rope skippers op één afbeelding, maar gedurende de gehele video of videofragmenten. Om dit proces mogelijk te vereenvoudigen vergelijkt \textcite{Gao_2022} recente deep learning technieken die de voor- en achtergrond in video's van elkaar onderscheiden, genaamd video object segmentation of VOS. Gaande van het herkennen van een persoon, tot het herkennen van armen, benen, voeten, handvaten en touwen. Hoewel \textcite{Bharadiya_2023} aangeeft dat CNN kenmerken herkent ongeacht de positie in de afbeelding, zouden we de gemaskeerde beelden kunnen schalen en centreren. Vooral bij wedstrijddata springen atleten dichtbij of ver in het veld ten opzichte van de camera. In het volgende deel kunnen we dit dan gebruiken voor volledige trucherkenning.
 
 Many research towards image recognition has been done \autocite{Zou_2023}. The best models mostly utilize Convolutional Neural Networks pertaining spacial information in the image \autocite{Zaidi_2021}. In their paper, they compare some recent models for object detection such as YOLO(v4), CenterNet, SSD, EfficientDet-D2, each using some backbone architecture like VGG-16, AlexNet, GoogleNet or lightweight models such as ShuffleNet or MobileNet (all using CNN's). Some of them being real-time models (fps > 30).
 The goal of localizing the jumper is to center the athletes in the middle of the screen/video. \textcite{Bharadiya_2023} elaborates that the position of objects in images doesn't really matter, but their are no clear statements about the size of objects. It could be that a jumper takes up 80 percent of the screen, while moments later he moved backwards and only takes up 30 percent of the video. Instincts tell us that centered and scaled data will work better later.
@@ -216,124 +301,65 @@ As a video is basically sequence of images, some smoothing can be applied to the
 
 \subsection{Video action segmentation}
 
-When we have our jumpers centered, we can try splitting the video in (sub)skills, because splitting new videos manually takes to much time and is impractical on competitions.
-A model like LTContext \textcite{Jiaming_2023} or others\footnote{Using \href{https://paperswithcode.com/task/action-segmentation}{paperswithcode}} would be appropriate. 
+When the athletes are cropped, videos need to be split\footnote{Not real/physical splits, but rather labels/annotations for where to split} in (sub)skills, because splitting new videos manually takes to much time and is impractical on competitions.
+A model like LTContext \textcite{Jiaming_2023} or others\footnote{Using sources like \href{https://paperswithcode.com/task/action-segmentation}{paperswithcode/action-segmentation}} would be appropriate. 
 Just like the localization, denseposing, extracting poses, foreground, background\dots would improve the segmentation.
 
-Another interesting approach was \textcite{Zahan_2023} modifying the LSTM-model to incorporate longer time sequences, to predict a gymnastic score of a full routine.
+Another interesting approach came from \textcite{Zahan_2023} which modifying the LSTM-model to incorporate longer time sequences, to predict a gymnastic score of a full routine. % TODO : could be described earlier, if other papers are found related to the judging field / sports
 
-\subsection{Skillherkenning}
-\label{subsec:skillherkenning}
+\subsection{Skill recognition}
+\label{subsec:skill-recognition}
 
-To recognize actions in videos, lots of research has been done. % TODO : that general source
-\textcite{Yin_2024} clearly states the evolution from normal CNN architectures, to recurrent neural networks for time sequences, remembering context, like the Long Short Term Memory model (LSTM). Then combining CNN output into LSTM or even implementing a convolutional filter in the memory cell \autocite{Shi_2015}.
+The final step would be to recognize the total skill in a freestyle video.
+\textcite{Yin_2024} did a general HAR survey, also focused on team sports in which they describe the evolution from normal CNN architectures, to recurrent neural networks for time sequences, remembering context, like the Long Short Term Memory model (LSTM). Then combining CNN output into LSTM or even implementing a convolutional filter in the memory cell \autocite{Shi_2015}.
 
-\textcite{Wang_2019} investigated an improvement for current convolutional or recurrent models. They found that LSTM memory cells were too simple to contain higher-order complexities. As a result, they designed a memory in memory component, to replace the previous cell, which could predict actions on complexer data sets. This quickly formed the name Memory in Memory, MIM. Later, \textcite{Lin_2020} used
-a self-attention memory cell inside the convLSTM that can memorize global aspects in time and space. With about 35\% the number of parameters compared to Wang's MIM-model, SAM achieved a similar score as on the moving MNIST dataset, but faster. Although the focus of these papers was predicting future actions, the output can again be transformed to a classification rather than a prediction.
+\textcite{Wang_2019} investigated an improvement for current convolutional or recurrent models. They found that LSTM memory cells were too simple to contain higher-order complexities. As a result, they designed a memory in memory component, to replace the previous cell, which could predict actions on complexer data sets. This quickly formed the name Memory in Memory, MIM. Later, \textcite{Lin_2020} used a self-attention memory cell inside the convLSTM that can memorize global aspects in time and space. With about 35\% the number of parameters compared to Wang's MIM-model, SAM achieved a similar score as on the moving MNIST dataset, but faster. Although the focus of these papers was predicting future actions, the output can be transformed into a classification model, rather than a prediction model.
 
-Another approach would be using transformers as a described possibility in \textcite{Yin_2024}, namely
-ViT-TAD model by \textcite{Yang_2023}, Swin transformer \textcite{Liu_2021} or VideoMAE v2 by \textcite{Wang_2023} seem good options, but further research/try-outs will be required to ensure the transfer models can predict actions.
+Another approach would be using transformers as a described possibility in \textcite{Yin_2024}, namely ViT-TAD model by \textcite{Yang_2023}, Swin transformer \textcite{Liu_2021} or VideoMAE v2 by \textcite{Wang_2023} seem good options, but further research/try-outs will be required to ensure the transfer models can predict actions.
 
-So using convLSTM, SAM or a transformer brings us to how exactly we want to predict.
+So using convLSTM, SAM or a transformer brings us to a better definition or example of what exactly we want to predict.
 
 % TODO : find other model besides sam that is not a transformer to try-out, as SAM is already convLSTM improved.
 
-
-%\subsection{SAM \& MIM}
-%\label{subsec:SAM&MIM}
-
-% \textcite{Wang_2019} onderzochten een verbetering voor de huidige modellen voor tijdruimtelijke data. Ze vonden dat LSTM-geheugencellen te simpel waren om complexheden van hogere orde te bevatten. Hierdoor ontwierpen ze een memory in memory component, ter vervanging van de normale geheugencel, die datasets met een hogere moeilijkheidsgraad beter konden voorspellen. Hieruit vloeide de naam Memory in Memory, MIM.
-% \textcite{Lin_2020} daarentegen gebruiken een self-attention memory cell binnenin het convLSTM die globale aspecten in de tijd en ruimte kan onthouden. Met ongeveer 35\% het aantal parameters t.o.v. Wang's MIM, bereikte SAM een gelijkaardige score als op o.a. de movingMNIST dataset, maar sneller. Hoewel de focus van deze papers lagen op het voorspellen van toekomstige acties, kan de output weer omgevormd worden, naar een classificatie i.p.v. een voorspelling.
-
-
-\subsection{Skill complexity \& levels}
+\subsection{Skill-matrix - complexity \& levels - towards model accuracy}
 \label{subsec:skillcomplexiteit}
-
-A basic explanation of skills was given earlier, with some examples. In order to recognize all skills, they should be worked out as well as possible. This section explains the basics of the level system based on Gymfed judging rules 2024-2025.
-A cross, toad, or crouger are “forward” skills performed without a preparatory rotation, there are no restrictions behind the body requiring a preparatory rotation. Tricks for which this does apply are AS, CL, TS, or meghan, for example, they consist of going to and coming out, to perform the full skill. So we label both parts as a sub-skill. Scores are given based on levels, so you get a level for each restriction of the arms. For example, a toad, crouger and EB all get you 1 level, while a TS, elephant or CL gives you 2 levels.
-Ordinary crosses are too simple and yield nothing or only half a level and are otherwise not additive to combinations. If you frequently combine such basic exercises into a sequence, you get the level for each unique transition. For example;
-
-
-\begin{itemize}
-    \item toad-crouger-toad (1-1-1)
-    \item toad-toad-toad (1-1-herhaling)
-    \item CL (2) and later toad-CL (1-2) although you need 3 rotations (toad, go-to-CL, come-from-CL)
-\end{itemize}
-
-Arm switches, called switch crosses, gets you bonus points (1 or 2), marked with an x.
-
-\begin{itemize}
-    \item toad-xtoad (1-2)
-    \item AS-xAS (2-4)
-    \item AS-CL (2-2)
-    \item AS-xCL (2-3)
-\end{itemize}
-
-All these crosses can be combined with other categories, even with pair interactions, you can apply crosses, take someone in a toad, cross or TS.
-Multiples are built from unique rotation combinations. Some quads as example:
-
-\begin{itemize}
-    \item QU.s.o.AS.o (QU = 3, AS = 2, total = 5)
-    \item QU.s.AS.o.o (5)
-    \item QU.s.c.AS.o (5)
-    \item QU.s.toad.AS.o (6)
-    \item QU.s.EB.CL.o (5 or 6 depends if your EB-arm sticked to your back)
-\end{itemize}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.7\linewidth]{img/doubledutch-matrix}
+    \includegraphics[width=0.95\linewidth]{img/doubledutch-matrix}
     \caption[skillmatrix-DD]{Representation of a skillmatrix used for Doube Dutch}
     \label{fig:doubledutch-skillmatrix}
 \end{figure}
 
-In addition, these skills can be combined with powers, releases\dots, and there are a number of special cases or exceptions that earn fewer or extra points. (Omitted in the MVP)
-Put it all together, to create a skill matrix (work in progress), see double-dutch-matrix fig\ref{fig:doubledutch-skillmatrix}.
+A basic explanation of skills with some examples was given earlier. In order to recognize all skills, they should be worked out as good as possible. This section explains the composition of the skill-matrix, in order to give a better understanding on the total accuracy of the models later on. As described earlier, skills come with many transitions, take the first skill-matrix representation in figure \ref{fig:doubledutch-skillmatrix} to better understand skills and transitions.
 
-The skillmatrix for SR is still a little in progress since last year, knowing that some special cases can be omitted.
+\textbf{Type:} You have four styles of turning in double dutch; the normal way or double dutch (DD), reversing the rope rotation, sort of like backwards called irish dutch (irish), the chinese way of turning, chinese wheel (CW) or only using one rope or the two combined as a single rope, called single dutch or one rope.
 
-%\subsection{Skillafbakening \& branching}
-%\label{subsec:video segmentation & branching}
+\textbf{Rotations:} The amount of ropes passing underneath the athlete in one jump.
 
-% In \textcite{Zahan_2023} wordt het standaard LSTM uitgebreid om beter langdurige informatie te verwerken om resultaten van gehele gymnastiekoefening te voorspellen. Aangezien het jurysysteem van die data hierdoor één-op-één gekoppeld is aan het model, is dit niet robuust genoeg voor veranderende versies. Het proefconcept wenst dus de skills te leren waarop de levels gemapt worden via een functie.
-    
-% Om alle trucs en combinaties van elkaar te onderscheiden werd stap per stap een skillmatrix opgebouwd. Deze matrix tracht zo veel mogelijk, om niet te zeggen alle, oefeningen op te delen volgens kenmerkende eigenschappen. Dit denkproces bracht de afbakening van skills en combinaties in kaart.
-% Freestyles en ander beeldmateriaal moet gesplitst worden in eenduidig, atomair benoembare (sub-)skills, minivideo's, die slechts één representatieve voorstelling hebben in de skillmatrix.
-% Concreet betekent dit dat na afbakening van skills, iedere mini-video, nog herstelbaar moet zijn tot zijn combinatie.
-% Doorgaans geeft het verlaten van de grond aan dat een truc begint, analoog bij het landen en in de lucht zijn. Dit is echter niet altijd het geval bij wraps of releases. Tevens moeten de geknipte video's, na de afbakening van de trucs, even lang zijn (gelijke dimensies). Een simpele truc hiervoor is het toevoegen van \emph{lege} informatie, zwarte frames, genaamd padden (Engelse term). Vaak zullen langdurige intervallen wraps of herstel van fouten zijn. Deze lange sequenties kunnen apart gemodelleerd worden of verder opgesplitst om de padding niet te lang te maken.
+\textbf{Turner:} There are two turners, so two columns, where each turner can execute a turner involvement. Examples are EB, toad or crouger. The cross is in most cases performed by both turners, otherwise the ropes are tangled.
 
-\subsubsection{Skillmatrix}
-
-De de skillmatrix is voor verandering vatbaar, wanneer combinaties ontdekt worden die er niet in passen en ziet er op dit moment voor single rope als volgt uit:
+textbf{Skill:} Mostly powers or gymnastics, but could also be footwork \footnote{Footwork will not be further specified in this paper}. Further distinction or organizing can happen as variation and transitions of powers and gymnastics exists. A recap of different skills would be: pushups, splits, crabs, frogs, swift, cartwheel, salto, webster, suicide, handsprings, round offs \dots % TODO : refer pictures, examples of skills in attachment.
+Depending on the exact power or gymnastic, certain characteristics or transitions could be applied:
 
 \begin{itemize}
-    \item \textbf{Description}: solely informative
-    \item \textbf{Pointified notation}: Own notation for unique naming of skills
-    \item \textbf{Category}: I, G, P, W, R, B, M, C, F
-    \item \textbf{People}: skippers executing the skill (could be 2 or 3 in a team exercise)
-    \item \textbf{mistakes}: skippers that made a mistake
-    \item \textbf{Rotations}: rope rotations, 0-8
-    \item \textbf{Rope direction first rotation}: forward, backward, side
-    \item \textbf{Rope direction first rotation}: idem
-    \item \textbf{Rope rotations switches}: 0 of 1, theoretical 2, 3, 4 possible
-    \item \textbf{PBR}: 0,1,2+ parallel body-rotations with the ground (e.g. crab, push-up)
-    \item \textbf{TTs}: 0.25 -> 2+ 'turntables' (e.g. hummingbird, 360, halve draai, turn table crab, turn table pushup)
-    \item \textbf{multiplepart} 8x duplicated, one for each rope rotation, wrapstatus\dots
-    \begin{itemize}
-        \item \textbf{element} s, o, c, toad, EB, AS, TS, knee, straddle, mic, 1-H-release, powers, gyms \dots
-        \item \textbf{switch} xAS, switch cross
-        \item \textbf{wrapped bodyparts}: arm, leg, between leg around arm...
-        \item \textbf{Interaction type}: scoop, take forward, take backward
-    \end{itemize}
+    \item one handed
+    \item one or two feet push-off (e.g. frog vs high frog, salto vs webster, suicide 1 vs 2 legs)
+    \item turntable \footnote{On way of turning your bodyposition, can be done per quarter e.g. quarter turntable push-up}
+    \item full body rotation \footnote{Other way of turning your body, requires full turns}
+    \item consecutive \footnote{Consecutive handstands are considered harder and thus get you extra points, not the case with push-up}, e.g. frog after frog
 \end{itemize}
 
+Applying these transitions, characteristics allows for more variation, which gets you more points. Repeated skills doesn't get you points. Repetitions are only defined by the skills in the ropes, the speed of the rope (rotations) and the type of turning \footnote{No difference will be made between irish turning and double dutch. Also, only the first skill in single dutch counts}.
+
+\medskip
     
-Skillmatrixes can change over time, initial skills not fitting the matrix will be left out for the MVP.
-Furthermore, you see some labels can happen one at a time (cross-type), others (e.g. category) can happen at the same time (multi-branch output as described in section 4.4.1 \autocite{Coulibaly_2022}), others require softmax.
+The skillmatrix is subject to change over time, initial skills not fitting the matrix will be left out for the MVP. Other than skills, jumpers and turners can switch with each other, most of these are also omitted in the MVP.
+To calculate the \textbf{model-accuracy}, a skill can be guessed 10, 40, 100\% correct, depending on the amount of columns. As you can see, each column can only contain one answer, requiring softmax, while between multiple columns, no relation is required and can be predicted separately. This can be solved using a multi-branch output as described in section 4.4.1 by \autocite{Coulibaly_2022}). 
 
 \subsection{Group activity}
 
-As DD3 is a group activity, problems could arise while trying to detect skills. However, the hypothesis is that a DD3 freestyle always acts as one unit, thus not really requiring much special attention. This could pose a problem when adapting SR to SR2 where two individuals are not exactly one unit. Some further research can be done in models like stagNet \autocite{Qi_2020} can improve this.
+As DD3 is a group activity, problems could arise while trying to detect skills. However, the hypothesis is that a DD3 freestyle always acts as one unit, thus not really requiring much special attention. This could pose a problem when adapting SR to SR2 where two individuals are not exactly one unit. Some further research can be done in models like stagNet \autocite{Qi_2020} to improve, incorporate this idea.
 
 \subsection{Challenges}
 \label{subsec:challenges}
@@ -344,21 +370,14 @@ Unknown skills or special cases pose a problem. That's why the skillmatrix needs
 \subsection{Summary literature}
 \label{subsec:summary literature}
 
-The PoC needs to localize the jumper, using existing models fine-tuned, segment actions, preferably through transfer-learning and using own splits or guessed splits to predict (sub)skills.
+The PoC needs to localize the jumper \footnote{which can use fine-tuned pre-trained models}, segment actions, and using labeled splits or guessed ones to predict (sub)skills.
 Predicted skills will then be mapped to their corresponding level.
-
-% Refereren naar de literatuur kan met:
-% \autocite{BIBTEXKEY} => (Auteur, jaartal): voor een referentie tussen
-% haakjes, waar de auteursnaam GEEN onderdeel is van een zin.
-% \textcite{BIBTEXKEY} => Auteur (jaartal): voor een narratieve referentie,
-% waar de naam van de auteur effectief een onderdeel is van de zin.
-
 
 %---------- Methodologie ------------------------------------------------------
 \section{Methodology}%
 \label{sec:methodoly}
 
-After some more research about transformers and how to apply them for skill recognition and another non-transformer model besides convLSTM \& SAM to predict skills, the building process can started.
+After some more research about transformers and how to apply them for skill recognition and another non-transformer models besides convLSTM \& SAM to predict skills, the build process can start.
 Using Canva, a \href{https://www.canva.com/design/DAGVz44QCgc/\_Mr9BrOqwwdy9cf-ieYFVg/edit?utm\_content=DAGVz44QCgc\&utm\_campaign=designshare\&utm\_medium=link2\&utm\_source=sharebutton}{user story map} is created to effectively see which tasks need to be done.
 
 \subsection{General \& label location}
@@ -435,7 +454,7 @@ Using Canva, a \href{https://www.canva.com/design/DAGVz44QCgc/\_Mr9BrOqwwdy9cf-i
 
 % TODO : finetune this : taal
 
-To answer the questions; ``When are predictions good enough to serve as an additional juror or as a support tool?'' and ``Can we use the AI-Judge to improve jurors or vice versa?'', some suggestions can be made or a brainstorm with expert judges can be done. One suggestion is; that after submitting the score, the judge gets the levels of AI-Judge, which checks and indicates those levels that do not match their own given levels, judges can either improve themselves or improve the model. Subsequently, a transition can be made to verify the most uncertain skills of the model.
+To answer the questions; ``When are predictions good enough to serve as an additional judge or as a support tool?'' and ``Can we use the AI-Judge to improve judges or vice versa?'', some suggestions can be made or a brainstorm with expert judges can be done. One suggestion is; that after submitting the score, the judge gets the levels of AI-Judge, which checks and indicates those levels that do not match their own given levels, judges can either improve themselves or improve the model. Subsequently, a transition can be made to verify the most uncertain skills of the model.
 
 The sub-question on generalization to jury sports will have to wait and see how the pilot concept progresses.
 

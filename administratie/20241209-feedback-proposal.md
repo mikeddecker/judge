@@ -23,7 +23,7 @@ Ideas:
   - ...
 - 'Generalized' rules [ijru-rulebook](https://rules.ijru.sport/) for section (1.1)
   - IJRU (2024). IJRU Competition Rules. IJRU. Retrieved 9 December 2024, from [url](https://rules.ijru.sport/)
-- Section 1.2 IJRU 2023 livestreams + observaties & statements van collega springers.
+- Section with IJRU 2023 livestreams + observaties & statements van colleague jumpers.
   - Refer al available colorado livestreams.123456
   - Explicitly mention based on conversations, own experience...
 - 1.3 replay system = private document on site of GymFed (How to?)
