@@ -288,7 +288,7 @@ to incorporate longer time sequences, to predict a gymnastic score of a full rou
     \label{fig:nextjump-off-by-feet-judges}
 \end{figure}
 
-As of august 2023, \href{https://nextjump.app/}{NextJump} tested their AI-speed-counter on the world competition acquiring, really accurate results, see fig \ref{fig:nextjump-off-by-feet} \& \ref{fig:nextjump-off-by-feet-judges}. They found that 10 hours was sufficient for a single event (e.g. just single rope speed) but to count all kinds of events more (diverse) data is needed\footnote{The current dataset entails 36h video material}. Using this as a base and examples of human action recognition \autocite{Yin_2024}, the likelihood to succeed implementing skill-recognition in freestyles grows. % TODO : remove yin here
+As of august 2023, \href{https://nextjump.app/}{NextJump} tested their AI-speed-counter on the world competition acquiring, really accurate results, see fig \ref{fig:nextjump-off-by-feet} \& \ref{fig:nextjump-off-by-feet-judges}. They found that 10 hours was sufficient for a single event (e.g. just single rope speed) but to count all kinds of events more (diverse) data is needed\footnote{The current dataset entails 36h video material}. Using this as a base/guidance, the likelihood to succeed implementing skill-recognition in freestyles grows.
 When skills are recognized, they can be mapped to their corresponding level and summed up to achieve the total score of a freestyle.
 
 
@@ -319,7 +319,7 @@ The goal of localizing the jumper is to center the athletes in the middle of the
 
 One of these models can be taken as a base, using transfer learning\footnote{Concept transfer learning explained in \autocite{Bharadiya_2023}} to fine-tune the results to localize the jumper.
 
-To improve localization, video object segmentation or video instance segmentation can be used. \textcite{Gao_2022} lists some object segmentation models, like SwitNet \textcite{Wang_2021} using ResNet18 as good and quick model.
+To improve localization, video object segmentation or video instance segmentation can be used. \textcite{Gao_2022} lists some object segmentation models, like SwiftNet \textcite{Wang_2021} using ResNet18 as good and quick model.
 Other possibilities would be Cutie \autocite{Cheng_2023}, DensePose (see fig [\ref{fig:srwrap}, \ref{fig:srwrapdense}]) \autocite{Guler_2018}
 
 \begin{figure}
