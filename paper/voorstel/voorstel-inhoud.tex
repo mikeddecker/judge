@@ -10,65 +10,83 @@ This results in new skills, new combinations, better physiques, better rope mate
 
 Head judges around the world question the best way to judge athletes correctly as to give an accurate and objective ranking on national or international competitions.
 Many solutions have been provided: another judging rule-set\footnote{The current rule-set is enforced and maintained by \href{https://www.gymfed.be/}{Gymfed}, closely related to the international judging-rules from the \href{https://ijru.sport/}{International Jump Rope Union}}, splitting judge responsibility, replaying the routine at half speed \dots
-However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022}, implementations detecting simple human actions \autocite{LUQMAN_2022} and the successful test of \href{https://nextjump.app/}{NextJump}'s AI speed-counter, they wondered about the possibility of incorporating artificial intelligence into jump rope freestyles.
+However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022}, implementations detecting simple human actions \autocite{LUQMAN_2022}, examples of action recognition in other sports \autocite{Yin_2024} and the successful test of \href{https://nextjump.app/}{NextJump}'s AI speed-counter, they wondered about the possibility of incorporating artificial intelligence into jump rope freestyles.
 
 This raises some questions when trying to answer the main research question of this paper: \textbf{``How can artificial intelligence be incorporated into jump rope freestyles to increase the objectiveness and accuracy of judging?''}.
 
 \subsection{Problem domain}
+\label{subsec:intro-problem-domain}
 
 Jump rope, like gymnastics or athletics, exists in many disciplines, e.g. Speed, Single Rope freestyle (single/pair/team), Chinese Wheel (CW), Double Dutch (single/pair) \dots. To accurately judge routines, each discipline has its own rules. Although interlapped, differences exists. Each athlete or team then performs a choreography of 60 to 75 seconds showcasing their favorite skills and uniqueness.
 
 \subsubsection{What are the challenges for judges today?}
+\label{subsubsec:intro-question-challenges-for-judges}
 
-On competitions, judges watch the routine live to annotate the difficulty or creativity. Each judge pays attention to his assigned part with the athletes, all contributing to the total score of the freestyle. To keep up, double dutch diff judges\footnote{Those judges judging the difficulty of double dutch routines.} are already allowed to review routines at half speed in order to accurately score them.
+On competitions, judges watch the routine live to annotate the difficulty or creativity. Each judge pays attention to his assigned part with the athletes, all contributing to the total score of the freestyle. To keep up, difficulty certified judges\footnote{Those judges judging the difficulty of double dutch routines.} are already allowed to review routines at half speed in order to accurately score them.
 
 \subsubsection{How is difficulty scored?}
+\label{subsubsec:intro-question-difficulty-scored}
 
-Performed skills al have a level, which will be written down when seen by the judge. Each level also has a numeric score contributing to te total difficulty of the routine. Judges see and calculate/memorize the level of each skill, write it down, count the amount of levels jumped and calculate the diff score.
+Performed skills all have a level, which will be written down when seen by the judge. Each level also has a numeric score contributing to the total difficulty of the routine. Judges see and calculate/memorize the level of each skill, write it down, count the amount of levels jumped and calculate the diff score.
 
 \subsubsection{What can be done to increase the accuracy of judging?}
+\label{subsubsec:intro-question-how-to-increase-accuracy}
 
-Increasing the judging accuracy and fairness can be done on multiple levels. Adding more judges, each specializing in their own field, finetuning or adapting the rules or reviewing at half speed are all things that can or are applied. % TODO : abrubt end?
+The preferred solution in this proposal is an AI-model recognizing (sub)skills and transitions in a double dutch single freestyle (DD3) as assigning correct levels at world championships or even nationals in Belgium is perceived to be hard and the current main issue
 
 \subsubsection{How can machine learning be integrated into jump rope freestyles}
+\label{subsubsec:intro-question-integration}
 
-% TODO : footnote nextjump, incorporate more results?
 The preferred solution in this proposal is an AI-model recognizing (sub)skills and transitions in a double dutch single freestyle (DD3) as assigning correct levels at world championships or even nationals in Belgium is perceived to be hard and the current main issue.
 
 \subsubsection{Which data is available for the AI to use?}
+\label{subsubsec:intro-question-data}
 
 To recognize hundreds of skills, variations and transitions, lots of data is needed. Both individual and team freestyles are mostly recorded by clubs themselves or from the given organization, some which are available on social media. The task is to explore and gather as much as possible. 
 
 \subsubsection{When are AI-recognitions acceptable to potentially use on competitions?}
+\label{subsubsec:intro-question-acceptable-results}
 
 Judges do make mistakes, just like the AI models, but we do need a baseline for an acceptable result. Competition scores can be used to define a target.
 
-% TODO : mention speedcounter 10h - 36h speed accurate vs triples, double unders accurate in literature
+\subsubsection{How can the AI-judge as a hybrid model increasing judge quality of the judges?}
+\label{subsubsec:intro-question-hybrid-model-judge-quality}
+Can the AI-judge be used to train new judges or brush up the knowledge of current judges? Meanwhile, can they verify predicted labels by the
+model to use as new training data?
+
 
 \subsection{Solution domain}
+\label{subsec:intro-solution-domain}
 
 Until now, only the scope has been narrowed. The literature, implementation \& labeling will give more clarification on different questions. Getting to know the topic is great, but this doesn't get us further into the solution. Let's jump into it.
 
 \subsubsection{What are the skills and transitions that need to be recognized?}
+\label{subsubsec:intro-question-what-are-the-skill}
+
 % TODO : provide examples of skills
 For double dutch, there are two turners and a jumper. All three of them act as a unit and execute skills such as a frog, push-up or a cartwheel. Turners can then increase the difficulty by turning in a cross, on the back or two ropes underneath the jumper at once. But even the jumper can make transitions like a turntable, which is the same skill but then your body position changes a quarter or even more. Further clarification in the literature review.
 
 \subsubsection{What would be a minimal Proof of Concept (PoC)?}
+\label{subsubsec:intro-question-poc}
 
 The PoC would be a model recognizing the most common skills and transitions.
 This could mean omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. But the PoC should preferably be able to generalize uncommon skills that are still definable as normal. Better described would be knocking on the door three times, someones at the door, but knocking four times or with a bonk in between is also recognizable.
 
-\subsubsection{Which human activity recognition examples can be used or altered as the base of the model/research to pick out the best ones?}
+\subsubsection{Which activity recognition examples can be used or altered as a base guidance?}
+\label{subsubsec:intro-question-earlier-research-guidance}
+
 % TODO : source source source
-Quick searches give you examples of object recognition, detecting sign language \dots
-These implementations can be used as a first base.
-Examples give the idea that data mostly seem more to be centered, which is not the case in jump rope videos, a solution need to be found for that. The second problem is that freestyles can consist of more than fifty different skills, which takes to long to cut manually.
+Quick searches give examples of object recognition \autocite{Diwaker_2022}, detecting sign language \autocite{Bora_2023} or activity recognition (e.g. the kinetics dataset - riding a bike, reading a book, playing an instrument \autocite{Kay_2017}).
+These implementations can be used as a first guide. 
+Those examples give the idea that data mostly seem more to be centered, which is not the case in jump rope videos, a solution needs to be found for that. The second problem is that freestyles can consist of more than fifty different skills, which takes a long time to cut manually.
 
 \subsubsection{How much data is expected to increase the accuracy off the Judge?}
+\label{subsubsec:intro-question-expected-data-to-increase-accuracy}
 
 The amount of videos will keep rising, but will the current amount be sufficient? If its not enough, how much more would be expected and what about uncommon skills. Do we need to specially record them? But what about new skills on competitions?
 
 \subsection{Additional questions}
+\label{subsubsec:intro-question-additional}
 
 The proof of concept will probably raise a lot of questions as a byproduct such as:
 
@@ -79,38 +97,21 @@ The proof of concept will probably raise a lot of questions as a byproduct such 
 
 
 \subsection{Introduction summary}
+\label{subsubsec:intro-summary}
 
 With basic knowledge about jump rope and the goal of paper, further research, (label)definitions, modelselection and implementation can be performed. Let's start by exploring earlier work while slowly increasing more jump rope definitions.
 
 
 
-%---------- Stand van zaken ---------------------------------------------------
+%---------- Background information ---------------------------------------------------
 
 \section{Literature review}%
 \label{sec:literature}
 
-% TODO: (LANG CHECK literatuur and further)
+% TODO: (Check order)
 
 The research towards skillrecognition will be done step by step. First will be an introduction to NextJump's speedcounter, afterwards a better definition of skills will be given. This enables a better (model)research to recognize skills, to further fine-tune how skills and data need to be transformed to have representable input and output data. Along the way, literature is organized to represent the flow of a video, e.g. localize, segment, skill.
 
-\subsection{NextJump Speedcounter}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.95\linewidth]{img/nextjump-off-by-feet}
-    \caption[nextjump-results]{Comparison of avg scores given to a jumper, compared to the effective score}
-    \label{fig:nextjump-off-by-feet}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.95\linewidth]{img/nextjump-off-by-feet-judges}
-    \caption[nextjump-results-multi]{Comparison of avg scores given to a jumper, compared to the effective score}
-    \label{fig:nextjump-off-by-feet-judges}
-\end{figure}
-
-As of august 2023, \href{https://nextjump.app/}{NextJump} tested their AI-speed-counter on the world competition acquiring, really accurate results\footnote{95\% off by one}. They found that 10 hours was sufficient for a single event (e.g. just single rope speed) but to count all kinds of events more (diverse) data is needed\footnote{The current dataset entails 36h video material}. Using this as a base and examples of human action recognition \autocite{Yin_2024}, the likelihood to succeed implementing skill-recognition in freestyles grows.
-When skills are recognized, they can be mapped to their corresponding level and summed up to achieve the total score of a freestyle.
 
 \subsection{Skills intro}
 \label{subsec:basisskills}
@@ -215,7 +216,7 @@ To help judges and improve, some actions already took place.
 
 \textbf{Adapting the rules:} Changing the rules about how a freestyle must be evaluate, can impact the way of thinking, memorizing or calculating the level, score or deduction of a skill. This was tried by using the current 'snapshot' system for double dutch. This was still perceived as hard based on reactions of fellow exam takers in 2023, 2024.
 
-% TODO : add VAR note gymfed doc
+% TODO : add VAR source gymfed doc
 \textbf{Review at slower speed:} In recent years, on world competitions or on some local competitions in Belgium, the video replay was introduced to review a double dutch freestyle at slower speed to accurately assign level performed. As this can be time consuming, another separation in the judge panel, extra diff judges, was created to give judges enough time to review the routine.
 
 \medskip
@@ -250,6 +251,30 @@ Incorporating all these things brought jump rope to where it is. To make our liv
 To recognize the skills automatically input data is needed. There are quite some videos on socials, as well as in-house recordings \ref{tbl:data-comparison}, so the choice to learn from videos was made quickly. Computer vision is the field of study in which computers recognize features, people or other objects in digital imagery. More specifically, the focus is recognizing human actions in these recordings, called human activity recognition or HAR \autocite{Pareek_2020}.
 
 Other adaptations like Human Gait Recognition, HGR, or Human Pose Estimation, HPE, are also used to recognize human activities. Although the three techniques are closely related, each of them has a different nuance. Gait recognition looks at a person's typical movements, gestures or behavioral patterns \autocite{Alharthi_2019}, while pose estimation looks specifically at poses or special expressions \autocite{Song_2021}. They also talk about how pose recognition, e.g. skeleton-based, can be used as a tool are to improve activity labeling.
+
+\subsubsection{Computer vision in other sports}
+\label{subsubsec:literature-computer-vision-sports}
+
+\subsubsection{NextJump Speedcounter}
+\label{subsubsec:literature-nextjump-speedcounter}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{img/nextjump-off-by-feet}
+    \caption[nextjump-results]{Comparison of avg scores given to a jumper, compared to the effective score}
+    \label{fig:nextjump-off-by-feet}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{img/nextjump-off-by-feet-judges}
+    \caption[nextjump-results-multi]{Comparison of avg scores given to a jumper, compared to the effective score}
+    \label{fig:nextjump-off-by-feet-judges}
+\end{figure}
+
+As of august 2023, \href{https://nextjump.app/}{NextJump} tested their AI-speed-counter on the world competition acquiring, really accurate results\footnote{95\% off by one}. They found that 10 hours was sufficient for a single event (e.g. just single rope speed) but to count all kinds of events more (diverse) data is needed\footnote{The current dataset entails 36h video material}. Using this as a base and examples of human action recognition \autocite{Yin_2024}, the likelihood to succeed implementing skill-recognition in freestyles grows.
+When skills are recognized, they can be mapped to their corresponding level and summed up to achieve the total score of a freestyle.
+
 
 \subsection{HAR general progress}
 
