@@ -263,12 +263,11 @@ Other adaptations like Human Gait Recognition, HGR, or Human Pose Estimation, HP
 \subsubsection{Computer vision in other sports}
 \label{subsubsec:literature-computer-vision-sports}
 
-\textcite{Yin_2024} and ... describe the current usages of computer vision in sports ...
-% GYMNASTICS
-% TODO fill
-% 2 downloaded pdf
-Another interesting approach came from \autocite{Zahan_2023} who modified the LSTM-model
-to incorporate longer time sequences, to predict a gymnastic score of a full routine
+\textcite{Soomro_2014} published a book about the first advancements in computer vision since it was applied to sports. Lots of history, where topics like dimensionality reduction is more discussed and a topic then, compared to now. On the other hand, \textcite{Yin_2024} focuses themselves on the latest advancements of computer vision in sports, mainly focused on teams. Although relatively popular, neither of them really talks about gymnastics, which is closer related to jump rope in comparison with sports like tennis, basketball or cricket.
+Given examples by those two sources of performed computer vision tasks are player tracking, following the ball trajectory (e.g. in cricket, football, tennis), human to human interaction (e.g basket) or detecting action types (e.g. running, walking, hitting the ball) or predicting the sport itself. (e.g. Olympics dataset)
+
+To near closer towards jump rope, \textcite{Abdullah_2023} provided an example of static image recognition in which gymnast poses on the rings where predicted, although in a balanced dataset and limited amount of classes. More intensively, score prediction was performed by \textcite{Zahan_2023}. This is already close to what is wanted, however, he modified the LSTM-model to incorporate longer time sequences, to predict a full score of a routine which is static and not future proof. Changes in rules would make older scores useless and request for mistakes.
+Combining these and earlier papers, detecting which action is performed, with a level/score mapping afterwards will be better future proof.
 
 \subsubsection{NextJump Speedcounter}
 \label{subsubsec:literature-nextjump-speedcounter}
