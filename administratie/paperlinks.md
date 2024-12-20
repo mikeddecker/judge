@@ -26,6 +26,8 @@ HAR in team sports survey (Yin H. 2024-9) [springer](https://link.springer.com/a
 
 [Adapting Short-Term Transformers for Action Detection in Untrimmed Videos](https://arxiv.org/abs/2312.01897)
 
+[Poster: Robust Transformer Neural Network for Computer Vision Applications](https://par.nsf.gov/servlets/purl/10498909)
+
 [Spatiotemporal Self-attention Modeling with
 Temporal Patch Shift for Action Recognition](https://arxiv.org/pdf/2207.13259)
 

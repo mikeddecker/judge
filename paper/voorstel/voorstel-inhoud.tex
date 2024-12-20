@@ -226,7 +226,6 @@ replay was introduced to review a double dutch freestyle at slower speed to accu
 As this can be time consuming, another separation in the judge panel, extra diff
 judges, was created to give judges enough time to review the routine. Even in slow motion, it’s still perceived to be hard to see all the actions of all the jumpers, while calculating the total level of the base skill, transition, turnerskill and rotation speed, if its not a repetition\footnote{Repeated skills don't contribute to the score}.
 
-\medskip
 
 \subsubsection{Challenges summary}
 Incorporating all these things brought jump rope to where it is. To make our lives easier, we try to find improvements. One of these is exploring automatic skill-recognition by using AI. When skills are recognizable by a program, they can be mapped to a corresponding level contributing towards the end score. Knowing what's represented in an image or a video is called computer vision. % TODO : source
@@ -385,12 +384,12 @@ A basic explanation of skills with some examples was given earlier. In order to 
 
 \textbf{Turner:} There are two turners, so two columns, where each turner can execute a turner involvement. Examples are EB, toad or crouger. The cross is in most cases performed by both turners, otherwise the ropes are tangled.
 
-textbf{Skill:} Mostly powers or gymnastics, but could also be footwork \footnote{Footwork will not be further specified in this paper}. Further distinction or organizing can happen as variation and transitions of powers and gymnastics exists. A recap of different skills would be: pushups, splits, crabs, frogs, swift, cartwheel, salto, webster, suicide, handsprings, round offs \dots % TODO : refer pictures, examples of skills in attachment.
+\textbf{Skills:} Mostly powers or gymnastics, but could also be footwork \footnote{Footwork will not be further specified in this paper}. Further distinction or organizing can happen as variation and transitions of powers and gymnastics exists. A recap of different skills would be: pushups, splits, crabs, frogs, swift, cartwheel, salto, webster, suicide, handsprings, round offs \dots % TODO : refer pictures, examples of skills in attachment.
 Depending on the exact power or gymnastic, certain characteristics or transitions could be applied:
 
 \begin{itemize}
     \item one handed
-    \item one or two feet push-off (e.g. frog vs high frog, salto vs webster, suicide 1 vs 2 legs)
+    \item one or two feet push-off (e.g. frog vs high frog, salto vs webster, suicide one vs two legged push-off)
     \item turntable \footnote{On way of turning your bodyposition, can be done per quarter e.g. quarter turntable push-up}
     \item full body rotation \footnote{Other way of turning your body, requires full turns}
     \item consecutive \footnote{Consecutive handstands are considered harder and thus get you extra points, not the case with push-up}, e.g. frog after frog
@@ -400,17 +399,10 @@ Applying these transitions, characteristics allows for more variation, which get
 
 \medskip
 
-The skill-matrix is subject to change over time,
-initial skills not fitting the matrix will be left out
-for the MVP. Other than skills, jumpers and turners can switch with each other, most of these are
-also omitted in the MVP. Each column in the skill-matrix-example 5 can only contain one answer,
-for which softmax can be used, while between
-multiple columns, no relation is required and can
-be predicted separately. This can be solved using a multi-branch output as described in section
-4.4.1 by \autocite{Coulibaly_2022}).
-This can result in a guessed skill being partially
-correct, e.g. turner correct, but wrong rotational
-amount.
+The skill-matrix is subject to change over time, initial skills not fitting the matrix will be left out for the MVP. Other than skills, jumpers and turners can switch with each other, most of these are also omitted in the MVP.
+Each column in the skill-matrix-example 5 can only contain one answer, for which softmax can be used, while between multiple columns, no relation is required and can be predicted separately. This can be solved using a multi-branch output as described in by \autocite{Coulibaly_2022}). This can result in a guessed skill being partially correct, e.g. turner correct, but wrong rotational amount.
+
+On another note, \textcite{Guo_2017} explain that softmax isn't always a good indicator of confidence. They mention that when a model has good calibration, the accuracy should align with the confidence of the prediction. E.g. when you predict a skill has 80\% chance being a push-up, then this prediction or 80\% of the predicted push-ups should be correct. Predictions using softmax tend to be overconfident.
 
 \subsection{Group activity}
 
