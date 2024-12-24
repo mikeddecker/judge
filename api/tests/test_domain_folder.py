@@ -11,9 +11,9 @@ class DomainFolderTestSuite(unittest.TestCase):
     @parameterized.expand([
         (1, "competition", "main"),
         (2, "competition", "main"),
-        (125, "competition", "main"),
-        (125, "free", "main"),
-        (125, "competition", None),
+        (125_000, "competition", "main"),
+        (125_000, "free", "main"),
+        (125_000, "competition", None),
     ])
     def test_ctor_valid(self, id, name, parentname):
         folderparent = Folder(id, parentname, None) if parentname else None

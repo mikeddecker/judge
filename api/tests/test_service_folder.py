@@ -189,9 +189,10 @@ class FolderServiceTest(TestCase):
     # Test add in database
     ##################################
     def test_add_in_database_valid_without_parent(self):
-        self.make_folder_in_storage_dir(["competition"])
+        testname = "test_add_in_database_valid_without_parent"
+        self.make_folder_in_storage_dir([testname])
 
-        inserted_folder = self.folderService.add_in_database("competition", None)
+        inserted_folder = self.folderService.add_in_database(testname, None)
         assert isinstance(inserted_folder, Folder), f"Folder is not an instande of {Folder} got {type(inserted_folder)}"
 
         folder = Folder(inserted_folder.Id, inserted_folder.Name)
@@ -199,30 +200,58 @@ class FolderServiceTest(TestCase):
         assert self.folderService.count() == 1, "To much folders seem to be added."
 
     def test_add_in_database_valid_with_parent(self):
-        pass
+        testname = "test_add_in_database_valid_with_parent"
+        self.make_folder_in_storage_dir([testname])
+        self.make_folder_in_storage_dir([testname, "belgium"])
+
+        parent_folder = self.folderService.add_in_database(testname, None)
+        inserted_folder = self.folderService.add_in_database("belgium", parent_folder)
+        assert isinstance(inserted_folder, Folder), f"Folder is not an instande of {Folder} got {type(inserted_folder)}"
+
+        folder = Folder(id=inserted_folder.Id, name=inserted_folder.Name, parent=parent_folder)
+        assert inserted_folder == folder, "Inserted folder does not equal original folder"
+        assert self.folderService.count() == 2, "To much folders seem to be added."
 
     def test_add_in_database_valid_with_nested_parents(self):
-        pass
+        testname = "test_add_in_database_valid_with_nested_parents"
+        self.make_folder_in_storage_dir([testname])
+        self.make_folder_in_storage_dir([testname, "belgium"])
+        self.make_folder_in_storage_dir([testname, "belgium", "club"])
+        self.make_folder_in_storage_dir([testname, "belgium", "club", "training"])
+        self.make_folder_in_storage_dir([testname, "belgium", "club", "training", "year"])
 
-    def test_add_in_database_invalid_name_empty(self):
-        pass
+        parent_folder = self.folderService.add_in_database(name=testname, parent=None)
+        parent_folder = self.folderService.add_in_database(name="belgium", parent=parent_folder)
+        parent_folder = self.folderService.add_in_database(name="club", parent=parent_folder)
+        parent_folder = self.folderService.add_in_database(name="training", parent=parent_folder)
+        inserted_folder = self.folderService.add_in_database("year", parent_folder)
 
-    def test_add_in_database_invalid_parent_without_id(self):
-        pass
+        assert isinstance(inserted_folder, Folder), f"Folder is not an instande of {Folder} got {type(inserted_folder)}"
+        folder = Folder(id=inserted_folder.Id, name=inserted_folder.Name, parent=parent_folder)
+        assert inserted_folder == folder, "Inserted folder does not equal original folder"
+        assert self.folderService.count() == 5, "To much folders seem to be added."
 
-    def test_add_in_database_invalid_parent_invalid_id(self):
-        pass
+    @parameterized.expand(TestHelper.generate_empty_strings())
+    def test_add_in_database_invalid_name_empty(self, empty_name):
+        with self.assertRaises(ValueError):
+            self.folderService.add_in_database(name=empty_name, parent=None)
 
-    def test_add_in_database_invalid_parent_id_does_not_exist(self):
-        pass
+    @parameterized.expand(["hello!", "dotted.name", "seme%", "0623()", "§dsqk"])
+    def test_create_on_drive_invalid_only_word_characters_or_numbers(self, invalid_name):
+        with self.assertRaises(ValueError):
+            self.folderService.add_in_database(name=invalid_name, parent=None)
+    
+    def test_add_in_database_invalid_parent_id_does_not_exist_in_database(self):
+        testname = "test_add_in_database_invalid_parent_id_does_not_exist_in_database"
+        self.make_folder_in_storage_dir([testname])
+        self.make_folder_in_storage_dir([testname, "jammer"])
 
-    def test_add_in_database_invalid_nested_parent_invalid(self):
-        # let's skip this
-        # As long as the parent exists (which will be valid)
-        # and the folder effectively exists (checked by the FolderService)
-        # Then it can be fetched
-        # Other idea : TODO : check for folder orphans in DB
-        pass
+        parent_folder = Folder(155, testname, None)
+        with self.assertRaises(LookupError):
+            self.folderService.add_in_database(name="jammer", parent=parent_folder)
+
+    # Other idea : TODO : check for folder orphans in DB
+    # For StorageService ?
 
     ##################################
     # Test exists

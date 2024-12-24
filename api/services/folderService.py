@@ -31,6 +31,16 @@ class FolderService:
         """
         Adds an existing folder on the storage_drive to the database.
         """
+        ValueHelper.check_raise_string_only_abc123(name)
+
+        # Parent exists?
+        nested_parent = parent
+        while nested_parent:
+            if not self.exists_in_database(id=nested_parent.Id, name=nested_parent.Name, parent=nested_parent.Parent):
+                raise LookupError(f"(Nested) parent does not exist: {nested_parent}")
+            nested_parent = nested_parent.Parent
+
+        # Do I exist?
         if self.exists_in_database(name=name, parent=parent):
             raise LookupError(f"{name} found in db: {parent.get_relative_path()}")
         if not self.exists_path_on_drive(name=name, parent=parent):
@@ -74,7 +84,7 @@ class FolderService:
         """
         if id:
             ValueHelper.check_raise_id(id)
-            return self.FolderRepo.exists_by_id(id)
+            return self.FolderRepo.exists(id)
         if name:
             ValueHelper.check_raise_string(name)
             return self.FolderRepo.exists_by_name(name=name, parent=parent)
