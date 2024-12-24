@@ -85,7 +85,7 @@ class FolderService:
         if id:
             ValueHelper.check_raise_id(id)
             return self.FolderRepo.exists(id)
-        if name:
+        else:
             ValueHelper.check_raise_string(name)
             return self.FolderRepo.exists_by_name(name=name, parent=parent)
 

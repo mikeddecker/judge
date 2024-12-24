@@ -254,17 +254,52 @@ class FolderServiceTest(TestCase):
     # For StorageService ?
 
     ##################################
-    # Test exists
+    # Test exists on drive
+    # Params: name & folder
     ##################################
+    def test_exists_path_on_drive_valid_does_exist(self):
+        testname = "test_exists_valid_does_exist"
+        self.make_folder_in_storage_dir([testname])
+        assert self.folderService.exists_path_on_drive(name=testname, parent=None), f"Folder {testname} does not exist in {STORAGE_DIR_TEST}"
 
-    def test_exists_valid_does_exist(self):
-        pass
+    def test_exists_path_on_drive_valid_does_exist_with_parent(self):
+        testname = "test_exists_path_on_drive_valid_does_exist_with_parent"
+        parent_folder = self.folderService.create_on_drive(testname)
+        self.make_folder_in_storage_dir([testname, "child"])
+        
+        assert self.folderService.exists_path_on_drive(name="child", parent=parent_folder), f"Folder {testname} does not exist in {parent_folder.get_relative_path()}"
 
-    def test_exists_valid_does_not_exists(self):
-        pass
+    def test_exists_path_on_drive_valid_does_exist_with_nested_parent(self):
+        testname = "test_exists_path_on_drive_valid_does_exist_with_nested_parent"
+        parent_folder = self.folderService.create_on_drive(name=testname)
+        children = [f"child_{i}" for i in range(10)]
+        for c in children:
+            parent_folder = self.folderService.create_on_drive(name=c, parent=parent_folder)   
+        self.make_folder_in_storage_dir([testname, *children, "nested"])
+        
+        assert self.folderService.exists_path_on_drive(name="nested", parent=parent_folder), f"Folder {testname} does not exist in {parent_folder.get_relative_path()}"
 
-    def test_exists_invalid__id(self):
-        pass
+    def test_exists_path_on_drive_invalid_does_not_exists(self):
+        testname = "test_exists_path_on_drive_invalid_does_not_exists"
+        assert not self.folderService.exists_path_on_drive(name=testname, parent=None), f"Folder {testname} does not exist in {STORAGE_DIR_TEST}"
+
+    def test_exists_path_on_drive_invalid_does_not_exists_with_parent(self):
+        parent = Folder(2, "something_random_qsdj")
+        
+        assert not self.folderService.exists_path_on_drive(name="competition", parent=parent), f"Folder does not exist in {parent.get_relative_path()}"
+
+    def test_exists_path_on_drive_invalid_does_not_exists_with_nested_parent(self):
+        folders = ["this", "is", "a", "non", "existing", "path"]
+        folder = None
+        for i, f in enumerate(folders):
+            folder = Folder(id=i+1, name=f, parent=folder)
+        
+        assert not self.folderService.exists_path_on_drive(name="path_path", parent=folder), f"Folder does not exist in {folder.get_relative_path()}"
+
+    ##################################
+    # Test exists in database
+    # Params: Id or name & parent
+    ##################################
 
     def test_get_valid(self):
         pass
