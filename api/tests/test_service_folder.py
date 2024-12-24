@@ -47,7 +47,7 @@ class FolderServiceTest(TestCase):
     
     def test_setUp(self):
         assert os.path.exists(self.folderService.StorageFolder), f"Folder {self.folderService.StorageFolder} doesn't exist"
-
+        assert self.folderService.count() == 0, "Databank not empty"
 
     ##################################
     # Helper functions
@@ -87,8 +87,6 @@ class FolderServiceTest(TestCase):
     # Test create
     ##################################
     def test_create_on_drive_valid_without_parent(self):
-        assert self.folderService.count() == 0, "Databank not empty"
-
         testname = "test_create_on_drive_valid_without_parent"
         created_folder = self.folderService.create_on_drive(testname, None)
 
@@ -101,8 +99,6 @@ class FolderServiceTest(TestCase):
         assert folder_in_db.name == created_folder.Name, "Foldername differs from that in the database"
 
     def test_create_on_drive_valid_with_parent(self):
-        assert self.folderService.count() == 0, "Databank not empty"
-
         testname = "test_create_on_drive_valid_with_parent"
         child = "child"
         parent = self.folderService.create_on_drive(testname, None)
@@ -123,8 +119,6 @@ class FolderServiceTest(TestCase):
         assert folder_in_db_parent.id == parent.Id, f"ParentIds don't match: {parent.Id} & {folder_in_db.Parent.Id}"
 
     def test_create_on_drive_valid_with_nested_parent(self):
-        assert self.folderService.count() == 0, "Databank not empty"
-
         testname = "test_create_on_drive_valid_with_nested_parent"
         nested1 = "nested1"
         nested2 = "nested2"
@@ -138,8 +132,6 @@ class FolderServiceTest(TestCase):
         assert os.path.exists(os.path.join(STORAGE_DIR_TEST, testname, nested1, nested2, nested3, child)), f"folder {child} in {testname} was not created"
 
     def test_create_on_drive_valid_has_equal_name_in_other_folder(self):
-        assert self.folderService.count() == 0, "Databank not empty"
-
         testname = "test_create_on_drive_invalid_has_equal_name_in_other_folder"
         parent1 = "parent1"
         parent2 = "parent2"
@@ -152,8 +144,6 @@ class FolderServiceTest(TestCase):
 
     @parameterized.expand(TestHelper.generate_empty_strings())
     def test_create_on_drive_invalid_empty_name(self, empty_name):
-        assert self.folderService.count() == 0, "Databank not empty"
-
         with self.assertRaises(ValueError):
             self.folderService.create_on_drive(empty_name, None)
 
@@ -167,22 +157,16 @@ class FolderServiceTest(TestCase):
 
     @parameterized.expand(["hello!", "dotted.name", "seme%", "0623()", "§dsqk"])
     def test_create_on_drive_invalid_only_word_characters_or_numbers(self, invalid_name):
-        assert self.folderService.count() == 0, "Databank not empty"
-
         with self.assertRaises(ValueError):
             self.folderService.create_on_drive(invalid_name, None)
     
     def test_create_on_drive_invalid_parent_does_not_exist(self):
-        assert self.folderService.count() == 0, "Databank not empty"
-
         testname = "test_create_on_drive_invalid_parent_does_not_exist"
         # self.folderService.create_on_drive(testname, None)
         with self.assertRaises(NotADirectoryError):
             self.folderService.create_on_drive("child", Folder(2, testname, None))
 
     def test_create_on_drive_invalid_parent_folder_does_not_exist(self):
-        assert self.folderService.count() == 0, "Databank not empty"
-
         testname = "test_create_on_drive_invalid_parent_folder_does_not_exist"
         inserted_folder = self.folderService.create_on_drive(testname, None) # Should get 1, as db is 
         folder = Folder(id=inserted_folder.Id, name="other_name")
@@ -205,9 +189,6 @@ class FolderServiceTest(TestCase):
     # Test add in database
     ##################################
     def test_add_in_database_valid_without_parent(self):
-        # Pre-check
-        assert self.folderService.count() == 0, "Databank not empty"
-
         self.make_folder_in_storage_dir(["competition"])
 
         inserted_folder = self.folderService.add_in_database("competition", None)
