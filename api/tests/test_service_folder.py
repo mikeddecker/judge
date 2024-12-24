@@ -8,6 +8,7 @@ from flask import Flask, current_app
 from flask_migrate import Migrate
 from flask_testing import TestCase
 from repository.db import db
+from repository.models import Folder as FolderDB
 from services.folderService import FolderService
 from tests.TestHelper import TestHelper
 from typing import List
@@ -43,7 +44,14 @@ class FolderServiceTest(TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
-        
+    
+    def test_setUp(self):
+        assert os.path.exists(self.folderService.StorageFolder), f"Folder {self.folderService.StorageFolder} doesn't exist"
+
+
+    ##################################
+    # Helper functions
+    ##################################
     def make_folder_in_storage_dir(self, relative_path : List[str]):
         """
         Joins the relative path, depending on the operating system, then creates the folder.
@@ -55,7 +63,25 @@ class FolderServiceTest(TestCase):
     # Test constructor
     ##################################
     def test_ctor_valid(self):
-        pass
+        assert os.path.exists(STORAGE_DIR_TEST), f"Folder {STORAGE_DIR_TEST} doesn't exist"
+        service = FolderService(STORAGE_DIR_TEST)
+        assert isinstance(service, FolderService)
+        assert STORAGE_DIR_TEST == service.StorageFolder, f"Storage folder in service is not the same"
+        assert os.path.exists(self.folderService.StorageFolder), f"Folder {self.folderService.StorageFolder} doesn't exist"
+
+    def test_ctor_invalid_no_folder(self):
+        with self.assertRaises(TypeError):
+            FolderService()
+
+    @parameterized.expand(TestHelper.generate_empty_strings())
+    def test_ctor_invalid_folder_empty(self, empty_folder):
+        with self.assertRaises(ValueError):
+            FolderService(storage_folder=empty_folder)
+    
+    def test_ctor_invalid_folder_does_not_exist(self):
+        non_existing_folder = "something_random_qsjdkmfjqmsj"
+        with self.assertRaises(NotADirectoryError):
+            FolderService(storage_folder=non_existing_folder)
 
     ##################################
     # Test create
@@ -64,18 +90,37 @@ class FolderServiceTest(TestCase):
         assert self.folderService.count() == 0, "Databank not empty"
 
         testname = "test_create_on_drive_valid_without_parent"
-        self.folderService.create_on_drive(testname, None)
+        created_folder = self.folderService.create_on_drive(testname, None)
 
         assert os.path.exists(os.path.join(STORAGE_DIR_TEST, testname)), f"folder {testname} was not created"
+        assert created_folder.Id is not None, "Folder id is None"
+        assert created_folder.Id != 0, "Folder Id is 0"
+
+        folder_in_db = db.session.query(FolderDB).filter_by(id = created_folder.Id).first()
+        assert folder_in_db is not None, "Folder not inserted in DB"
+        assert folder_in_db.name == created_folder.Name, "Foldername differs from that in the database"
 
     def test_create_on_drive_valid_with_parent(self):
         assert self.folderService.count() == 0, "Databank not empty"
 
         testname = "test_create_on_drive_valid_with_parent"
         child = "child"
-        self.folderService.create_on_drive(testname, None)
-        self.folderService.create_on_drive(child, Folder(1, testname))
+        parent = self.folderService.create_on_drive(testname, None)
+        created_folder = self.folderService.create_on_drive(child, parent=parent)
+
         assert os.path.exists(os.path.join(STORAGE_DIR_TEST, testname, child)), f"folder {child} in {testname} was not created"
+        assert os.path.exists(os.path.join(STORAGE_DIR_TEST, created_folder.get_relative_path())), f"folder {created_folder.get_relative_path()} does not exist in {STORAGE_DIR_TEST}"
+        assert created_folder.Id is not None, "Folder id is None"
+        assert created_folder.Id != 0, "Folder Id is 0"
+        assert created_folder.Id != parent.Id, f"Parent id and child id are equal {created_folder.Id}"
+        
+        folder_in_db = db.session.query(FolderDB).filter_by(id=created_folder.Id).first()
+        folder_in_db_parent = folder_in_db.parent # Manually fetch the next one (Because lazy loaded)
+        assert folder_in_db is not None, "Folder not inserted in DB"
+        assert isinstance(folder_in_db, FolderDB), f"Folder is not {FolderDB}, got {type(folder_in_db)}"
+        assert folder_in_db.name == created_folder.Name, "Foldername differs from that in the database"
+        assert folder_in_db_parent is not None, f"Parent folder not fetched"
+        assert folder_in_db_parent.id == parent.Id, f"ParentIds don't match: {parent.Id} & {folder_in_db.Parent.Id}"
 
     def test_create_on_drive_valid_with_nested_parent(self):
         assert self.folderService.count() == 0, "Databank not empty"
@@ -90,7 +135,6 @@ class FolderServiceTest(TestCase):
         folder = self.folderService.create_on_drive(nested2, folder)
         folder = self.folderService.create_on_drive(nested3, folder)
         folder = self.folderService.create_on_drive(child, folder)
-        print(folder.get_relative_path())
         assert os.path.exists(os.path.join(STORAGE_DIR_TEST, testname, nested1, nested2, nested3, child)), f"folder {child} in {testname} was not created"
 
     def test_create_on_drive_valid_has_equal_name_in_other_folder(self):
@@ -136,22 +180,29 @@ class FolderServiceTest(TestCase):
         with self.assertRaises(NotADirectoryError):
             self.folderService.create_on_drive("child", Folder(2, testname, None))
 
-    # TODO : add parts that it also adds in in the database.
-    # TODO : add parts that add to database, checks existence of folder
-    # Extra : just in case
-    def test_create_on_drive_invalid_parent_id_and_foldername_in_database_does_not_match(self):
+    def test_create_on_drive_invalid_parent_folder_does_not_exist(self):
         assert self.folderService.count() == 0, "Databank not empty"
 
-        # testname = "test_create_on_drive_invalid_parent_id_and_foldername_in_database_does_not_match"
-        # inserted_folder = self.folderService.create_on_drive(testname, None) # Should get 1, as db is 
-        # folder = Folder(id=inserted_folder.Id + 5, name=inserted_folder.Name)
+        testname = "test_create_on_drive_invalid_parent_folder_does_not_exist"
+        inserted_folder = self.folderService.create_on_drive(testname, None) # Should get 1, as db is 
+        folder = Folder(id=inserted_folder.Id, name="other_name")
 
-        # with self.assertRaises(LookupError):
-        #     self.folderService.create_on_drive("child", folder)
-        pass
+        with self.assertRaises(NotADirectoryError):
+            self.folderService.create_on_drive("child", folder)
+
+    def test_create_on_drive_invalid_name_contains_spaces(self):
+        with self.assertRaises(ValueError):
+            self.folderService.create_on_drive("some faulty name", None)
+
+    def test_create_on_drive_invalid_already_exists(self):
+        testname = "test_create_on_drive_invalid_already_exists"
+        self.folderService.create_on_drive(name=testname)
+        # self.folderService.create_on_drive(testname, None)
+        with self.assertRaises(FileExistsError):
+            self.folderService.create_on_drive(name=testname)
 
     ##################################
-    # Test add
+    # Test add in database
     ##################################
     def test_add_in_database_valid_without_parent(self):
         # Pre-check
@@ -166,31 +217,35 @@ class FolderServiceTest(TestCase):
         assert inserted_folder == folder, "Inserted folder does not equal original folder"
         assert self.folderService.count() == 1, "To much folders seem to be added."
 
-    def test_add_valid_with_parent(self):
+    def test_add_in_database_valid_with_parent(self):
         pass
 
-    def test_add_valid_with_nested_parents(self):
+    def test_add_in_database_valid_with_nested_parents(self):
         pass
 
-    def test_add_invalid_name_empty(self):
+    def test_add_in_database_invalid_name_empty(self):
         pass
 
-    def test_add_invalid_parent_without_id(self):
+    def test_add_in_database_invalid_parent_without_id(self):
         pass
 
-    def test_add_invalid_parent_invalid_id(self):
+    def test_add_in_database_invalid_parent_invalid_id(self):
         pass
 
-    def test_add_invalid_parent_id_does_not_exist(self):
+    def test_add_in_database_invalid_parent_id_does_not_exist(self):
         pass
 
-    def test_add_invalid_nested_parent_invalid(self):
+    def test_add_in_database_invalid_nested_parent_invalid(self):
         # let's skip this
         # As long as the parent exists (which will be valid)
         # and the folder effectively exists (checked by the FolderService)
         # Then it can be fetched
         # Other idea : TODO : check for folder orphans in DB
         pass
+
+    ##################################
+    # Test exists
+    ##################################
 
     def test_exists_valid_does_exist(self):
         pass
@@ -236,3 +291,18 @@ class FolderServiceTest(TestCase):
 
     def test_rename_invalid_name(self):
         pass
+
+    ##################################
+    # Test immutable properties
+    ##################################
+    def test_immutable_property_storage_folder(self):
+        with self.assertRaises(AttributeError):
+            self.folderService.StorageFolder = "another_folder"
+    
+    def test_immutable_property_folder_repo(self):
+        with self.assertRaises(AttributeError):
+            self.folderService.FolderRepo = "another_repo"
+        
+        # Even another object doesn't work
+        with self.assertRaises(AttributeError):
+            self.folderService.FolderRepo = Folder(1, "folderke")
