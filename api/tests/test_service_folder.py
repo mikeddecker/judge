@@ -340,13 +340,40 @@ class FolderServiceTest(TestCase):
         
         assert not self.folderService.exists_in_database(name="path_path", parent=folder), f"Folder does not exist in {folder.get_relative_path()}"
 
+    # TODO : invalid names,
+    # TODO : invalid, not a folder
+
     ##################################
-    # Test exists in database (name)
+    # Test exists in database (id)
     # Params: id: int = None, name: str = None, parent: Folder = None
     # Default, name is ignored when id is specified
     ##################################
+    def test_exists_in_database_valid_id_does_exist(self):
+        testname = "test_exists_in_database_valid_id_does_exist"
+        assert not self.folderService.exists_in_database(id=1), f"Database not initialized correctly"
+        created_folder = self.folderService.create_on_drive(name=testname, parent=None)
 
+        assert self.folderService.exists_in_database(id=created_folder.Id), f"FolderId {created_folder.Id} does not exist in database"
 
+    def test_exists_in_database_valid_id_does_exist_with_parent(self):
+        testname = "test_exists_in_database_valid_id_does_exist_with_parent"
+        parent_folder = self.folderService.create_on_drive(name=testname, parent=None)
+        child = self.folderService.create_on_drive(name="child", parent=parent_folder)
+        
+        assert self.folderService.exists_in_database(id=child.Id), f"Folder {testname} with id {child.Id} does not exist in database"
+
+    def test_exists_in_database_valid_id_does_exist_with_nested_parent(self):
+        testname = "test_exists_in_database_valid_id_does_exist_with_nested_parent"
+        parent_folder = self.folderService.create_on_drive(name=testname, parent=None)
+        children = [f"child_{i}" for i in range(10)]
+        for c in children:
+            parent_folder = self.folderService.create_on_drive(name=c, parent=parent_folder)   
+        created_folder = self.folderService.create_on_drive(name="nested", parent=parent_folder)
+        
+        assert self.folderService.exists_in_database(id=created_folder.Id), f"FolderId {created_folder.Id} does not exist in database"
+
+    def test_exists_in_database_invalid_id_does_not_exists(self):
+        assert not self.folderService.exists_in_database(id=555), f"FolderId 555 somehow exists in database"
 
     ##################################
     # Test exists in database
