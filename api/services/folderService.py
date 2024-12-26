@@ -86,7 +86,7 @@ class FolderService:
             ValueHelper.check_raise_id(id)
             return self.FolderRepo.exists(id)
         else:
-            ValueHelper.check_raise_string(name)
+            ValueHelper.check_raise_string_only_abc123(name)
             return self.FolderRepo.exists_by_name(name=name, parent=parent)
 
     def exists_path_on_drive(self, name: str, parent: Folder = None) -> bool:

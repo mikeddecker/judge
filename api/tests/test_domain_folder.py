@@ -37,7 +37,7 @@ class DomainFolderTestSuite(unittest.TestCase):
         with self.assertRaises(ValueError):
             Folder(1, "competition", parent)
 
-    @parameterized.expand(["hello!", "dotted.name", "seme%", "0623()", "§dsqk"])
+    @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore())
     def test_ctor_invalid_only_word_characters_or_numbers(self, invalid_name):
         with self.assertRaises(ValueError):
             Folder(id=1, name=invalid_name, parent=None)

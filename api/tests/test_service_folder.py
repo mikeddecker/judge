@@ -155,7 +155,7 @@ class FolderServiceTest(TestCase):
         with self.assertRaises(FileExistsError):
             self.folderService.create_on_drive(testname, None)
 
-    @parameterized.expand(["hello!", "dotted.name", "seme%", "0623()", "§dsqk"])
+    @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore())
     def test_create_on_drive_invalid_only_word_characters_or_numbers(self, invalid_name):
         with self.assertRaises(ValueError):
             self.folderService.create_on_drive(invalid_name, None)
@@ -236,7 +236,7 @@ class FolderServiceTest(TestCase):
         with self.assertRaises(ValueError):
             self.folderService.add_in_database(name=empty_name, parent=None)
 
-    @parameterized.expand(["hello!", "dotted.name", "seme%", "0623()", "§dsqk"])
+    @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore())
     def test_create_on_drive_invalid_only_word_characters_or_numbers(self, invalid_name):
         with self.assertRaises(ValueError):
             self.folderService.add_in_database(name=invalid_name, parent=None)
@@ -340,8 +340,15 @@ class FolderServiceTest(TestCase):
         
         assert not self.folderService.exists_in_database(name="path_path", parent=folder), f"Folder does not exist in {folder.get_relative_path()}"
 
-    # TODO : invalid names,
-    # TODO : invalid, not a folder
+    @parameterized.expand(TestHelper.generate_empty_strings())
+    def test_exists_in_database_invalid_name_empty(self, empty_folder):
+        with self.assertRaises(ValueError):
+            self.folderService.exists_in_database(name=empty_folder)
+    
+    @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore())
+    def test_exists_in_database_invalid_name_empty(self, invalid_name):
+        with self.assertRaises(ValueError):
+            self.folderService.exists_in_database(name=invalid_name)
 
     ##################################
     # Test exists in database (id)
