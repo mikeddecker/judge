@@ -65,15 +65,16 @@ class FolderRepository:
         # Only when needed
         raise NotImplementedError
 
-    def delete(self, id):
+    def delete(self, id: str):
         """
         Hard deletes the folder from the database.
         """
         if not self.exists(id):
             raise LookupError(f"Folder {id} doesn't exist")
-        
-        folder = self.db.session.get(FolderDB, ident=id)
-        self.db.session.delete(folder)
+        print("id is", id)
+        folderDB = self.db.session.get(FolderDB, ident=id)
+        print("folderDB.id",folderDB.id)
+        self.db.session.delete(folderDB)
         self.db.session.commit()
         return True
 

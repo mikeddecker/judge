@@ -1,18 +1,22 @@
 # Does in depth checks
 import os
+from .videoService import VideoService
 from domain.folder import Folder
 from repository.db import db
 from repository.folderRepo import FolderRepository
+from repository.videoRepo import VideoRepository
 from helpers.ValueHelper import ValueHelper
 
 class FolderService:
     PROPERTIES = [
         "FolderRepo",
+        "VideoRepo",
         "StorageFolder",
     ]
     def __init__(self, storage_folder: str):
         ValueHelper.check_raise_string(storage_folder)
         self.FolderRepo = FolderRepository(db=db)
+        self.VideoRepo = VideoRepository(db=db)
 
         if not os.path.exists(storage_folder):
             raise NotADirectoryError(f"StorageFolder {storage_folder} does not exist")
@@ -124,20 +128,18 @@ class FolderService:
         ValueHelper.check_raise_id(id)
         if not self.exists_in_database(id=id):
             raise LookupError(f"Folder {id} not found in db")
-        if self.has_content(id):
-            raise NotImplementedError()
         f = self.get(id=id)
+        if self.get_children(id):
+            raise PermissionError(f"Folder has subfolders, can not delete folder: {f.get_relative_path()}")
+        nr_of_videos_in_folder = len(self.VideoRepo.get_videos(folderId=id))
+        if nr_of_videos_in_folder > 0:
+            raise PermissionError(f"Folder has {nr_of_videos_in_folder} videos, can not delete folder: {f.get_relative_path()}")
+        other_elements_in_folder = os.listdir(os.path.join(self.StorageFolder, f.get_relative_path()))
+        if other_elements_in_folder:
+            raise PermissionError(f"Folder is not empty, other elements are: {other_elements_in_folder}")
+        
         self.FolderRepo.delete(id=id)
         os.rmdir(os.path.join(self.StorageFolder ,f.get_relative_path()))
-
-    def has_content(self, id: int):
-        """
-        Checks whether the given folder has content: subfolders, videos, images, text...
-        """
-        ValueHelper.check_raise_id(id)
-        if len(self.get_children(id=id)) > 0:
-            return False
-        # TODO : get videos or get video ids
 
     def count(self):
         return self.FolderRepo.count()

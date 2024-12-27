@@ -1,6 +1,6 @@
 from domain.folder import Folder
 from domain.videoinfo import VideoInfo
-from repository.models import Folder as FolderDB
+from repository.models import Folder as FolderDB, Video as VideoDB
 
 class MapToDomain:
     def map_folder(folderDB: FolderDB) -> Folder:
@@ -12,3 +12,12 @@ class MapToDomain:
             folder = parent_folder
             folderDB = folderDB.parent
         return original
+    
+    # TODO : update when height, width... are required & implemented
+    def map_video(videoDB: VideoDB) -> VideoInfo:
+        video = VideoInfo(
+            id = videoDB.id,
+            name = videoDB.name,
+            folder = MapToDomain.map_folder(videoDB.folder)
+        )
+        return video

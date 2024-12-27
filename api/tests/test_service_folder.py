@@ -10,6 +10,7 @@ from flask_testing import TestCase
 from repository.db import db
 from repository.models import Folder as FolderDB
 from services.folderService import FolderService
+from services.videoService import VideoService
 from tests.TestHelper import TestHelper
 from typing import List
 
@@ -36,6 +37,8 @@ class FolderServiceTest(TestCase):
             db.create_all()
         
         self.folderService = FolderService(STORAGE_DIR_TEST)
+        self.videoService = VideoService(STORAGE_DIR_TEST)
+
         return app
     
     def setUp(self):
@@ -483,16 +486,45 @@ class FolderServiceTest(TestCase):
 
     @parameterized.expand(TestHelper.generate_invalid_ids())
     def test_delete_invalid_id_value(self, invalid_id):
-        pass
+        with self.assertRaises(ValueError):
+            self.folderService.delete(id=invalid_id)
 
     def test_delete_invalid_id_does_not_exist(self):
-        pass
+        with self.assertRaises(LookupError):
+            self.folderService.delete(id=155)
 
     def test_delete_invalid_has_children(self):
-        pass
+        testname = "test_delete_invalid_has_children"
+        p = self.folderService.create(name=testname)
+        f = self.folderService.create(name="child", parent=p)
+
+        with self.assertRaises(PermissionError):
+            self.folderService.delete(id=p.Id)
+
+    def test_delete_invalid_has_videos(self):
+        testname = "test_delete_invalid_has_videos"
+        p = self.folderService.create(name=testname)
+        videoname = 'empty_video.mp4'
+        # Real creation here not needed, as it checks whether it exists in db or not.
+        self.videoService.add(name=videoname, folder=p)
+
+        with self.assertRaises(PermissionError):
+            self.folderService.delete(id=p.Id)
+
+    def test_delete_invalid_has_other_content(self):
+        testname = "test_delete_invalid_has_other_content"
+        p = self.folderService.create(name=testname)
+        with open(os.path.join(STORAGE_DIR_TEST, testname, 'undiscovered_video.mp4'), 'w') as fp:
+            pass
+        with open(os.path.join(STORAGE_DIR_TEST, testname, 'textfile'), 'w') as fp:
+            pass
+
+        with self.assertRaises(PermissionError):
+            self.folderService.delete(id=p.Id)
 
     ##################################
     # Test rename (by id & new_name)
+    # TODO : Should have, implement later
     ##################################
     def test_rename_valid(self):
         # TODO : check that not all folders are renamed

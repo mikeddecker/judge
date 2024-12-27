@@ -32,7 +32,7 @@ class Video(db.Model):
     height = db.Column(db.Integer, nullable=False)
     fps = db.Column(db.Integer, nullable=False)
     training = db.Column(db.Boolean, nullable=False)
-    quality = db.Column(db.Integer, nullable=False)
+    qualitative = db.Column(db.Boolean, nullable=False)
     obstruction = db.Column(db.Boolean, nullable=False)
     private = db.Column(db.Boolean, nullable=False, default=False)
 
@@ -45,6 +45,6 @@ class Video(db.Model):
             'height' : self.height,
             'fps' : self.fps,
             'training' : self.training,
-            'quality' : self.quality,
+            'qualitative' : self.qualitative,
             'obstruction' : self.obstruction
         }
