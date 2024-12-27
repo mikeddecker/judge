@@ -11,7 +11,7 @@ def generate_empty_strings():
         None, "", " ", "\n", "\r", "  ", "\t ", "\t", " \r\n "
     ]
 
-FOLDER_INSTANCE_VALID = Folder(1, 'competition', None)
+FOLDER_INSTANCE_VALID = Folder(id=1, name='competition', parent=None)
 
 # TODO : update
 
@@ -29,7 +29,7 @@ class DomainVideoTestSuite(unittest.TestCase):
         (1, "some-freestyles.mp4"),
     ])
     def test_ctor_valid(self, id, name):
-        video = VideoInfo(id, name, FOLDER_INSTANCE_VALID)
+        video = VideoInfo(id=id, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500)
         self.assertEqual(id, video.Id, f"Video id incorrectly initialized {id}, {video.Id}")
         self.assertEqual(name, video.Name, f"Videoname incorrectly initialized {name}, {video.Name}")
         self.assertEqual(FOLDER_INSTANCE_VALID, video.Folder, f"Videofolder incorrectly initialized")
@@ -37,44 +37,44 @@ class DomainVideoTestSuite(unittest.TestCase):
     @parameterized.expand(TestHelper.generate_empty_strings())
     def test_ctor_invalid_name_empty(self, name):
         with self.assertRaises(ValueError):
-            VideoInfo(1, name, FOLDER_INSTANCE_VALID)
+            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500)
 
     @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore_extensions())
     def test_ctor_invalid_name_word_digits_underscore(self, name):
         with self.assertRaises(ValueError):
-            VideoInfo(1, name, FOLDER_INSTANCE_VALID)
+            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500)
 
     @parameterized.expand(TestHelper.generate_invalid_ids())
     def test_ctor_invalid_id(self, id):
         with self.assertRaises(ValueError):
-            VideoInfo(id, "dd3-nationals.mp4", FOLDER_INSTANCE_VALID)
+            VideoInfo(id=id, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
 
     @parameterized.expand([7, "text", True, ValueError])
     def test_ctor_invalid_folder_not_a_folder(self, parent):
         with self.assertRaises(ValueError):
-            VideoInfo(1, "dd3-nationals.mp4", parent)
+            VideoInfo(id=1, name="dd3-nationals.mp4", folder=parent, frameLength=500)
     
     #############################################
     # Test immutable properties & private method
     #############################################
     def test_change_id_immutable(self):
         with self.assertRaises(AttributeError):
-            video = VideoInfo(1, "dd3-nationals.mp4", FOLDER_INSTANCE_VALID)
+            video = VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
             video.Id = 7
 
     def test_change_name_immutable(self):
         with self.assertRaises(AttributeError):
-            video = VideoInfo(1, "dd3-nationals.mp4", FOLDER_INSTANCE_VALID)
+            video = VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
             video.Name = "dd3-provincial-pre-round"
 
     def test_change_folder_immutable(self):
         with self.assertRaises(AttributeError):
-            video = VideoInfo(1, "dd3-nationals.mp4", FOLDER_INSTANCE_VALID)
-            video.Folder = Folder(2, "main", FOLDER_INSTANCE_VALID)
+            video = VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
+            video.Folder = Folder(id=2, name="main", parent=FOLDER_INSTANCE_VALID)
 
     def test_change_id_private_method(self):
         with self.assertRaises(AttributeError):
-            video = VideoInfo(1, "dd3-nationals.mp4", FOLDER_INSTANCE_VALID)
+            video = VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
             video.__setId(88)
 
 
@@ -82,7 +82,7 @@ class DomainVideoTestSuite(unittest.TestCase):
     # Test frames
     ##################################
     def test_frames_empty_when_no_labled_frames(self):
-        video = VideoInfo(1, "dd3-nationals.mp4", FOLDER_INSTANCE_VALID)
+        video = VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
         self.assertTrue(len(video.Frames) == 0)
 
 
@@ -134,11 +134,11 @@ class DomainVideoTestSuite(unittest.TestCase):
     # Section : Skills #
     ####################
     def test_skills_empty_when_no_labled_skills(self):
-        video = VideoInfo(1, "dd3-nationals.mp4", FOLDER_INSTANCE_VALID)
+        video = VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
         self.assertTrue(len(video.Skills) == 0)
     
     def test_add_skill_valid(self):
-        video = VideoInfo(1, "dd3-nationals.mp4", FOLDER_INSTANCE_VALID)
+        video = VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
         skill = Skill(5, "crouger")
         video.add_skill(skill)
         self.assertIn(skill, video.Skills, f"Skill is not in property Skills")

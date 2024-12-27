@@ -14,17 +14,19 @@ class VideoRepository:
 
     # TODO : make width, height ... requirements
     def add(
-            self, name: str, folder: Folder,
+            self, name: str, folder: Folder, frameLength: int,
             width=1920, height=1080, fps=30,
             training=True, qualitative=True, obstruction=False, private=True
         ) -> VideoInfo:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
+        ValueHelper.check_raise_id(frameLength)
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"Folder must be provided")
         new_video = VideoInfoDB(
             name = name,
             folderId = folder.Id,
             folder = MapToDB.map_folder(db=self.db, folder=folder),
+            frameLength = frameLength,
             width = width,
             height = height,
             fps = fps,

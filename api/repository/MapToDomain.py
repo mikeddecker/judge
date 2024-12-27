@@ -18,6 +18,7 @@ class MapToDomain:
         video = VideoInfo(
             id = videoDB.id,
             name = videoDB.name,
-            folder = MapToDomain.map_folder(videoDB.folder)
+            folder = MapToDomain.map_folder(videoDB.folder),
+            frameLength= videoDB.frameLength,
         )
         return video

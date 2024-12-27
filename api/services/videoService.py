@@ -41,7 +41,7 @@ class VideoService:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
-    def add(self, name: str, folder: Folder) -> VideoInfo:
+    def add(self, name: str, folder: Folder, frameLength: int) -> VideoInfo:
         """Adds the given video to the database
         
         TODO : After localization; add meta information loader
@@ -59,7 +59,8 @@ class VideoService:
 
         return self.VideoRepo.add(
             name=name,
-            folder=folder
+            folder=folder,
+            frameLength=frameLength,
         )
     
     def count(self) -> int:

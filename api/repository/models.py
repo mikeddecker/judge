@@ -1,5 +1,6 @@
 # from flask_sqlalchemy import SQLAlchemy
 from repository.db import db
+from sqlalchemy.dialects.mysql import SMALLINT
 
 class Folder(db.Model):
     __tablename__ = 'Folders'
@@ -28,6 +29,7 @@ class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     folderId = db.Column(db.Integer, db.ForeignKey('Folders.id'), nullable=False)
     name = db.Column(db.String(255), nullable=False)
+    frameLength = db.Column(SMALLINT(unsigned=True), nullable=False)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
     fps = db.Column(db.Integer, nullable=False)

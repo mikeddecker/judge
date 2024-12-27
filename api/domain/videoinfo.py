@@ -15,8 +15,8 @@ class VideoInfo:
         "Skills", 
     ]
     # Frame does not 
-    Frames = Dict[int, FrameInfo] # Key = frameId, value is Frame
-    Skills = Set[Skill]
+    Frames: Dict[int, FrameInfo] = dict() # Key = frameId, value is Frame
+    Skills: Set[Skill] = set()
 
     def __init__(self, id: int, name: str, folder: Folder, frameLength: int):
         self.Frames: self.Frames = {}  # Initialize frames as an empty dictionary
@@ -76,7 +76,7 @@ class VideoInfo:
         ValueHelper.check_raise_id(framelength)
         if hasattr(self, 'FrameLength') and self.FrameLength is not None:
             raise AttributeError(f"Cannot modify FrameLength once it is set")
-        if framelength is None or id <= 0:
+        if framelength is None or framelength <= 0:
             raise ValueError("FrameLength must be strict positive")
         object.__setattr__(self, 'FrameLength', framelength)
     # Section : Frame functions
@@ -85,7 +85,7 @@ class VideoInfo:
         ValueHelper.check_raise_id(frameNr)
         return frameNr in self.Frames.keys
     
-    def add_framelabel_localization(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
+    def add_framelabel(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
         raise NotImplementedError()
 
     def remove_framelabel(self, frameNr: int):
@@ -94,7 +94,7 @@ class VideoInfo:
     def update_framelabel(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True): 
         raise NotImplementedError()
     
-    
+
     # Section : Skill functions
 
     def add_skill(self, skill: Skill):
