@@ -27,7 +27,7 @@ class DomainFolderTestSuite(unittest.TestCase):
         with self.assertRaises(ValueError):
             Folder(1, name, None)
 
-    @parameterized.expand([None, 0, -1, -55])
+    @parameterized.expand(TestHelper.generate_invalid_ids())
     def test_ctor_invalid_id(self, id):
         with self.assertRaises(ValueError):
             Folder(id, "competition", None)

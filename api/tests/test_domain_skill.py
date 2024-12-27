@@ -4,6 +4,7 @@ from parameterized import parameterized
 from domain.folder import Folder
 from domain.videoinfo import VideoInfo
 from domain.skill import Skill
+from tests.TestHelper import TestHelper
 
 def generate_empty_strings():
     return [ 
@@ -31,7 +32,7 @@ class DomainSkillTestSuite(unittest.TestCase):
         with self.assertRaises(ValueError):
             Skill(1, dottedName)
 
-    @parameterized.expand([None, 0, -1, -55])
+    @parameterized.expand(TestHelper.generate_invalid_ids())
     def test_ctor_invalid_id(self, id):
         with self.assertRaises(ValueError):
             Skill(id, "toad", None)

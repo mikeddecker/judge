@@ -148,12 +148,17 @@ class FolderServiceTest(TestCase):
             self.folderService.create(empty_name, None)
 
     def test_create_invalid_already_exists(self):
-        assert self.folderService.count() == 0, "Databank not empty"
-
         testname = "test_create_invalid_already_exists"
         self.folderService.create(testname, None)
         with self.assertRaises(FileExistsError):
             self.folderService.create(testname, None)
+
+    def test_create_invalid_already_exists_with_parent(self):
+        testname = "test_create_invalid_already_exists_with_parent"
+        p = self.folderService.create(testname, None)
+        self.folderService.create("child", parent=p)
+        with self.assertRaises(FileExistsError):
+            self.folderService.create("child", parent=p)
 
     @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore())
     def test_create_invalid_only_word_characters_or_numbers(self, invalid_name):
@@ -392,28 +397,73 @@ class FolderServiceTest(TestCase):
         created_folder = self.folderService.create(name=testname)
         fetched_created_folder = self.folderService.get(id=created_folder.Id)
 
-        assert fetched_created_folder
+        assert fetched_created_folder.Id == created_folder.Id, f"Identifiers are not the same"
+        assert fetched_created_folder.Name == created_folder.Name, f"Names are not the same"
+        assert fetched_created_folder.Parent == created_folder.Parent, f"Parents are not the same"
 
-    def test_get_valid_does_not_exist_nonetype(self):
-        pass
+    @parameterized.expand(TestHelper.generate_invalid_ids())
+    def test_get_invalid_id_value(self, invalid_id):
+        with self.assertRaises(ValueError):
+            self.folderService.get(id=invalid_id)
 
-    def test_get_invalid__id(self):
-        pass
+    def test_get_invalid_id_does_not_exist(self):
+        with self.assertRaises(LookupError):
+            self.folderService.get(id=155)
 
-    def test_get_by_name(self):
-        # When needed
-        pass
+    ##################################
+    # Test get (by id)
+    # Only by id + combo get_children
+    ##################################
+    def test_get_children_valid(self):
+        testname = "test_get_children_valid"
+        parent = self.folderService.create(name=testname)
+        for i in range(5):
+            self.folderService.create(name=f"child_{i}", parent=parent)
+
+        children = self.folderService.get_children(id=parent.Id)
+
+        assert len(children) == 5, f"Parent has not 5 children"
+        numbers = [int((c.Name).split("_")[1]) for c in children]
+        assert 0 in numbers, f"0 not in numbers"
+        assert 1 in numbers, f"1 not in numbers"
+        assert 2 in numbers, f"2 not in numbers"
+        assert 3 in numbers, f"3 not in numbers"
+        assert 4 in numbers, f"4 not in numbers"
+
+    def test_get_children_valid_no_children(self):
+        testname = "test_get_children_valid_no_children"
+        parent = self.folderService.create(name=testname)
+        children = self.folderService.get_children(id=parent.Id)
+
+        assert len(children) == 0, f"Children is not empty"
+
+    @parameterized.expand(TestHelper.generate_invalid_ids())
+    def test_get_children_invalid_id_value(self, invalid_id):
+        with self.assertRaises(ValueError):
+            self.folderService.get_children(id=invalid_id)
+
+    def test_get_children_invalid_id_does_not_exist(self):
+        with self.assertRaises(LookupError):
+            self.folderService.get_children(id=155)
 
 
-
+    ##################################
+    # Test delete (by id)
+    # Only by id + combo get_children
+    ##################################
     def test_delete_valid(self):
         pass
 
-    def test_delete_invalid__id(self):
+    @parameterized.expand(TestHelper.generate_invalid_ids())
+    def test_delete_invalid_id_value(self, invalid_id):
+        pass
+
+    def test_delete_invalid_id_does_not_exist(self):
         pass
 
     def test_delete_invalid_has_children(self):
         pass
+
 
     def test_rename_valid(self):
         # TODO : check that not all folders are renamed

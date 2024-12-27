@@ -1,4 +1,4 @@
-
+from helpers.ValueHelper import ValueHelper
 class Skill:
     PROPERTIES = [
         'Id', 'DottedName',
@@ -24,7 +24,8 @@ class Skill:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
-    def __setId(self, id):
+    def __setId(self, id: int):
+        ValueHelper.check_raise_id(id)
         if hasattr(self, 'Id') and self.Id is not None:
             raise AttributeError(f"Cannot modify Id once it is set")
         if id is None or id <= 0:

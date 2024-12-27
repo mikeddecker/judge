@@ -2,6 +2,8 @@ import re
 
 class ValueHelper:
     def check_raise_id(id: int):
+        if not isinstance(id, int):
+            raise ValueError(f"Id must be of type {int}")
         if id <= 0:
             raise ValueError(f"Id must be strict positive integer, got {id}")
         
