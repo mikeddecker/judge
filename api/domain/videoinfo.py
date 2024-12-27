@@ -87,22 +87,27 @@ class VideoInfo:
         ValueHelper.check_raise_frameNr(frameNr)
         return frameNr in self.Frames.keys()
     
-    def add_framelabel(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
-        ValueHelper.check_raise_frameNr(frameNr)
-        print(frameNr)
-        if frameNr >= self.FrameLength:
-            raise ValueError(f"FrameNr to big, frameLength is {self.FrameLength}, got {frameNr}")
-        self.Frames[frameNr] = FrameInfo(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
+    def add_framelabel(self, label: FrameInfo):
+        if label is None or not isinstance(label, FrameInfo):
+            raise ValueError(f"Label is not a {FrameInfo} got {label}")
+        ValueHelper.check_raise_frameNr(label.FrameNr)
+        print(label.FrameNr, self.FrameLength)
+        if label.FrameNr >= self.FrameLength:
+            raise ValueError(f"FrameNr to big, frameLength is {self.FrameLength}, got {label.FrameNr}")
+        self.Frames[label.FrameNr] = label
 
     def remove_framelabel(self, frameNr: int):
+        ValueHelper.check_raise_frameNr(frameNr)
         if not self.has_frame_been_labeled(frameNr=frameNr):
-            raise ValueError(f"Can not remove a label that is not labeled, got frameNr_{frameNr}")
+            raise ValueError(f"Can not remove a label that is not labeled, got frameNr = {frameNr}")
         del self.Frames[frameNr]
     
-    def update_framelabel(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True): 
-        if self.has_frame_been_labeled(frameNr=frameNr):
-            del self.Frames[frameNr]
-        self.add_framelabel(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
+    def update_framelabel(self, label: FrameInfo): 
+        if label is None or not isinstance(label, FrameInfo):
+            raise ValueError(f"Label is not a {FrameInfo} got {label}")
+        if not self.has_frame_been_labeled(frameNr=label.FrameNr):
+            raise ValueError(f"Label has not yet been labeled, got {label.FrameNr}")
+        self.add_framelabel(label)
     
     ####################
     # Section : Skills #

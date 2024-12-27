@@ -105,4 +105,11 @@ class FrameInfo:
         # Typehint
         other : FrameInfo = value
         
-        return self.FrameNr == other.FrameNr
+        return (
+            self.FrameNr == other.FrameNr and
+            self.X == other.X and
+            self.Y == other.Y and
+            self.Width == other.Width and
+            self.Height == other.Height and
+            self.JumperVisible == other.JumperVisible
+        )
