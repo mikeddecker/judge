@@ -1,5 +1,6 @@
 from domain.videoinfo import VideoInfo
 from domain.folder import Folder
+from domain.videoinfo import VideoInfo
 from flask_sqlalchemy import SQLAlchemy
 from helpers.ValueHelper import ValueHelper
 from repository.models import Video as VideoInfoDB, Folder as FolderDB
@@ -16,7 +17,7 @@ class VideoRepository:
             self, name: str, folder: Folder,
             width=1920, height=1080, fps=30,
             training=True, qualitative=True, obstruction=False, private=True
-        ) -> Folder:
+        ) -> VideoInfo:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"Folder must be provided")
@@ -36,6 +37,9 @@ class VideoRepository:
         self.db.session.commit()
         return MapToDomain.map_video(new_video)
     
+    def count(self) -> int:
+        return self.db.session.query(VideoInfoDB).count()
+    
     def exists(self, id: int) -> bool:
         ValueHelper.check_raise_id(id)
         return self.db.session.query(FolderDB.id).filter_by(id=id).scalar() is not None
@@ -46,10 +50,10 @@ class VideoRepository:
             raise ValueError(f"folder must be provided")
         return self.db.session.query(VideoInfoDB).filter_by(name=name, folderId=folder.Id).scalar() is not None
         
-    def get(self, id: int):
-        raise NotImplementedError(f"ni")
+    def get(self, id: int) -> VideoInfo:
+        return MapToDomain.map_video(self.db.session.get(VideoInfoDB, ident=id))
     
-    def get_videos(self, folderId: int):
+    def get_videos(self, folderId: int) -> List[VideoInfo]:
         """Return videos in the given folder"""
         ValueHelper.check_raise_id(folderId)
         videosDB = self.db.session.query(VideoInfoDB).filter_by(folderId=folderId).all()

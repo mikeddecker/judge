@@ -6,6 +6,7 @@ from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from helpers.ValueHelper import ValueHelper
+from typing import List
 
 class FolderService:
     PROPERTIES = [
@@ -51,7 +52,7 @@ class FolderService:
             raise ValueError(f"folder {name} not found in {self.StorageFolder if not parent else os.path.join(self.StorageFolder, parent.get_relative_path())}")
         return self.FolderRepo.add(name=name, parent=parent)
     
-    def create(self, name, parent: Folder = None):
+    def create(self, name, parent: Folder = None) -> Folder:
         """
         Effectively creates the folder on the drive & add in database
 
@@ -98,7 +99,7 @@ class FolderService:
             return os.path.exists(os.path.join(self.StorageFolder, parent.get_relative_path(), name))
         return os.path.exists(os.path.join(self.StorageFolder, name))
 
-    def get(self, id: int):
+    def get(self, id: int) -> Folder:
         """
         Gets the folder with the given id
         Only get by id provided, because it is believed children will be received from, get_children.
@@ -109,7 +110,7 @@ class FolderService:
         ValueHelper.check_raise_id(id)
         return self.FolderRepo.get(id)
 
-    def get_children(self, id: int):
+    def get_children(self, id: int) -> List[Folder]:
         """
         Gets all children from the folder with the current id
         Return in list, as otherwise all folders will be fetched, because everything exists in main folder.
@@ -141,5 +142,5 @@ class FolderService:
         self.FolderRepo.delete(id=id)
         os.rmdir(os.path.join(self.StorageFolder ,f.get_relative_path()))
 
-    def count(self):
+    def count(self) -> int:
         return self.FolderRepo.count()

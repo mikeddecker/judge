@@ -428,7 +428,7 @@ class FolderServiceTest(TestCase):
             self.folderService.get(id=155)
 
     ##################################
-    # Test get (by id)
+    # Test get children (by id)
     # Only by id + combo get_children
     ##################################
     def test_get_children_valid(self):
@@ -503,7 +503,8 @@ class FolderServiceTest(TestCase):
         testname = "test_delete_invalid_has_videos"
         p = self.folderService.create(name=testname)
         videoname = 'empty_video.mp4'
-        # Real creation here not needed, as it checks whether it exists in db or not.
+        with open(os.path.join(STORAGE_DIR_TEST, testname, videoname), 'w') as fp:
+            pass
         self.videoService.add(name=videoname, folder=p)
 
         with self.assertRaises(PermissionError):

@@ -9,9 +9,9 @@ class ValueHelper:
         
     def check_raise_string(val: str):
         if val is None:
-            raise ValueError(f"Strings may not be none")
+            raise ValueError(f"String may not be none")
         if val.isspace() or val == "":
-            raise ValueError(f"Strings may not be empty")
+            raise ValueError(f"String may not be empty")
     
     def check_raise_string_only_abc123(val: str):
         """Checks the strings to only allow examples below

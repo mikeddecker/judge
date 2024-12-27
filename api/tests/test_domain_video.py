@@ -13,6 +13,8 @@ def generate_empty_strings():
 
 FOLDER_INSTANCE_VALID = Folder(1, 'competition', None)
 
+# TODO : update
+
 class DomainVideoTestSuite(unittest.TestCase):
     """Domain folder test cases."""
     @parameterized.expand([

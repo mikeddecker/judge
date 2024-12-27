@@ -6,4 +6,7 @@ class TestHelper:
         return [-123_456, -5, -1, 0, None, "string"]
     
     def generate_invalid_strings_only_word_digit_underscore():
-        return ["hello!", "dotted.name", "seme%", "0623()", "§dsqk"]
+        return ["hello!", "dot.dot.dot", "dotted.name", "seme%", "0623()", "§dsqk"]
+    
+    def generate_invalid_strings_only_word_digit_underscore_extensions():
+        return ["hello!", "dot.dot.dot", "seme%", "0623()", "§dsqk"]
