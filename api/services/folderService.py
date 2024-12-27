@@ -47,9 +47,9 @@ class FolderService:
             raise ValueError(f"folder {name} not found in {self.StorageFolder if not parent else os.path.join(self.StorageFolder, parent.get_relative_path())}")
         return self.FolderRepo.add(name=name, parent=parent)
     
-    def create_on_drive(self, name, parent: Folder = None):
+    def create(self, name, parent: Folder = None):
         """
-        Effectively creates the folder on the drive
+        Effectively creates the folder on the drive & add in database
 
         :raises: NotADirectoryError - Parent is not a (nested) directory
         """
@@ -95,8 +95,23 @@ class FolderService:
         return os.path.exists(os.path.join(self.StorageFolder, name))
 
     def get(self, id: int):
+        """
+        Gets the folder with the given id
+        Only get by id provided, because it is believed children will be received from, get_children.
+
+        Returns:
+            folder with given id (int) along with its parents
+        """
         ValueHelper.check_raise_id(id)
-        self.FolderRepo.get(id)
+        return self.FolderRepo.get(id)
+
+    def get_children(self, id: int):
+        """
+        Gets all children from the folder with the current id
+        Return in list, as otherwise all folders will be fetched, because everything exists in main folder.
+        """
+        ValueHelper.check_raise_id(id)
+        return self.FolderRepo.get_children(id)
 
     def rename(self, id: int, new_name: str):
         ValueHelper.check_raise_id(id)
