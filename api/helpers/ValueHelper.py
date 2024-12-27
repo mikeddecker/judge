@@ -36,6 +36,6 @@ class ValueHelper:
         other_extensions.sql
         """
         ValueHelper.check_raise_string(val)
-        reg = re.compile(r'^[A-Za-z0-9_]+(\.[A-Za-z0-9_]+)?$')
+        reg = re.compile(r'^[A-Za-z0-9_\-]+(\.[A-Za-z0-9_]+)?$')
         if not reg.match(val):
             raise ValueError(f"String may oncly consist of digits, underscore_ or word chars or file_extensions got {val}")
