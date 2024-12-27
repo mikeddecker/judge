@@ -5,6 +5,7 @@ class FrameInfo:
     # Frame does not 
 
     def __init__(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
+        self.__check_raise_values(x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
         self.__setFrameNr(frameNr)
         self.setX(x)
         self.setY(y)
@@ -41,28 +42,60 @@ class FrameInfo:
     def setX(self, x: float):
         if x < 0 or x > 1.0:
             raise ValueError(f"X must be in [0..1], got {x}")
+        self.__check_raise_values(
+            x=x, 
+            y=0.5 if not hasattr(self, "Y") else self.Y, 
+            width=0.5 if not hasattr(self, "Width") else self.Width, 
+            height=0.5 if not hasattr(self, "Height") else self.Height, 
+            jumperVisible=True if not hasattr(self, "JumperVisible") else self.JumperVisible)
         object.__setattr__(self, 'X', x)
     
     def setY(self, y: float):
         if y < 0 or y > 1.0:
             raise ValueError(f"Y must be in [0..1], got {y}")
+        self.__check_raise_values(
+            x=0.5 if not hasattr(self, "X") else self.X,
+            y=y,
+            width=0.5 if not hasattr(self, "Width") else self.Width, 
+            height=0.5 if not hasattr(self, "Height") else self.Height, 
+            jumperVisible=True if not hasattr(self, "JumperVisible") else self.JumperVisible)
         object.__setattr__(self, 'Y', y)
 
     def setWidth(self, width: float):
         if width < 0 or width > 1.0:
             raise ValueError(f"Width must be in [0..1], got {width}")
+        self.__check_raise_values(
+            x=0.5 if not hasattr(self, "X") else self.X,
+            y=0.5 if not hasattr(self, "Y") else self.Y, 
+            width=width,
+            height=0.5 if not hasattr(self, "Height") else self.Height, 
+            jumperVisible=True if not hasattr(self, "JumperVisible") else self.JumperVisible)
         object.__setattr__(self, 'Width', width)
     
     def setHeight(self, height: float):
         if height < 0 or height > 1.0:
             raise ValueError(f"Y must be in [0..1], got {height}")
+        self.__check_raise_values(
+            x=0.5 if not hasattr(self, "X") else self.X,
+            y=0.5 if not hasattr(self, "Y") else self.Y, 
+            width=0.5 if not hasattr(self, "Width") else self.Width, 
+            height=height, 
+            jumperVisible=True if not hasattr(self, "JumperVisible") else self.JumperVisible)
         object.__setattr__(self, 'Height', height)
 
     def setJumperVisible(self, visible: bool):
         if not isinstance(visible, bool):
             raise ValueError(f"Jumper visible must be a boolean")
+        self.__check_raise_values(x=self.X, y=self.Y, width=self.Width, height=self.Height, jumperVisible=visible)
         object.__setattr__(self, 'JumperVisible', visible)
 
+    def __check_raise_values(self, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
+        if not jumperVisible and (
+            x != 0.5 or 
+            y != 0.5 or 
+            width != 1.0 or
+            height != 1.0):
+            raise ValueError(f"View must be 100% when jumper is not visible\nGot x={x}, y={y}, width={width}, height={height}")
 
     # TODO : update when more equal checks are performed metadata is extended
     def __eq__(self, value : object):

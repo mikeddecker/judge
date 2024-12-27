@@ -1,4 +1,6 @@
 class TestHelper:
+    MAX_FRAMENR = 65535
+
     def generate_empty_strings():
         return [ None, "", " ", "\n", "\r", "  ", "\t ", "\t", " \r\n " ]
     

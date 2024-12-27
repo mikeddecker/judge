@@ -14,8 +14,8 @@ VIDEO_CREATOR = lambda: VideoInfo(
     folder=FOLDER_INSTANCE_VALID,
     frameLength=500
 )
-def get_frameinfo() -> FrameInfo:
-    return FrameInfo(frameNr=1, x=0.5, y=0.5, width=0.5, height=0.5)
+def get_frameinfo(jumperVisible=True) -> FrameInfo:
+    return FrameInfo(frameNr=1, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=jumperVisible)
 
 class DomainFrameInfoTestSuite(unittest.TestCase):
     """Domain framinfo test cases."""
@@ -44,7 +44,7 @@ class DomainFrameInfoTestSuite(unittest.TestCase):
         (1, 0.5, 0.5, 0.5, 0.1, True),
         (1, 0.5, 0.5, 0.5, 0.99, True),
         (1, 0.5, 0.5, 0.5, 1.0, True),
-        (1, 0.5, 0.5, 0.5, 0.5, False),
+        (1, 0.5, 0.5, 1.0, 1.0, False),
     ])
     def test_ctor_valid(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
         fi =FrameInfo(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
@@ -86,6 +86,20 @@ class DomainFrameInfoTestSuite(unittest.TestCase):
         with self.assertRaises(ValueError):
             FrameInfo(frameNr=0, x=x, y=y, width=w, height=h)
     
+    @parameterized.expand([
+        (0.2, 0.5, 0.5, 0.5),
+        (0.5, 0.2, 0.5, 0.5),
+        (0.5, 0.5, 0.9, 0.5),
+        (0.5, 0.5, 0.5, 0.2),
+    ])
+    def test_ctor_invalid_jumperVisible_false_so_full_view(self, x, y, w, h):
+        with self.assertRaises(ValueError):
+            FrameInfo(
+                frameNr=20, jumperVisible=False,
+                x=x, y=y, width=w, height=h,
+            )
+
+
     #############################################
     # Test immutable properties & private method
     #############################################
@@ -145,6 +159,47 @@ class DomainFrameInfoTestSuite(unittest.TestCase):
         fi = get_frameinfo()
         with self.assertRaises(ValueError):
             fi.setHeight(height)
+
+    def test_setX_invalid_jumperNotVisible_so_centered(self):
+        fi = get_frameinfo(jumperVisible=False)
+        with self.assertRaises(ValueError):
+            fi.setX(0.2)
+
+    def test_setY_invalid_jumperNotVisible_so_centered(self):
+        fi = get_frameinfo(jumperVisible=False)
+        with self.assertRaises(ValueError):
+            fi.setY(0.2)
+
+    def test_setWidth_invalid_jumperNotVisible_so_centered(self):
+        fi = get_frameinfo(jumperVisible=False)
+        with self.assertRaises(ValueError):
+            fi.setWidth(0.2)
+
+    def test_setHeight_invalid_jumperNotVisible_so_centered(self):
+        fi = get_frameinfo(jumperVisible=False)
+        with self.assertRaises(ValueError):
+            fi.setHeight(0.2)
+
+    def test_setJumperVisible_False_check_centered_valid(self):
+        fi = get_frameinfo(jumperVisible=True)
+        self.assertTrue(0.5 == fi.X)
+        self.assertTrue(0.5 == fi.Y)
+        self.assertTrue(1.0 == fi.Width)
+        self.assertTrue(1.0 == fi.Height)
+        fi.setJumperVisible(False)
+        self.assertFalse(fi.JumperVisible)
+
+    @parameterized.expand([
+        (0.2, 0.5, 0.5, 0.5),
+        (0.5, 0.2, 0.5, 0.5),
+        (0.5, 0.5, 0.9, 0.5),
+        (0.5, 0.5, 0.5, 0.2),
+    ])
+    def test_setJumperVisible_False_check_centered_invalid(self, x, y, w, h):
+        fi = FrameInfo(frameNr=0, x=x, y=y, width=w, height=h, jumperVisible=True)
+        with self.assertRaises(ValueError):
+            fi.setJumperVisible(False)
+    
 
 if __name__ == '__main__':
     unittest.main()

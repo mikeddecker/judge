@@ -79,14 +79,17 @@ class VideoInfo:
         if framelength is None or framelength <= 0:
             raise ValueError("FrameLength must be strict positive")
         object.__setattr__(self, 'FrameLength', framelength)
-    # Section : Frame functions
 
+    ####################
+    # Section : Frames #
+    ####################
     def has_frame_been_labeled(self, frameNr: int):
-        ValueHelper.check_raise_id(frameNr)
-        return frameNr in self.Frames.keys
+        ValueHelper.check_raise_frameNr(frameNr)
+        return frameNr in self.Frames.keys()
     
     def add_framelabel(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
-        ValueHelper.check_raise_id(frameNr)
+        ValueHelper.check_raise_frameNr(frameNr)
+        print(frameNr)
         if frameNr >= self.FrameLength:
             raise ValueError(f"FrameNr to big, frameLength is {self.FrameLength}, got {frameNr}")
         self.Frames[frameNr] = FrameInfo(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
@@ -101,9 +104,9 @@ class VideoInfo:
             del self.Frames[frameNr]
         self.add_framelabel(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
     
-
-    # Section : Skill functions
-
+    ####################
+    # Section : Skills #
+    ####################
     def add_skill(self, skill: Skill):
         if skill is None:
             raise ValueError("Skill may not be None")
