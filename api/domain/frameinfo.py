@@ -1,4 +1,5 @@
 from helpers.ValueHelper import ValueHelper
+
 class FrameInfo:
     PROPERTIES = ["FrameNr", "X", "Y", "Width", "Height", "JumperVisible"]
     # Frame does not 
@@ -30,10 +31,10 @@ class FrameInfo:
         super().__setattr__(name, value)
 
     def __setFrameNr(self, framenr: int):
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_frameNr(framenr)
         if hasattr(self, 'FrameNr') and self.FrameNr is not None:
             raise AttributeError(f"Cannot modify FrameNr once it is set")
-        if framenr is None or framenr <= 0:
+        if framenr is None or framenr < 0:
             raise ValueError("FrameNr must be strict positive")
         object.__setattr__(self, 'FrameNr', framenr)
 

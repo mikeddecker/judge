@@ -1,12 +1,22 @@
 import re
 
+MAX_FRAMENR = 65535
+
 class ValueHelper:
     def check_raise_id(id: int):
         if not isinstance(id, int):
             raise ValueError(f"Id must be of type {int}, got {id}")
         if id <= 0:
             raise ValueError(f"Id must be strict positive integer, got {id}")
-        
+    
+    def check_raise_frameNr(frameNr: int):
+        if not isinstance(frameNr, int):
+            raise ValueError(f"FrameNr must be of type {int}, got {frameNr}")
+        if frameNr < 0:
+            raise ValueError(f"FrameNr must be positive integer, got {frameNr}")
+        if frameNr > MAX_FRAMENR:
+            raise ValueError(f"FrameNr may max be {MAX_FRAMENR}, got {frameNr}")
+
     def check_raise_string(val: str):
         if val is None:
             raise ValueError(f"String may not be none")

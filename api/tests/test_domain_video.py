@@ -6,14 +6,7 @@ from domain.videoinfo import VideoInfo
 from domain.skill import Skill
 from tests.TestHelper import TestHelper
 
-def generate_empty_strings():
-    return [ 
-        None, "", " ", "\n", "\r", "  ", "\t ", "\t", " \r\n "
-    ]
-
 FOLDER_INSTANCE_VALID = Folder(id=1, name='competition', parent=None)
-
-# TODO : update
 
 class DomainVideoTestSuite(unittest.TestCase):
     """Domain folder test cases."""
@@ -85,12 +78,9 @@ class DomainVideoTestSuite(unittest.TestCase):
         video = VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
         self.assertTrue(len(video.Frames) == 0)
 
-
-    ####################
-    # Section : Frames #
-    ####################
     def test_add_frame_valid(self):
-        pass
+        video = VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
+        self.assertTrue(NotImplementedError)
 
     def test_add_frame_invalid_none(self):
         pass

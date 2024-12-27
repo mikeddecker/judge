@@ -6,11 +6,6 @@ from domain.videoinfo import VideoInfo
 from domain.skill import Skill
 from tests.TestHelper import TestHelper
 
-def generate_empty_strings():
-    return [ 
-        None, "", " ", "\n", "\r", "  ", "\t ", "\t", " \r\n "
-    ]
-
 FOLDER_INSTANCE_VALID = Folder(1, 'competition', None)
 
 # TODO : check tests of whole class
@@ -27,7 +22,7 @@ class DomainSkillTestSuite(unittest.TestCase):
     def test_ctor_valid(self, id, dottedName):
         pass
     
-    @parameterized.expand(generate_empty_strings())
+    @parameterized.expand(TestHelper.generate_empty_strings())
     def test_ctor_invalid_name(self, dottedName):
         with self.assertRaises(ValueError):
             Skill(1, dottedName)

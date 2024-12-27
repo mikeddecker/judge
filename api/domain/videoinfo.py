@@ -86,13 +86,20 @@ class VideoInfo:
         return frameNr in self.Frames.keys
     
     def add_framelabel(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
-        raise NotImplementedError()
+        ValueHelper.check_raise_id(frameNr)
+        if frameNr >= self.FrameLength:
+            raise ValueError(f"FrameNr to big, frameLength is {self.FrameLength}, got {frameNr}")
+        self.Frames[frameNr] = FrameInfo(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
 
     def remove_framelabel(self, frameNr: int):
-        raise NotImplementedError()
+        if not self.has_frame_been_labeled(frameNr=frameNr):
+            raise ValueError(f"Can not remove a label that is not labeled, got frameNr_{frameNr}")
+        del self.Frames[frameNr]
     
     def update_framelabel(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True): 
-        raise NotImplementedError()
+        if self.has_frame_been_labeled(frameNr=frameNr):
+            del self.Frames[frameNr]
+        self.add_framelabel(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
     
 
     # Section : Skill functions
