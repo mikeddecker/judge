@@ -34,7 +34,7 @@ video_names = [
 def allowed_keys():
     return ['n','f','a','i','h','m','t','g','p','y','w','r']
 
-def match_label(key): # TODO : to json setting
+def match_label(key):
     """
     n - no jump(er)
     f - fault
@@ -118,7 +118,6 @@ def get_frames(path, first_frame_nr, last_frame_nr, dim=(200,200), rgb=True):
 
 def get_video_length(path):
     """Returns the framelength of the video"""
-    # TODO : Add frame length to DB
     cap = cv2.VideoCapture(path)
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     cap.release()

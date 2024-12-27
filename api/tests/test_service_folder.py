@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from parameterized import parameterized
 from domain.folder import Folder
@@ -21,7 +20,6 @@ if os.path.exists(STORAGE_DIR_TEST):
 else:
     os.mkdir(STORAGE_DIR_TEST)
 
-# TODO : update tests, just a tryout to make it work
 class FolderServiceTest(TestCase):
     ##################################
     # Preparing each test

@@ -108,7 +108,6 @@ class DomainFolderTestSuite(unittest.TestCase):
         folder1 = Folder(id=1, name="name_1", parent=parent_1)
         folder2 = Folder(id=1, name="name_1", parent=parent_2)
         self.assertEqual(folder1, folder2)
-        pass
 
     def test_equals_valid_nested_parent(self):
         pass

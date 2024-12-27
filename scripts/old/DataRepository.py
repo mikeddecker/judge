@@ -23,7 +23,6 @@ from utils_cv2 import get_frame, show_frame_and_await_key, label_frames_from_df,
 
 
 class DataRepository:
-    # TODO : Exceptions, on wrong query, rollback transaction
     
     def __init__(self):  
         self.con = self.get_connection()

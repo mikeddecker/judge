@@ -61,7 +61,6 @@ class DataGeneratorRectangles(keras.utils.Sequence):
         return X, y
 
     def fill_time_length_dimension(self, df_labels):
-        # TODO
         print('fill_time_length_dimension_called')
         min_frame = df_labels.iloc[-1]['frameNr'] + 1
         max_frame_exlcuded = df_labels.iloc[0]['frameNr'] + self.batch_size
