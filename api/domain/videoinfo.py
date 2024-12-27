@@ -1,23 +1,31 @@
 from typing import Dict, Set
 
 from .folder import Folder
-from .frameinfo import Frame
+from .frameinfo import FrameInfo
 from .skill import Skill
 from helpers.ValueHelper import ValueHelper
 
 class VideoInfo:
-    PROPERTIES = ["Frames", "Skills", "Id", "Name", "Folder"]
+    PROPERTIES = [
+        "Id", 
+        "Name", 
+        "Folder", 
+        "Frames", 
+        "FrameLength",
+        "Skills", 
+    ]
     # Frame does not 
-    Frames = Dict[int, Frame] # Key = frameId, value is Frame
+    Frames = Dict[int, FrameInfo] # Key = frameId, value is Frame
     Skills = Set[Skill]
 
-    def __init__(self, id: int, name: str, folder: Folder):
+    def __init__(self, id: int, name: str, folder: Folder, frameLength: int):
         self.Frames: self.Frames = {}  # Initialize frames as an empty dictionary
         self.Skills: self.Skills = set()  # Initialize skills as an empty set
 
         self.__setId(id)
         self.__setName(name)
         self.__setFolder(folder)
+        self.__setFrameLength(frameLength)
 
     def __setattr__(self, name, value):
         if hasattr(self, name):
@@ -40,7 +48,7 @@ class VideoInfo:
             raise AttributeError(f"Cannot modify Id once it is set")
         if id is None or id <= 0:
             raise ValueError("Id must be strict positive")
-        self.Id = id
+        object.__setattr__(self, 'Id', id)
 
     def __setName(self, name : str):
         if hasattr(self, 'Name') and self.Name is not None:
@@ -54,7 +62,7 @@ class VideoInfo:
 
         object.__setattr__(self, 'Name', name)
     
-    def __setFolder(self, folder):
+    def __setFolder(self, folder: Folder):
         if hasattr(self, 'Folder') and self.Folder is not None:
             raise AttributeError(f"Cannot modify Folder once it is set")
         if folder is None:
@@ -63,9 +71,30 @@ class VideoInfo:
             raise ValueError(f"folder is not a {Folder}, got instead {type(folder)}")
         # Set the Folder attribute, avoiding recursion by using object.__setattr__.
         object.__setattr__(self, 'Folder', folder)
-
+    
+    def __setFrameLength(self, framelength: int):
+        ValueHelper.check_raise_id(framelength)
+        if hasattr(self, 'FrameLength') and self.FrameLength is not None:
+            raise AttributeError(f"Cannot modify FrameLength once it is set")
+        if framelength is None or id <= 0:
+            raise ValueError("FrameLength must be strict positive")
+        object.__setattr__(self, 'FrameLength', framelength)
     # Section : Frame functions
 
+    def has_frame_been_labeled(self, frameNr: int):
+        ValueHelper.check_raise_id(frameNr)
+        return frameNr in self.Frames.keys
+    
+    def add_framelabel_localization(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
+        raise NotImplementedError()
+
+    def remove_framelabel(self, frameNr: int):
+        raise NotImplementedError()
+    
+    def update_framelabel(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True): 
+        raise NotImplementedError()
+    
+    
     # Section : Skill functions
 
     def add_skill(self, skill: Skill):
