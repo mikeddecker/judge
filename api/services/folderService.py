@@ -124,7 +124,20 @@ class FolderService:
         ValueHelper.check_raise_id(id)
         if not self.exists_in_database(id=id):
             raise LookupError(f"Folder {id} not found in db")
+        if self.has_content(id):
+            raise NotImplementedError()
+        f = self.get(id=id)
         self.FolderRepo.delete(id=id)
+        os.rmdir(os.path.join(self.StorageFolder ,f.get_relative_path()))
+
+    def has_content(self, id: int):
+        """
+        Checks whether the given folder has content: subfolders, videos, images, text...
+        """
+        ValueHelper.check_raise_id(id)
+        if len(self.get_children(id=id)) > 0:
+            return False
+        # TODO : get videos or get video ids
 
     def count(self):
         return self.FolderRepo.count()

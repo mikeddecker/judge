@@ -284,6 +284,14 @@ class FolderServiceTest(TestCase):
         
         assert self.folderService.exists_path_on_drive(name="nested", parent=parent_folder), f"Folder {testname} does not exist in {parent_folder.get_relative_path()}"
 
+    def test_exists_path_on_drive_valid_does_not_exist_in_current_parent_but_has_sibling_which_does_exist(self):
+        testname="test_exists_path_on_drive_valid_does_not_exist_in_current_parent_but_has_sibling_which_does_exist"
+        p1 = self.folderService.create(name=testname, parent=None)
+        p2 = self.folderService.create(name=f"{testname}_2", parent=None)
+        self.make_folder_in_storage_dir([f"{testname}_2", "sibling"])
+
+        assert not self.folderService.exists_path_on_drive(name="sibling", parent=p1), f"Gave exists because of sibling in {p2.get_relative_path()}"
+
     def test_exists_path_on_drive_invalid_does_not_exists(self):
         testname = "test_exists_path_on_drive_invalid_does_not_exists"
         assert not self.folderService.exists_path_on_drive(name=testname, parent=None), f"Folder {testname} does not exist in {STORAGE_DIR_TEST}"
@@ -327,6 +335,14 @@ class FolderServiceTest(TestCase):
         self.folderService.create(name="nested", parent=parent_folder)
         
         assert self.folderService.exists_in_database(name="nested", parent=parent_folder), f"Folder {testname} does not exist in {parent_folder.get_relative_path()}"
+
+    def test_exists_in_database_valid_does_not_exist_in_current_parent_but_has_sibling_which_does_exist(self):
+        testname="test_exists_in_database_valid_does_not_exist_in_current_parent_but_has_sibling_which_does_exist"
+        p1 = self.folderService.create(name=testname, parent=None)
+        p2 = self.folderService.create(name=f"{testname}_2", parent=None)
+        self.folderService.create(name="sibling", parent=p2)
+
+        assert not self.folderService.exists_in_database(name="sibling", parent=p1), f"Gave exists because of sibling in {p2.get_relative_path()}"
 
     def test_exists_in_database_invalid_name_does_not_exists(self):
         testname = "test_exists_in_database_invalid_name_does_not_exists"
@@ -449,10 +465,21 @@ class FolderServiceTest(TestCase):
 
     ##################################
     # Test delete (by id)
-    # Only by id + combo get_children
     ##################################
     def test_delete_valid(self):
-        pass
+        testname = "test_delete_valid"
+        f = self.folderService.create(name=testname)
+
+        assert self.folderService.exists_in_database(id=f.Id), f"Folder {f.Id} doesn't exist in the database"
+        assert self.folderService.exists_in_database(name=testname), f"Folder {testname} does not exist in the database"
+        assert self.folderService.exists_path_on_drive(name=testname), f"Folder {testname} does not exist in {STORAGE_DIR_TEST}"
+
+        self.folderService.delete(id=f.Id)
+
+        assert not self.folderService.exists_in_database(id=f.Id), f"Folder {f.Id} still exists in the database"
+        assert not self.folderService.exists_in_database(name=testname), f"Folder {testname} still exists in the database"
+        assert not self.folderService.exists_path_on_drive(name=testname), f"Folder {testname} still exists in {STORAGE_DIR_TEST}"
+
 
     @parameterized.expand(TestHelper.generate_invalid_ids())
     def test_delete_invalid_id_value(self, invalid_id):
@@ -464,7 +491,9 @@ class FolderServiceTest(TestCase):
     def test_delete_invalid_has_children(self):
         pass
 
-
+    ##################################
+    # Test rename (by id & new_name)
+    ##################################
     def test_rename_valid(self):
         # TODO : check that not all folders are renamed
         pass

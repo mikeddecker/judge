@@ -69,10 +69,10 @@ class FolderRepository:
         """
         Hard deletes the folder from the database.
         """
-        if not self.exists_by_id(id):
+        if not self.exists(id):
             raise LookupError(f"Folder {id} doesn't exist")
         
-        folder = FolderDB.query.get(id)
+        folder = self.db.session.get(FolderDB, ident=id)
         self.db.session.delete(folder)
         self.db.session.commit()
         return True
