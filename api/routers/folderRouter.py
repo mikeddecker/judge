@@ -1,53 +1,37 @@
 import os
-
 from dotenv import load_dotenv
-from flask import request, jsonify
+from flask import send_file
 from flask_restful import Resource
-from repository.models import Folder, Video
+from services.folderService import FolderService
+from services.videoService import VideoService
+from helpers.ValueHelper import ValueHelper
 
 load_dotenv()
+STORAGE_DIR = os.getenv("STORAGE_DIR")
 
 class FolderRouter(Resource):
-    # read
-    def get(self, user_id=None):
-        if user_id:
-            user = Folder.query.get(user_id)
-            if not user:
-                return {'error': 'User not found'}, 404
-            return {'user': user.to_dict()}, 200
+    def __init__(self, **kwargs):
+        self.folderService = FolderService(STORAGE_DIR)
+        self.videoService = VideoService(STORAGE_DIR)
+        super().__init__(**kwargs)
+    
+    def get(self, folderId: int=None):
+        if folderId:
+            try:
+                ValueHelper.check_raise_id(folderId)
+                if not self.folderService.exists_in_database(id=folderId):
+                    return f"FolderId {folderId} does not exist", 404
+            except ValueError as ve:
+                return ve, 404
+            f = self.folderService.get(folderId).to_dict()
+            children = self.folderService.get_children(f["Id"])
+            f["Children"] = []
+            for c in children:
+                f["Children"].append(c.to_dict())
+            f["Videos"] = {}
+            for vidinfo in self.videoService.get_videos(folderId=f["Id"]):
+                f["Videos"][vidinfo.Id] = vidinfo.to_dict()
+            return f, 200
         else:
-            users = Folder.query.all()
-            return {'users': [user.to_dict() for user in users]}, 200
-
-    # create
-    def post(self):
-        data = request.get_json()
-        path = data.get('path')
-        if not path:
-            return {'error': 'Path required'}, 400
-        new_user = Folder(path=path)
-        # db.session.add(new_user)
-        # db.session.commit()
-        return {'message': 'User added successfully'}, 201
-
-    # update
-    def put(self, user_id):
-        user = Folder.query.get(user_id)
-        if not user:
-            return {'error': 'User not found'}, 404
-        data = request.get_json()
-        path = data.get('path')
-        if not path:
-            return {'error': 'Path required'}, 400
-        user.path = path
-        # db.session.commit()
-        return {'message': 'User updated successfully'}, 200
-
-    # delete
-    def delete(self, user_id):
-        user = Folder.query.get(user_id)
-        if not user:
-            return {'error': 'User not found'}, 404
-        # db.session.delete(user)
-        # db.session.commit()
-        return {'message': 'User deleted successfully'}, 200
+            folders = [f.to_dict() for f in self.folderService.get_root_folders()]
+            return folders, 200

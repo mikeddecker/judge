@@ -116,3 +116,13 @@ class FrameInfo:
 
     def __str__(self):
         return f'frameNr = {self.FrameNr}, x = {self.X:.2f}, y = {self.Y:.2f}, w = {self.Width:.2f}, h = {self.Height:.2f}, visible = {self.JumperVisible}'
+
+    def to_dict(self):
+        return {
+            "FrameNr" : self.FrameNr,
+            "X" : self.X,
+            "Y" : self.Y,
+            "Width" : self.Width,
+            "Height" : self.Height,
+            "JumperVisible" : self.JumperVisible,
+        }

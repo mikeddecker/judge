@@ -117,6 +117,12 @@ class FolderService:
         """
         ValueHelper.check_raise_id(id)
         return self.FolderRepo.get_children(id)
+    
+    def get_root_folders(self) -> List[Folder]:
+        """
+        Gets the folders located in the root of the STORAGE_DIR
+        """
+        return self.FolderRepo.get_root_folders()
 
     def rename(self, id: int, new_name: str):
         ValueHelper.check_raise_id(id)

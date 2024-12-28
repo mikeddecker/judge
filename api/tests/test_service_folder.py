@@ -20,6 +20,8 @@ if os.path.exists(STORAGE_DIR_TEST):
 else:
     os.mkdir(STORAGE_DIR_TEST)
 
+# TODO : test get_root_folders
+
 class FolderServiceTest(TestCase):
     ##################################
     # Preparing each test

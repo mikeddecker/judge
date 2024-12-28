@@ -142,3 +142,16 @@ class VideoInfo:
         for fi in self.Frames.values():
             substrings.append(f"\t{str(fi)}")
         return "\n".join(substrings)
+
+    def to_dict(self):
+        return {
+            "Id" : self.Id,
+            "Name" : self.Name, 
+            "Folder" : self.Folder.to_dict(),
+            "FrameLength" : self.FrameLength,
+            "Frames" : [f.to_dict() for f in self.Frames.values()], 
+            "Skills" : [s.to_dict() for s in self.Skills],
+        }
+    
+    def __repr__(self):
+        return str(self.to_dict())

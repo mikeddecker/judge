@@ -58,6 +58,19 @@ class Folder:
             return os.path.join(self.Parent.get_relative_path(), self.Name)
         return self.Name
     
+    def to_dict(self):
+        return {
+            "Id" : self.Id,
+            "Name" : self.Name,
+            "Parent" : None if not self.Parent else self.Parent.to_dict()
+        }
+    
+    def __str__(self):
+        return str(self.to_dict())
+    
+    def __repr__(self):
+        return str(self.to_dict())
+
     def __eq__(self, value : object):
         if not isinstance(value, Folder):
             raise ValueError(f"Value not a {Folder} got {type(value)} instead")

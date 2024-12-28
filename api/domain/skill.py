@@ -38,3 +38,14 @@ class Skill:
         if not dottedName or dottedName.isspace():
             raise ValueError("DottedName may not be an empty string")
         self.DottedName = dottedName
+
+    def __str__(self):
+        return str(self.to_dict())
+    
+    def to_dict(self):
+        return {
+            'Id' : self.Id,
+            'DottedName' : self.DottedName,
+            'FrameStart' : self.FrameStart,
+            'FrameEnd' : self.FrameEnd,
+        }

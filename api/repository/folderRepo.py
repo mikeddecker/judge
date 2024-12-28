@@ -60,6 +60,10 @@ class FolderRepository:
             raise LookupError(f"Folder {id} doesn't exist")
         childrenDB = self.db.session.query(FolderDB).filter_by(parentId=id).all()
         return [MapToDomain.map_folder(c) for c in childrenDB]
+    
+    def get_root_folders(self) -> List[Folder]:
+        root_folders = self.db.session.query(FolderDB).filter_by(parentId=None).all()
+        return [MapToDomain.map_folder(r) for r in root_folders]
 
     def get_by_name(self, name: str) -> Folder:
         # Only when needed
