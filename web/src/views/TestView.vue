@@ -24,7 +24,7 @@ export default {
     this.loading = true;
     try {
       this.data = await getFoldersRoot();
-    } catch (err) {
+    } catch {
       this.error = 'Failed To load';
     } finally {
       this.loading = false;
