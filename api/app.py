@@ -7,7 +7,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from repository.db import db
 from routers.folderRouter import FolderRouter
-from routers.videoRouter import VideoRouter
+from routers.videoRouter import VideoRouter, VideoImageRouter, VideoInfoRouter
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -32,7 +32,10 @@ api = Api(app)
 
 # use api.add_resource to add the paths
 api.add_resource(FolderRouter, '/folders', '/folders/<int:folderId>')
-api.add_resource(VideoRouter, '/videoinfo', '/videoinfo/<int:videoId>')
+api.add_resource(VideoRouter, '/video/<int:videoId>')
+api.add_resource(VideoInfoRouter, '/video/<int:videoId>/info')
+api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

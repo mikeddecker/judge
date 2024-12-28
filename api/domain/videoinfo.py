@@ -1,4 +1,5 @@
 from typing import Dict, Set
+import os
 
 from .folder import Folder
 from .frameinfo import FrameInfo
@@ -79,6 +80,13 @@ class VideoInfo:
         if framelength is None or framelength <= 0:
             raise ValueError("FrameLength must be strict positive")
         object.__setattr__(self, 'FrameLength', framelength)
+
+    def get_image_path(self):
+        # TODO
+        return "/home/miked/Pictures/Screenshots/dd3.png"
+    
+    def get_relative_video_path(self):
+        return os.path.join(self.Folder.get_relative_path(), self.Name)
 
     ####################
     # Section : Frames #

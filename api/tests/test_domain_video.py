@@ -14,6 +14,9 @@ def get_video() -> VideoInfo:
 def get_frame() -> FrameInfo:
     return FrameInfo(frameNr=0, x=0.5, y=0.5, width=0.5, height=0.5)
 
+# TODO : get_relative_video_path
+# TODO : image_path
+
 class DomainVideoTestSuite(unittest.TestCase):
     """Domain folder test cases."""
 
