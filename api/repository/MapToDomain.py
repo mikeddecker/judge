@@ -1,6 +1,7 @@
 from domain.folder import Folder
+from domain.frameinfo import FrameInfo
 from domain.videoinfo import VideoInfo
-from repository.models import Folder as FolderDB, Video as VideoDB
+from repository.models import Folder as FolderDB, Video as VideoDB, FrameLabel
 
 class MapToDomain:
     def map_folder(folderDB: FolderDB) -> Folder:
@@ -21,4 +22,6 @@ class MapToDomain:
             folder = MapToDomain.map_folder(videoDB.folder),
             frameLength= videoDB.frameLength,
         )
+        for f in videoDB.frameLabels:
+            video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible))
         return video

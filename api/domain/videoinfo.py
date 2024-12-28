@@ -128,14 +128,17 @@ class VideoInfo:
         other : Folder = value
         
         # Check if both Ids are set
-        if hasattr(self, "Id") and hasattr(other, "Id"):
-            return (
-                self.Name == other.Name and 
-                self.Folder == other.Folder and 
-                self.Id == other.Id
-            )
-        elif not hasattr(self, "Id") and not hasattr(other, "Id"):
-            return (
-                self.Name == other.Name and 
-                self.Folder == other.Folder
-            )
+        return (
+            self.Name == other.Name and 
+            self.Folder == other.Folder and 
+            self.Id == other.Id and
+            self.FrameLength == other.FrameLength and
+            len(self.Frames) == len(other.Frames)
+        )
+
+    def __str__(self):
+        substrings = []
+        substrings.append(f"Id = {self.Id}, Name = {self.Name}, Folder = {self.Folder.get_relative_path()}")
+        for fi in self.Frames.values():
+            substrings.append(f"\t{str(fi)}")
+        return "\n".join(substrings)

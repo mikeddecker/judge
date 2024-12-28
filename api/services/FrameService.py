@@ -1,21 +1,13 @@
 import os
 from domain.folder import Folder
 from domain.videoinfo import VideoInfo
-from domain.frameinfo import FrameInfo
 from helpers.ValueHelper import ValueHelper
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from typing import List
 
-SUPPORTED_VIDEO_FORMATS = [
-    'webm',
-    'mp4'
-    'jpg',
-    'png',
-] # Temporarily media formats
-
-class VideoService:
+class LabelService:
     """Provides the video information of videos"""
     PROPERTIES = [
         "VideoRepo",
@@ -45,8 +37,8 @@ class VideoService:
         
         TODO : After localization; add meta information loader
         TODO : nice to have, add warning if name is double
-        TODO : enforce mp4, wav...
         """
+        print("add-name", name, folder)
         if not folder:
             raise ValueError(f"Foler may not be None")
         if not self.FolderRepo.exists(id=folder.Id):
@@ -102,30 +94,6 @@ class VideoService:
     def rename(self, id: int, new_name):
         raise NotImplementedError("Nice to have, end of journey")
     
-    def remove_frameInfo(self, frameNr, video: VideoInfo):
-        ValueHelper.check_raise_frameNr(frameNr)
-        if video is None or not isinstance(video, VideoInfo):
-            raise ValueError(f"frameInfo is not {VideoInfo}, got {video}")
-        if not video.has_frame_been_labeled(frameNr):
-            raise ValueError(f"Frame {frameNr} not labeled")
-        self.VideoRepo.remove_frameInfo(frameNr, videoId=video.Id)
-        video.remove_framelabel(frameNr=frameNr)
-        return video
-
-    def set_frameInfo(self, frameInfo: FrameInfo, video: VideoInfo):
-        if frameInfo is None or not isinstance(frameInfo, FrameInfo):
-            raise ValueError(f"frameInfo is not {FrameInfo}, got {frameInfo}")
-        if video is None or not isinstance(video, VideoInfo):
-            raise ValueError(f"frameInfo is not {VideoInfo}, got {video}")
-        if frameInfo.FrameNr >= video.FrameLength:
-            raise ValueError(f"FrameNr out of bounds, max {video.FrameLength}, got {frameInfo.FrameNr}")
-        video.add_framelabel(frameInfo)
-        if self.VideoRepo.exists_frameInfo(videoId=video.Id, frameNr=frameInfo.FrameNr):
-            self.VideoRepo.update_frameInfo(video=video, frameInfo=frameInfo)
-        else:
-            self.VideoRepo.add_frameInfo(video=video, frameInfo=frameInfo)
-        return video
-
     # TODO : nice to have
     def upload(self):
         raise NotImplementedError("Nice to have, end of journey")

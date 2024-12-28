@@ -38,11 +38,14 @@ class Video(db.Model):
     obstruction = db.Column(db.Boolean, nullable=False)
     private = db.Column(db.Boolean, nullable=False, default=False)
 
+    frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
+
     def to_dict(self):
         return {
             'id': self.id,
             'folderId' : self.folderId,
             'name' : self.name,
+            'frameLength': self.frameLength,
             'width' : self.width,
             'height' : self.height,
             'fps' : self.fps,
@@ -50,3 +53,29 @@ class Video(db.Model):
             'qualitative' : self.qualitative,
             'obstruction' : self.obstruction
         }
+    
+class FrameLabel(db.Model):
+    __tablename__ = 'FrameLabels'
+    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
+    frameNr = db.Column(SMALLINT(unsigned=True), nullable=False)
+    x = db.Column(db.Float, nullable=False)
+    y = db.Column(db.Float, nullable=False)
+    width = db.Column(db.Integer, nullable=False)
+    height = db.Column(db.Integer, nullable=False)
+    jumperVisible = db.Column(db.Boolean, nullable=False, default=True)
+
+    # Define a composite unique constraint
+    __table_args__ = (
+        db.PrimaryKeyConstraint('videoId', 'frameNr'),
+    )
+
+    def to_dict(self):
+        return {
+            'videoId' : self.videoId,
+            'frameNr' : self.frameNr,
+            'x' : self.x,
+            'y' : self.y,
+            'width' : self.width,
+            'jumperVisible' : self.jumperVisible
+        }
+    
