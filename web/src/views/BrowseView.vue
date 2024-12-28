@@ -9,9 +9,8 @@ export default {
 
 <template>
   <div class="browse">
-    <h1>This is the video browse page</h1>
-    <VideoInfoContainer title="Bye bye"/>
-    <VideoInfoContainer title="HELLOKES"/>
+    <h1>Navigate videos</h1>
+    <VideoInfoContainer/>
   </div>
 </template>
 
