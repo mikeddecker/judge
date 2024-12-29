@@ -19,9 +19,12 @@ defineProps(['title', 'folderId'])
   margin: 0.7%;
   padding: 0.2rem;
   width: 120px;
-  /* border: 1px solid var(--color-border);
+}
+
+.folderinfo:hover{
+  border: 1px solid var(--color-border);
   border-radius: 0.55rem;
-  box-shadow: 0.5px 0.5px 3px var(--color-heading); */
+  box-shadow: 0.5px 0.5px 3px var(--color-heading);
 }
 
 .info {

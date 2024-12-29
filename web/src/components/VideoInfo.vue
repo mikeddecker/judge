@@ -54,6 +54,9 @@ h2 {
   width: 100%;
 }
 
+.videoinfo:hover {
+  background-color: aliceblue;
+}
 
 @media (min-width: 1024px) {
   .videoinfo {
