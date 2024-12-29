@@ -18,9 +18,9 @@ defineProps(['title'])
 
 <style scoped>
 .videoinfo {
-  margin: 0.5rem;
+  margin: 0.7%;
   padding: 0.2rem;
-  width: 31%;
+  width: 48%;
   border: 1px solid var(--color-border);
   border-radius: 0.55rem;
   box-shadow: 0.5px 0.5px 3px var(--color-heading);
@@ -33,6 +33,7 @@ defineProps(['title'])
 h2 {
   margin-bottom: 0.4rem;
   color: var(--color-heading);
+  word-wrap: break-word;
 }
 
 .container img {
@@ -43,5 +44,8 @@ h2 {
 
 
 @media (min-width: 1024px) {
+  .videoinfo {
+    width: 31%;
+  }
 }
 </style>
