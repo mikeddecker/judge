@@ -1,21 +1,13 @@
 <script setup>
 import VideoInfo from './VideoInfo.vue';
 
-defineProps(['title'])
+defineProps(['title', 'videos'])
 </script>
 
 <template>
-    <div class="container">
-      <VideoInfo title="Bye bye"/>
-      <VideoInfo title="HELLOKES"/>
-      <VideoInfo title="DD3"/>
-      <VideoInfo title="Bye bye"/>
-      <VideoInfo title="HELLOKES"/>
-      <VideoInfo title="DD3"/>
-      <VideoInfo title="Bye bye"/>
-      <VideoInfo title="HELLOKES"/>
-      <VideoInfo title="DD3"/>
-    </div>
+  <div class="container">
+    <VideoInfo v-for="video in videos" :key="video.Id" :title="video.Name"/>
+  </div>
 </template>
 
 <style scoped>

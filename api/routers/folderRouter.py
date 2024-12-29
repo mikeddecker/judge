@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 from flask import send_file
 from flask_restful import Resource
@@ -16,6 +17,7 @@ class FolderRouter(Resource):
         super().__init__(**kwargs)
     
     def get(self, folderId: int=None):
+        time.sleep(1.2) # Fake loading time
         if folderId:
             try:
                 ValueHelper.check_raise_id(folderId)
@@ -33,5 +35,11 @@ class FolderRouter(Resource):
                 f["Videos"][vidinfo.Id] = vidinfo.to_dict()
             return f, 200
         else:
-            folders = [f.to_dict() for f in self.folderService.get_root_folders()]
-            return folders, 200
+            # Modify to represent the same output as get(folderId)
+            return {
+                "Id" : 0,
+                "Name" : "root",
+                "Children" : [f.to_dict() for f in self.folderService.get_root_folders()],
+                "Parent" : None,
+                "Videos" : dict()
+            }, 200
