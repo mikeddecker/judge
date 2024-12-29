@@ -1,14 +1,26 @@
-<script>
-import { getVideoInfo, getVideoPath } from '../services/videoService';
-// import { VidStack } from 'vuepress-plugin-components'; // Import VidStack here
+<template>
+  <div v-if="videoinfo">
+    <h1>Label {{ videoinfo.Name }}</h1>
+    <div v-if="loading">Loading...</div>
+    <div v-if="error" class="error">{{ error }}</div>
+    <VideoPlayer v-if="videoPath" v-bind:video-id="$route.params.id" :video-src="videoPath"></VideoPlayer>
+  </div>
+  <div v-else>
+    Loading ...
+  </div>
+</template>
 
-// import { VueStack } from 'vuepress-plugin-components' 
-// import { VidStack } from '@vidstack/player'; // Import VidStack here
+<script>
+import VideoPlayer from '@/components/VideoPlayer.vue';
+import { getVideoInfo, getVideoPath } from '../services/videoService';
 
 export default {
+  components: {
+    VideoPlayer,
+  },
   data() {
     return {
-      data: null,
+      videoPath: null,
       loading: false,
       error: null,
       videoinfo: null,
@@ -17,7 +29,7 @@ export default {
   async created() {
     this.loading = true;
     try {
-      this.data = await getVideoPath(this.$route.params.id);
+      this.videoPath = await getVideoPath(this.$route.params.id);
       this.videoinfo = await getVideoInfo(this.$route.params.id)
     } catch {
       this.error = 'Failed To load';
@@ -28,27 +40,10 @@ export default {
 };
 </script>
 
-<template>
-  <div v-if="videoinfo">
-    <h1>Label {{ videoinfo.Name }}</h1>
-    <div v-if="loading">Loading...</div>
-    <div v-if="error" class="error">{{ error }}</div>
-    <div v-if="data">
-      <!-- <VidStack
-        src="https://files.vidstack.io/sprite-fight/720p.mp4"
-        poster="https://files.vidstack.io/sprite-fight/poster.webp"
-      /> -->
-      <pre>{{ data }}</pre>
-      <p>{{ $route.params.id }}</p>
-    </div>
-  </div>
-  <div v-else>
-    Loading ...
-  </div>
-</template>
-
-
 <style scoped>
+h1 {
+  margin: 0.5rem 0
+}
 .error {
   color: red;
 }
