@@ -17,7 +17,6 @@ class FolderRouter(Resource):
         super().__init__(**kwargs)
     
     def get(self, folderId: int=None):
-        time.sleep(1.2) # Fake loading time
         if folderId:
             try:
                 ValueHelper.check_raise_id(folderId)

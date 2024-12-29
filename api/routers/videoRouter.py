@@ -23,8 +23,10 @@ class VideoRouter(Resource):
 
         videoinfo = self.videoService.get(videoId)
         video_path = os.path.join(STORAGE_DIR, videoinfo.get_relative_video_path())
+        with open(video_path, 'rb') as f:
+            return Response(f.read()) # TODO :mimetype='image/png' ?
         # TODO : denseposed videos are not recognized by flask, others are
-        return send_file(video_path)
+        # return send_file(video_path)
 
 class VideoInfoRouter(Resource):
     def __init__(self, **kwargs):

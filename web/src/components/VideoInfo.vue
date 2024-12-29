@@ -1,8 +1,10 @@
 <script setup>
 import { getVideoImagePath } from '@/services/videoService';
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 let props = defineProps(['title', 'videoId'])
+const router = useRouter()
 
 const imageUrl = ref('');
 
@@ -16,7 +18,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="videoinfo">
+  <div class="videoinfo" v-on:click="() => router.push(`/video/${videoId}`)">
     <div class="container">
       <img v-if="imageUrl" :src="imageUrl" alt="Video thumbnail" />
       <p v-else>Loading image...</p>

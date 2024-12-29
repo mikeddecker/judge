@@ -28,7 +28,6 @@ export default {
       .catch(error => {
         console.error('Error fetching data:', error);
       });
-      console.log("changed folder", this.folderId)
     }
   },
   mounted() {
