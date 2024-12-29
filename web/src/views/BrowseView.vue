@@ -1,8 +1,10 @@
 <script>
+import FolderContainer from '@/components/FolderContainer.vue';
 import VideoInfoContainer from '@/components/VideoInfoContainer.vue';
 import { getFolder } from '@/services/videoService';
 export default {
   components: {
+    FolderContainer,
     VideoInfoContainer,
   },
   data() {
@@ -30,7 +32,9 @@ export default {
 <template>
   <div class="browse">
     <h1>Navigate videos</h1>
+    <FolderContainer v-bind:folders="children"/>
     <VideoInfoContainer v-bind:videos="videos"/>
+    <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a>
   </div>
   <pre>{{ JSON.stringify(videos, undefined, 2) }}</pre>
 </template>
