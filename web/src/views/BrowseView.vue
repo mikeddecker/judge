@@ -39,7 +39,7 @@ export default {
 
 <template>
   <div class="browse">
-    <h1>Navigate videos</h1>
+    <h1>Navigate videos : {{ folderName }}</h1>
     <FolderContainer @changeFolder="changeFolder" v-bind:folders="children" v-bind:parent-id="parentId"/>
     <VideoInfoContainer v-bind:videos="videos"/>
     <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a>
