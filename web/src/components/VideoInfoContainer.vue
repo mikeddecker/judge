@@ -6,7 +6,7 @@ defineProps(['title', 'videos'])
 
 <template>
   <div class="container">
-    <VideoInfo v-for="video in videos" :key="video.Id" :title="video.Name"/>
+    <VideoInfo v-for="video in videos" :key="video.Id" :video-id="video.Id" :title="video.Name"/>
   </div>
 </template>
 

@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import send_file
+from flask import send_file, Response
 from flask_restful import Resource, current_app
 from services.folderService import FolderService
 from services.videoService import VideoService
@@ -48,5 +48,5 @@ class VideoImageRouter(Resource):
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
-        # TODO : make image through open-cv and save it, by enricher
-        raise NotImplementedError()
+        with open(f"/home/miked/Videos/images/{videoId}.png", 'rb') as f:
+            return Response(f.read(), mimetype='image/png')

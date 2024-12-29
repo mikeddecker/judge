@@ -8,7 +8,7 @@ export default {
   data() {
     return {
       children: [],
-      folderId: 2,
+      folderId: 1,
       folderName: "Storage drive",
       videos: [],
     };
@@ -16,11 +16,9 @@ export default {
   mounted() {
     getFolder(this.folderId)
       .then(response => {
-        console.log('response', response)
         this.children = response.Children;
         this.folderName = response.Name;
         this.videos = response.Videos;
-        console.log("folderData", this.folderData)
       })
       .catch(error => {
         console.error('Error fetching data:', error);

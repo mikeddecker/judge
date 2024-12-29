@@ -1,17 +1,29 @@
 <script setup>
-defineProps(['title'])
+import { getVideoImagePath } from '@/services/videoService';
+import { onMounted, ref } from 'vue';
+
+let props = defineProps(['title', 'videoId'])
+
+const imageUrl = ref('');
+
+onMounted(async () => {
+  try {
+    imageUrl.value = await getVideoImagePath(props.videoId);
+  } catch (error) {
+    console.error('Error fetching image:', error);
+  }
+});
 </script>
 
 <template>
   <div class="videoinfo">
     <div class="container">
-      <img src="/home/miked/Pictures/Screenshots/burndown3.png">
+      <img v-if="imageUrl" :src="imageUrl" alt="Video thumbnail" />
+      <p v-else>Loading image...</p>
     </div>
     <div class="info">
       <h2>{{ title }}</h2>
-      <p>
-        Some information
-      </p>
+      <p>{{ videoId }}</p>
     </div>
   </div>
 </template>

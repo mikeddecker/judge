@@ -1,8 +1,8 @@
 import api from './api';
 
-export const getFoldersRoot = async () => {
+export const getFolder = async (folderId) => {
   try {
-    const response = await api.get('/folders');
+    const response = await api.get(`/folders/${folderId}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -10,10 +10,13 @@ export const getFoldersRoot = async () => {
   }
 };
 
-export const getFolder = async (folderId) => {
+export const getVideoImagePath = async (videoId) => {
   try {
-    const response = await api.get(`/folders/${folderId}`);
-    return response.data;
+    return await api.get(`/video/${videoId}/image`, { responseType: 'blob' })
+      .then(response => {
+        let imagePath = URL.createObjectURL(response.data)
+        return imagePath
+      });
   } catch (error) {
     console.error('Error fetching data:', error);
     throw error;

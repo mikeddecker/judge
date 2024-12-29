@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { getFoldersRoot } from '../services/videoService';
+import { getFolder } from '../services/videoService';
 
 export default {
   data() {
@@ -23,7 +23,7 @@ export default {
   async created() {
     this.loading = true;
     try {
-      this.data = await getFoldersRoot();
+      this.data = await getFolder(0);
     } catch {
       this.error = 'Failed To load';
     } finally {
