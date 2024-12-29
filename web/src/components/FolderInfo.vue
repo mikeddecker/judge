@@ -1,25 +1,12 @@
 <script setup>
-import { getVideoImagePath } from '@/services/videoService';
-import { onMounted, ref } from 'vue';
+defineProps(['title', 'folderId'])
 
-let props = defineProps(['title', 'folderId'])
-
-const imageUrl = ref('');
-
-onMounted(async () => {
-  try {
-    imageUrl.value = await getVideoImagePath(props.folderId);
-  } catch (error) {
-    console.error('Error fetching image:', error);
-  }
-});
 </script>
 
 <template>
-  <div class="folderinfo">
+  <div class="folderinfo" @click="$emit('changeFolder', folderId)">
     <div class="container">
-      <img v-if="imageUrl" src="@/assets/folder.png" alt="Video thumbnail" />
-      <p v-else>Loading image...</p>
+      <img src="@/assets/folder.png" alt="folder image" />
     </div>
     <div class="info">
       <p>{{ title }}</p>

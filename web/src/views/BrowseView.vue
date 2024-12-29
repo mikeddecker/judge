@@ -10,29 +10,37 @@ export default {
   data() {
     return {
       children: [],
-      folderId: 1,
+      folderId: 0,
       folderName: "Storage drive",
+      parentId: 0,
       videos: [],
     };
   },
-  mounted() {
-    getFolder(this.folderId)
+  methods: {
+    changeFolder(newFolderId) {
+      getFolder(newFolderId)
       .then(response => {
         this.children = response.Children;
         this.folderName = response.Name;
         this.videos = response.Videos;
+        this.parentId = response.Parent ? response.Parent.Id : 0;
       })
       .catch(error => {
         console.error('Error fetching data:', error);
       });
-  }
+      console.log("changed folder", this.folderId)
+    }
+  },
+  mounted() {
+    this.changeFolder(this.folderId)
+  },
 };
 </script>
 
 <template>
   <div class="browse">
     <h1>Navigate videos</h1>
-    <FolderContainer v-bind:folders="children"/>
+    <FolderContainer @changeFolder="changeFolder" v-bind:folders="children" v-bind:parent-id="parentId"/>
     <VideoInfoContainer v-bind:videos="videos"/>
     <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a>
   </div>
