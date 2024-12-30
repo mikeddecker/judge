@@ -71,7 +71,6 @@ class VideoService:
         if id:
             ValueHelper.check_raise_id(id)
             return self.VideoRepo.exists(id=id)
-        print("name is ", name, folder)
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"When no id, but name is given, folder also needs to be given; got {folder}")
@@ -81,7 +80,6 @@ class VideoService:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"Folder must be provided, got {folder}")
-        print(folder.get_relative_path(), name)
         return os.path.exists(os.path.join(self.StorageFolder, folder.get_relative_path(), name))
 
     def get(self, id: int) -> VideoInfo:
@@ -119,6 +117,7 @@ class VideoService:
             raise ValueError(f"frameInfo is not {VideoInfo}, got {video}")
         if frameInfo.FrameNr >= video.FrameLength:
             raise ValueError(f"FrameNr out of bounds, max {video.FrameLength}, got {frameInfo.FrameNr}")
+        # if frameInfo.Width < 0.3 or frameInfo
         video.add_framelabel(frameInfo)
         if self.VideoRepo.exists_frameInfo(videoId=video.Id, frameNr=frameInfo.FrameNr):
             self.VideoRepo.update_frameInfo(video=video, frameInfo=frameInfo)

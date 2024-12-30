@@ -24,9 +24,11 @@
       <button v-show="playing" @click="pause">&#9208;</button>
     </div>
   </div>
+  <pre>{{ vidinfo }}</pre>
 </template>
 
 <script setup>
+import { postVideoFrame } from '@/services/videoService';
 import { computed, ref } from 'vue';
 
 const videoElement = ref(null)
@@ -43,21 +45,19 @@ const currentX = ref(0)
 const currentY = ref(0)
 const centerX = computed(() => (startX.value + currentX.value) / 2.0 / currentWidth.value)
 const centerY = computed(() => (startY.value + currentY.value) / 2.0 / currentHeight.value)
-const relativeWidth = computed(() => (currentX.value - startX.value) / currentWidth.value)
-const relativeHeight = computed(() => (currentY.value - startY.value) / currentHeight.value)
+const relativeWidth = computed(() => Math.abs(currentX.value - startX.value) / currentWidth.value)
+const relativeHeight = computed(() => Math.abs(currentY.value - startY.value) / currentHeight.value)
 const videoduration = ref(1)
+const vidinfo = ref(null)
 
-defineProps(['title', 'videoId', 'videoSrc'])
+const props = defineProps(['title', 'videoId', 'videoSrc'])
 function updatePaused(event) {
-  console.log("updatePaused", event)
   videoduration.value = event.target.duration
-  console.log("video duration", event.target.duration)
   videoElement.value = event.target;
   paused.value = event.target.paused;
   currentFrame.value = Math.floor(29.97 * event.target.currentTime)
   currentWidth.value = event.target.clientWidth
   currentHeight.value = event.target.clientHeight
-  console.log("current time", currentFrame.value)
 }
 function play() {
   videoElement.value.play();
@@ -98,8 +98,16 @@ function endDrawing(event) {
   ctx.beginPath();
   ctx.rect(startX.value, startY.value, currentX.value - startX.value, currentY.value - startY.value);
   ctx.stroke();
-  console.log("event at end is", startX.value, startY.value, currentX.value, currentY.value);
-  console.log("LocationLabel is", centerX.value, centerY.value, relativeWidth.value, relativeHeight.value);
+  let frameinfo = {
+    "frameNr" : currentFrame.value,
+    "x" : centerX.value, 
+    "y" : centerY.value, 
+    "width" : relativeWidth.value, 
+    "height" : relativeHeight.value,
+    "jumperVisible" : true
+  }
+  postVideoFrame(props.videoId, frameinfo).then(response => vidinfo.value=response.data.Frames)
+
   setCurrentTime(Math.random() * videoduration.value)
 }
 // TODO : catch resize of window, because the current frame can be labeled wrong, position wise

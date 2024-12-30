@@ -38,7 +38,6 @@ class LabelService:
         TODO : After localization; add meta information loader
         TODO : nice to have, add warning if name is double
         """
-        print("add-name", name, folder)
         if not folder:
             raise ValueError(f"Foler may not be None")
         if not self.FolderRepo.exists(id=folder.Id):
@@ -63,7 +62,6 @@ class LabelService:
         if id:
             ValueHelper.check_raise_id(id)
             return self.VideoRepo.exists(id=id)
-        print("name is ", name, folder)
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"When no id, but name is given, folder also needs to be given; got {folder}")
@@ -73,7 +71,6 @@ class LabelService:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"Folder must be provided, got {folder}")
-        print(folder.get_relative_path(), name)
         return os.path.exists(os.path.join(self.StorageFolder, folder.get_relative_path(), name))
 
     def get(self, id: int) -> VideoInfo:

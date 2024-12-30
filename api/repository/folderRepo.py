@@ -75,9 +75,7 @@ class FolderRepository:
         """
         if not self.exists(id):
             raise LookupError(f"Folder {id} doesn't exist")
-        print("id is", id)
         folderDB = self.db.session.get(FolderDB, ident=id)
-        print("folderDB.id",folderDB.id)
         self.db.session.delete(folderDB)
         self.db.session.commit()
         return True

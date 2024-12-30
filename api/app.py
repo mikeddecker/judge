@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask, request, jsonify, current_app, g
+from flask_cors import CORS
 from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -8,6 +9,7 @@ from flask_migrate import Migrate
 from repository.db import db
 from routers.folderRouter import FolderRouter
 from routers.videoRouter import VideoRouter, VideoImageRouter, VideoInfoRouter
+from routers.frameRouter import FrameRouter
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -28,6 +30,7 @@ def create_app(config_object="config.Config"):
     return app
 
 app = create_app()
+CORS(app)
 api = Api(app)
 
 # use api.add_resource to add the paths
@@ -35,6 +38,8 @@ api.add_resource(FolderRouter, '/folders', '/folders/<int:folderId>')
 api.add_resource(VideoRouter, '/video/<int:videoId>')
 api.add_resource(VideoInfoRouter, '/video/<int:videoId>/info')
 api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
+
+api.add_resource(FrameRouter, '/video/<int:videoId>')
 
 
 if __name__ == '__main__':

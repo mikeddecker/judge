@@ -99,7 +99,6 @@ class VideoInfo:
         if label is None or not isinstance(label, FrameInfo):
             raise ValueError(f"Label is not a {FrameInfo} got {label}")
         ValueHelper.check_raise_frameNr(label.FrameNr)
-        print(label.FrameNr, self.FrameLength)
         if label.FrameNr >= self.FrameLength:
             raise ValueError(f"FrameNr to big, frameLength is {self.FrameLength}, got {label.FrameNr}")
         self.Frames[label.FrameNr] = label

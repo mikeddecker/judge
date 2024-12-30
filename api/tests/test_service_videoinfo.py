@@ -203,7 +203,6 @@ class VideoServiceTest(TestCase):
     ##################################
     def test_exists_in_database_valid_name_does_exist(self):
         self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
-        print("some folder is", self.some_folder)
         assert self.videoService.exists_in_database(name=self.vidname, folder=self.some_folder), f"Video {self.vidname} does not exist in database"
 
     def test_exists_in_database_valid_name_does_exist_in_nested_folder(self):

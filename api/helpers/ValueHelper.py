@@ -49,3 +49,12 @@ class ValueHelper:
         reg = re.compile(r'^[A-Za-z0-9_\-]+(\.[A-Za-z0-9_]+)?$')
         if not reg.match(val):
             raise ValueError(f"String may oncly consist of digits, underscore_ or word chars or file_extensions got {val}")
+        
+    def check_float_between_0_and_1_inclusive(val: float):
+        """
+        Checks if the value is in the interval [0, 1]
+        """
+        if not isinstance(val, (int, float)):
+            raise ValueError(f"val is not an int or float, got {type(val)}")
+        if val < 0 or val > 1:
+            raise ValueError(f"Value must in interval [0,1], got {val}")

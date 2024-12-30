@@ -23,7 +23,7 @@ export default {
   async created() {
     this.loading = true;
     try {
-      this.data = await getFolder(0);
+      this.data = await getFolder(1);
     } catch {
       this.error = 'Failed To load';
     } finally {
