@@ -102,7 +102,6 @@ class FolderService:
     def get(self, id: int) -> Folder:
         """
         Gets the folder with the given id
-        Only get by id provided, because it is believed children will be received from, get_children.
 
         Returns:
             folder with given id (int) along with its parents
@@ -112,11 +111,10 @@ class FolderService:
     
     def get_by_name(self, name: str, parent: Folder) -> Folder:
         """
-        Gets the folder with the given id
-        Only get by id provided, because it is believed children will be received from, get_children.
+        Gets the folder with the given name and parent
 
         Returns:
-            folder with given id (int) along with its parents
+            folder with given name in parent
         """
         ValueHelper.check_raise_string_only_abc123(name)
         if parent is not None and not isinstance(parent, Folder):
