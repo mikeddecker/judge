@@ -109,6 +109,19 @@ class FolderService:
         """
         ValueHelper.check_raise_id(id)
         return self.FolderRepo.get(id)
+    
+    def get_by_name(self, name: str, parent: Folder) -> Folder:
+        """
+        Gets the folder with the given id
+        Only get by id provided, because it is believed children will be received from, get_children.
+
+        Returns:
+            folder with given id (int) along with its parents
+        """
+        ValueHelper.check_raise_string_only_abc123(name)
+        if parent is not None and not isinstance(parent, Folder):
+            raise ValueError(f"Parent is not a {Folder}, got {type(parent)}")
+        return self.FolderRepo.get_by_name(name, parent)
 
     def get_children(self, id: int) -> List[Folder]:
         """

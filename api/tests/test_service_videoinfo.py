@@ -23,6 +23,8 @@ else:
     os.mkdir(STORAGE_DIR_TEST)
 
 # TODO : update tests when width, height... are required
+# TODO : unique name in folder
+# TODO : delete from database (videoId)
 
 class VideoServiceTest(TestCase):
     some_folder = None

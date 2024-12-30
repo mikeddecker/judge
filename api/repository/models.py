@@ -40,6 +40,10 @@ class Video(db.Model):
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
 
+    __table_args__ = (
+        db.UniqueConstraint('name', 'folderId', name='_name_folder_unique_constraint'),
+    )
+
     def to_dict(self):
         return {
             'id': self.id,

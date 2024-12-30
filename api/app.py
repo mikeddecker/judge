@@ -10,6 +10,7 @@ from repository.db import db
 from routers.folderRouter import FolderRouter
 from routers.videoRouter import VideoRouter, VideoImageRouter, VideoInfoRouter
 from routers.frameRouter import FrameRouter
+from routers.storageRouter import StorageRouter
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -40,6 +41,7 @@ api.add_resource(VideoInfoRouter, '/video/<int:videoId>/info')
 api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
 
 api.add_resource(FrameRouter, '/video/<int:videoId>')
+api.add_resource(StorageRouter, '/discover')
 
 
 if __name__ == '__main__':

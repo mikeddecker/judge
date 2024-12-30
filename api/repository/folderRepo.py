@@ -65,9 +65,11 @@ class FolderRepository:
         root_folders = self.db.session.query(FolderDB).filter_by(parentId=None).all()
         return [MapToDomain.map_folder(r) for r in root_folders]
 
-    def get_by_name(self, name: str) -> Folder:
-        # Only when needed
-        raise NotImplementedError
+    def get_by_name(self, name: str, parent: Folder) -> Folder:
+        if not self.exists_by_name(name=name, parent=parent):
+            raise LookupError(f"Folder {name} doesn't exist in {parent.get_relative_path()}")
+        folder = self.db.session.query(FolderDB).filter_by(name=name, parentId=None if parent is None else parent.Id).first()
+        return MapToDomain.map_folder(folder)
 
     def delete(self, id: str):
         """

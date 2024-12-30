@@ -65,6 +65,13 @@ class VideoRepository:
         ValueHelper.check_raise_frameNr(frameNr)
         return self.db.session.query(FrameLabel).filter_by(videoId=videoId, frameNr=frameNr).first() is not None
         
+    def delete(self, id: int):
+        # TODO : check if no frames or skills are connected
+        ValueHelper.check_raise_id(id)
+        videoInfoDB = self.db.session.get(VideoInfoDB, ident=id)
+        self.db.session.delete(videoInfoDB)
+        self.db.session.commit()
+
     def get(self, id: int) -> VideoInfo:
         return MapToDomain.map_video(self.db.session.get(VideoInfoDB, ident=id))
     

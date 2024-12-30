@@ -21,6 +21,7 @@ else:
     os.mkdir(STORAGE_DIR_TEST)
 
 # TODO : test get_root_folders
+# TODO : test get_by_name(name=content, parent=parent)
 
 class FolderServiceTest(TestCase):
     ##################################

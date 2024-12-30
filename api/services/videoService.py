@@ -89,6 +89,12 @@ class VideoService:
             raise LookupError(f"VideoId {id} does not exist")
         return self.VideoRepo.get(id=id)
 
+    def delete_from_database(self, id: int):
+        ValueHelper.check_raise_id(id)
+        if not self.exists_in_database(id=id):
+            raise LookupError(f"VideoId {id} does not exist")
+        self.VideoRepo.delete(id=id)
+
     def get_videos(self, folderId: int) -> List[VideoInfo]:
         """Returns videos in the given folder that are inserted in the database"""
         ValueHelper.check_raise_id(folderId)

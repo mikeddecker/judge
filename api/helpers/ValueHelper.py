@@ -31,7 +31,7 @@ class ValueHelper:
         word_digits_and_underscores_1999
         """
         ValueHelper.check_raise_string(val)
-        reg = re.compile(r'^[A-Za-z0-9_]*$')
+        reg = re.compile(r'^[A-Za-z0-9_\-]*$')
         if not reg.match(val):
             raise ValueError(f"String may oncly consist of digits, underscore_ or word chars, got {val}")
         
