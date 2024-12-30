@@ -40,7 +40,7 @@ class VideoService:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
-    def add(self, name: str, folder: Folder, frameLength: int) -> VideoInfo:
+    def add(self, name: str, folder: Folder, frameLength: float, width: float, height: float, fps: float) -> VideoInfo:
         """Adds the given video to the database
         
         TODO : After localization; add meta information loader
@@ -55,11 +55,16 @@ class VideoService:
             raise LookupError(f"Video {name} already added in the database")
         if not self.exists_on_drive(name=name, folder=folder):
             raise ValueError(f"Video {name} does not exist in {folder.get_relative_path()}")
+        if frameLength <= 0 or width <= 0 or height <= 0 or fps <= 0:
+            raise ValueError(f"FrameLength, width and height must be > 0, got", frameLength, width, height)
 
         return self.VideoRepo.add(
             name=name,
             folder=folder,
             frameLength=frameLength,
+            width=width,
+            height=height,
+            fps=fps,
         )
     
     def count(self) -> int:

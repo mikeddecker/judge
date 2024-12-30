@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import send_file, Response
+from flask import send_file, Response, jsonify
 from flask_restful import Resource, current_app
 from services.folderService import FolderService
 from services.videoService import VideoService
@@ -50,5 +50,8 @@ class VideoImageRouter(Resource):
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
-        with open(f"/home/miked/Videos/images/{videoId}.png", 'rb') as f:
+        image_path = f"/home/miked/Videos/images/{videoId}.png"
+        if not os.path.exists(image_path):
+            image_path = f"/home/miked/Videos/images/0.png"
+        with open(image_path, 'rb') as f:
             return Response(f.read(), mimetype='image/png')

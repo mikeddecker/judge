@@ -1,33 +1,13 @@
 # Browse and navigates storage device, to find and discover videos.
-
 # Browse and navigate storage to find DB orphans
 
 # Nice to have : Browse and navigate storage to find renames that happend on the drive
 
-## Legacy code
 
-    # # Read from the most inner nested to outside
-    # return list(
-    #     map(
-    #         lambda vid : {
-    #             "title" : vid,
-    #             "image-preview" : os.path.join(API_URL, "videoimage", subFolder, urllib.parse.quote(vid))
-    #         },
-    #         # Map file string title to
-    #         filter(
-    #             # Filter supported formats e.g. ".mp4"
-    #             lambda f : f.split('.')[-1].lower() in SUPPORTED_VIDEO_FORMATS,
-    #             filter(
-    #                 # Filter files from files and subfolders
-    #                 lambda content : os.path.isfile(os.path.join(VIDEO_FOLDER, subFolder, content)), 
-    #                 os.listdir(os.path.join(VIDEO_FOLDER, subFolder))
-    #             )
-    #         )
-    #     )
-    # )
 import os
 import time
 import traceback
+import cv2
 
 from colorama import Fore, Style
 from domain.folder import Folder
@@ -139,18 +119,22 @@ class StorageService:
                 if isRoot:
                     print(f"{Fore.YELLOW}Skipping file in root:{Style.RESET_ALL} {content}")
                 elif content.split(".")[-1] in SUPPORTED_VIDEO_FORMATS:
-                    is_new = ""
                     if self.VideoService.exists_in_database(name=content, folder=parent):
                         del videos_in_folder_according_to_database[content]
+                        print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content}")
                     else:
-                        self.VideoService.add(name=content, folder=parent, frameLength=222)
+                        print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content} {Fore.GREEN}NEW{Style.RESET_ALL}")
+                        info = self.__enrich_video_data(name=content, folder=parent)
+                        self.VideoService.add(name=content, folder=parent, 
+                                              frameLength=info["frameLength"],
+                                              width=info["width"],
+                                              height=info["height"],
+                                              fps=info["fps"])
                         # Bookkeeping
                         if parent.Id in new_videos.keys():
                             new_videos[parent.Id].append(content)
                         else:
                             new_videos[parent.Id] = [content]
-                        is_new = f"{Fore.GREEN}NEW{Style.RESET_ALL}"
-                    print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content}", is_new)
                 elif content.split(".")[-1] in SUPPORTED_IMAGE_FORMATS:
                     print(f"{Fore.LIGHTMAGENTA_EX}Detected image:{Style.RESET_ALL} {content} (currently skipped)")
                 else:
@@ -187,6 +171,25 @@ class StorageService:
         
         return new_videos, orphans
 
+    def __enrich_video_data(self, name: str, folder: Folder):
+        info = {
+            "name" : name,
+            "folderId" : folder.Id,
+        }
+        videopath = os.path.join(STORAGE_DIR, folder.get_relative_path(), name)
+        cap = cv2.VideoCapture(videopath)
+        if not cap.isOpened():
+            raise IOError("Cannot open camera")
+        
+        info["fps"] = cap.get(cv2.CAP_PROP_FPS)
+        info["frameLength"] = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        info["width"] = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        info["height"] = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        cap.release()
+        cv2.destroyAllWindows()
+
+        return info
 
     def clear_data(session):
         meta = db.metadata

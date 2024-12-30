@@ -22,7 +22,7 @@ if os.path.exists(STORAGE_DIR_TEST):
 else:
     os.mkdir(STORAGE_DIR_TEST)
 
-# TODO : update tests when width, height... are required
+# TODO : update tests width, height, fps... are required
 # TODO : unique name in folder
 # TODO : delete from database (videoId)
 

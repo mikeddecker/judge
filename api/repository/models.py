@@ -32,7 +32,7 @@ class Video(db.Model):
     frameLength = db.Column(SMALLINT(unsigned=True), nullable=False)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
-    fps = db.Column(db.Integer, nullable=False)
+    fps = db.Column(db.Float, nullable=False)
     training = db.Column(db.Boolean, nullable=False)
     qualitative = db.Column(db.Boolean, nullable=False)
     obstruction = db.Column(db.Boolean, nullable=False)
