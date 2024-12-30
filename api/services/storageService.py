@@ -66,18 +66,19 @@ class StorageService:
         self.VideoService = VideoService(STORAGE_DIR)
         self.FolderService = FolderService(STORAGE_DIR)
 
-    def discover_drive_cached_version(self):
+    def discover_drive_cached_version(self, deleteOrphans: bool = False):
         """Pseudo cache method"""
         current_time = time.time()
         WAIT_TIME = 60
         
         if cache["timestamp"] is None or (current_time - cache["timestamp"] > 60):
-            new_and_orphans = self.__discover_drive()
+            new_and_orphans = self.__discover_drive(deleteOrphans=deleteOrphans)
             cache["result"] = new_and_orphans
             finish_time = time.time()
             cache["timestamp"] = finish_time
             new_and_orphans["timestamp"] = finish_time
             new_and_orphans["remaining"] = WAIT_TIME
+            new_and_orphans["orphans"]["deleted"] = deleteOrphans
             return new_and_orphans
         
         # If cache is still valid, return the cached result
@@ -86,10 +87,10 @@ class StorageService:
         cached_result["remaining"] = time_remaining
         return cached_result
 
-    def __discover_drive(self) -> dict:
+    def __discover_drive(self, deleteOrphans: bool = False) -> dict:
         try:    
             print(f"{Fore.YELLOW}Discovering folder:{Style.RESET_ALL}", f"{STORAGE_DIR} (root)")
-            new_videos, orphans = self.__discover_folder(STORAGE_DIR, parent=None, isRoot=True)
+            new_videos, orphans = self.__discover_folder(STORAGE_DIR, parent=None, isRoot=True, deleteOrphans=deleteOrphans)
             return {
                 "metadata" : {
                     "new-videos" : "folderId -> name",
@@ -102,7 +103,7 @@ class StorageService:
             print(traceback.format_exc())
             print(e)
 
-    def __discover_folder(self, currentFolder: str, parent: Folder, isRoot=False):
+    def __discover_folder(self, currentFolder: str, parent: Folder, isRoot=False, deleteOrphans=False):
         if currentFolder is None or not isinstance(currentFolder, str):
             raise ValueError(f"Didn't get a string for folder, got", currentFolder)
         if not isRoot and (parent is None or not isinstance(parent, Folder)):
@@ -112,7 +113,6 @@ class StorageService:
         folder_content = os.listdir(currentFolderPath)
         videos_in_folder_according_to_database = {} if isRoot else self.VideoService.get_videos(parent.Id)
         videos_in_folder_according_to_database = { videoinfo.Name : videoinfo for videoinfo in videos_in_folder_according_to_database }
-        print(videos_in_folder_according_to_database.keys())
         children = []
         new_videos = {}
         orphans = {}
@@ -143,6 +143,8 @@ class StorageService:
                     if self.VideoService.exists_in_database(name=content, folder=parent):
                         del videos_in_folder_according_to_database[content]
                     else:
+                        self.VideoService.add(name=content, folder=parent, frameLength=222)
+                        # Bookkeeping
                         if parent.Id in new_videos.keys():
                             new_videos[parent.Id].append(content)
                         else:
@@ -156,7 +158,8 @@ class StorageService:
 
         for orpan_name, videoinfo in videos_in_folder_according_to_database.items():
             print(f"{Fore.RED}Detected orphan: videoId = {Fore.YELLOW}{videoinfo.Id}{Style.RESET_ALL} {orpan_name}")
-            self.VideoService.
+            if deleteOrphans:
+                self.VideoService.delete_from_database(id=videoinfo.Id)
             if parent.Id in orphans.keys():
                 orphans[parent.Id][videoinfo.Id] = orpan_name
             else:
@@ -176,7 +179,7 @@ class StorageService:
                     folder = self.FolderService.add_in_database(name=child["name"], parent=child["parent"])
                     print(Fore.GREEN, "NEW", Style.RESET_ALL)
                 
-                new_vids, orph = self.__discover_folder(currentFolder=child["name"], parent=folder)
+                new_vids, orph = self.__discover_folder(currentFolder=child["name"], parent=folder, deleteOrphans=deleteOrphans)
                 for folderId, videonames in new_vids.items():
                     new_videos[folderId] = videonames
                 for folderId, orphanlist in orph.items():

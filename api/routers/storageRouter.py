@@ -20,7 +20,20 @@ class StorageRouter(Resource):
     
     def get(self):
         try:
-            return self.storageService.discover_drive_cached_version(), 200
+            return self.storageService.discover_drive_cached_version(deleteOrphans=False), 200
+        except Exception as ve:
+            return Response(str(ve), status=500)
+
+class OrphanDeleterRouter(Resource):
+    def __init__(self, **kwargs):
+        self.folderService = FolderService(STORAGE_DIR)
+        self.videoService = VideoService(STORAGE_DIR)
+        self.storageService = StorageService(STORAGE_DIR)
+        super().__init__(**kwargs)
+    
+    def get(self):
+        try:
+            return self.storageService.discover_drive_cached_version(deleteOrphans=True), 200
         except Exception as ve:
             return Response(str(ve), status=500)
 
