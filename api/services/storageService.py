@@ -8,6 +8,7 @@ import os
 import time
 import traceback
 import cv2
+import math
 
 from colorama import Fore, Style
 from domain.folder import Folder
@@ -68,7 +69,11 @@ class StorageService:
         return cached_result
 
     def __discover_drive(self, deleteOrphans: bool = False) -> dict:
-        try:    
+        try:
+            # Make sure image folder exists
+            previewfolder = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER)
+            os.makedirs(previewfolder, exist_ok=True)
+
             print(f"{Fore.YELLOW}Discovering folder:{Style.RESET_ALL}", f"{STORAGE_DIR} (root)")
             new_videos, orphans = self.__discover_folder(STORAGE_DIR, parent=None, isRoot=True, deleteOrphans=deleteOrphans)
             return {
@@ -125,11 +130,13 @@ class StorageService:
                     else:
                         print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content} {Fore.GREEN}NEW{Style.RESET_ALL}")
                         info = self.__enrich_video_data(name=content, folder=parent)
-                        self.VideoService.add(name=content, folder=parent, 
+                        created_video_info = self.VideoService.add(name=content, folder=parent, 
                                               frameLength=info["frameLength"],
                                               width=info["width"],
                                               height=info["height"],
                                               fps=info["fps"])
+                        frameNr = math.floor(info["frameLength"] * 0.2)
+                        self.__create_video_image(videoId=created_video_info.Id, name=content, folder=parent, frameNr=frameNr)
                         # Bookkeeping
                         if parent.Id in new_videos.keys():
                             new_videos[parent.Id].append(content)
@@ -171,7 +178,7 @@ class StorageService:
         
         return new_videos, orphans
 
-    def __enrich_video_data(self, name: str, folder: Folder):
+    def __enrich_video_data(self, name: str, folder: Folder) -> dict:
         info = {
             "name" : name,
             "folderId" : folder.Id,
@@ -190,6 +197,18 @@ class StorageService:
         cv2.destroyAllWindows()
 
         return info
+    
+    def __create_video_image(self, videoId: int, name: str, folder: Folder, frameNr: int):
+        videopath = os.path.join(STORAGE_DIR, folder.get_relative_path(), name)
+        cap = cv2.VideoCapture(videopath)
+        if not cap.isOpened():
+            raise IOError("Cannot open camera")
+        
+        # Create preview image
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
+        res, frame = cap.read()
+        filename = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER, f"{videoId}.jpg")
+        cv2.imwrite(filename, frame)
 
     def clear_data(session):
         meta = db.metadata

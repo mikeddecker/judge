@@ -8,6 +8,7 @@ from helpers.ValueHelper import ValueHelper
 
 load_dotenv()
 STORAGE_DIR = os.getenv("STORAGE_DIR")
+VIDEO_IMAGE_PREVIEW_FOLDER = os.getenv("VIDEO_IMAGE_PREVIEW_FOLDER")
 
 class VideoRouter(Resource):
     def __init__(self, **kwargs):
@@ -50,8 +51,8 @@ class VideoImageRouter(Resource):
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
-        image_path = f"/home/miked/Videos/images/{videoId}.png"
+        image_path = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER, f"{videoId}.jpg")
         if not os.path.exists(image_path):
             image_path = f"/home/miked/Videos/images/0.png"
         with open(image_path, 'rb') as f:
-            return Response(f.read(), mimetype='image/png')
+            return Response(f.read(), mimetype='image/jpg')
