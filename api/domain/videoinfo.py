@@ -12,6 +12,7 @@ class VideoInfo:
         "Name", 
         "Folder", 
         "Frames", 
+        "FPS",
         "FrameLength",
         "Skills", 
     ]
@@ -19,7 +20,7 @@ class VideoInfo:
     Frames: Dict[int, FrameInfo] = dict() # Key = frameId, value is Frame
     Skills: Set[Skill] = set()
 
-    def __init__(self, id: int, name: str, folder: Folder, frameLength: int):
+    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float):
         self.Frames: self.Frames = {}  # Initialize frames as an empty dictionary
         self.Skills: self.Skills = set()  # Initialize skills as an empty set
 
@@ -27,6 +28,7 @@ class VideoInfo:
         self.__setName(name)
         self.__setFolder(folder)
         self.__setFrameLength(frameLength)
+        self.__setFPS(fps)
 
     def __setattr__(self, name, value):
         if hasattr(self, name):
@@ -37,6 +39,8 @@ class VideoInfo:
                 self.__setName(value)
             if name == 'Folder':
                 self.__setFolder(value)
+            if name == 'FPS':
+                self.__setFPS(value)
             # if name in ["Name", "Folder"]:
             #     raise AttributeError(f"Cannot modify '{name}' once it is set")
         elif name not in self.PROPERTIES:
@@ -80,6 +84,13 @@ class VideoInfo:
         if framelength is None or framelength <= 0:
             raise ValueError("FrameLength must be strict positive")
         object.__setattr__(self, 'FrameLength', framelength)
+    
+    def __setFPS(self, fps: int):
+        if hasattr(self, 'FPS') and self.FPS is not None:
+            raise AttributeError(f"Cannot modify FPS once it is set")
+        if fps is None or fps <= 0:
+            raise ValueError("FPS must be strict positive")
+        object.__setattr__(self, 'FPS', fps)
 
     def get_image_path(self):
         # TODO
@@ -157,7 +168,9 @@ class VideoInfo:
             "Folder" : self.Folder.to_dict(),
             "FrameLength" : self.FrameLength,
             "Frames" : [f.to_dict() for f in self.Frames.values()], 
+            "FPS" : self.FPS,
             "Skills" : [s.to_dict() for s in self.Skills],
+            "LabeledFrameCount" : len(self.Frames)
         }
     
     def __repr__(self):

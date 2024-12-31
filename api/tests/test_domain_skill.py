@@ -44,7 +44,7 @@ class DomainSkillTestSuite(unittest.TestCase):
 
     def test_change_id_private_method(self):
         with self.assertRaises(AttributeError):
-            video = VideoInfo(id=1, name="toad", folder=FOLDER_INSTANCE_VALID, frameLength=500)
+            video = VideoInfo(id=1, name="toad", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.5)
             video.__setId(88)
 
 

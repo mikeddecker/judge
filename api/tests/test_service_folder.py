@@ -508,7 +508,7 @@ class FolderServiceTest(TestCase):
         videoname = 'empty_video.mp4'
         with open(os.path.join(STORAGE_DIR_TEST, testname, videoname), 'w') as fp:
             pass
-        self.videoService.add(name=videoname, folder=p, frameLength=500)
+        self.videoService.add(name=videoname, folder=p, frameLength=500, width=1920, height=1080, fps=25.2)
 
         with self.assertRaises(PermissionError):
             self.folderService.delete(id=p.Id)

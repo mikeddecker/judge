@@ -47,7 +47,6 @@ export const getVideoPath = async (videoId) => {
 };
 
 export const postVideoFrame = async (videoId, frameinfo) => {
-  console.log("servicve, videoId, frameinfo", videoId, frameinfo)
   return await api.post(`/video/${videoId}`, frameinfo, { headers: { 'Content-Type': 'application/json' }})
     .then(function (response) {
       return response;

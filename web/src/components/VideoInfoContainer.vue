@@ -1,12 +1,14 @@
 <script setup>
 import VideoInfo from './VideoInfo.vue';
 
-defineProps(['title', 'videos'])
+defineProps(['title', 'videos', 'totalLabeledFrames'])
+
 </script>
 
 <template>
   <div class="container">
-    <VideoInfo v-for="video in videos" :key="video.Id" :video-id="video.Id" :title="video.Name"/>
+    <p>{{ totalLabeledFrames }}</p>
+    <VideoInfo v-for="video in videos" :key="video.Id" :video-id="video.Id" :title="video.Name" :info="video"/>
   </div>
 </template>
 

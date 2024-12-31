@@ -125,8 +125,8 @@ class VideoServiceTest(TestCase):
         self.make_video_in_folder(videoname="vid1.mp4", folder=f)
         self.make_video_in_folder(videoname="vid2.mp4", folder=f)
         
-        inserted_video = self.videoService.add(name="vid1.mp4", folder=f, frameLength=500)
-        inserted_video2 = self.videoService.add(name="vid2.mp4", folder=f, frameLength=500)
+        inserted_video = self.videoService.add(name="vid1.mp4", folder=f, frameLength=500, width=1920, height=1080, fps=25.2)
+        inserted_video2 = self.videoService.add(name="vid2.mp4", folder=f, frameLength=500, width=1920, height=1080, fps=25.2)
         fetched_video = self.videoService.get(id=inserted_video.Id)
 
         assert isinstance(inserted_video, VideoInfo), f"Video is not an instande of {VideoInfo} got {type(inserted_video)}"
@@ -138,24 +138,24 @@ class VideoServiceTest(TestCase):
     def test_add_valid_in_nested_folder(self):
         self.make_video_in_folder(videoname="vid.mp4", folder=self.some_nested_folder)
 
-        inserted_video = self.videoService.add(name='vid.mp4', folder=self.some_nested_folder, frameLength=500)
+        inserted_video = self.videoService.add(name='vid.mp4', folder=self.some_nested_folder, frameLength=500, width=1920, height=1080, fps=25.2)
 
         assert isinstance(inserted_video, VideoInfo), f"Video is not an instande of {VideoInfo} got {type(inserted_video)}"
         assert inserted_video.Name == "vid.mp4", f"Video name is not vid.mp4, got {inserted_video.Name}"
 
     def test_add_invalid_no_folder(self):
         with self.assertRaises(ValueError):
-            self.videoService.add(name="vid.mp4", folder=None, frameLength=500)
+            self.videoService.add(name="vid.mp4", folder=None, frameLength=500, width=1920, height=1080, fps=25.2)
 
     @parameterized.expand(TestHelper.generate_empty_strings())
     def test_add_invalid_name_empty(self, empty_name):
         with self.assertRaises(ValueError):
-            self.videoService.add(name=empty_name, folder=self.some_folder, frameLength=500)
+            self.videoService.add(name=empty_name, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
 
     @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore_extensions())
     def test_create_invalid_only_word_characters_or_numbers(self, invalid_name):
         with self.assertRaises(ValueError):
-            self.videoService.add(name=invalid_name, folder=self.some_folder, frameLength=500)
+            self.videoService.add(name=invalid_name, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
     
     def test_add_in_database_invalid_folderId_does_not_exist_in_database(self):
         testname = "test_add_in_database_invalid_folderId_does_not_exist_in_database"
@@ -164,7 +164,7 @@ class VideoServiceTest(TestCase):
         self.make_video_in_folder(videoname="jammer.mp4", folder=invalid_folder)
 
         with self.assertRaises(LookupError):
-            self.videoService.add(name="jammer.mp4", folder=invalid_folder, frameLength=500)
+            self.videoService.add(name="jammer.mp4", folder=invalid_folder, frameLength=500, width=1920, height=1080, fps=25.2)
 
     # Other idea : TODO : check for video orphans in DB
     # For StorageService ?
@@ -174,11 +174,11 @@ class VideoServiceTest(TestCase):
     # Params: name & folder
     ##################################
     def test_exists_on_drive_valid_does_exist_in_folder(self):
-        inserted_video = self.videoService.add(name="vid.mp4", folder=self.some_folder, frameLength=500)
+        inserted_video = self.videoService.add(name="vid.mp4", folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         assert self.videoService.exists_on_drive(name="vid.mp4", folder=self.some_folder), f"Video vid.mp4 does not exist in {self.some_folder.get_relative_path()}"
 
     def test_exists_on_drive_valid_does_exist_in_nested_folder(self):
-        inserted_video = self.videoService.add(name="vid.mp4", folder=self.some_nested_folder, frameLength=500)
+        inserted_video = self.videoService.add(name="vid.mp4", folder=self.some_nested_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         assert self.videoService.exists_on_drive(name="vid.mp4", folder=self.some_nested_folder), f"Video vid.mp4 does not exist in {self.some_nested_folder.get_relative_path()}"
 
     def test_exists_on_drive_valid_does_not_exist_in_current_folder_but_has_sibling_which_does_exist(self):
@@ -186,7 +186,7 @@ class VideoServiceTest(TestCase):
         f1 = self.folderService.create(name=testname, parent=None)
         f2 = self.folderService.create(name=f"{testname}_2", parent=None)
         self.make_video_in_folder(videoname="vid_in_siblingfolder.mp4", folder=f2)
-        self.videoService.add(name="vid_in_siblingfolder.mp4", folder=f2, frameLength=500)
+        self.videoService.add(name="vid_in_siblingfolder.mp4", folder=f2, frameLength=500, width=1920, height=1080, fps=25.2)
 
         assert not self.videoService.exists_on_drive(name="vid_in_siblingfolder.mp4", folder=f1), f"Gave exists because of sibling in {f2.get_relative_path()}"
 
@@ -204,15 +204,15 @@ class VideoServiceTest(TestCase):
     # Default, name is ignored when id is specified
     ##################################
     def test_exists_in_database_valid_name_does_exist(self):
-        self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         assert self.videoService.exists_in_database(name=self.vidname, folder=self.some_folder), f"Video {self.vidname} does not exist in database"
 
     def test_exists_in_database_valid_name_does_exist_in_nested_folder(self):
-        self.videoService.add(name=self.vidname, folder=self.some_nested_folder, frameLength=500)
+        self.videoService.add(name=self.vidname, folder=self.some_nested_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         assert self.videoService.exists_in_database(name=self.vidname, folder=self.some_nested_folder), f"Video {self.vidname} does not exist in database"
 
     def test_exists_in_database_valid_does_not_exist_in_current_folder_but_has_sibling_which_does_exist(self):
-        self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         assert not self.videoService.exists_in_database(name=self.vidname, folder=self.some_nested_folder), f"Video {self.vidname} does not exist in database"
 
     def test_exists_in_database_invalid_name_does_not_exists(self):
@@ -237,11 +237,11 @@ class VideoServiceTest(TestCase):
     # Default, name is ignored when id is specified
     ##################################
     def test_exists_in_database_valid_id_does_exist(self):
-        vidinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        vidinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         assert self.videoService.exists_in_database(id=vidinfo.Id), f"VideoId {vidinfo.Id} does not exist in database"
 
     def test_exists_in_database_valid_id_does_exist_in_nested_folder(self):
-        vidinfo = self.videoService.add(name=self.vidname, folder=self.some_nested_folder, frameLength=500)
+        vidinfo = self.videoService.add(name=self.vidname, folder=self.some_nested_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         assert self.videoService.exists_in_database(id=vidinfo.Id), f"VideoId {vidinfo.Id} does not exist in database"
 
     def test_exists_in_database_invalid_id_does_not_exists(self):
@@ -251,7 +251,7 @@ class VideoServiceTest(TestCase):
     # Test get (by id)
     ##################################
     def test_get_valid(self):
-        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         fetched_videoinfo = self.videoService.get(id=inserted_videoinfo.Id)
 
         assert fetched_videoinfo.Id == inserted_videoinfo.Id, f"Identifiers are not the same"
@@ -268,7 +268,7 @@ class VideoServiceTest(TestCase):
             self.videoService.get(id=155)
 
     def test_get_valid_loads_frameInfo(self):
-        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         frameinfo1 = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
         frameinfo2 = FrameInfo(250, x=0.4, y=0.5, width=0.8, height=0.6, jumperVisible=True)
         frameinfo3 = FrameInfo(355, x=0.5, y=0.6, width=0.8, height=0.8, jumperVisible=True)
@@ -297,7 +297,7 @@ class VideoServiceTest(TestCase):
         for i in range(5):
             vname = f"child_{i}.mp4"
             self.make_video_in_folder(videoname=vname, folder=folder)
-            self.videoService.add(name=vname, folder=folder, frameLength=500)
+            self.videoService.add(name=vname, folder=folder, frameLength=500, width=1920, height=1080, fps=25.2)
 
         vids = self.videoService.get_videos(folderId=folder.Id)
 
@@ -330,7 +330,7 @@ class VideoServiceTest(TestCase):
     # Test frameInfo (by frameNr)
     ##################################
     def test_set_frameInfo_valid_new(self):
-        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         frameinfo = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
         inserted_videoinfo = self.videoService.set_frameInfo(frameinfo, video=inserted_videoinfo)
         fetched_videoinfo = self.videoService.get(id=inserted_videoinfo.Id)
@@ -339,7 +339,7 @@ class VideoServiceTest(TestCase):
         assert len(fetched_videoinfo.Frames) == 1
 
     def test_set_frameInfo_valid_update(self):
-        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         frameinfo2 = FrameInfo(250, x=0.4, y=0.5, width=0.8, height=0.6, jumperVisible=True)
         frameinfo4 = FrameInfo(250, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True)
 
@@ -351,14 +351,14 @@ class VideoServiceTest(TestCase):
         assert len(fetched_videoinfo.Frames) == 1
 
     def test_set_frameInfo_invalid_out_of_bounds(self):
-        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         frameinfo5 = FrameInfo(555, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True)
 
         with self.assertRaises(ValueError):
             inserted_videoinfo = self.videoService.set_frameInfo(frameinfo5, video=inserted_videoinfo)
 
     def test_remove_frameInfo_valid(self):
-        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         frameinfo = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
         inserted_videoinfo = self.videoService.set_frameInfo(frameinfo, video=inserted_videoinfo)
         fetched_videoinfo = self.videoService.get(id=inserted_videoinfo.Id)
@@ -368,14 +368,14 @@ class VideoServiceTest(TestCase):
         assert len(updated_videoInfo.Frames) == 0
 
     def test_remove_frameInfo_invalid_does_not_exists(self):
-        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         frameinfo = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
         assert len(inserted_videoinfo.Frames) == 0
         with self.assertRaises(ValueError):
             updated_videoInfo = self.videoService.remove_frameInfo(frameNr=frameinfo.FrameNr, video=inserted_videoinfo)
 
     def test_remove_frameInfo_invalid_frameNr_out_of_bounds(self):
-        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500)
+        inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
         frameinfo = FrameInfo(505, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
         
         assert len(inserted_videoinfo.Frames) == 0

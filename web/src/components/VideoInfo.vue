@@ -1,12 +1,15 @@
 <script setup>
 import { getVideoImagePath } from '@/services/videoService';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import ProgressBar from './ProgressBar.vue';
 
-let props = defineProps(['title', 'videoId'])
+const props = defineProps(['title', 'videoId', 'info'])
 const router = useRouter()
 
 const imageUrl = ref('');
+const labelthreshold = 0.1 // Minimun % to be labeled to reach 100%
+const completed = computed(() => Math.min(100, Math.floor(props.info.LabeledFrameCount / props.info.FrameLength / labelthreshold * 100)))
 
 onMounted(async () => {
   try {
@@ -24,9 +27,9 @@ onMounted(async () => {
       <p v-else>Loading image...</p>
     </div>
     <div class="info">
-      <h2>{{ title }}</h2>
-      <p>{{ videoId }}</p>
+      <p>{{ videoId }} {{ title }}</p>
     </div>
+    <ProgressBar :bgcolor="'#29ab87'" :completed="completed" />
   </div>
 </template>
 
@@ -34,7 +37,9 @@ onMounted(async () => {
 .videoinfo {
   margin: 0.7%;
   padding: 0.2rem;
-  width: 48%;
+  padding-bottom: 1.7rem;
+  position: relative;
+  width: 31%;
   border: 1px solid var(--color-border);
   border-radius: 0.55rem;
   box-shadow: 0.5px 0.5px 3px var(--color-heading);
@@ -62,7 +67,7 @@ h2 {
 
 @media (min-width: 1024px) {
   .videoinfo {
-    width: 31%;
+    width: 18%;
   }
 }
 </style>

@@ -50,7 +50,7 @@ class FolderService:
             raise LookupError(f"{name} found in db: {parent.get_relative_path()}")
         if not self.exists_path_on_drive(name=name, parent=parent):
             raise ValueError(f"folder {name} not found in {self.StorageFolder if not parent else os.path.join(self.StorageFolder, parent.get_relative_path())}")
-        return self.FolderRepo.add(name=name, parent=parent, )
+        return self.FolderRepo.add(name=name, parent=parent)
     
     def create(self, name, parent: Folder = None) -> Folder:
         """

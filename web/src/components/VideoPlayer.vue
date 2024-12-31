@@ -23,14 +23,16 @@
       <button v-show="paused" @click="play">&#9654;</button>
       <button v-show="playing" @click="pause">&#9208;</button>
     </div>
+    <p>LabeledFrames: {{ frameCount }}</p>
   </div>
   <pre>{{ vidinfo }}</pre>
 </template>
 
 <script setup>
-import { postVideoFrame } from '@/services/videoService';
-import { computed, ref } from 'vue';
+import { getVideoInfo, postVideoFrame } from '@/services/videoService';
+import { computed, onBeforeMount, ref } from 'vue';
 
+const props = defineProps(['title', 'videoId', 'videoSrc', 'info'])
 const videoElement = ref(null)
 const canvas = ref(null)
 const paused = ref(null)
@@ -49,13 +51,13 @@ const relativeWidth = computed(() => Math.abs(currentX.value - startX.value) / c
 const relativeHeight = computed(() => Math.abs(currentY.value - startY.value) / currentHeight.value)
 const videoduration = ref(1)
 const vidinfo = ref(null)
+const frameCount = computed(() => vidinfo.value ? vidinfo.value.LabeledFrameCount : null)
 
-const props = defineProps(['title', 'videoId', 'videoSrc'])
 function updatePaused(event) {
   videoduration.value = event.target.duration
   videoElement.value = event.target;
   paused.value = event.target.paused;
-  currentFrame.value = Math.floor(29.97 * event.target.currentTime)
+  currentFrame.value = Math.floor(props.info.FPS * event.target.currentTime)
   currentWidth.value = event.target.clientWidth
   currentHeight.value = event.target.clientHeight
 }
@@ -106,10 +108,13 @@ function endDrawing(event) {
     "height" : relativeHeight.value,
     "jumperVisible" : true
   }
-  postVideoFrame(props.videoId, frameinfo).then(response => vidinfo.value=response.data.Frames)
+  postVideoFrame(props.videoId, frameinfo).then(response => vidinfo.value=response.data)
 
   setCurrentTime(Math.random() * videoduration.value)
 }
+onBeforeMount(async () => {
+    vidinfo.value = await getVideoInfo(props.videoId);
+})
 // TODO : catch resize of window, because the current frame can be labeled wrong, position wise
 </script>
 

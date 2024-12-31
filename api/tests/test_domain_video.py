@@ -9,13 +9,14 @@ from tests.TestHelper import TestHelper
 
 FOLDER_INSTANCE_VALID = Folder(id=1, name='competition', parent=None)
 def get_video() -> VideoInfo:
-    return VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
+    return VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
 
 def get_frame() -> FrameInfo:
     return FrameInfo(frameNr=0, x=0.5, y=0.5, width=0.5, height=0.5)
 
 # TODO : get_relative_video_path
 # TODO : image_path
+# TODO : test fps
 
 class DomainVideoTestSuite(unittest.TestCase):
     """Domain folder test cases."""
@@ -31,7 +32,7 @@ class DomainVideoTestSuite(unittest.TestCase):
         (1, "some-freestyles.mp4"),
     ])
     def test_ctor_valid(self, id, name):
-        video = VideoInfo(id=id, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500)
+        video = VideoInfo(id=id, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
         self.assertEqual(id, video.Id, f"Video id incorrectly initialized {id}, {video.Id}")
         self.assertEqual(name, video.Name, f"Videoname incorrectly initialized {name}, {video.Name}")
         self.assertEqual(FOLDER_INSTANCE_VALID, video.Folder, f"Videofolder incorrectly initialized")
@@ -39,22 +40,22 @@ class DomainVideoTestSuite(unittest.TestCase):
     @parameterized.expand(TestHelper.generate_empty_strings())
     def test_ctor_invalid_name_empty(self, name):
         with self.assertRaises(ValueError):
-            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500)
+            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
 
     @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore_extensions())
     def test_ctor_invalid_name_word_digits_underscore(self, name):
         with self.assertRaises(ValueError):
-            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500)
+            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
 
     @parameterized.expand(TestHelper.generate_invalid_ids())
     def test_ctor_invalid_id(self, id):
         with self.assertRaises(ValueError):
-            VideoInfo(id=id, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500)
+            VideoInfo(id=id, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
 
     @parameterized.expand([7, "text", True, ValueError])
     def test_ctor_invalid_folder_not_a_folder(self, parent):
         with self.assertRaises(ValueError):
-            VideoInfo(id=1, name="dd3-nationals.mp4", folder=parent, frameLength=500)
+            VideoInfo(id=1, name="dd3-nationals.mp4", folder=parent, frameLength=500, fps=25.2)
     
     #############################################
     # Test immutable properties & private method
