@@ -100,7 +100,9 @@ class VideoService:
         if not self.exists_in_database(id=id):
             raise LookupError(f"VideoId {id} does not exist")
         if self.VideoRepo.has_frames(videoId=id):
-            raise LookupError(f"Video {id} still has frames")
+            videoinfo = self.VideoRepo.get(id=id)
+            for f_nr in videoinfo.Frames:
+                self.VideoRepo.remove_frameInfo(videoId=id, frameNr=f_nr)
         self.VideoRepo.delete(id=id)
 
     def get_videos(self, folderId: int) -> List[VideoInfo]:
