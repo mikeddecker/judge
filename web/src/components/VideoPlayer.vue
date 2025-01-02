@@ -1,5 +1,5 @@
 <template>
-  <p>LabeledFrames: {{ frameCount }} | Current frame : {{ currentFrame }}</p>
+  <p>LabeledFrames: {{ labeledFramesCount }} | Current frame : {{ currentFrame }}</p>
   <div class="container">
     <video class="absolute"
     ref="videoPlayer" :src="videoSrc"
@@ -36,6 +36,7 @@
 </template>
 
 <script setup>
+import router from '@/router';
 import { getVideoInfo, postVideoFrame, removeVideoFrame } from '@/services/videoService';
 import { computed, onBeforeMount, ref } from 'vue';
 
@@ -58,7 +59,7 @@ const relativeWidth = computed(() => Math.abs(currentX.value - startX.value) / c
 const relativeHeight = computed(() => Math.abs(currentY.value - startY.value) / currentHeight.value)
 const videoduration = ref(1)
 const vidinfo = ref(null)
-const frameCount = computed(() => vidinfo.value ? vidinfo.value.LabeledFrameCount : null)
+const labeledFramesCount = computed(() => vidinfo.value ? vidinfo.value.LabeledFrameCount : 0)
 const labelMode = ref("localization")
 const modeIsLocalization = computed(() => { return labelMode.value == "localization" })
 const modeIsReview = computed(() => { return labelMode.value == "review" })
@@ -105,11 +106,11 @@ function drawRectangle(event) {
   ctx.stroke();
 }
 function setToPreviousFrameIdxAndDraw() {
-  currentFrameIdx.value = currentFrameIdx.value - 1 < 0 ? frameCount.value - 1 : currentFrameIdx.value - 1
+  currentFrameIdx.value = currentFrameIdx.value - 1 < 0 ? labeledFramesCount.value - 1 : currentFrameIdx.value - 1
   drawCurrentFrameIdx()
 }
 function setToNextFrameIdxAndDraw() {
-  currentFrameIdx.value = currentFrameIdx.value + 1 < frameCount.value ? currentFrameIdx.value + 1 : 0
+  currentFrameIdx.value = currentFrameIdx.value + 1 < labeledFramesCount.value ? currentFrameIdx.value + 1 : 0
   drawCurrentFrameIdx()
 }
 function drawCurrentFrameIdx() {
@@ -152,7 +153,23 @@ function endDrawing(event) {
   }
   postVideoFrame(props.videoId, currentFrame.value, frameinfo).then(response => vidinfo.value=response.data)
 
-  setCurrentTime(Math.random() * videoduration.value)
+  let frameNrAlreadyLabeled = true
+  let rndTime = 0
+  let rndFrameNr = 0
+  while (frameNrAlreadyLabeled) {
+    rndTime = Math.random() * videoduration.value
+    rndFrameNr = Math.floor(rndTime * vidinfo.value.FPS)
+    frameNrAlreadyLabeled = vidinfo.value.Frames.map(frameinfo => frameinfo.FrameNr).includes(rndFrameNr)
+
+    // Randomly stop labeling this video based on increasing chance
+    // threshold e.g. 70 / 3k frames -> 2.5% chance
+    // TODO : update to autoselect other DD3 video
+    let threshold = Math.pow(labeledFramesCount.value, 2) / vidinfo.value.FrameLength
+    if (Math.random() * 100 < threshold) {
+      router.push("/browse")
+    }
+  }
+  setCurrentTime(rndTime)
 }
 function toggleLabelMode() {
   if (modeIsLocalization.value) {

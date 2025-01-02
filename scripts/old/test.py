@@ -5,7 +5,7 @@ load_dotenv()
 STORAGE_DIR = '/media/miked/Elements/Judge/FINISHED-DB-READY'
 print(STORAGE_DIR)
 videopath = os.path.join(STORAGE_DIR, 'competition', 'belgium', 'DD3', 'bk-handles-dd3-2024-junioren-mixed-j1.MP4')
-videopath = '/home/miked/Documents/C0003-00.02.47.040-00.04.04.800-seg02.mov'
+videopath = '/media/miked/Elements/Judge/2022-arne-groot-bk/test/vlc-record-2022-05-26-15h47m10s-dshow___-.mp4'
 cap = cv2.VideoCapture(videopath)
 if not cap.isOpened():
     raise IOError("Cannot open camera")
