@@ -3,7 +3,7 @@
     <h1>Label {{ videoinfo.Name }}</h1>
     <div v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
-    <VideoPlayer v-if="videoPath" v-bind:video-id="$route.params.id" :video-src="videoPath" :info="videoinfo"></VideoPlayer>
+    <VideoPlayer v-if="videoPath" v-bind:video-id="$route.params.id" :video-src="videoPath"></VideoPlayer>
   </div>
   <div v-else>
     Loading ...

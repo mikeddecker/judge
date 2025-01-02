@@ -46,10 +46,20 @@ export const getVideoPath = async (videoId) => {
   }
 };
 
-export const postVideoFrame = async (videoId, frameinfo) => {
-  return await api.post(`/video/${videoId}`, frameinfo, { headers: { 'Content-Type': 'application/json' }})
+export const postVideoFrame = async (videoId, frameNr, frameinfo) => {
+  return await api.post(`/video/${videoId}/frameNr/${frameNr}`, frameinfo, { headers: { 'Content-Type': 'application/json' }})
     .then(function (response) {
       return response;
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
+};
+
+export const removeVideoFrame = async (videoId, frameNr) => {
+  return await api.delete(`/video/${videoId}/frameNr/${frameNr}`, { headers: { 'Content-Type': 'application/json' }})
+    .then(function (response) {
+      return response.data;
     })
     .catch(function (error) {
       console.error(error);

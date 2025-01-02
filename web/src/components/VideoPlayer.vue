@@ -1,4 +1,5 @@
 <template>
+  <p>LabeledFrames: {{ frameCount }} | Current frame : {{ currentFrame }}</p>
   <div class="container">
     <video class="absolute"
     ref="videoPlayer" :src="videoSrc"
@@ -6,7 +7,7 @@
     @canplay="updatePaused" @playing="updatePaused" @pause="updatePaused"
     >
     </video>
-    <canvas 
+    <canvas
       ref="canvas" 
       :width="currentWidth" 
       :height="currentHeight" 
@@ -18,21 +19,27 @@
     >
       Your browser does not support the HTML canvas tag.
     </canvas>
-    <p>{{ currentFrame }}</p>
     <div class="controls">
       <button v-show="paused" @click="play">&#9654;</button>
       <button v-show="playing" @click="pause">&#9208;</button>
+      <button @click="toggleLabelMode">Current modus: {{ labelMode }}</button>
+      <div class="review-controls" v-show="modeIsReview">
+        <button class="big-arrow" @click="setToPreviousFrameIdxAndDraw">&larr;</button>
+        <button class="big-arrow" @click="setToNextFrameIdxAndDraw">&rarr;</button>
+        <button @click="deleteLabel"><img src="@/assets/delete.png" alt="buttonpng" class="icon"/></button>
+        
+
+      </div>
     </div>
-    <p>LabeledFrames: {{ frameCount }}</p>
   </div>
   <pre>{{ vidinfo }}</pre>
 </template>
 
 <script setup>
-import { getVideoInfo, postVideoFrame } from '@/services/videoService';
+import { getVideoInfo, postVideoFrame, removeVideoFrame } from '@/services/videoService';
 import { computed, onBeforeMount, ref } from 'vue';
 
-const props = defineProps(['title', 'videoId', 'videoSrc', 'info'])
+const props = defineProps(['title', 'videoId', 'videoSrc'])
 const videoElement = ref(null)
 const canvas = ref(null)
 const paused = ref(null)
@@ -52,12 +59,16 @@ const relativeHeight = computed(() => Math.abs(currentY.value - startY.value) / 
 const videoduration = ref(1)
 const vidinfo = ref(null)
 const frameCount = computed(() => vidinfo.value ? vidinfo.value.LabeledFrameCount : null)
+const labelMode = ref("localization")
+const modeIsLocalization = computed(() => { return labelMode.value == "localization" })
+const modeIsReview = computed(() => { return labelMode.value == "review" })
+const currentFrameIdx = ref(0)
 
 function updatePaused(event) {
   videoduration.value = event.target.duration
   videoElement.value = event.target;
   paused.value = event.target.paused;
-  currentFrame.value = Math.floor(props.info.FPS * event.target.currentTime)
+  currentFrame.value = Math.floor(vidinfo.value.FPS * event.target.currentTime)
   currentWidth.value = event.target.clientWidth
   currentHeight.value = event.target.clientHeight
 }
@@ -70,24 +81,55 @@ function pause() {
 function setCurrentTime(val) {
   videoElement.value.currentTime = val
 }
+function clearAndReturnCtx() {
+  const ctx = canvas.value.getContext("2d");
+  ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
+  ctx.beginPath();
+  return ctx
+}
 function startDrawing(event) {
+  if (!modeIsLocalization.value) { return }
+  if (playing.value) { pause() }
   isDrawing.value = true;
   startX.value = event.offsetX;
   startY.value = event.offsetY;
 }
 function drawRectangle(event) {
   if (!isDrawing.value) return;
-  
-  const ctx = canvas.value.getContext("2d");
+  const ctx = clearAndReturnCtx()
+
   currentX.value = event.offsetX;
   currentY.value = event.offsetY;
-  
   ctx.strokeStyle = 'lime';
-  ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
-  ctx.beginPath();
   ctx.rect(startX.value, startY.value, currentX.value - startX.value, currentY.value - startY.value);
   ctx.stroke();
 }
+function setToPreviousFrameIdxAndDraw() {
+  currentFrameIdx.value = currentFrameIdx.value - 1 < 0 ? frameCount.value - 1 : currentFrameIdx.value - 1
+  drawCurrentFrameIdx()
+}
+function setToNextFrameIdxAndDraw() {
+  currentFrameIdx.value = currentFrameIdx.value + 1 < frameCount.value ? currentFrameIdx.value + 1 : 0
+  drawCurrentFrameIdx()
+}
+function drawCurrentFrameIdx() {
+  const label = vidinfo.value.Frames[currentFrameIdx.value]
+  const frameNr = label.FrameNr
+  const ctx = clearAndReturnCtx()
+  setCurrentTime(frameNr / vidinfo.value.FPS)
+  ctx.strokeStyle = 'lime';
+  const xleft = (label.X - label.Width / 2) * currentWidth.value
+  const yleft = (label.Y - label.Height / 2) * currentHeight.value
+  const w = label.Width * currentWidth.value
+  const h = label.Height * currentHeight.value
+  ctx.rect(xleft, yleft, w, h);
+  ctx.stroke();
+}
+async function deleteLabel() {
+  await removeVideoFrame(props.videoId, currentFrame.value).then(videoinfo => vidinfo.value = videoinfo).catch(err => console.error(err))
+  setToNextFrameIdxAndDraw()
+}
+
 function endDrawing(event) {
   if (!isDrawing.value) return;
   isDrawing.value = false;
@@ -108,9 +150,19 @@ function endDrawing(event) {
     "height" : relativeHeight.value,
     "jumperVisible" : true
   }
-  postVideoFrame(props.videoId, frameinfo).then(response => vidinfo.value=response.data)
+  postVideoFrame(props.videoId, currentFrame.value, frameinfo).then(response => vidinfo.value=response.data)
 
   setCurrentTime(Math.random() * videoduration.value)
+}
+function toggleLabelMode() {
+  if (modeIsLocalization.value) {
+    labelMode.value = "review"
+    pause()
+    drawCurrentFrameIdx()
+  } else if (modeIsReview.value) {
+    labelMode.value = "localization"
+    clearAndReturnCtx()
+  }
 }
 onBeforeMount(async () => {
     vidinfo.value = await getVideoInfo(props.videoId);
@@ -132,6 +184,25 @@ video {
   max-height: 70vh;
 }
 
+.controls {
+  margin: 0.3rem
+}
+
+.review-controls {
+  margin: 0.2rem 0;
+}
+
+button {
+  min-width: 5rem;
+  height: 3rem;
+  margin: 0.1rem
+}
+
+img {
+  max-width: 50%;
+  max-height: 50%;
+}
+
 .overlay-canvas {
   position: absolute;
   border: 1px solid red;
@@ -139,6 +210,14 @@ video {
   left: 0;
   /* width: 100%; */
   /* height: 100%; */
+}
+
+.big-arrow {
+  font-size: 1.75rem;
+}
+
+.material-icons {
+  font-size: 1.36rem
 }
 
 @media (min-width: 1024px) {

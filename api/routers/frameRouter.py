@@ -16,11 +16,11 @@ class FrameRouter(Resource):
         self.videoService = VideoService(STORAGE_DIR)
         super().__init__(**kwargs)
     
-    def post(self, videoId: int):
+    def post(self, videoId: int, frameNr: int):
         data = request.get_json()
         
         # Extract the required fields from the body
-        frameNr = data.get('frameNr')
+        # frameNr = data.get('frameNr')
         x = data.get('x')
         y = data.get('y')
         width = data.get('width')
@@ -39,4 +39,13 @@ class FrameRouter(Resource):
         video = self.videoService.get(videoId)
         video = self.videoService.set_frameInfo(frameInfo=frameinfo, video=video)
         return video.to_dict(), 200
+    
+    def delete(self, videoId: int, frameNr: int):
+        try:
+            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_frameNr(frameNr)
+        except ValueError as ve:
+            return ve, 404
+        videoinfo = self.videoService.get(videoId)
+        return self.videoService.remove_frameInfo(frameNr=frameNr, video=videoinfo).to_dict(), 200
 

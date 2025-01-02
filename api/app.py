@@ -40,10 +40,9 @@ api.add_resource(VideoRouter, '/video/<int:videoId>')
 api.add_resource(VideoInfoRouter, '/video/<int:videoId>/info')
 api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
 
-api.add_resource(FrameRouter, '/video/<int:videoId>')
+api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
 api.add_resource(StorageRouter, '/discover')
 api.add_resource(OrphanDeleterRouter, '/discover/deleteOrphans')
-
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

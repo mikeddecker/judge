@@ -114,7 +114,7 @@ class VideoService:
     def rename(self, id: int, new_name):
         raise NotImplementedError("Nice to have, end of journey")
     
-    def remove_frameInfo(self, frameNr, video: VideoInfo):
+    def remove_frameInfo(self, frameNr, video: VideoInfo) -> VideoInfo:
         ValueHelper.check_raise_frameNr(frameNr)
         if video is None or not isinstance(video, VideoInfo):
             raise ValueError(f"frameInfo is not {VideoInfo}, got {video}")
