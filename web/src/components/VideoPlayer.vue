@@ -36,7 +36,6 @@
 </template>
 
 <script setup>
-import router from '@/router';
 import { getVideoInfo, postVideoFrame, removeVideoFrame } from '@/services/videoService';
 import { computed, onBeforeMount, ref } from 'vue';
 
@@ -160,14 +159,7 @@ function endDrawing(event) {
     rndTime = Math.random() * videoduration.value
     rndFrameNr = Math.floor(rndTime * vidinfo.value.FPS)
     frameNrAlreadyLabeled = vidinfo.value.Frames.map(frameinfo => frameinfo.FrameNr).includes(rndFrameNr)
-
-    // Randomly stop labeling this video based on increasing chance
-    // threshold e.g. 70 / 3k frames -> 2.5% chance
-    // TODO : update to autoselect other DD3 video
-    let threshold = Math.pow(labeledFramesCount.value, 2) / vidinfo.value.FrameLength
-    if (Math.random() * 100 < threshold) {
-      router.push("/browse")
-    }
+    
   }
   setCurrentTime(rndTime)
 }
