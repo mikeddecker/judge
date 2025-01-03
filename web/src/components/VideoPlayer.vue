@@ -159,7 +159,6 @@ function endDrawing(event) {
     rndTime = Math.random() * videoduration.value
     rndFrameNr = Math.floor(rndTime * vidinfo.value.FPS)
     frameNrAlreadyLabeled = vidinfo.value.Frames.map(frameinfo => frameinfo.FrameNr).includes(rndFrameNr)
-    
   }
   setCurrentTime(rndTime)
 }
