@@ -98,6 +98,9 @@ class VideoInfo:
     
     def get_relative_video_path(self):
         return os.path.join(self.Folder.get_relative_path(), self.Name)
+    
+    def get_duration(self):
+        return self.FrameLength / self.FPS
 
     ####################
     # Section : Frames #
@@ -161,17 +164,20 @@ class VideoInfo:
             substrings.append(f"\t{str(fi)}")
         return "\n".join(substrings)
 
-    def to_dict(self):
+    def to_dict(self, include_frames=True):
         return {
             "Id" : self.Id,
             "Name" : self.Name, 
             "Folder" : self.Folder.to_dict(),
             "FrameLength" : self.FrameLength,
-            "Frames" : [f.to_dict() for f in self.Frames.values()], 
+            "Frames" : [f.to_dict() for f in self.Frames.values()] if include_frames else [], # TODO : lazy load frames
             "FPS" : self.FPS,
+            "Duration" : self.get_duration(),
+            "FramesLabeledPerSecond" : len(self.Frames) / self.get_duration(),
             "Skills" : [s.to_dict() for s in self.Skills],
-            "LabeledFrameCount" : len(self.Frames)
+            "LabeledFrameCount" : len(self.Frames),
         }
+
     
     def __repr__(self):
         return str(self.to_dict())

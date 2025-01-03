@@ -1,5 +1,5 @@
 <template>
-  <p>LabeledFrames: {{ labeledFramesCount }} | Current frame : {{ currentFrame }}</p>
+  <p>LabeledFrames: {{ labeledFramesCount }} | Current frame : {{ currentFrame }} | FramesLabeledPerSecond : {{ framesLabeledPerSecond }}</p>
   <div class="container">
     <video class="absolute"
     ref="videoPlayer" :src="videoSrc"
@@ -27,8 +27,6 @@
         <button class="big-arrow" @click="setToPreviousFrameIdxAndDraw">&larr;</button>
         <button class="big-arrow" @click="setToNextFrameIdxAndDraw">&rarr;</button>
         <button @click="deleteLabel"><img src="@/assets/delete.png" alt="buttonpng" class="icon"/></button>
-        
-
       </div>
     </div>
   </div>
@@ -63,12 +61,13 @@ const labelMode = ref("localization")
 const modeIsLocalization = computed(() => { return labelMode.value == "localization" })
 const modeIsReview = computed(() => { return labelMode.value == "review" })
 const currentFrameIdx = ref(0)
+const framesLabeledPerSecond = computed(() => { return vidinfo.value ? vidinfo.value.FramesLabeledPerSecond.toFixed(2) : 0 })
 
 function updatePaused(event) {
   videoduration.value = event.target.duration
   videoElement.value = event.target;
   paused.value = event.target.paused;
-  currentFrame.value = Math.floor(vidinfo.value.FPS * event.target.currentTime)
+  currentFrame.value = Math.floor(modeIsLocalization.value ? vidinfo.value.FPS * event.target.currentTime : vidinfo.value.Frames[currentFrameIdx.value].FrameNr)
   currentWidth.value = event.target.clientWidth
   currentHeight.value = event.target.clientHeight
 }

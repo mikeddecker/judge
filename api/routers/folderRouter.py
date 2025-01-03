@@ -31,7 +31,7 @@ class FolderRouter(Resource):
                 f["Children"].append(c.to_dict())
             f["Videos"] = {}
             for vidinfo in self.videoService.get_videos(folderId=f["Id"]):
-                f["Videos"][vidinfo.Id] = vidinfo.to_dict()
+                f["Videos"][vidinfo.Id] = vidinfo.to_dict(include_frames=False)
             f["VideoCount"] = len(f["Videos"].keys())
             return f, 200
         else:

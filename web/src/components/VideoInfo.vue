@@ -8,8 +8,11 @@ const props = defineProps(['title', 'videoId', 'info'])
 const router = useRouter()
 
 const imageUrl = ref('');
-const labelthreshold = 0.1 // Minimun % to be labeled to reach 100%
-const completed = computed(() => Math.min(100, Math.floor(props.info.LabeledFrameCount / props.info.FrameLength / labelthreshold * 100)))
+
+// completed target 10% of frames labeled
+// const labelthreshold = 0.1 // Minimun % to be labeled to reach 100%
+// const completed = computed(() => Math.min(100, Math.floor(props.info.LabeledFrameCount / props.info.FrameLength / labelthreshold * 100)))
+const completed = computed(() => props.info.FramesLabeledPerSecond.toFixed(2) * 100)
 
 onMounted(async () => {
   try {

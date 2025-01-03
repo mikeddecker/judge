@@ -25,7 +25,7 @@ export default {
       .then(response => {
         this.children = response.Children;
         this.folderName = response.Name;
-        this.videos = response.Videos;
+        this.videos = Object.values(response.Videos).sort((a, b) => a.FramesLabeledPerSecond - b.FramesLabeledPerSecond);
         this.count = response.VideoCount;
         this.parentId = response.Parent ? response.Parent.Id : 0;
         this.totalLabels = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
@@ -48,7 +48,7 @@ export default {
     <h1>Navigate videos : {{ folderName }}</h1>
     <p>Videos: {{ count }}</p>
     <p>Labeld frames : {{ totalLabels }} / {{ totalFrames }} totalFrames</p>
-    <p>First goal: label 10% of each video</p>
+    <p>First goal: label 1 frame of each second</p>
     <FolderContainer @changeFolder="changeFolder" v-bind:folders="children" v-bind:parent-id="parentId"/>
     <VideoInfoContainer v-bind:videos="videos"/>
     <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a>

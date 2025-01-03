@@ -18,7 +18,7 @@
       const fillerStyles = computed(() => {
         return {
           height: "100%",
-          width: `${props.completed}%`,
+          width: `${Math.min(100, props.completed)}%`,
           backgroundColor: props.bgcolor,
           transition: "width 1s ease-in-out",
           borderRadius: "inherit",
