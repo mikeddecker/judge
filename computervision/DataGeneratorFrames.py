@@ -30,7 +30,7 @@ class DataGeneratorFrames(keras.utils.Sequence):
         'Denotes the number of batches per epoch'
         return len(self.Frames) // self.batch_size + 1
 
-    def __getitem__(self, batch_nr):
+    def __getitem__(self, batch_nr, normalize=True):
         "batch_nr starts from 0"
         # print("getitem", batch_nr)
         frames = []
@@ -46,7 +46,7 @@ class DataGeneratorFrames(keras.utils.Sequence):
             try:
                 loaded_frame, y = self.frameloader.get_frame(videoId, frameNr, self.dim[0], x, y, w, h, printId=False)
                 y_values.append(y)
-                frames.append(loaded_frame / 255)
+                frames.append(loaded_frame / 255 if normalize else loaded_frame)
             except Exception as err:
                 print(f"*"*80)
                 print(f"Failed for videoId = {row["videoId"]}, frameNr = {row["frameNr"]}")
