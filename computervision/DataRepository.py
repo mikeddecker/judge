@@ -29,7 +29,12 @@ class DataRepository:
         return engine.connect()
 
     def get_framelabels(self, train_test_val):
-        qry = sqlal.text(f"""SELECT * FROM FrameLabels""")
+        # TODO : update with validation & 'random' sampling
+        if train_test_val == "train":
+            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE videoId IN (SELECT id FROM Videos WHERE training=1)""")
+
+        if train_test_val == "test":
+            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE videoId IN (SELECT id FROM Videos WHERE training=0)""")
         return pd.read_sql(qry, con=self.con)
 
     def load_relativePaths_of_videos_with_framelabels(self):
