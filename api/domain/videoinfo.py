@@ -176,6 +176,7 @@ class VideoInfo:
             "FramesLabeledPerSecond" : len(self.Frames) / self.get_duration(),
             "Skills" : [s.to_dict() for s in self.Skills],
             "LabeledFrameCount" : len(self.Frames),
+            "RelativePath" : self.get_relative_video_path(),
         }
 
     
