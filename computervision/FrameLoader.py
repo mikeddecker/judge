@@ -1,5 +1,6 @@
 import cv2
 import os
+import numpy as np
 import sys
 from dotenv import load_dotenv
 
@@ -12,17 +13,28 @@ class FrameLoader:
         self.VideoNames = datarepo.VideoNames
         self.VideoNames.index = self.VideoNames["id"]
 
-    def get_frame(self, videoId, frameNr, keepWrongBGRColors=True):
-        print(os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"]))
-        cap = cv2.VideoCapture(os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"]))
+    def get_frame(self, videoId, frameNr, dim):
+        vpath = os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"])
+        cap = cv2.VideoCapture(vpath)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        max_wh = max(width, height)
+        scaled_width = dim if width == max_wh else int(dim * width / max_wh)
+        scaled_height = dim if height == max_wh else int(dim * height / max_wh)
         cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
-        print("frames")
         _, frame = cap.read()
+        frame = cv2.resize(frame, (scaled_width, scaled_height), interpolation=cv2.INTER_AREA)
 
-        frame = frame if keepWrongBGRColors else cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        cap.release()
-        return frame
+        zeros = np.zeros((dim, dim, 3), dtype=np.uint8)
+        offset_x = (dim - scaled_width) // 2
+        offset_y = (dim - scaled_height) // 2
         
+        # Place the resized frame on the canvas at the calculated offset
+        zeros[offset_y:offset_y+scaled_height, offset_x:offset_x+scaled_width] = frame
+        
+        cap.release()
+        return zeros
+    
     def get_frames(self, relative_path, frameNrs, keepWrongBGRColors=True):
         frames = {}
         cap = cv2.VideoCapture(os.path.join(STORAGE_DIR, relative_path))
