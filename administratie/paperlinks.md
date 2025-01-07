@@ -35,6 +35,11 @@ Temporal Patch Shift for Action Recognition](https://arxiv.org/pdf/2207.13259)
 
 [Google Learn2compress](https://research.google/blog/custom-on-device-ml-models-with-learn2compress/)
 
+## KeyPoints / instance segmentation
+
+[mask-rcnn](https://arxiv.org/pdf/1703.06870)
+[Feature Pyramid Networks for Object Detection](https://arxiv.org/pdf/1612.03144)
+
 ## Biblatex template website
 
 @Online{citekey,
