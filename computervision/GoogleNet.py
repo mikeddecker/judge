@@ -186,7 +186,7 @@ from DataRepository import DataRepository
 repo = DataRepository()
 repo.load_relativePaths_of_videos_with_framelabels()
 
-DIM = 320
+DIM = 128
 train_generator = DataGeneratorFrames(
     frameloader=FrameLoader(repo),
     train_test_val="train",
