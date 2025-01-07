@@ -42,7 +42,6 @@ class DataGeneratorFrames(keras.utils.Sequence):
             videoId = row["videoId"]
             frameNr = row["frameNr"]
             x, y, w, h = self.Frames.iloc[i][["x", "y", "width", "height"]]
-            
             try:
                 loaded_frame, y = self.frameloader.get_frame(videoId, frameNr, self.dim[0], x, y, w, h, printId=False)
                 y_values.append(y)

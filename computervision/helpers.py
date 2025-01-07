@@ -32,16 +32,7 @@ def plot(imgs, bboxes=None, row_title=None, **imshow_kwargs):
 
             ax = axs[row_idx, col_idx]
             ax.imshow(img, **imshow_kwargs)
-
-            # Print X and Y axis ticks (set defaults)
-            x_ticks = np.linspace(0, img.shape[1] - 1, 2)  # 6 ticks along the X-axis
-            y_ticks = np.linspace(0, img.shape[0] - 1, 2)  # 6 ticks along the Y-axis
-            ax.set_xlabel("X-axis")
-            ax.set_ylabel("Y-axis")
             
-            # Enable grid
-            ax.grid(True)
-
             # If bounding boxes are provided, draw them on the image
             if bboxes is not None:
                 bbox = bboxes[row_idx * num_cols + col_idx]  # Get the bounding box for the current image
@@ -64,6 +55,7 @@ def plot(imgs, bboxes=None, row_title=None, **imshow_kwargs):
                         linewidth=2, edgecolor='r', facecolor='none'
                     )
                     ax.add_patch(rect)  # Add the bounding box to the image
+            ax.axis('off')
 
     if row_title is not None:
         for row_idx in range(num_rows):
