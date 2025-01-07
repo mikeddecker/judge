@@ -6,6 +6,7 @@
 
 # Implement GoogleNet
 # Build an inception module
+# get_ipython().run_line_magic('pip', 'install sqlalchemy')
 
 
 # In[2]:
@@ -54,6 +55,8 @@ class InceptionModule(keras.layers.Layer):
 
     return logits
 
+
+# In[4]:
 
 
 DefaultMaxPool = functools.partial(
@@ -198,18 +201,18 @@ val_generator = DataGeneratorFrames(
     batch_size=32,
 )
 
+
 callbacks = [
     ModelCheckpoint('model_best.keras', save_best_only=True, monitor='loss', mode='min', verbose=1),
-    EarlyStopping(monitor='loss', patience=10, restore_best_weights=True, verbose=1),
-    ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5, verbose=1)
+    EarlyStopping(monitor='loss', patience=2, restore_best_weights=True, verbose=1),
+    ReduceLROnPlateau(monitor='loss', factor=0.5, patience=1, verbose=1)
 ]
 
-# Fit the model using the data generator and callbacks
 history = model.fit(
-    train_generator,  # Training data generator
-    epochs=5,        # Set the number of epochs
-    callbacks=callbacks,  # List of callbacks
-    verbose=1,         # Verbose output
+    train_generator,
+    epochs=7,
+    callbacks=callbacks,
+    verbose=1,
     validation_data=val_generator
 )
 
@@ -224,5 +227,11 @@ X.shape, y.shape
 # In[ ]:
 
 
+keras.models.save_model(
+    model,
+    filepath="googlenet.keras",
+    overwrite=True
+)
 
+model.save_weights("googlenet.weights.h5")
 

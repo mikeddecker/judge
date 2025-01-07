@@ -13,6 +13,7 @@ scripts/config/.ipynb_checkpoints/*
 # Pycache
 */__pycache__/*
 *.keras
+*.h5
 
 # Ignore database trash
 db_data/*

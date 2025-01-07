@@ -55,5 +55,4 @@ class DataGeneratorFrames(keras.utils.Sequence):
 
 
     def on_epoch_end(self):
-        print('on_epoch_end_called')
         self.Frames = self.Frames.sample(frac=1.)
