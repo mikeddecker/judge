@@ -43,15 +43,57 @@ class FrameLoader:
         cap.release()
         return zeros, y
     
-    def get_frames(self, relative_path, frameNrs, keepWrongBGRColors=True):
-        frames = {}
-        cap = cv2.VideoCapture(os.path.join(STORAGE_DIR, relative_path))
-        for frameNr in frameNrs:
+    def get_frames(self, videoId, frameInfo, dim, printId=False):
+        # On sampling: frameInfo = { 'frameNr' : (x,y,w,h) }
+        # On loading:  frameInfo = { 'frameNr' : (loaded_frame, y) }
+        if printId:
+            print(frameInfo)
+        vpath = os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"])
+        cap = cv2.VideoCapture(vpath)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        max_wh = max(width, height)
+        scaled_width = dim if width == max_wh else int(dim * width / max_wh)
+        scaled_height = dim if height == max_wh else int(dim * height / max_wh)
+
+        loaded_frames = {}
+        for frameNr, bbox in frameInfo.items():
             cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
             _, frame = cap.read()
-            frame = frame if keepWrongBGRColors else cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frames[frameNr] = frame
+            frame = cv2.resize(frame, (scaled_width, scaled_height), interpolation=cv2.INTER_AREA)
+
+            original_x = bbox[0]
+            original_y = bbox[1]
+            original_width = bbox[2]
+            original_height = bbox[3]
+            
+            zeros = np.zeros((dim, dim, 3), dtype=np.uint8)
+            offset_x = (dim - scaled_width) // 2
+            offset_y = (dim - scaled_height) // 2
+            scale_x = 1 if width == max_wh else width / height # multiplier for y values
+            scale_y = 1 if height == max_wh else height / width
+            
+            # Place the resized frame on the canvas at the calculated offset
+            zeros[offset_y:offset_y+scaled_height, offset_x:offset_x+scaled_width] = frame
+
+            offset_x = (original_x * scale_x *dim + offset_x) /dim            
+            offset_y = (original_y * scale_y *dim + offset_y) /dim
+            y = [offset_x, offset_y, original_width * scale_x, original_height * scale_y]
+            loaded_frames[frameNr] = (zeros, y)
 
         cap.release()
 
-        return frames
+        return loaded_frames
+    
+    # def get_frames(self, relative_path, frameNrs, keepWrongBGRColors=True):
+    #     frames = {}
+    #     cap = cv2.VideoCapture(os.path.join(STORAGE_DIR, relative_path))
+    #     for frameNr in frameNrs:
+    #         cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
+    #         _, frame = cap.read()
+    #         frame = frame if keepWrongBGRColors else cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #         frames[frameNr] = frame
+
+    #     cap.release()
+
+    #     return frames

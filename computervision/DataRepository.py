@@ -16,7 +16,9 @@ class DataRepository:
 
     def __init__(self):  
         self.con = self.__get_connection()
-        print('connection established')
+        print('connection established, loading frame paths')
+        self.__load_relativePaths_of_videos_with_framelabels()
+        print("rel paths of framelabels loaded")
 
     def __get_connection(self):
         HOST = '127.0.0.1'
@@ -37,7 +39,7 @@ class DataRepository:
             qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE videoId IN (SELECT id FROM Videos WHERE training=0)""")
         return pd.read_sql(qry, con=self.con)
 
-    def load_relativePaths_of_videos_with_framelabels(self):
+    def __load_relativePaths_of_videos_with_framelabels(self):
         relative_paths = {}
         qry = sqlal.text(f"""SELECT DISTINCT folderId, id, name FROM Videos WHERE id IN (SELECT DISTINCT videoId FROM FrameLabels)""")
 

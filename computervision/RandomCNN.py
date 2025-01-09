@@ -10,19 +10,13 @@
 
 DIM = 512
 
-# In[2]:
-
-
 import functools
 import keras
+from helpers import iou
 
 DefaultConv = functools.partial(
     keras.layers.Conv2D, kernel_size=(3, 3), strides=(2, 2),
-    padding="same", activation="relu")
-
-
-# In[4]:
-
+    padding="same", activation="relu", kernel_initializer="he_normal")
 
 DefaultMaxPool = functools.partial(
     keras.layers.MaxPool2D,
@@ -62,44 +56,6 @@ model.summary()
 # In[6]:
 
 
-def iou(y_true, y_pred):
-    """
-    Calculate IoU loss between the true and predicted bounding boxes.
-
-    y_true and y_pred should have the shape (batch_size, 4), where each element is
-    [center_x, center_y, width, height].
-    """
-    # Convert (center_x, center_y, width, height) to (xmin, ymin, xmax, ymax)
-    true_xmin = y_true[..., 0] - 0.5 * y_true[..., 2]
-    true_ymin = y_true[..., 1] - 0.5 * y_true[..., 3]
-    true_xmax = y_true[..., 0] + 0.5 * y_true[..., 2]
-    true_ymax = y_true[..., 1] + 0.5 * y_true[..., 3]
-
-    pred_xmin = y_pred[..., 0] - 0.5 * y_pred[..., 2]
-    pred_ymin = y_pred[..., 1] - 0.5 * y_pred[..., 3]
-    pred_xmax = y_pred[..., 0] + 0.5 * y_pred[..., 2]
-    pred_ymax = y_pred[..., 1] + 0.5 * y_pred[..., 3]
-
-    # Calculate the intersection area
-    inter_xmin = keras.ops.maximum(true_xmin, pred_xmin)
-    inter_ymin = keras.ops.maximum(true_ymin, pred_ymin)
-    inter_xmax = keras.ops.minimum(true_xmax, pred_xmax)
-    inter_ymax = keras.ops.minimum(true_ymax, pred_ymax)
-
-    inter_width = keras.ops.maximum(0.0, inter_xmax - inter_xmin)
-    inter_height = keras.ops.maximum(0.0, inter_ymax - inter_ymin)
-    intersection_area = inter_width * inter_height
-
-    # Calculate the union area
-    true_area = (true_xmax - true_xmin) * (true_ymax - true_ymin)
-    pred_area = (pred_xmax - pred_xmin) * (pred_ymax - pred_ymin)
-    union_area = true_area + pred_area - intersection_area
-
-    # Calculate IoU
-    iou = intersection_area / union_area
-
-    return iou
-
 
 
 # In[7]:
@@ -138,28 +94,18 @@ val_generator = DataGeneratorFrames(
 
 
 callbacks = [
-    ModelCheckpoint('model_best.keras', save_best_only=True, monitor='loss', mode='min', verbose=1),
+    ModelCheckpoint('model_best.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1),
     EarlyStopping(monitor='loss', patience=2, restore_best_weights=True, verbose=1),
     ReduceLROnPlateau(monitor='loss', factor=0.5, patience=1, verbose=1)
 ]
 
 history = model.fit(
     train_generator,
-    epochs=7,
+    epochs=8,
     callbacks=callbacks,
     verbose=1,
     validation_data=val_generator
 )
-
-
-# # In[9]:
-
-
-# X, y = train_generator.__getitem__(5)
-# X.shape, y.shape
-
-
-# # In[ ]:
 
 
 keras.models.save_model(

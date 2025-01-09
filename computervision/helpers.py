@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import cv2
 import matplotlib.patches as patches
 import numpy as np
+import keras
 
 def plot(imgs, bboxes=None, row_title=None, **imshow_kwargs):
     """
@@ -63,3 +64,42 @@ def plot(imgs, bboxes=None, row_title=None, **imshow_kwargs):
 
     # No need for tight_layout() to avoid any unwanted resizing of images
     plt.show()
+
+
+def iou(y_true, y_pred):
+    """
+    Calculate IoU loss between the true and predicted bounding boxes.
+
+    y_true and y_pred should have the shape (batch_size, 4), where each element is
+    [center_x, center_y, width, height].
+    """
+    # Convert (center_x, center_y, width, height) to (xmin, ymin, xmax, ymax)
+    true_xmin = y_true[..., 0] - 0.5 * y_true[..., 2]
+    true_ymin = y_true[..., 1] - 0.5 * y_true[..., 3]
+    true_xmax = y_true[..., 0] + 0.5 * y_true[..., 2]
+    true_ymax = y_true[..., 1] + 0.5 * y_true[..., 3]
+
+    pred_xmin = y_pred[..., 0] - 0.5 * y_pred[..., 2]
+    pred_ymin = y_pred[..., 1] - 0.5 * y_pred[..., 3]
+    pred_xmax = y_pred[..., 0] + 0.5 * y_pred[..., 2]
+    pred_ymax = y_pred[..., 1] + 0.5 * y_pred[..., 3]
+
+    # Calculate the intersection area
+    inter_xmin = keras.ops.maximum(true_xmin, pred_xmin)
+    inter_ymin = keras.ops.maximum(true_ymin, pred_ymin)
+    inter_xmax = keras.ops.minimum(true_xmax, pred_xmax)
+    inter_ymax = keras.ops.minimum(true_ymax, pred_ymax)
+
+    inter_width = keras.ops.maximum(0.0, inter_xmax - inter_xmin)
+    inter_height = keras.ops.maximum(0.0, inter_ymax - inter_ymin)
+    intersection_area = inter_width * inter_height
+
+    # Calculate the union area
+    true_area = (true_xmax - true_xmin) * (true_ymax - true_ymin)
+    pred_area = (pred_xmax - pred_xmin) * (pred_ymax - pred_ymin)
+    union_area = true_area + pred_area - intersection_area
+
+    # Calculate IoU
+    iou = intersection_area / union_area
+
+    return iou
