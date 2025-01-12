@@ -14,6 +14,8 @@ DIM = 224
 
 import functools
 import keras
+import sys
+sys.path.append(".")
 from helpers import iou
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from FrameLoader import FrameLoader
@@ -65,13 +67,13 @@ def get_model(input_shape, num_classes, use_batch_norm=True, **kwargs):
   model.add(keras.layers.Dense(units=512, activation="relu"))
   model.add(keras.layers.Dense(units=num_classes, activation='sigmoid'))
 
-  return model
+  return model, mobilenetv3small
 
 
 # In[6]:
 
 
-model = get_model(input_shape=(DIM,DIM,3), num_classes=4, use_batch_norm=True)
+model,mobilenetv3small = get_model(input_shape=(DIM,DIM,3), num_classes=4, use_batch_norm=True)
 model.summary()
 
 
@@ -107,8 +109,18 @@ val_generator = DataGeneratorFrames(
 callbacks = [
     ModelCheckpoint('model_best.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1),
     EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True, verbose=1),
-    ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
+    # ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
 ]
+
+history = model.fit(
+    train_generator,
+    epochs=2,
+    callbacks=callbacks,
+    verbose=1,
+    validation_data=val_generator
+)
+
+mobilenetv3small.trainable = True
 
 history = model.fit(
     train_generator,

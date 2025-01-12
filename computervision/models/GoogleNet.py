@@ -10,8 +10,8 @@
 
 
 # In[2]:
-
-
+import sys
+sys.path.append(".")
 import functools
 import keras
 
@@ -184,9 +184,8 @@ from DataGeneratorFrames import DataGeneratorFrames
 from DataRepository import DataRepository
 
 repo = DataRepository()
-repo.load_relativePaths_of_videos_with_framelabels()
 
-DIM = 128
+DIM = 512
 train_generator = DataGeneratorFrames(
     frameloader=FrameLoader(repo),
     train_test_val="train",
@@ -203,14 +202,14 @@ val_generator = DataGeneratorFrames(
 
 
 callbacks = [
-    ModelCheckpoint('model_best.keras', save_best_only=True, monitor='loss', mode='min', verbose=1),
-    EarlyStopping(monitor='loss', patience=2, restore_best_weights=True, verbose=1),
-    ReduceLROnPlateau(monitor='loss', factor=0.5, patience=1, verbose=1)
+    ModelCheckpoint('model_best.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1),
+    EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True, verbose=1),
+    ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
 ]
 
 history = model.fit(
     train_generator,
-    epochs=7,
+    epochs=12,
     callbacks=callbacks,
     verbose=1,
     validation_data=val_generator
@@ -220,8 +219,8 @@ history = model.fit(
 # In[9]:
 
 
-X, y = train_generator.__getitem__(5)
-X.shape, y.shape
+# X, y = train_generator.__getitem__(5)
+# X.shape, y.shape
 
 
 # In[ ]:

@@ -12,6 +12,8 @@ DIM = 512
 
 import functools
 import keras
+import sys
+sys.path.append(".")
 from helpers import iou
 
 DefaultConv = functools.partial(
@@ -25,12 +27,18 @@ DefaultMaxPool = functools.partial(
 def get_model(input_shape, num_classes, use_batch_norm=True, **kwargs):
   model = keras.Sequential(**kwargs)
   model.add(keras.layers.Input(shape=input_shape))
+  model.add(keras.layers.Dropout(0.10))
+  model.add(DefaultConv(filters=16, kernel_size=(5,5), strides=(1,1)))
+  model.add(keras.layers.Dropout(0.10))
   model.add(DefaultConv(filters=24, kernel_size=(5,5), strides=(2,2),  padding='same'))
   if use_batch_norm:
     model.add(keras.layers.BatchNormalization())
   model.add(DefaultMaxPool())
-  model.add(keras.layers.Dropout(0.25))
+  model.add(keras.layers.Dropout(0.20))
+  model.add(DefaultConv(filters=32, strides=(1)))
   model.add(DefaultConv(filters=32))
+  model.add(DefaultConv(filters=40, strides=(1)))
+  model.add(keras.layers.Dropout(0.10))
   model.add(DefaultConv(filters=48))
   if use_batch_norm:
     model.add(keras.layers.BatchNormalization())
@@ -40,7 +48,7 @@ def get_model(input_shape, num_classes, use_batch_norm=True, **kwargs):
   model.add(keras.layers.GlobalAveragePooling2D())
   model.add(keras.layers.Dropout(0.4))
   model.add(keras.layers.Flatten())
-  model.add(keras.layers.Dense(units=128, activation="relu"))
+  model.add(keras.layers.Dense(units=64, activation="relu"))
   model.add(keras.layers.Dense(units=num_classes, activation='sigmoid'))
 
   return model
@@ -76,7 +84,6 @@ from DataGeneratorFrames import DataGeneratorFrames
 from DataRepository import DataRepository
 
 repo = DataRepository()
-repo.load_relativePaths_of_videos_with_framelabels()
 
 train_generator = DataGeneratorFrames(
     frameloader=FrameLoader(repo),
@@ -94,14 +101,13 @@ val_generator = DataGeneratorFrames(
 
 
 callbacks = [
-    ModelCheckpoint('model_best.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1),
+    ModelCheckpoint('weights/randomModel.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1),
     EarlyStopping(monitor='loss', patience=2, restore_best_weights=True, verbose=1),
-    ReduceLROnPlateau(monitor='loss', factor=0.5, patience=1, verbose=1)
 ]
 
 history = model.fit(
     train_generator,
-    epochs=8,
+    epochs=10,
     callbacks=callbacks,
     verbose=1,
     validation_data=val_generator
@@ -110,9 +116,9 @@ history = model.fit(
 
 keras.models.save_model(
     model,
-    filepath="randomModel.keras",
+    filepath="weights/randomModel.keras",
     overwrite=True
 )
 
-model.save_weights("randomModel.weights.h5")
+model.save_weights("weights/randomModel.weights.h5")
 
