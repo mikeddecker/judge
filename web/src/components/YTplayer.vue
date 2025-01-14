@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-      <iframe id="iframe" width="900" height="640" :src="embeddedSource" 
+      <iframe id="iframe" width="720" height="560" :src="embeddedSource" 
         frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
         allowfullscreen></iframe>
     </div>
