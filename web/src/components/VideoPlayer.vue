@@ -68,7 +68,6 @@ function updatePaused(event) {
   videoElement.value = event.target;
   paused.value = event.target.paused;
   currentFrame.value = Math.floor(modeIsLocalization.value ? vidinfo.value.FPS * event.target.currentTime : vidinfo.value.Frames[currentFrameIdx.value].FrameNr)
-  console.log(currentFrame.value, vidinfo.value.FPS, event.target.currentTime)
   currentWidth.value = event.target.clientWidth
   currentHeight.value = event.target.clientHeight
 }
@@ -151,7 +150,6 @@ function endDrawing(event) {
     "jumperVisible" : true
   }
   const fnr = currentFrame.value
-  console.log(currentFrame.value)
   postVideoFrame(props.videoId, fnr, frameinfo).then(response => vidinfo.value=response.data)
 
   let frameNrAlreadyLabeled = true

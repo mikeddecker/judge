@@ -53,7 +53,6 @@ export default {
     <VideoInfoContainer v-bind:videos="videos"/>
     <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a>
   </div>
-  <pre>{{ JSON.stringify(videos, undefined, 2) }}</pre>
 </template>
 
 <style>

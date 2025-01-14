@@ -37,6 +37,7 @@ class Video(db.Model):
     qualitative = db.Column(db.Boolean, nullable=False)
     obstruction = db.Column(db.Boolean, nullable=False)
     private = db.Column(db.Boolean, nullable=False, default=False)
+    source = db.Column(db.String(255), nullable=True)
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
 
