@@ -25,33 +25,32 @@ DefaultMaxPool = functools.partial(
     pool_size=(3,3), strides=(2,2), padding="same")
 
 def get_model(input_shape, num_classes, use_batch_norm=True, **kwargs):
-  model = keras.Sequential(**kwargs)
-  model.add(keras.layers.Input(shape=input_shape))
-  model.add(keras.layers.Dropout(0.10))
-  model.add(DefaultConv(filters=16, kernel_size=(5,5), strides=(1,1)))
-  model.add(keras.layers.Dropout(0.10))
-  model.add(DefaultConv(filters=24, kernel_size=(5,5), strides=(2,2),  padding='same'))
-  if use_batch_norm:
-    model.add(keras.layers.BatchNormalization())
-  model.add(DefaultMaxPool())
-  model.add(keras.layers.Dropout(0.20))
-  model.add(DefaultConv(filters=32, strides=(1)))
-  model.add(DefaultConv(filters=32))
-  model.add(DefaultConv(filters=40, strides=(1)))
-  model.add(keras.layers.Dropout(0.10))
-  model.add(DefaultConv(filters=48))
-  if use_batch_norm:
-    model.add(keras.layers.BatchNormalization())
-  model.add(DefaultMaxPool())
-  model.add(DefaultConv(filters=64))
+    model = keras.Sequential(**kwargs)
+    model.add(keras.layers.Input(shape=input_shape))
+    model.add(DefaultConv(filters=32, kernel_size=(5,5), strides=(1,1)))
+    model.add(keras.layers.Dropout(0.05))
+    model.add(DefaultConv(filters=48, kernel_size=(5,5), strides=(2,2),  padding='same'))
+    if use_batch_norm:
+        model.add(keras.layers.BatchNormalization())
+    model.add(keras.layers.Dropout(0.05))
+    model.add(DefaultMaxPool())
+    model.add(DefaultConv(filters=48, strides=(1)))
+    model.add(DefaultConv(filters=64))
+    model.add(DefaultConv(filters=96, strides=(1)))
+    model.add(DefaultConv(filters=128))
+    if use_batch_norm:
+        model.add(keras.layers.BatchNormalization())
+    model.add(DefaultMaxPool())
+    model.add(keras.layers.Dropout(0.05))
+    model.add(DefaultConv(filters=192))
 
-  model.add(keras.layers.GlobalAveragePooling2D())
-  model.add(keras.layers.Dropout(0.4))
-  model.add(keras.layers.Flatten())
-  model.add(keras.layers.Dense(units=64, activation="relu"))
-  model.add(keras.layers.Dense(units=num_classes, activation='sigmoid'))
+    model.add(keras.layers.GlobalAveragePooling2D())
+    model.add(keras.layers.Dropout(0.4))
+    model.add(keras.layers.Flatten())
+    model.add(keras.layers.Dense(units=128, activation="relu"))
+    model.add(keras.layers.Dense(units=num_classes, activation='sigmoid'))
 
-  return model
+    return model
 
 
 # In[5]:
@@ -60,13 +59,6 @@ def get_model(input_shape, num_classes, use_batch_norm=True, **kwargs):
 model = get_model(input_shape=(DIM,DIM,3), num_classes=4, use_batch_norm=True)
 model.summary()
 
-
-# In[6]:
-
-
-
-
-# In[7]:
 
 
 # Compile the model with IoU loss
@@ -101,7 +93,7 @@ val_generator = DataGeneratorFrames(
 
 
 callbacks = [
-    ModelCheckpoint('weights/randomModel.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1),
+    ModelCheckpoint('../weights/randomModel.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1),
     EarlyStopping(monitor='loss', patience=2, restore_best_weights=True, verbose=1),
 ]
 
@@ -116,9 +108,9 @@ history = model.fit(
 
 keras.models.save_model(
     model,
-    filepath="weights/randomModel.keras",
+    filepath="../weights/randomModel.keras",
     overwrite=True
 )
 
-model.save_weights("weights/randomModel.weights.h5")
+model.save_weights("../weights/randomModel.weights.h5")
 
