@@ -9,6 +9,7 @@ import time
 import traceback
 import cv2
 import math
+import subprocess
 
 from colorama import Fore, Style
 from domain.folder import Folder
@@ -19,6 +20,7 @@ from services.videoService import VideoService
 from services.folderService import FolderService
 from repository.db import db
 from typing import List
+from pytube import YouTube
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -217,26 +219,57 @@ class StorageService:
             session.execute(table.delete())
         session.commit()
 
-    def download_video(self, name: str, url: str, folderId: int):
+    def download_video(self, name: str, ytid: str, folderId: int):
         ValueHelper.check_raise_string_only_abc123(name)
-        ValueHelper.check_raise_yt_url(url)
         ValueHelper.check_raise_id(folderId)
         folder = self.FolderService.get(folderId)
-        self.__download_yt_video(
+        if self.VideoService.is_already_downloaded(ytid):
+            raise LookupError(f"Video already downloaded ({ytid})")
+        if self.VideoService.exists_on_drive(name=name, folder=folder):
+            raise LookupError(f"Videoname ({name}) already exists")
+        exstension = self.__download_yt_video(
             name=name,
-            url=url,
+            ytid=ytid,
             folder=folder
         )
+        print("download succesvol")
+        try:
+            self.__process_downloaded_video(name=f"{name}.{exstension}", folder=folder, ytid=ytid)
+        except Exception as e:
+            print(str(e))
+        print("processing succes")
 
-    def __download_yt_video(self, name: str, url: str, folder: Folder):
-        print("downloadinfo", name, url, folder)
+    def __download_yt_video(self, name: str, ytid: str, folder: Folder):
+        path = os.path.join(STORAGE_DIR, folder.get_relative_path(), name)
+        yt_url = f"https://www.youtube.com/watch?v={ytid}"
+        print("downloadinfo", name, path, yt_url)
+        try:
+            script_path = os.path.join(os.getcwd(), 'scripts', 'yt-download.sh')
+            process = subprocess.Popen([script_path, path, yt_url],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True,
+                            bufsize=0)
+            while True:
+                output = process.stdout.readline()
+                if output.strip():
+                    print(output.strip())
+                if process.poll() is not None:
+                    break
+        except Exception as e:
+            print(str(e))
+            raise LookupError(f"Something went wrong with the download\n{e}")
+        return 'mp4'
        
-    def process_downloaded_video(self, name: str, folder: Folder):
+    def __process_downloaded_video(self, name: str, folder: Folder, ytid:str):
+        print(name)
         info = self.__enrich_video_data(name, folder)
         created_video_info = self.VideoService.add(name=name, folder=folder, 
                                               frameLength=info["frameLength"],
                                               width=info["width"],
                                               height=info["height"],
-                                              fps=info["fps"])
+                                              fps=info["fps"],
+                                              ytid=ytid,
+                                            )
         frameNr_for_image = math.floor(info["frameLength"] * 0.2)
         self.__create_video_image(videoId=created_video_info.Id, name=name, folder=folder, frameNr=frameNr_for_image)

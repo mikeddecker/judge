@@ -26,13 +26,18 @@ class DownloadRouter(Resource):
             url = data.get('URL')
             name = data.get('name')
             folderId = data.get('folderId')
+            if self.videoService.is_already_downloaded(url):
+                return Response(f"Video already downloaded ({url})", 400)
             if self.folderService.exists_in_database(id=folderId):
                 if src == 'YT':
                     try:
-                        ValueHelper.check_raise_yt_url(url)
+                        self.storageService.download_video(
+                            name=name,
+                            ytid=url,
+                            folderId=folderId,
+                        )
                     except ValueError as ve:
                         return Response(str(ve), status=400)
-                    self.storageService.download_video(name=name, url=url, folderId=folderId)
                 else:
                     Response(f"Source {src} not yet supported", status=400)
                 pass

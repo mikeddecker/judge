@@ -40,7 +40,7 @@ class VideoService:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
-    def add(self, name: str, folder: Folder, frameLength: float, width: float, height: float, fps: float) -> VideoInfo:
+    def add(self, name: str, folder: Folder, frameLength: float, width: float, height: float, fps: float, ytid: str = None) -> VideoInfo:
         """Adds the given video to the database
         
         TODO : After localization; add meta information loader
@@ -65,6 +65,7 @@ class VideoService:
             width=width,
             height=height,
             fps=fps,
+            srcinfo=ytid, # TODO : make better
         )
     
     def count(self) -> int:
@@ -93,6 +94,10 @@ class VideoService:
         if not self.exists_in_database(id=id):
             raise LookupError(f"VideoId {id} does not exist")
         return self.VideoRepo.get(id=id)
+
+    def is_already_downloaded(self, sourceinfo:str):
+        """Sourceinfo = yt_id"""
+        return self.VideoRepo.is_already_downloaded(sourceinfo)
 
     def delete_from_database(self, id: int):
         # TODO : check skills & segments

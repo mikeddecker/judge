@@ -171,7 +171,8 @@ def iou(y_true, y_pred):
 
 # Compile the model with IoU loss
 # model.compile(optimizer='adam', loss=keras.losses.Huber(), metrics=[iou_loss])
-model.compile(optimizer='adam', loss='mse', metrics=[iou])
+optimizer = keras.optimizers.Adam(learning_rate=0.0001)
+model.compile(optimizer=optimizer, loss='mse', metrics=[iou])
 
 
 # In[ ]:
@@ -190,14 +191,14 @@ train_generator = DataGeneratorFrames(
     frameloader=FrameLoader(repo),
     train_test_val="train",
     dim=(DIM,DIM),
-    batch_size=32,
+    batch_size=8,
 )
 
 val_generator = DataGeneratorFrames(
     frameloader=FrameLoader(repo),
     train_test_val="test",
     dim=(DIM,DIM),
-    batch_size=32,
+    batch_size=8,
 )
 
 

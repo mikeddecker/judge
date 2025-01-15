@@ -28,6 +28,8 @@ class Source(db.Model):
     __tablename__ = 'Sources'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(127), nullable=False)
+
+
     
 class Video(db.Model):
     __tablename__ = 'Videos'

@@ -52,7 +52,7 @@ const club = ref('sipiro')
 const info = ref('')
 const downloadError = ref(false)
 const downloadMsg = ref('')
-const videoname = computed(() => [year.value, discipline.value, club.value, info.value.toLowerCase().replaceAll(' ','-')].join('-'))
+const videoname = computed(() => [year.value, discipline.value.toLowerCase(), club.value, info.value.toLowerCase().replaceAll(' ','-')].join('-'))
 const downloadable = computed(() => info.value != '' && ytURL.value != '')
 const downloadInfo = ref('Here comes download info')
 
@@ -95,7 +95,7 @@ async function downloadYTVideo() {
     'folderId': getFolderId()
   }).catch(err => {
     downloadError.value = true
-    downloadMsg.value = err
+    downloadMsg.value = err.response.data
   })
   info.value = ''
   ytURL.value = ''

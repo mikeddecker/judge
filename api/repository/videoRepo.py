@@ -17,7 +17,8 @@ class VideoRepository:
     def add(
             self, name: str, folder: Folder, frameLength: int,
             width: float, height: float, fps: float,
-            training=True, qualitative=True, obstruction=False, private=True
+            training=True, qualitative=True, obstruction=False, private=True,
+            srcinfo:str=None
         ) -> VideoInfo:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         ValueHelper.check_raise_id(frameLength)
@@ -36,7 +37,8 @@ class VideoRepository:
             training = training,
             qualitative = qualitative,
             obstruction = obstruction,
-            private = private
+            private = private,
+            sourceInfo = srcinfo,
         )
         self.db.session.add(new_video)
         self.db.session.commit()
@@ -85,6 +87,9 @@ class VideoRepository:
     
     def has_frames(self, videoId):
         return self.db.session.query(FrameLabel).filter_by(videoId=videoId).count() > 0
+
+    def is_already_downloaded(self, src_info: str) -> bool:
+        return self.db.session.query(VideoInfoDB).filter_by(sourceInfo=src_info).count() > 0
 
     def remove_frameInfo(self, frameNr: int, videoId: int):
         ValueHelper.check_raise_frameNr(frameNr)
