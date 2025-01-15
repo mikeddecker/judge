@@ -11,6 +11,7 @@ from routers.folderRouter import FolderRouter
 from routers.videoRouter import VideoRouter, VideoImageRouter, VideoInfoRouter
 from routers.frameRouter import FrameRouter
 from routers.storageRouter import StorageRouter, OrphanDeleterRouter
+from routers.downloadRouter import DownloadRouter
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -43,6 +44,7 @@ api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
 api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
 api.add_resource(StorageRouter, '/discover')
 api.add_resource(OrphanDeleterRouter, '/discover/deleteOrphans')
+api.add_resource(DownloadRouter, '/download')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

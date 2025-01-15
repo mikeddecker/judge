@@ -58,3 +58,9 @@ class ValueHelper:
             raise ValueError(f"val is not an int or float, got {type(val)}")
         if val < 0 or val > 1:
             raise ValueError(f"Value must in interval [0,1], got {val}")
+        
+    def check_raise_yt_url(val: str):
+        """Checks if a given url is formatted as a yt url"""
+        reg = re.compile(r'^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(?:-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|live\/|v\/)?)([\w\-]+)(\S+)?$')
+        if not reg.match(val):
+            raise ValueError(f"Not a valid yt url, got {val}")

@@ -5,7 +5,7 @@
     <input id="ytinput" v-model="ytURL" :placeholder="ytURL" />
     <div class="container">
       <div class="ytcomponent">
-        <YTplayer :video-src="ytURL"></YTplayer>
+        <YTplayer :video-src="extractYTid(ytURL)"></YTplayer>
       </div>
       
       <div class="info">
@@ -32,33 +32,71 @@
         <p>Name / info / annotation</p>
         <input id="infoinput" v-model="info" />
         <h2>{{ videoname }}</h2>
-        <button :disabled="!downloadable" @click="downloadVideo">Download</button>
+        <button :disabled="!downloadable" @click="downloadYTVideo">Download</button>
       </div>
     </div>
-    
     <p>{{ downloadInfo }}</p>
+    <h2 v-if="downloadError" class="error">{{ downloadMsg }}</h2>
   </div>
 </template>
 
 <script setup>
 import YTplayer from '@/components/YTplayer.vue';
+import { downloadVideo } from '@/services/videoService';
 import { computed, ref } from 'vue';
 
 const ytURL = ref('')
-const year = ref(2025)
-const discipline = ref('DD3')
+const year = ref(2024)
+const discipline = ref('SR1')
 const club = ref('sipiro')
 const info = ref('')
+const downloadError = ref(false)
+const downloadMsg = ref('')
 const videoname = computed(() => [year.value, discipline.value, club.value, info.value.toLowerCase().replaceAll(' ','-')].join('-'))
 const downloadable = computed(() => info.value != '' && ytURL.value != '')
 const downloadInfo = ref('Here comes download info')
 
 function coloredButtonClass(currentVal, buttonValue) { return currentVal == buttonValue ? 'btn-highlight' : 'btn-normal' }
-function setDiscipline(d) { discipline.value = d }
+function setDiscipline(d) { 
+  discipline.value = d
+}
+function getFolderId() {
+  switch(discipline.value) { // Yes bad practices, but currently hardcoded
+    case 'DD3':
+      return 3
+    case 'DD4':
+      return 4
+    case 'SR1':
+      return 5
+    case 'SR2':
+      return 6
+    case 'SR4':
+      return 7
+    case 'livestream':
+      return 17
+    default:
+      return 0
+  }
+}
 function setYear(y) { year.value = y }
-async function downloadVideo() {
+function extractYTid(str) {
+    let parts = str.split("=")
+    let embedding = parts.length == 2 ? parts[1] : parts[0]
+    return embedding
+}
+async function downloadYTVideo() {
   // TODO : post request?
   downloadInfo.value = `Started downloading ${videoname.value} from ${ytURL.value}`
+  downloadError.value = false
+  downloadVideo({
+    'src' : 'yt',
+    'URL' : extractYTid(ytURL.value),
+    'name' : videoname.value,
+    'folderId': getFolderId()
+  }).catch(err => {
+    downloadError.value = true
+    downloadMsg.value = err
+  })
   info.value = ''
   ytURL.value = ''
 }
@@ -100,5 +138,8 @@ input {
   font-size: 1rem;
   line-height: 1.6rem;
   padding: 0.25rem;
+}
+.error {
+  color: brown;
 }
 </style>

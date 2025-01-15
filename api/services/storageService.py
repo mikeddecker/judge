@@ -135,8 +135,8 @@ class StorageService:
                                               width=info["width"],
                                               height=info["height"],
                                               fps=info["fps"])
-                        frameNr = math.floor(info["frameLength"] * 0.2)
-                        self.__create_video_image(videoId=created_video_info.Id, name=content, folder=parent, frameNr=frameNr)
+                        frameNr_for_image = math.floor(info["frameLength"] * 0.2)
+                        self.__create_video_image(videoId=created_video_info.Id, name=content, folder=parent, frameNr=frameNr_for_image)
                         # Bookkeeping
                         if parent.Id in new_videos.keys():
                             new_videos[parent.Id].append(content)
@@ -210,10 +210,33 @@ class StorageService:
         filename = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER, f"{videoId}.jpg")
         cv2.imwrite(filename, frame)
 
-    def clear_data(session):
+    def __clear_data(session):
         meta = db.metadata
         for table in reversed(meta.sorted_tables):
             print('Clear table %s', table)
             session.execute(table.delete())
         session.commit()
+
+    def download_video(self, name: str, url: str, folderId: int):
+        ValueHelper.check_raise_string_only_abc123(name)
+        ValueHelper.check_raise_yt_url(url)
+        ValueHelper.check_raise_id(folderId)
+        folder = self.FolderService.get(folderId)
+        self.__download_yt_video(
+            name=name,
+            url=url,
+            folder=folder
+        )
+
+    def __download_yt_video(self, name: str, url: str, folder: Folder):
+        print("downloadinfo", name, url, folder)
        
+    def process_downloaded_video(self, name: str, folder: Folder):
+        info = self.__enrich_video_data(name, folder)
+        created_video_info = self.VideoService.add(name=name, folder=folder, 
+                                              frameLength=info["frameLength"],
+                                              width=info["width"],
+                                              height=info["height"],
+                                              fps=info["fps"])
+        frameNr_for_image = math.floor(info["frameLength"] * 0.2)
+        self.__create_video_image(videoId=created_video_info.Id, name=name, folder=folder, frameNr=frameNr_for_image)

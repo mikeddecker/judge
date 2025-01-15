@@ -65,3 +65,10 @@ export const removeVideoFrame = async (videoId, frameNr) => {
       console.error(error);
     });
 };
+
+export const downloadVideo = async (downloadinfo) => {
+  return await api.post(`/download`, downloadinfo, { headers: { 'Content-Type': 'application/json' }})
+    .catch(function (error) {
+      throw error.response.data;
+    });
+};

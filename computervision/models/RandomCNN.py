@@ -8,7 +8,7 @@
 # Build an inception module
 # get_ipython().run_line_magic('pip', 'install sqlalchemy')
 
-DIM = 512
+DIM = 384
 
 import functools
 import keras
@@ -37,12 +37,12 @@ def get_model(input_shape, num_classes, use_batch_norm=True, **kwargs):
     model.add(DefaultConv(filters=48, strides=(1)))
     model.add(DefaultConv(filters=64))
     model.add(DefaultConv(filters=96, strides=(1)))
-    model.add(DefaultConv(filters=128))
+    model.add(DefaultConv(filters=96))
     if use_batch_norm:
         model.add(keras.layers.BatchNormalization())
     model.add(DefaultMaxPool())
     model.add(keras.layers.Dropout(0.05))
-    model.add(DefaultConv(filters=192))
+    model.add(DefaultConv(filters=128))
 
     model.add(keras.layers.GlobalAveragePooling2D())
     model.add(keras.layers.Dropout(0.4))
