@@ -38,7 +38,7 @@ repo = DataRepository()
 DIM = 224
 train_generator = DataGeneratorFrames(
     frameloader=FrameLoader(repo),
-    train_test_val="test",
+    train_test_val="train",
     dim=(DIM,DIM),
     batch_size=16,
 )
@@ -47,7 +47,7 @@ val_generator = DataGeneratorFrames(
     frameloader=FrameLoader(repo),
     train_test_val="test",
     dim=(DIM,DIM),
-    batch_size=8,
+    batch_size=16,
 )
 
 def mlp(x, hidden_units, dropout_rate):
@@ -205,7 +205,7 @@ def run_experiment(model, learning_rate, weight_decay, batch_size, num_epochs):
     )
 
     history = model.fit(
-        val_generator,
+        train_generator,
         batch_size=batch_size,
         epochs=num_epochs,
         validation_data=val_generator,
@@ -231,8 +231,8 @@ transformer_units = [
     projection_dim * 2,
     projection_dim,
 ]
-transformer_layers = 4
-mlp_head_units = [2048, 1024, 512, 64, 32]  # Size of the dense layers
+transformer_layers = 2
+mlp_head_units = [1024, 256, 64]  # Size of the dense layers
 
 history = []
 num_patches = (DIM // PATCH_SIZE) ** 2
@@ -273,10 +273,10 @@ print(history)
 
 keras.models.save_model(
     vit_object_detector,
-    filepath="../weights/vit_object_detector.keras",
+    filepath=f"../weights/vit_object_detector_{DIM}.keras",
     overwrite=True
 )
 
-vit_object_detector.save_weights("../weights/vit_object_detector.weights.h5")
+vit_object_detector.save_weights(f"../weights/vit_object_detector_{DIM}.weights.h5")
 
 

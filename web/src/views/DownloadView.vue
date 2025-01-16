@@ -14,6 +14,7 @@
           <button :class="coloredButtonClass(discipline, 'DD4')" @click="setDiscipline('DD4')">DD4</button>
           <button :class="coloredButtonClass(discipline, 'SR1')" @click="setDiscipline('SR1')">SR1</button>
           <button :class="coloredButtonClass(discipline, 'SR2')" @click="setDiscipline('SR2')">SR2</button>
+          <button :class="coloredButtonClass(discipline, 'SR3')" @click="setDiscipline('SR3')">SR3</button>
           <button :class="coloredButtonClass(discipline, 'SR4')" @click="setDiscipline('SR4')">SR4</button>
           <button :class="coloredButtonClass(discipline, 'livestream')" @click="setDiscipline('livestream')">livestream</button>
         </div>
@@ -46,9 +47,9 @@ import { downloadVideo } from '@/services/videoService';
 import { computed, ref } from 'vue';
 
 const ytURL = ref('')
-const year = ref(2024)
+const year = ref(2021)
 const discipline = ref('SR1')
-const club = ref('sipiro')
+const club = ref('world-virtual')
 const info = ref('')
 const downloadError = ref(false)
 const downloadMsg = ref('')
@@ -70,6 +71,8 @@ function getFolderId() {
       return 5
     case 'SR2':
       return 6
+    case 'SR3':
+      return 14
     case 'SR4':
       return 7
     case 'livestream':
@@ -80,7 +83,8 @@ function getFolderId() {
 }
 function setYear(y) { year.value = y }
 function extractYTid(str) {
-    let parts = str.split("=")
+    let parts = str.split("&")[0]
+    parts = parts.split("=")
     let embedding = parts.length == 2 ? parts[1] : parts[0]
     return embedding
 }
@@ -88,6 +92,7 @@ async function downloadYTVideo() {
   // TODO : post request?
   downloadInfo.value = `Started downloading ${videoname.value} from ${ytURL.value}`
   downloadError.value = false
+  downloadMsg.value = ''
   downloadVideo({
     'src' : 'yt',
     'URL' : extractYTid(ytURL.value),

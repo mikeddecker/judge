@@ -237,6 +237,7 @@ class StorageService:
             self.__process_downloaded_video(name=f"{name}.{exstension}", folder=folder, ytid=ytid)
         except Exception as e:
             print(str(e))
+            raise e
         print("processing succes")
 
     def __download_yt_video(self, name: str, ytid: str, folder: Folder):

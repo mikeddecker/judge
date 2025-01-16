@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from DataRepository import DataRepository
 
+# TODO : change to tf dataset, so prefetch is possible https://medium.com/analytics-vidhya/write-your-own-custom-data-generator-for-tensorflow-keras-1252b64e41c3
 class DataGeneratorFrames(keras.utils.Sequence):
     def __init__(self,
                  frameloader,

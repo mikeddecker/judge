@@ -23,6 +23,8 @@
       <button v-show="paused" @click="play">&#9654;</button>
       <button v-show="playing" @click="pause">&#9208;</button>
       <button @click="toggleLabelMode">Current modus: {{ labelMode }}</button>
+      <button v-show="modeIsLocalization" @click="postFullFrameLabelAndDisplayNextFrame">label as full screen</button>
+      <button v-show="modeIsLocalization" @click="displayNextRandomFrame">rnd next frame</button>
       <div class="review-controls" v-show="modeIsReview">
         <button class="big-arrow" @click="setToPreviousFrameIdxAndDraw">&larr;</button>
         <button class="big-arrow" @click="setToNextFrameIdxAndDraw">&rarr;</button>
@@ -152,6 +154,23 @@ function endDrawing(event) {
   const fnr = currentFrame.value
   postVideoFrame(props.videoId, fnr, frameinfo).then(response => vidinfo.value=response.data)
 
+  displayNextRandomFrame()
+}
+function postFullFrameLabelAndDisplayNextFrame() {
+  let frameinfo = {
+    "frameNr" : currentFrame.value,
+    "x" : 0.5, 
+    "y" : 0.5, 
+    "width" : 1.0, 
+    "height" : 1.0,
+    "jumperVisible" : true
+  }
+  const fnr = currentFrame.value
+  postVideoFrame(props.videoId, fnr, frameinfo).then(response => vidinfo.value=response.data)
+
+  displayNextRandomFrame()
+}
+function displayNextRandomFrame() {
   let frameNrAlreadyLabeled = true
   let rndTime = 0
   let rndFrameNr = 0
@@ -161,6 +180,7 @@ function endDrawing(event) {
     frameNrAlreadyLabeled = vidinfo.value.Frames.map(frameinfo => frameinfo.FrameNr).includes(rndFrameNr)
   }
   setCurrentTime(rndTime)
+
 }
 function toggleLabelMode() {
   if (modeIsLocalization.value) {
