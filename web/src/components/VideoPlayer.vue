@@ -1,5 +1,5 @@
 <template>
-  <p>LabeledFrames: {{ labeledFramesCount }} | Current frame : {{ currentFrame }} | FramesLabeledPerSecond : {{ framesLabeledPerSecond }}</p>
+  <p>LabeledFrames: {{ labeledFramesCount }} | Current frame : {{ currentFrame }} | FramesLabeledPerSecond : {{ framesLabeledPerSecond }} || total labels: {{ totalLabels }}</p>
   <div class="container">
     <video class="absolute"
     ref="videoPlayer" :src="videoSrc"
@@ -67,6 +67,7 @@ const modeIsLocalization = computed(() => { return labelMode.value == "localizat
 const modeIsReview = computed(() => { return labelMode.value == "review" })
 const currentFrameIdx = ref(0)
 const framesLabeledPerSecond = computed(() => { return vidinfo.value ? vidinfo.value.FramesLabeledPerSecond.toFixed(2) : 0 })
+const totalLabels = ref(0)
 
 // Only for dd3 labeling
 const videos = ref(null)
@@ -75,7 +76,13 @@ onMounted(async () => {
   getFolder(3).then((value) => {
     videos.value = Object.keys(value.Videos)
     while (nextVideoId.value == props.videoId) {
-      nextVideoId.value = Number(videos.value[Math.floor(Math.random()*videos.value.length)])
+      let potentialNextVideoId = Number(videos.value[Math.floor(Math.random()*videos.value.length)])
+      totalLabels.value = Object.values(value.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
+      let avgLabels = totalLabels.value / Object.values(value.Videos).length
+      let labeledFramesVideo = value.Videos[potentialNextVideoId].LabeledFrameCount
+      if (labeledFramesVideo < avgLabels) {
+        nextVideoId.value = potentialNextVideoId
+      }
     }
   })
 })
