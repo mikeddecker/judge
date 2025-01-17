@@ -8,6 +8,7 @@ const props = defineProps(['title', 'videoId', 'info'])
 const router = useRouter()
 
 const imageUrl = ref('');
+const cssColorClass = computed(() => { return props.videoId % 10 == 5 ? 'testvideo' : 'trainvideo' })
 
 // completed target 10% of frames labeled
 // const labelthreshold = 0.1 // Minimun % to be labeled to reach 100%
@@ -24,7 +25,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="videoinfo" v-on:click="() => router.push(`/video/${videoId}`)">
+  <div class="videoinfo" :class="cssColorClass" v-on:click="() => router.push(`/video/${videoId}`)">
     <div class="container">
       <img v-if="imageUrl" :src="imageUrl" alt="Video thumbnail" />
       <p v-else>Loading image...</p>
@@ -65,7 +66,11 @@ h2 {
 }
 
 .videoinfo:hover {
-  background-color: aliceblue;
+  background-color: khaki;
+}
+
+.testvideo {
+  background-color:aqua;
 }
 
 @media (min-width: 1024px) {

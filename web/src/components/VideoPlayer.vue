@@ -36,10 +36,13 @@
 </template>
 
 <script setup>
-import { getVideoInfo, postVideoFrame, removeVideoFrame } from '@/services/videoService';
-import { computed, onBeforeMount, ref } from 'vue';
+import { getFolder, getVideoInfo, postVideoFrame, removeVideoFrame } from '@/services/videoService';
+import { computed, onBeforeMount, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router'
 
 const props = defineProps(['title', 'videoId', 'videoSrc'])
+const router = useRouter()
+
 const videoElement = ref(null)
 const canvas = ref(null)
 const paused = ref(null)
@@ -64,6 +67,18 @@ const modeIsLocalization = computed(() => { return labelMode.value == "localizat
 const modeIsReview = computed(() => { return labelMode.value == "review" })
 const currentFrameIdx = ref(0)
 const framesLabeledPerSecond = computed(() => { return vidinfo.value ? vidinfo.value.FramesLabeledPerSecond.toFixed(2) : 0 })
+
+// Only for dd3 labeling
+const videos = ref(null)
+const nextVideoId = ref(props.videoId)
+onMounted(async () => {
+  getFolder(3).then((value) => {
+    videos.value = Object.keys(value.Videos)
+    while (nextVideoId.value == props.videoId) {
+      nextVideoId.value = Number(videos.value[Math.floor(Math.random()*videos.value.length)])
+    }
+  })
+})
 
 function updatePaused(event) {
   videoduration.value = event.target.duration
@@ -152,7 +167,9 @@ function endDrawing(event) {
     "jumperVisible" : true
   }
   const fnr = currentFrame.value
-  postVideoFrame(props.videoId, fnr, frameinfo).then(response => vidinfo.value=response.data)
+  if (frameinfo['height'] > 0.07) {
+    postVideoFrame(props.videoId, fnr, frameinfo).then(response => vidinfo.value=response.data)
+  }
 
   displayNextRandomFrame()
 }
@@ -171,16 +188,19 @@ function postFullFrameLabelAndDisplayNextFrame() {
   displayNextRandomFrame()
 }
 function displayNextRandomFrame() {
-  let frameNrAlreadyLabeled = true
-  let rndTime = 0
-  let rndFrameNr = 0
-  while (frameNrAlreadyLabeled) {
-    rndTime = Math.random() * videoduration.value
-    rndFrameNr = Math.floor(rndTime * vidinfo.value.FPS)
-    frameNrAlreadyLabeled = vidinfo.value.Frames.map(frameinfo => frameinfo.FrameNr).includes(rndFrameNr)
+  if (Math.random() < framesLabeledPerSecond.value) {
+    router.push(`/video/${nextVideoId.value}`)
+  } else {
+    let frameNrAlreadyLabeled = true
+    let rndTime = 0
+    let rndFrameNr = 0
+    while (frameNrAlreadyLabeled) {
+      rndTime = Math.random() * videoduration.value
+      rndFrameNr = Math.floor(rndTime * vidinfo.value.FPS)
+      frameNrAlreadyLabeled = vidinfo.value.Frames.map(frameinfo => frameinfo.FrameNr).includes(rndFrameNr)
+    }
+    setCurrentTime(rndTime)
   }
-  setCurrentTime(rndTime)
-
 }
 function toggleLabelMode() {
   if (modeIsLocalization.value) {

@@ -92,7 +92,7 @@ info_googlenet = {
     'name' : 'googlenet',
     'dim' : 512,
     'batch_size' : 8,
-    'learning_rate' : 1e-3,
+    'learning_rate' : 1e-4,
     'use_batch_norm' : True,
     'get_model_function' : get_model_googlenet,
 }

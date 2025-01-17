@@ -115,6 +115,8 @@ class VideoInfo:
         ValueHelper.check_raise_frameNr(label.FrameNr)
         if label.FrameNr >= self.FrameLength:
             raise ValueError(f"FrameNr to big, frameLength is {self.FrameLength}, got {label.FrameNr}")
+        if label.Height < 0.07:
+            raise ValueError(f"Frame is to small")
         self.Frames[label.FrameNr] = label
 
     def remove_framelabel(self, frameNr: int):

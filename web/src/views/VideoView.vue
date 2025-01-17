@@ -3,41 +3,49 @@
     <h1>Label {{ videoinfo.Name }}</h1>
     <div v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
-    <VideoPlayer v-if="videoPath" v-bind:video-id="$route.params.id" :video-src="videoPath"></VideoPlayer>
+    <VideoPlayer v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath"></VideoPlayer>
   </div>
   <div v-else>
-    Loading ...
+    Loading...
   </div>
 </template>
 
-<script>
+<script setup>
 import VideoPlayer from '@/components/VideoPlayer.vue';
 import { getVideoInfo, getVideoPath } from '../services/videoService';
+import { onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router';
 
-export default {
-  components: {
-    VideoPlayer,
-  },
-  data() {
-    return {
-      videoPath: null,
-      loading: false,
-      error: null,
-      videoinfo: null,
-    };
-  },
-  async created() {
-    this.loading = true;
-    try {
-      this.videoPath = await getVideoPath(this.$route.params.id);
-      this.videoinfo = await getVideoInfo(this.$route.params.id)
-    } catch {
-      this.error = 'Failed To load';
-    } finally {
-      this.loading = false;
-    }
-  },
-};
+const route = useRoute()
+
+const loading = ref(false)
+const error = ref('')
+const videoinfo = ref({})
+const videoId = ref(route.params.id)
+const videoPath = ref('')
+
+watch(
+  () => route.params.id,
+  (newId) => (
+    loadVideo(newId)
+  )
+)
+
+onMounted(async () => {
+  await loadVideo(videoId.value)
+})
+async function loadVideo(id) {
+  console.log('loading vidoo', id)
+  loading.value = true;
+  try {
+    videoPath.value = await getVideoPath(id);
+    videoinfo.value = await getVideoInfo(id)
+  } catch {
+    error.value = 'Failed To load';
+  } finally {
+    loading.value = false;
+  }
+}
 </script>
 
 <style scoped>
