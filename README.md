@@ -59,3 +59,9 @@ Then start up the API and the web app.
 
 - [API](./api/README.md) (Includes docker)
 - [Web](./web/README.md)
+
+### BACKUP
+
+```bash
+mysqldump -h 127.0.0.1 -P 3377 -u root -p judge > "/media/miked/Elements/Judge/FINISHED-DB-READY/$(date +\%Y\%m\%d)_judge_dump.sql"
+```

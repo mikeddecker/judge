@@ -1,8 +1,11 @@
 import keras
 import numpy as np
+import os
 import sys
 import tensorflow as tf
 import pandas as pd
+
+from datetime import datetime
 
 sys.path.append('.')
 
@@ -16,9 +19,12 @@ from models.MobileNetV3Small import get_model as get_model_mobilenet
 from models.RandomCNN import get_model as get_model_randomcnn
 from models.vitransformer_enc import get_model as get_model_vit
 
-def train_model(model, info_train):
+def train_model(model: keras.Sequential, info_train, from_scratch=True):
     """Returns history object"""
     DIM = selected_info['dim']
+    weight_path = f"../weights/{selected_info['name']}.weights.h5"
+    if not from_scratch and os.path.exists(weight_path):
+        model.load_weights(weight_path)
 
     repo = DataRepository()
     train_generator = DataGeneratorFrames(
@@ -52,7 +58,33 @@ def train_model(model, info_train):
         validation_data=val_generator
     )
 
-    return history
+    if 'unfreeze_pre_trained_layers_after_training' in info_train.keys():
+        pass
+        # TODO : save history, add them after next training round
+
+    df_history = pd.DataFrame(history.history)
+    df_history["modelname"] = selected_info['name']
+    df_history["train_date"] = info_train['train_date']
+    last_epoch_nr = int(repo.get_last_epoch_nr(selected_info['name']))
+    print("last_epoch", last_epoch_nr, from_scratch)
+    if last_epoch_nr > 0:
+        # Return when training from scratch has worse results than last time
+        # TODO : make a function to update val_iou based on last validation set
+        last_result = repo.get_last_epoch_values(modelname=selected_info["name"], epoch=last_epoch_nr)
+        print('result now', df_history.loc[df_history.index[-1], 'val_iou'])
+        print('last result was: ', last_result.loc[0, 'val_iou'])
+        if df_history.loc[df_history.index[-1], 'val_iou'] < last_result.loc[0, 'val_iou']:
+            print("RESULTS WEREN'T BETTER")
+            return df_history
+
+        df_history["epoch"] = df_history.index + 1 + (0 if from_scratch else last_epoch_nr)
+    else:
+        df_history["epoch"] = df_history.index + 1
+    
+    model.save_weights(weight_path)
+    repo.save_train_results(df_history)
+
+    return df_history
 
 ###############################################################################
 
@@ -60,7 +92,7 @@ info_googlenet = {
     'name' : 'googlenet',
     'dim' : 512,
     'batch_size' : 8,
-    'learning_rate' : 1e-4,
+    'learning_rate' : 1e-3,
     'use_batch_norm' : True,
     'get_model_function' : get_model_googlenet,
 }
@@ -89,46 +121,22 @@ info_mobilenet = {
 }
 
 ###############################################################################
-selected_info = info_mobilenet
-# TODO : continue training
-# TODO : save model
-# TODO : write results
+selected_info = info_googlenet
 ###############################################################################
 
 trainings_info = {
-    'epochs' : 2,
-    'early_stopping' : False,
+    'epochs' : 20,
+    'early_stopping' : True,
     'early_stopping_patience' : 3,
     'batch_size' : selected_info['batch_size'],
-    'learning_rate' : 1e-4 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
+    'learning_rate' : 1e-3 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
+    'train_date' : datetime.now().strftime("%Y%m%d"),
 }
 trainings_info['weight_decay'] = trainings_info['learning_rate'] / 10 if 'weight_decay' not in selected_info.keys() else selected_info['weight_decay']
 
 model = selected_info['get_model_function'](selected_info)
 model.summary()
 
-history = train_model(model, info_train=trainings_info)
-if 'has_frozen_layers' in selected_info.keys():
-    trainings_info['epochs'] = 2
-    model.trainable = True
-    history = train_model(model, info_train=trainings_info)
+history = train_model(model, info_train=trainings_info, from_scratch=False)
 
 print(history)
-
-import matplotlib.pyplot as plt
-def plot_history(item):
-    plt.plot(history.history[item], label=item)
-    plt.plot(history.history["val_" + item], label="val_" + item)
-    plt.xlabel("Epochs")
-    plt.ylabel(item)
-    plt.title("Train and Validation {} Over Epochs".format(item), fontsize=14)
-    plt.legend()
-    plt.grid()
-    plt.show()
-
-
-plot_history("loss")
-
-df_history = pd.DataFrame(history.history)
-df_history["epoch"] = df_history.index + 1
-df_history

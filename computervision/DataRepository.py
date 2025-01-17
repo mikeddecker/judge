@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import sqlalchemy as sqlal
+from datetime import datetime
 
 from dotenv import load_dotenv
 
@@ -62,3 +63,37 @@ class DataRepository:
         df_videos.index = df_videos.id
         self.VideoNames = df_videos
 
+    def save_train_results(self, df_history: pd.DataFrame):
+        delete_old = sqlal.text(f"""
+            DELETE FROM TrainResults WHERE modelname = \'{df_history.loc[0,'modelname']}\'
+        """)
+        self.con.execute(delete_old)
+        self.con.commit()
+        insert = sqlal.text("""
+            INSERT INTO TrainResults (modelname, train_date, epoch, iou, loss, val_iou, val_loss)
+            VALUES (:modelname, :train_date, :epoch, :iou, :loss, :val_iou, :val_loss)
+        """)
+
+        for _, row in df_history.iterrows():
+            self.con.execute(insert, {
+                'modelname': row['modelname'],
+                'train_date': row['train_date'],
+                'epoch': row['epoch'],
+                'iou': row['iou'],
+                'loss': row['loss'],
+                'val_iou': row['val_iou'],
+                'val_loss': row['val_loss']
+            })
+        self.con.commit()
+
+    def get_last_epoch_nr(self, modelname):
+        """Return last epoch nr or 0"""
+        qry = sqlal.text(f"""SELECT MAX(epoch) as last_epoch FROM TrainResults WHERE modelname = \'{modelname}\'""")
+        df = pd.read_sql(qry, con=self.con)
+        epoch = df.loc[0, 'last_epoch']
+        epoch = 0 if epoch is None else epoch
+        return epoch
+    
+    def get_last_epoch_values(self, modelname, epoch):
+        qry = sqlal.text(f"""SELECT * FROM TrainResults WHERE modelname = \'{modelname}\' AND epoch = {epoch}""")
+        return pd.read_sql(qry, con=self.con)

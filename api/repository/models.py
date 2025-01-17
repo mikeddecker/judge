@@ -77,7 +77,6 @@ class FrameLabel(db.Model):
     height = db.Column(db.Float, nullable=False)
     jumperVisible = db.Column(db.Boolean, nullable=False, default=True)
 
-    # Define a composite unique constraint
     __table_args__ = (
         db.PrimaryKeyConstraint('videoId', 'frameNr'),
     )
@@ -92,3 +91,16 @@ class FrameLabel(db.Model):
             'jumperVisible' : self.jumperVisible
         }
     
+class TrainResult(db.Model):
+    __tablename__ = 'TrainResults'
+    modelname = db.Column(db.String(127), nullable=False)
+    train_date = db.Column(db.Integer, nullable=False)
+    epoch = db.Column(SMALLINT(unsigned=True), nullable=False)
+    iou = db.Column(db.Float, nullable=False)
+    loss = db.Column(db.Float, nullable=False)
+    val_iou = db.Column(db.Float, nullable=False)
+    val_loss = db.Column(db.Float, nullable=False)
+
+    __table_args__ = (
+        db.PrimaryKeyConstraint('modelname', 'epoch', name='_modelname_epoch_pk_constraint'),
+    )

@@ -23,7 +23,7 @@ def upgrade():
                existing_type=mysql.SMALLINT(unsigned=True),
                type_=sa.Integer(),
                existing_nullable=False)
-        batch_op.drop_constraint('Videos_ibfk_2', type_='foreignkey')
+        # batch_op.drop_constraint('Videos_ibfk_2', type_='foreignkey')
 
     # ### end Alembic commands ###
 
