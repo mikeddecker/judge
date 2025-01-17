@@ -125,9 +125,9 @@ selected_info = info_googlenet
 ###############################################################################
 
 trainings_info = {
-    'epochs' : 20,
+    'epochs' : 4, # Take more if first train round of random or transformer
     'early_stopping' : True,
-    'early_stopping_patience' : 3,
+    'early_stopping_patience' : 1,
     'batch_size' : selected_info['batch_size'],
     'learning_rate' : 1e-3 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
     'train_date' : datetime.now().strftime("%Y%m%d"),

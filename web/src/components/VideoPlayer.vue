@@ -68,6 +68,7 @@ const modeIsReview = computed(() => { return labelMode.value == "review" })
 const currentFrameIdx = ref(0)
 const framesLabeledPerSecond = computed(() => { return vidinfo.value ? vidinfo.value.FramesLabeledPerSecond.toFixed(2) : 0 })
 const totalLabels = ref(0)
+const avgLabels = ref(12)
 
 // Only for dd3 labeling
 const videos = ref(null)
@@ -78,9 +79,9 @@ onMounted(async () => {
     while (nextVideoId.value == props.videoId) {
       let potentialNextVideoId = Number(videos.value[Math.floor(Math.random()*videos.value.length)])
       totalLabels.value = Object.values(value.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
-      let avgLabels = totalLabels.value / Object.values(value.Videos).length
+      avgLabels.value = totalLabels.value / Object.values(value.Videos).length
       let labeledFramesVideo = value.Videos[potentialNextVideoId].LabeledFrameCount
-      if (labeledFramesVideo < avgLabels) {
+      if (labeledFramesVideo < avgLabels.value) {
         nextVideoId.value = potentialNextVideoId
       }
     }
@@ -195,6 +196,7 @@ function postFullFrameLabelAndDisplayNextFrame() {
   displayNextRandomFrame()
 }
 function displayNextRandomFrame() {
+  console.log(Math.random(), Math.sqrt(labeledFramesCount.value) / avgLabels.value)
   if (Math.random() < framesLabeledPerSecond.value) {
     router.push(`/video/${nextVideoId.value}`)
   } else {
