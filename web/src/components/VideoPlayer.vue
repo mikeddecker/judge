@@ -196,7 +196,6 @@ function postFullFrameLabelAndDisplayNextFrame() {
   displayNextRandomFrame()
 }
 function displayNextRandomFrame() {
-  console.log(Math.random(), Math.sqrt(labeledFramesCount.value) / avgLabels.value)
   if (Math.random() < framesLabeledPerSecond.value) {
     router.push(`/video/${nextVideoId.value}`)
   } else {

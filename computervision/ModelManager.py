@@ -22,7 +22,7 @@ from models.vitransformer_enc import get_model as get_model_vit
 def train_model(model: keras.Sequential, info_train, from_scratch=True):
     """Returns history object"""
     DIM = selected_info['dim']
-    weight_path = f"../weights/{selected_info['name']}.weights.h5"
+    weight_path = f"weights/{selected_info['name']}.weights.h5"
     if not from_scratch and os.path.exists(weight_path):
         model.load_weights(weight_path)
 
@@ -82,7 +82,7 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
         df_history["epoch"] = df_history.index + 1
     
     model.save_weights(weight_path)
-    repo.save_train_results(df_history)
+    repo.save_train_results(df_history, from_scratch=from_scratch)
 
     return df_history
 
@@ -98,18 +98,19 @@ info_googlenet = {
 }
 info_vit = {
     'name' : 'vision_transformer',
-    'dim' : 224,
-    'patch_size' : 16, # (224 / 16) **2 = 196 patches
-    'dim_embedding' : 64,
+    'dim' : 240,
+    'patch_size' : 12, # (224 / 16) **2 = 196 patches
+    'dim_embedding' : 128,
     'num_heads': 4,
     'encoder_blocks': 4,
-    'mlp_head_units' : [1024, 256, 64],  # Size of the dense layers
+    'mlp_head_units' : [2048, 1024, 256, 64],  # Size of the dense layers
     'batch_size' : 8,
     'min_epochs' : 15,
-    'learning_rate' : 1e-3,
+    'learning_rate' : 1e-4,
     'weight_decay' : 1e-4,
     'get_model_function' : get_model_vit,
 }
+info_vit['name'] = f"vision_transformer_d{info_vit['dim']}_p{info_vit['patch_size']}_e{info_vit['dim_embedding']}_nh{info_vit['num_heads']}"
 info_mobilenet = {
     'name' : 'mobilenet',
     'dim' : 224, # pre-trained default
@@ -121,15 +122,15 @@ info_mobilenet = {
 }
 
 ###############################################################################
-selected_info = info_googlenet
+selected_info = info_vit
 ###############################################################################
 
 trainings_info = {
     'epochs' : 4, # Take more if first train round of random or transformer
-    'early_stopping' : True,
-    'early_stopping_patience' : 1,
+    'early_stopping' : False,
+    'early_stopping_patience' : 3,
     'batch_size' : selected_info['batch_size'],
-    'learning_rate' : 1e-3 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
+    'learning_rate' : 8e-4 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
     'train_date' : datetime.now().strftime("%Y%m%d"),
 }
 trainings_info['weight_decay'] = trainings_info['learning_rate'] / 10 if 'weight_decay' not in selected_info.keys() else selected_info['weight_decay']

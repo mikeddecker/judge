@@ -63,12 +63,13 @@ class DataRepository:
         df_videos.index = df_videos.id
         self.VideoNames = df_videos
 
-    def save_train_results(self, df_history: pd.DataFrame):
-        delete_old = sqlal.text(f"""
-            DELETE FROM TrainResults WHERE modelname = \'{df_history.loc[0,'modelname']}\'
-        """)
-        self.con.execute(delete_old)
-        self.con.commit()
+    def save_train_results(self, df_history: pd.DataFrame, from_scratch: bool):
+        if from_scratch:
+            delete_old = sqlal.text(f"""
+                DELETE FROM TrainResults WHERE modelname = \'{df_history.loc[0,'modelname']}\'
+            """)
+            self.con.execute(delete_old)
+            self.con.commit()
         insert = sqlal.text("""
             INSERT INTO TrainResults (modelname, train_date, epoch, iou, loss, val_iou, val_loss)
             VALUES (:modelname, :train_date, :epoch, :iou, :loss, :val_iou, :val_loss)

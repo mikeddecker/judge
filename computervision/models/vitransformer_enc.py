@@ -81,10 +81,7 @@ class PatchEncoder(keras.layers.Layer):
         encoded = projected_patches + self.position_embedding(positions)
         return encoded
 
-def get_model(
-    modelinfo,
-    mlp_head_units,
-):
+def get_model(modelinfo):
     inputs = keras.Input(shape=(modelinfo['dim'],modelinfo['dim'],3))
     patches = Patches(modelinfo['patch_size'])(inputs)
     num_patches = (modelinfo['dim'] // modelinfo['patch_size']) ** 2
@@ -112,7 +109,7 @@ def get_model(
     representation = keras.layers.Flatten()(representation)
     representation = keras.layers.Dropout(0.3)(representation)
 
-    features = mlp(representation, hidden_units=mlp_head_units, dropout_rate=0.3)
+    features = mlp(representation, hidden_units=modelinfo['mlp_head_units'], dropout_rate=0.3)
 
     bounding_box = keras.layers.Dense(4)(features)
 
