@@ -1,13 +1,25 @@
+from domain.enums import DDtype, SkillType, Turner
 from helpers.ValueHelper import ValueHelper
+
 class Skill:
     PROPERTIES = [
         'Id', 'DottedName',
         'FrameStart', 'FrameEnd'
     ]
     FrameStart: int
-    FrameEnd: int # Included
+    FrameEnd: int # Included --> [Start, End]
+    Type: DDtype
+    Rotations: int
+    JumperSkill: SkillType
+    OneHanded: bool
+    Turner1: Turner
+    Turner2: Turner
 
-    def __init__(self, id: int, dottedName: str, frameStart: int = None, frameEnd: int = None):
+    def __init__(self, id: int, dottedName: str = None,
+                 ddtype: DDtype = None, rotations: int = None, skilltype: SkillType = None, onehanded: bool = None,
+                 turner1: Turner = None, turner2: Turner = None,
+                 start: int = None, end: int = None):
+        """Either provide dotted name or parts (rotations, skilltype, onehanded, turners...)"""
         self.__setId(id)
         self.__setDottedName(dottedName)
 

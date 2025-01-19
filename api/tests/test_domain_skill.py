@@ -5,6 +5,7 @@ from domain.folder import Folder
 from domain.videoinfo import VideoInfo
 from domain.skill import Skill
 from tests.TestHelper import TestHelper
+from domain.enums import DDtype
 
 FOLDER_INSTANCE_VALID = Folder(1, 'competition', None)
 
@@ -20,7 +21,12 @@ class DomainSkillTestSuite(unittest.TestCase):
         (1, "R.1h"),
     ])
     def test_ctor_valid(self, id, dottedName):
-        pass
+        skill = Skill(
+            id=1, 
+            dottedName='s.EB.AS.o', # optional,
+            ddtype = DDtype.DOUBLEDUTCH,
+            start=123, end=456)
+        assert skill.Id == 1
     
     @parameterized.expand(TestHelper.generate_empty_strings())
     def test_ctor_invalid_name(self, dottedName):

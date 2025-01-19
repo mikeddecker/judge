@@ -81,7 +81,7 @@ onMounted(async () => {
       totalLabels.value = Object.values(value.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
       avgLabels.value = totalLabels.value / Object.values(value.Videos).length
       let labeledFramesVideo = value.Videos[potentialNextVideoId].LabeledFrameCount
-      if (labeledFramesVideo < avgLabels.value) {
+      if (labeledFramesVideo < avgLabels.value * 0.5) {
         nextVideoId.value = potentialNextVideoId
       }
     }
@@ -196,7 +196,7 @@ function postFullFrameLabelAndDisplayNextFrame() {
   displayNextRandomFrame()
 }
 function displayNextRandomFrame() {
-  if (Math.random() < framesLabeledPerSecond.value) {
+  if (Math.random() < framesLabeledPerSecond.value * 0.65) {
     router.push(`/video/${nextVideoId.value}`)
   } else {
     let frameNrAlreadyLabeled = true

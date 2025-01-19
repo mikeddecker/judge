@@ -100,7 +100,7 @@ class DomainVideoTestSuite(unittest.TestCase):
         video = get_video()
         frames = [
             FrameInfo(frameNr=0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False),
-            FrameInfo(frameNr=1, x=0.1, y=0.5, width=0.22, height=0.023),
+            FrameInfo(frameNr=1, x=0.1, y=0.5, width=0.22, height=0.073),
             FrameInfo(frameNr=2, x=0.3, y=0.5, width=0.22, height=0.23),
             FrameInfo(frameNr=55, x=0.66, y=0.5, width=0.23, height=0.54),
             FrameInfo(frameNr=122, x=0.99, y=0.5, width=0.23, height=0.5),
