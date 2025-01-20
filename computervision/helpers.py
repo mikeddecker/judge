@@ -65,6 +65,26 @@ def plot(imgs, bboxes=None, row_title=None, **imshow_kwargs):
     # No need for tight_layout() to avoid any unwanted resizing of images
     plt.show()
 
+def my_mse_loss_fn(y_true, y_pred):
+    """
+    A custom MSE loss function where x and y positions are multiplied by 2,
+    but w and h remain the same.
+    """
+    # Split y_true and y_pred into x, y, w, h components
+    x_true, y_true, w_true, h_true = y_true[:, 0], y_true[:, 1], y_true[:, 2], y_true[:, 3]
+    x_pred, y_pred, w_pred, h_pred = y_pred[:, 0], y_pred[:, 1], y_pred[:, 2], y_pred[:, 3]
+    
+    # Compute squared differences for each component (x, y, w, h)
+    squared_difference_x = keras.ops.square(x_true - x_pred) * 4
+    squared_difference_y = keras.ops.square(y_true - y_pred) * 4
+    squared_difference_w = keras.ops.square(w_true - w_pred)
+    squared_difference_h = keras.ops.square(h_true - h_pred)
+    
+    # Combine the squared differences (you could use mean or sum depending on your needs)
+    total_squared_difference = squared_difference_x + squared_difference_y + squared_difference_w + squared_difference_h
+    
+    # Return the mean of the squared differences as the loss
+    return keras.ops.mean(total_squared_difference)
 
 def iou(y_true, y_pred):
     """
@@ -103,3 +123,4 @@ def iou(y_true, y_pred):
     iou = intersection_area / union_area
 
     return iou
+

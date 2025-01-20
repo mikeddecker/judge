@@ -19,6 +19,7 @@ class DataGeneratorFrames(keras.utils.Sequence):
         assert train_test_val in ['train', 'test', 'val']
         self.dim = dim
         self.train_test_val = train_test_val
+        self.augment = train_test_val == 'train'
         self.batch_size = batch_size
         self.frameloader = frameloader
         self.repo = DataRepository()
@@ -29,7 +30,7 @@ class DataGeneratorFrames(keras.utils.Sequence):
 
     def __len__(self):
         'Denotes the number of batches per epoch'
-        return len(self.Frames) // self.batch_size + 1
+        return len(self.Frames) // self.batch_size
 
     def __getitem__(self, batch_nr, normalize=True):
         "batch_nr starts from 0"
@@ -44,7 +45,10 @@ class DataGeneratorFrames(keras.utils.Sequence):
             frameNr = row["frameNr"]
             x, y, w, h = self.Frames.iloc[i][["x", "y", "width", "height"]]
             try:
-                loaded_frame, y = self.frameloader.get_frame(videoId, frameNr, self.dim[0], x, y, w, h, printId=False)
+                if self.augment:
+                    loaded_frame, y = self.frameloader.get_frame(videoId, frameNr, self.dim[0], x, y, w, h, printId=False)
+                else:
+                    loaded_frame, y = self.frameloader.get_frame_original(videoId, frameNr, self.dim[0], x, y, w, h, printId=False)
                 y_values.append(y)
                 frames.append(loaded_frame / 255 if normalize else loaded_frame)
             except Exception as err:
