@@ -12,8 +12,10 @@ fi
 filename=$1
 yt_url=$2
 
+echo $PWD
+
 echo -e "${YELLOW}---processing---${NO_COLOR}"
 echo $filename
 echo $yt_url
 
-yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' -S vcodec:h264,res,acodec:m4a -o "${filename}" "${yt_url}" 
+yt-dlp --cookies-from-browser firefox -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' -S vcodec:h264,res,acodec:m4a -o "${filename}" "${yt_url}" 

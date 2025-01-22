@@ -81,7 +81,7 @@ onMounted(async () => {
       totalLabels.value = Object.values(value.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
       avgLabels.value = totalLabels.value / Object.values(value.Videos).length
       let labeledFramesVideo = value.Videos[potentialNextVideoId].LabeledFrameCount
-      if (labeledFramesVideo < avgLabels.value * 0.35) {
+      if (labeledFramesVideo < avgLabels.value * 0.7 && potentialNextVideoId != 1208) {
         nextVideoId.value = potentialNextVideoId
       }
     }

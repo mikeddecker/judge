@@ -75,8 +75,8 @@ def my_mse_loss_fn(y_true, y_pred):
     x_pred, y_pred, w_pred, h_pred = y_pred[:, 0], y_pred[:, 1], y_pred[:, 2], y_pred[:, 3]
     
     # Compute squared differences for each component (x, y, w, h)
-    squared_difference_x = keras.ops.square(x_true - x_pred) * 4
-    squared_difference_y = keras.ops.square(y_true - y_pred) * 4
+    squared_difference_x = keras.ops.square(x_true - x_pred) * 2
+    squared_difference_y = keras.ops.square(y_true - y_pred) * 2
     squared_difference_w = keras.ops.square(w_true - w_pred)
     squared_difference_h = keras.ops.square(h_true - h_pred)
     

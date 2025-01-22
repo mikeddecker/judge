@@ -82,8 +82,9 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
         print('result now', df_history.loc[df_history.index[-1], 'val_iou'])
         print('last result was: ', last_result.loc[0, 'val_iou'])
         if df_history.loc[df_history.index[-1], 'val_iou'] < last_result.loc[0, 'val_iou']:
-            print("RESULTS WEREN'T BETTER")
-            return df_history
+            # print("RESULTS WEREN'T BETTER")
+            # return df_history
+            pass
 
         df_history["epoch"] = df_history.index + 1 + (0 if from_scratch else last_epoch_nr)
     else:
@@ -111,7 +112,7 @@ info_googlenet_extra_dense = {
     'learning_rate' : 1e-3,
     'use_batch_norm' : True,
     'get_model_function' : get_model_googlenet_extra_dense,
-    'loss_weight' : [0.35, 0.35, 0.15, 0.15],
+    'loss_weight' : [0.30, 0.30, 0.20, 0.20],
 }
 info_googlenet_extra_dense['name'] = f"googlenet_extra_dense_d{info_googlenet_extra_dense["dim"]}"
 info_vit = {
@@ -144,7 +145,7 @@ selected_info = info_googlenet_extra_dense
 ###############################################################################
 
 trainings_info = {
-    'epochs' : 21, # Take more if first train round of random or transformer
+    'epochs' : 2, # Take more if first train round of random or transformer
     'early_stopping' : True,
     'early_stopping_patience' : 6,
     'batch_size' : selected_info['batch_size'],

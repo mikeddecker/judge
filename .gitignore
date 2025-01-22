@@ -22,3 +22,5 @@ db_data/*
 **/venv/*
 
 node_modules
+
+*cookies.txt
