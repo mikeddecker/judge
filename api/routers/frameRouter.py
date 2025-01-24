@@ -26,6 +26,7 @@ class FrameRouter(Resource):
         width = data.get('width')
         height = data.get('height')
         jumperVisible = data.get('jumperVisible', True)  # Default to True if not provided
+        labeltype = data.get('labeltype')
         try:
             ValueHelper.check_raise_id(videoId)
             ValueHelper.check_raise_frameNr(frameNr)
@@ -35,17 +36,23 @@ class FrameRouter(Resource):
             ValueHelper.check_float_between_0_and_1_inclusive(height)
         except ValueError as ve:
             return str(ve), 404
-        frameinfo = FrameInfo(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
+        frameinfo = FrameInfo(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible, labeltype=labeltype)
         video = self.videoService.get(videoId)
         video = self.videoService.set_frameInfo(frameInfo=frameinfo, video=video)
         return video.to_dict(), 200
     
     def delete(self, videoId: int, frameNr: int):
+        data = request.get_json()
+        frameinfo = data.get('frameinfo')
+        print(frameinfo)
         try:
             ValueHelper.check_raise_id(videoId)
             ValueHelper.check_raise_frameNr(frameNr)
         except ValueError as ve:
             return str(ve), 404
         videoinfo = self.videoService.get(videoId)
-        return self.videoService.remove_frameInfo(frameNr=frameNr, video=videoinfo).to_dict(), 200
+        frameinfo = FrameInfo(frameNr=frameNr, x=frameinfo["X"], y=frameinfo["Y"],
+                              width=frameinfo["Width"], height=frameinfo["Height"],
+                              jumperVisible=frameinfo["JumperVisible"], labeltype=frameinfo["LabelType"])
+        return self.videoService.remove_frameInfo(frameNr=frameNr, video=videoinfo, frameinfo=frameinfo).to_dict(), 200
 

@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from typing import Dict, Set, List
 import os
 
 from .folder import Folder
@@ -17,11 +17,11 @@ class VideoInfo:
         "Skills", 
     ]
     # Frame does not 
-    Frames: Dict[int, FrameInfo] = dict() # Key = frameId, value is Frame
+    Frames: List[FrameInfo] # Key = frameId, value is Frame
     Skills: Set[Skill] = set()
 
     def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float):
-        self.Frames: self.Frames = {}  # Initialize frames as an empty dictionary
+        self.Frames: self.Frames = []  # Initialize frames as an empty dictionary
         self.Skills: self.Skills = set()  # Initialize skills as an empty set
 
         self.__setId(id)
@@ -105,9 +105,10 @@ class VideoInfo:
     ####################
     # Section : Frames #
     ####################
-    def has_frame_been_labeled(self, frameNr: int):
-        ValueHelper.check_raise_frameNr(frameNr)
-        return frameNr in self.Frames.keys()
+    def has_frame_been_labeled(self, label: FrameInfo):
+        # ValueHelper.check_raise_frameNr(frameNr)
+        print(self.Frames)
+        return label in self.Frames
     
     def add_framelabel(self, label: FrameInfo):
         if label is None or not isinstance(label, FrameInfo):
@@ -117,13 +118,13 @@ class VideoInfo:
             raise ValueError(f"FrameNr to big, frameLength is {self.FrameLength}, got {label.FrameNr}")
         if label.Height < 0.07:
             raise ValueError(f"Frame is to small")
-        self.Frames[label.FrameNr] = label
+        self.Frames.append(label)
 
-    def remove_framelabel(self, frameNr: int):
+    def remove_framelabel(self, frameNr: int, label: FrameInfo):
         ValueHelper.check_raise_frameNr(frameNr)
-        if not self.has_frame_been_labeled(frameNr=frameNr):
+        if not self.has_frame_been_labeled(label):
             raise ValueError(f"Can not remove a label that is not labeled, got frameNr = {frameNr}")
-        del self.Frames[frameNr]
+        self.Frames.remove(label)
     
     def update_framelabel(self, label: FrameInfo): 
         if label is None or not isinstance(label, FrameInfo):
@@ -172,7 +173,7 @@ class VideoInfo:
             "Name" : self.Name, 
             "Folder" : self.Folder.to_dict(),
             "FrameLength" : self.FrameLength,
-            "Frames" : [f.to_dict() for f in self.Frames.values()] if include_frames else [], # TODO : lazy load frames
+            "Frames" : [f.to_dict() for f in self.Frames] if include_frames else [], # TODO : lazy load frames
             "FPS" : self.FPS,
             "Duration" : self.get_duration(),
             "FramesLabeledPerSecond" : len(self.Frames) / self.get_duration(),

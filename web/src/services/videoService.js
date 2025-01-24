@@ -56,8 +56,11 @@ export const postVideoFrame = async (videoId, frameNr, frameinfo) => {
     });
 };
 
-export const removeVideoFrame = async (videoId, frameNr) => {
-  return await api.delete(`/video/${videoId}/frameNr/${frameNr}`, { headers: { 'Content-Type': 'application/json' }})
+export const removeVideoFrame = async (videoId, frameNr, frameinfo) => {
+  return await api.delete(`/video/${videoId}/frameNr/${frameNr}`, { 
+      headers: { 'Content-Type': 'application/json' },
+      data: { frameinfo },
+    })
     .then(function (response) {
       return response.data;
     })

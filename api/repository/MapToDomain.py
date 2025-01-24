@@ -24,5 +24,5 @@ class MapToDomain:
             fps= videoDB.fps,
         )
         for f in videoDB.frameLabels:
-            video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible))
+            video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible, labeltype=f.labeltype))
         return video

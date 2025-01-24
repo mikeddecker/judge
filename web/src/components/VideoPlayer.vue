@@ -23,8 +23,10 @@
       <button v-show="paused" @click="play">&#9654;</button>
       <button v-show="playing" @click="pause">&#9208;</button>
       <button @click="toggleLabelMode">Current modus: {{ labelMode }}</button>
-      <button v-show="modeIsLocalization" @click="postFullFrameLabelAndDisplayNextFrame">label as full screen</button>
-      <button v-show="modeIsLocalization" @click="displayNextRandomFrame">rnd next frame</button>
+      <button v-show="modeLocalizationIsAll" @click="toggleLocalizationType">1 box 4 all</button>
+      <button v-show="!modeLocalizationIsAll" @click="toggleLocalizationType">1 box / jumper</button>
+      <button v-show="modeIsLocalization && modeLocalizationIsAll" @click="postFullFrameLabelAndDisplayNextFrame">label as full screen</button>
+      <button v-show="modeIsLocalization" @click="displayNextRandomFrame">random next frame</button>
       <div class="review-controls" v-show="modeIsReview">
         <button class="big-arrow" @click="setToPreviousFrameIdxAndDraw">&larr;</button>
         <button class="big-arrow" @click="setToNextFrameIdxAndDraw">&rarr;</button>
@@ -65,6 +67,7 @@ const labeledFramesCount = computed(() => vidinfo.value ? vidinfo.value.LabeledF
 const labelMode = ref("localization")
 const modeIsLocalization = computed(() => { return labelMode.value == "localization" })
 const modeIsReview = computed(() => { return labelMode.value == "review" })
+const modeLocalizationIsAll = ref(true)
 const currentFrameIdx = ref(0)
 const framesLabeledPerSecond = computed(() => { return vidinfo.value ? vidinfo.value.FramesLabeledPerSecond.toFixed(2) : 0 })
 const totalLabels = ref(0)
@@ -150,7 +153,10 @@ function drawCurrentFrameIdx() {
   ctx.stroke();
 }
 async function deleteLabel() {
-  await removeVideoFrame(props.videoId, currentFrame.value).then(videoinfo => vidinfo.value = videoinfo).catch(err => console.error(err))
+  let frameToDelete = vidinfo.value.Frames.filter((f) => f.FrameNr == currentFrame.value)[0]
+  console.log(JSON.parse(JSON.stringify(frameToDelete)))
+  frameToDelete = JSON.parse(JSON.stringify(frameToDelete))
+  await removeVideoFrame(props.videoId, currentFrame.value, frameToDelete).then(videoinfo => vidinfo.value = videoinfo).catch(err => console.error(err))
   setToNextFrameIdxAndDraw()
 }
 
@@ -172,7 +178,8 @@ function endDrawing(event) {
     "y" : centerY.value, 
     "width" : relativeWidth.value, 
     "height" : relativeHeight.value,
-    "jumperVisible" : true
+    "jumperVisible" : true,
+    "labeltype" : modeLocalizationIsAll.value ? 1 : 2,
   }
   const fnr = currentFrame.value
   if (frameinfo['height'] > 0.07) {
@@ -182,13 +189,17 @@ function endDrawing(event) {
   displayNextRandomFrame()
 }
 function postFullFrameLabelAndDisplayNextFrame() {
+  if (!modeLocalizationIsAll.value) {
+    return
+  }
   let frameinfo = {
     "frameNr" : currentFrame.value,
     "x" : 0.5, 
     "y" : 0.5, 
     "width" : 1.0, 
     "height" : 1.0,
-    "jumperVisible" : true
+    "jumperVisible" : true,
+    "labeltype": 1,
   }
   const fnr = currentFrame.value
   postVideoFrame(props.videoId, fnr, frameinfo).then(response => vidinfo.value=response.data)
@@ -219,6 +230,9 @@ function toggleLabelMode() {
     labelMode.value = "localization"
     clearAndReturnCtx()
   }
+}
+function toggleLocalizationType() {
+  modeLocalizationIsAll.value = !modeLocalizationIsAll.value
 }
 onBeforeMount(async () => {
     vidinfo.value = await getVideoInfo(props.videoId);

@@ -1,10 +1,11 @@
 from helpers.ValueHelper import ValueHelper
+import numpy as np
 
 class FrameInfo:
-    PROPERTIES = ["FrameNr", "X", "Y", "Width", "Height", "JumperVisible"]
+    PROPERTIES = ["FrameNr", "X", "Y", "Width", "Height", "JumperVisible", "LabelType"]
     # Frame does not 
 
-    def __init__(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
+    def __init__(self, frameNr: int, x: int, y: int, width: int, height: int, jumperVisible: bool = True, labeltype: int= 0):
         self.__check_raise_values(x=x, y=y, width=width, height=height, jumperVisible=jumperVisible)
         self.__setFrameNr(frameNr)
         self.setX(x)
@@ -12,6 +13,7 @@ class FrameInfo:
         self.setWidth(width)
         self.setHeight(height)
         self.setJumperVisible(jumperVisible)
+        self.setLabelType(labeltype)
 
     def __setattr__(self, name, value):
         # Prevent setting immutable attributes after it is set in __init__
@@ -27,6 +29,8 @@ class FrameInfo:
             self.setHeight(value)
         if name == "JumerVisible":
             self.setJumperVisible(value)
+        if name == "LabelType":
+            self.setLabelType(value)
         if name not in self.PROPERTIES:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
@@ -89,6 +93,10 @@ class FrameInfo:
         self.__check_raise_values(x=self.X, y=self.Y, width=self.Width, height=self.Height, jumperVisible=visible)
         object.__setattr__(self, 'JumperVisible', visible)
 
+    def setLabelType(self, lt: int):
+        ValueHelper.check_raise_id(lt)
+        object.__setattr__(self, 'LabelType', lt)
+
     def __check_raise_values(self, x: int, y: int, width: int, height: int, jumperVisible: bool = True):
         if not jumperVisible and (
             x != 0.5 or 
@@ -107,13 +115,16 @@ class FrameInfo:
         
         return (
             self.FrameNr == other.FrameNr and
-            self.X == other.X and
-            self.Y == other.Y and
-            self.Width == other.Width and
-            self.Height == other.Height and
+            np.isclose(self.X, other.X) and
+            np.isclose(self.Y, other.Y) and
+            np.isclose(self.Width, other.Width) and
+            np.isclose(self.Height, other.Height) and
             self.JumperVisible == other.JumperVisible
         )
 
+    def __repr__(self):
+        return self.__str__() + '\n'
+    
     def __str__(self):
         return f'frameNr = {self.FrameNr}, x = {self.X:.2f}, y = {self.Y:.2f}, w = {self.Width:.2f}, h = {self.Height:.2f}, visible = {self.JumperVisible}'
 
@@ -125,4 +136,5 @@ class FrameInfo:
             "Width" : self.Width,
             "Height" : self.Height,
             "JumperVisible" : self.JumperVisible,
+            "LabelType" : self.LabelType,
         }

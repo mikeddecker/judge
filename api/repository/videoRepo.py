@@ -1,3 +1,4 @@
+import math
 from domain.videoinfo import VideoInfo
 from domain.folder import Folder
 from domain.videoinfo import VideoInfo
@@ -91,11 +92,18 @@ class VideoRepository:
     def is_already_downloaded(self, src_info: str) -> bool:
         return self.db.session.query(VideoInfoDB).filter_by(sourceInfo=src_info).count() > 0
 
-    def remove_frameInfo(self, frameNr: int, videoId: int):
+    def remove_frameInfo(self, frameNr: int, videoId: int, frameinfo: FrameInfo):
         ValueHelper.check_raise_frameNr(frameNr)
         ValueHelper.check_raise_id(videoId)
-        frameLabelDB = self.db.session.query(FrameLabel).filter_by(frameNr=frameNr, videoId=videoId).first()
-        self.db.session.delete(frameLabelDB)
+        frameLabelDBs = self.db.session.query(FrameLabel).filter_by(frameNr=frameNr, videoId=videoId).all()
+        print(frameLabelDBs)
+        def calculate_distance(label1, label2):
+            print('label1 is', type(label1), label1)
+            print('label2 is', type(label2), label2)
+            return math.sqrt((label1.x - label2.X) ** 2 + (label1.y - label2.Y) ** 2)
+
+        closest_label = min(frameLabelDBs, key=lambda label: calculate_distance(label, frameinfo))
+        self.db.session.delete(closest_label)
         self.db.session.commit()
     
     def update_frameInfo(self, frameInfo: FrameInfo, video: VideoInfo):

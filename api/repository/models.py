@@ -67,6 +67,11 @@ class Video(db.Model):
             'obstruction' : self.obstruction
         }
     
+class FrameLabelType(db.Model):
+    __tablename__ = 'FrameLabelTypes'
+    id = db.Column(db.Integer, primary_key=True)
+    info = db.Column(db.String(127))
+    
 class FrameLabel(db.Model):
     __tablename__ = 'FrameLabels'
     videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
@@ -76,6 +81,7 @@ class FrameLabel(db.Model):
     width = db.Column(db.Float, nullable=False)
     height = db.Column(db.Float, nullable=False)
     jumperVisible = db.Column(db.Boolean, nullable=False, default=True)
+    labeltype = db.Column(db.Integer, db.ForeignKey('FrameLabelTypes.id'), nullable=False, default=1)
 
     __table_args__ = (
         db.PrimaryKeyConstraint('videoId', 'frameNr'),

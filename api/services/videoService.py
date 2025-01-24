@@ -121,14 +121,14 @@ class VideoService:
     def rename(self, id: int, new_name):
         raise NotImplementedError("Nice to have, end of journey")
     
-    def remove_frameInfo(self, frameNr, video: VideoInfo) -> VideoInfo:
+    def remove_frameInfo(self, frameNr, video: VideoInfo, frameinfo: FrameInfo) -> VideoInfo:
         ValueHelper.check_raise_frameNr(frameNr)
         if video is None or not isinstance(video, VideoInfo):
             raise ValueError(f"frameInfo is not {VideoInfo}, got {video}")
-        if not video.has_frame_been_labeled(frameNr):
-            raise ValueError(f"Frame {frameNr} not labeled")
-        self.VideoRepo.remove_frameInfo(frameNr, videoId=video.Id)
-        video.remove_framelabel(frameNr=frameNr)
+        if not video.has_frame_been_labeled(frameinfo):
+            raise ValueError(f"Frame {frameinfo} not labeled")
+        self.VideoRepo.remove_frameInfo(frameNr, videoId=video.Id, frameinfo=frameinfo)
+        video.remove_framelabel(frameNr=frameNr, label=frameinfo)
         return video
 
     def set_frameInfo(self, frameInfo: FrameInfo, video: VideoInfo):
