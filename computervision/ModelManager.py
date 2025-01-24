@@ -48,7 +48,7 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
         keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
     ]
     if info_train["early_stopping"]:
-        callbacks.append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True, verbose=1))
+        callbacks.append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=trainings_info["restore_best_weights"], verbose=1))
     
     optimizer = keras.optimizers.Adam(learning_rate=info_train['learning_rate'])
     model.compile(optimizer=optimizer, loss=[my_mse_loss_fn], metrics=[iou])
@@ -81,10 +81,9 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
         last_result = repo2.get_last_epoch_values(modelname=selected_info["name"], epoch=last_epoch_nr)
         print('result now', df_history.loc[df_history.index[-1], 'val_iou'])
         print('last result was: ', last_result.loc[0, 'val_iou'])
-        if df_history.loc[df_history.index[-1], 'val_iou'] < last_result.loc[0, 'val_iou']:
-            # print("RESULTS WEREN'T BETTER")
-            # return df_history
-            pass
+        if not trainings_info['save_anyway'] and df_history.loc[df_history.index[-1], 'val_iou'] < last_result.loc[0, 'val_iou']:
+            print("RESULTS WEREN'T BETTER")
+            return df_history
 
         df_history["epoch"] = df_history.index + 1 + (0 if from_scratch else last_epoch_nr)
     else:
@@ -109,10 +108,9 @@ info_googlenet['name'] = f"googlenet_d{info_googlenet['dim']}"
 info_googlenet_extra_dense = {
     'dim' : 512,
     'batch_size' : 8,
-    'learning_rate' : 1e-3,
+    'learning_rate' : 1e-4,
     'use_batch_norm' : True,
     'get_model_function' : get_model_googlenet_extra_dense,
-    'loss_weight' : [0.30, 0.30, 0.20, 0.20],
 }
 info_googlenet_extra_dense['name'] = f"googlenet_extra_dense_d{info_googlenet_extra_dense["dim"]}"
 info_vit = {
@@ -141,16 +139,18 @@ info_mobilenet = {
 }
 
 ###############################################################################
-selected_info = info_googlenet_extra_dense
+selected_info = info_vit
 ###############################################################################
 
 trainings_info = {
-    'epochs' : 2, # Take more if first train round of random or transformer
+    'epochs' : 1, # Take more if first train round of random or transformer
     'early_stopping' : True,
+    'restore_best_weights' : False,
     'early_stopping_patience' : 6,
     'batch_size' : selected_info['batch_size'],
     'learning_rate' : 8e-4 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
     'train_date' : datetime.now().strftime("%Y%m%d"),
+    'save_anyway' : True,
 }
 trainings_info['weight_decay'] = trainings_info['learning_rate'] / 20 if 'weight_decay' not in selected_info.keys() else selected_info['weight_decay']
 
