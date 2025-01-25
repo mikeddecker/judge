@@ -140,7 +140,7 @@ class VideoService:
             raise ValueError(f"FrameNr out of bounds, max {video.FrameLength}, got {frameInfo.FrameNr}")
         # if frameInfo.Width < 0.3 or frameInfo
         video.add_framelabel(frameInfo)
-        if self.VideoRepo.exists_frameInfo(videoId=video.Id, frameNr=frameInfo.FrameNr):
+        if not frameInfo.LabelType == 2 and self.VideoRepo.exists_frameInfo(videoId=video.Id, frameNr=frameInfo.FrameNr):
             self.VideoRepo.update_frameInfo(video=video, frameInfo=frameInfo)
         else:
             self.VideoRepo.add_frameInfo(video=video, frameInfo=frameInfo)

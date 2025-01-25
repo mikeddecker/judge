@@ -4,7 +4,7 @@ from sqlalchemy.dialects.mysql import SMALLINT
 
 class Folder(db.Model):
     __tablename__ = 'Folders'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(127), nullable=False)
     parentId = db.Column(db.Integer, db.ForeignKey('Folders.id'), nullable=True)
     parent = db.relationship('Folder', remote_side=[id], backref='children', lazy='joined')
@@ -33,7 +33,7 @@ class Source(db.Model):
     
 class Video(db.Model):
     __tablename__ = 'Videos'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     folderId = db.Column(db.Integer, db.ForeignKey('Folders.id'), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     frameLength = db.Column(db.Integer, nullable=False)
@@ -74,6 +74,7 @@ class FrameLabelType(db.Model):
     
 class FrameLabel(db.Model):
     __tablename__ = 'FrameLabels'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
     frameNr = db.Column(SMALLINT(unsigned=True), nullable=False)
     x = db.Column(db.Float, nullable=False)
@@ -82,10 +83,6 @@ class FrameLabel(db.Model):
     height = db.Column(db.Float, nullable=False)
     jumperVisible = db.Column(db.Boolean, nullable=False, default=True)
     labeltype = db.Column(db.Integer, db.ForeignKey('FrameLabelTypes.id'), nullable=False, default=1)
-
-    __table_args__ = (
-        db.PrimaryKeyConstraint('videoId', 'frameNr'),
-    )
 
     def to_dict(self):
         return {

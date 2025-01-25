@@ -126,7 +126,7 @@ class FrameInfo:
         return self.__str__() + '\n'
     
     def __str__(self):
-        return f'frameNr = {self.FrameNr}, x = {self.X:.2f}, y = {self.Y:.2f}, w = {self.Width:.2f}, h = {self.Height:.2f}, visible = {self.JumperVisible}'
+        return f'frameNr = {self.FrameNr}, x = {self.X:.2f}, y = {self.Y:.2f}, w = {self.Width:.2f}, h = {self.Height:.2f}, visible = {self.JumperVisible}, labeltype = {self.LabelType}'
 
     def to_dict(self):
         return {
