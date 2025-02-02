@@ -123,8 +123,8 @@ info_vit = {
     'mlp_head_units' : [2048, 1024, 256, 64],  # Size of the dense layers
     'batch_size' : 8,
     'min_epochs' : 15,
-    'learning_rate' : 1e-4,
-    'weight_decay' : 1e-4,
+    'learning_rate' : 3e-3,
+    'weight_decay' : 4e-5,
     'get_model_function' : get_model_vit,
 }
 info_vit['name'] = f"vision_transformer_d{info_vit['dim']}_p{info_vit['patch_size']}_e{info_vit['dim_embedding']}_nh{info_vit['num_heads']}"
@@ -134,7 +134,7 @@ info_mobilenet = {
     'batch_size' : 32,
     'min_epochs' : 15,
     'has_frozen_layers' : True,
-    'learning_rate' : 1e-3,
+    'learning_rate' : 8e-3,
     'get_model_function' : get_model_mobilenet,
 }
 

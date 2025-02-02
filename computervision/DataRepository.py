@@ -34,10 +34,10 @@ class DataRepository:
     def get_framelabels(self, train_test_val):
         # TODO : update with validation & 'random' sampling
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) <> 5""")
+            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) <> 5 AND labeltype = 1""")
 
         if train_test_val == "test":
-            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) = 5""")
+            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) = 5 AND labeltype = 1""")
         return pd.read_sql(qry, con=self.con)
 
     def __load_relativePaths_of_videos_with_framelabels(self):

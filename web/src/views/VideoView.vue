@@ -35,7 +35,6 @@ onMounted(async () => {
   await loadVideo(videoId.value)
 })
 async function loadVideo(id) {
-  console.log('loading vidoo', id)
   loading.value = true;
   try {
     videoPath.value = await getVideoPath(id);

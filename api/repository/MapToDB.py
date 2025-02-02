@@ -14,4 +14,5 @@ class MapToDB:
             width = frameInfo.Width,
             height = frameInfo.Height,
             jumperVisible = frameInfo.JumperVisible,
+            labeltype = frameInfo.LabelType
         )

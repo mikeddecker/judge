@@ -1,5 +1,5 @@
 <template>
-  <p>LabeledFrames: {{ labeledFramesCount }} | Current frame : {{ currentFrame }} | FramesLabeledPerSecond : {{ framesLabeledPerSecond }} || total labels: {{ totalLabels }}</p>
+  <p>LabeledFrames: {{ labeledFramesCount }} | Current frame : {{ currentFrame }} | FramesLabeledPerSecond : {{ framesLabeledPerSecond }} | total labels: {{ totalLabels }} | Full box for all jumpers : {{ modeLocalizationIsAll }}</p>
   <button v-show="modeLocalizationIsAll" @click="toggleLocalizationType">1 box 4 all</button>
   <button v-show="!modeLocalizationIsAll" @click="toggleLocalizationType">1 box / jumper</button>
   <div class="container">
@@ -22,7 +22,7 @@
       Your browser does not support the HTML canvas tag.
     </canvas>
     <div class="controls">
-      <button v-show="paused" @click="play">&#9654;</button>
+      <button v-show="paused && modeIsLocalization" @click="play">&#9654;</button>
       <button v-show="playing" @click="pause">&#9208;</button>
       <button @click="toggleLabelMode">Current modus: {{ labelMode }}</button>
       <button v-show="modeIsLocalization && modeLocalizationIsAll" @click="postFullFrameLabelAndDisplayNextFrame">label as full screen</button>
@@ -30,8 +30,9 @@
       <div class="review-controls" v-show="modeIsReview">
         <button class="big-arrow" @click="setToPreviousFrameAndDraw">&larr;</button>
         <button class="big-arrow" @click="setToNextFrameAndDraw">&rarr;</button>
-        <button @click="deleteLabel"><img src="@/assets/delete.png" alt="buttonpng" class="icon"/></button>
+        <button v-show="modeIsReview && modeLocalizationIsAll" @click="deleteLabel"><img src="@/assets/delete.png" alt="buttonpng" class="icon"/></button>
       </div>
+      <BoxCard v-for="(box, index) in currentBoxes" :key="index" :frameinfo="box" @deleteBox="deleteLabel"/>
     </div>
   </div>
   <pre>{{ vidinfo }}</pre>
@@ -41,9 +42,16 @@
 import { getVideoInfo, postVideoFrame, removeVideoFrame } from '@/services/videoService';
 import { computed, onBeforeMount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router'
+import BoxCard from './BoxCard.vue';
 
 const props = defineProps(['title', 'videoId', 'videoSrc'])
 const router = useRouter()
+const colors = [
+  "blue",
+  "white",
+  "pink",
+  "yellow",
+] // Each color here must have a class in box card!
 
 const videoElement = ref(null)
 const canvas = ref(null)
@@ -72,6 +80,7 @@ const currentFrameIdx = ref(0)
 const framesLabeledPerSecond = computed(() => { return vidinfo.value ? vidinfo.value.FramesLabeledPerSecond.toFixed(2) : 0 })
 const totalLabels = ref(0)
 const avgLabels = ref(12)
+const currentBoxes = ref([])
 
 // Only for dd3 labeling
 const videos = ref(null)
@@ -165,21 +174,20 @@ function drawCurrentFrame() {
   const ctx = clearAndReturnCtx()
   for (let objKey in labels) {
     let label = labels[objKey]
-    ctx.strokeStyle = 'lime';
+    ctx.strokeStyle = colors[parseInt(objKey)];
+    label.color = colors[objKey]
     const xleft = (label.X - label.Width / 2) * currentWidth.value
     const yleft = (label.Y - label.Height / 2) * currentHeight.value
     const w = label.Width * currentWidth.value
     const h = label.Height * currentHeight.value
-    ctx.rect(xleft, yleft, w, h);
-    ctx.stroke();
+    ctx.strokeRect(xleft, yleft, w, h);
   }
+  currentBoxes.value = labels
 }
-async function deleteLabel() {
-  let frames = vidinfo.value.Frames.filter((f) => f.FrameNr == currentFrame.value)
-  let frameToDelete = frames[frames.length-1]
-  frameToDelete = JSON.parse(JSON.stringify(frameToDelete))
-  await removeVideoFrame(props.videoId, currentFrame.value, frameToDelete).then(videoinfo => vidinfo.value = videoinfo).catch(err => console.error(err))
-  
+async function deleteLabel(frameinfo) {
+  await removeVideoFrame(props.videoId, currentFrame.value, frameinfo).then(videoinfo => vidinfo.value = videoinfo).catch(err => console.error(err))
+  currentBoxes.value = currentBoxes.value.filter((f) => f != frameinfo)
+
   if (modeLocalizationIsAll.value) {
     setToNextFrameAndDraw()
   } else {
@@ -198,8 +206,7 @@ function endDrawing(event) {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
   drawCurrentFrame()
   ctx.beginPath();
-  ctx.rect(startX.value, startY.value, currentX.value - startX.value, currentY.value - startY.value);
-  ctx.stroke();
+  ctx.strokeRect(startX.value, startY.value, currentX.value - startX.value, currentY.value - startY.value);
   let frameinfo = {
     "frameNr" : currentFrame.value,
     "x" : centerX.value, 
@@ -213,6 +220,8 @@ function endDrawing(event) {
   if (frameinfo['height'] > 0.07) {
     postVideoFrame(props.videoId, fnr, frameinfo).then(response => vidinfo.value=response.data)
   }
+  
+  currentBoxes.value.push(frameinfo)
 }
 function postFullFrameLabelAndDisplayNextFrame() {
   if (!modeLocalizationIsAll.value) {
@@ -246,6 +255,7 @@ function displayNextRandomFrame() {
       frameNrAlreadyLabeled = vidinfo.value.Frames.map(frameinfo => frameinfo.FrameNr).includes(rndFrameNr)
     }
     setCurrentTime(rndTime)
+    currentFrame.value = rndFrameNr
   }
 }
 function toggleLabelMode() {
@@ -257,6 +267,7 @@ function toggleLabelMode() {
     drawCurrentFrame()
   } else if (modeIsReview.value) {
     labelMode.value = "localization"
+    currentBoxes.value = []
     clearAndReturnCtx()
   }
 }
@@ -321,7 +332,7 @@ img {
 
 @media (min-width: 1024px) {
   video {
-    max-height: 75vh;
+    max-height: 68vh;
   }
 }
 </style>

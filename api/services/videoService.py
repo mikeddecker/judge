@@ -132,6 +132,7 @@ class VideoService:
         return video
 
     def set_frameInfo(self, frameInfo: FrameInfo, video: VideoInfo):
+        print(frameInfo)
         if frameInfo is None or not isinstance(frameInfo, FrameInfo):
             raise ValueError(f"frameInfo is not {FrameInfo}, got {frameInfo}")
         if video is None or not isinstance(video, VideoInfo):
