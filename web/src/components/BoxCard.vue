@@ -10,6 +10,7 @@ const color = computed(() => props.frameinfo.color)
 
 <template>
     <button :class="color" @click="emit('deleteBox', frameinfo)"><img src="@/assets/delete.png" alt="buttonpng" class="icon"/></button>
+    <!-- <p>{{ frameinfo.LabelType }}</p> -->
 </template>
 
 <style scoped>

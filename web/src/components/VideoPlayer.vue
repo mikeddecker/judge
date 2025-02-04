@@ -217,7 +217,7 @@ function endDrawing(event) {
     "labeltype" : modeLocalizationIsAll.value ? 1 : 2,
   }
   const fnr = currentFrame.value
-  if (frameinfo['height'] > 0.07) {
+  if (frameinfo['height'] > 0.03) {
     postVideoFrame(props.videoId, fnr, frameinfo).then(response => vidinfo.value=response.data)
   }
   
@@ -243,7 +243,7 @@ function postFullFrameLabelAndDisplayNextFrame() {
 }
 function displayNextRandomFrame() {
   clearAndReturnCtx()
-  if (Math.random() < framesLabeledPerSecond.value - avgLabels.value / 100) {
+  if (Math.random() < framesLabeledPerSecond.value - avgLabels.value / 100 && modeLocalizationIsAll.value) {
     router.push(`/browse`)
   } else {
     let frameNrAlreadyLabeled = true

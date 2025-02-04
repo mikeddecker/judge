@@ -116,7 +116,7 @@ class VideoInfo:
         ValueHelper.check_raise_frameNr(label.FrameNr)
         if label.FrameNr >= self.FrameLength:
             raise ValueError(f"FrameNr to big, frameLength is {self.FrameLength}, got {label.FrameNr}")
-        if label.Height < 0.07:
+        if label.Height < 0.025:
             raise ValueError(f"Frame is to small")
         self.Frames.append(label)
 
@@ -168,6 +168,8 @@ class VideoInfo:
         return "\n".join(substrings)
 
     def to_dict(self, include_frames=True):
+        framecountT1 = [f for f in self.Frames if f.LabelType == 1]
+        framecountT2 = [f for f in self.Frames if f.LabelType == 2]
         return {
             "Id" : self.Id,
             "Name" : self.Name, 
@@ -178,7 +180,8 @@ class VideoInfo:
             "Duration" : self.get_duration(),
             "FramesLabeledPerSecond" : len(self.Frames) / self.get_duration(),
             "Skills" : [s.to_dict() for s in self.Skills],
-            "LabeledFrameCount" : len(self.Frames),
+            "LabeledFrameCount" : len(framecountT1),
+            "LabeledFrameCount2": len(framecountT2),
             "RelativePath" : self.get_relative_video_path(),
         }
 

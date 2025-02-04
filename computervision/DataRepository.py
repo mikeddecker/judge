@@ -31,13 +31,16 @@ class DataRepository:
         engine = sqlal.create_engine(DATABASE_CONNECTION)#
         return engine.connect()
 
-    def get_framelabels(self, train_test_val):
+    def get_framelabels(self, train_test_val, type=1):
         # TODO : update with validation & 'random' sampling
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) <> 5 AND labeltype = 1""")
+            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) <> 5 AND labeltype = {type}""")
+
+        if train_test_val == "val":
+            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) = 5 AND labeltype = {type}""")
 
         if train_test_val == "test":
-            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) = 5 AND labeltype = 1""")
+            raise ValueError(f"Changed test to val !!")
         return pd.read_sql(qry, con=self.con)
 
     def __load_relativePaths_of_videos_with_framelabels(self):

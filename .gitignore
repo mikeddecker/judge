@@ -24,5 +24,6 @@ db_data/*
 node_modules
 
 *cookies.txt
+runs/*
 *.pt
 *.avi
