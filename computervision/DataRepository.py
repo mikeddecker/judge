@@ -45,7 +45,7 @@ class DataRepository:
 
     def __load_relativePaths_of_videos_with_framelabels(self):
         relative_paths = {}
-        qry = sqlal.text(f"""SELECT DISTINCT folderId, id, name FROM Videos WHERE id IN (SELECT DISTINCT videoId FROM FrameLabels)""")
+        qry = sqlal.text(f"""SELECT DISTINCT folderId, id, name FROM Videos;""")
 
         df_videos = pd.read_sql(qry, con=self.con)
         for idx, row in df_videos.iterrows():
