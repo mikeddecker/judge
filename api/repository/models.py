@@ -1,6 +1,6 @@
 # from flask_sqlalchemy import SQLAlchemy
 from repository.db import db
-from sqlalchemy.dialects.mysql import SMALLINT
+from sqlalchemy.dialects.mysql import TINYINT, SMALLINT
 
 class Folder(db.Model):
     __tablename__ = 'Folders'
@@ -107,3 +107,37 @@ class TrainResult(db.Model):
     __table_args__ = (
         db.PrimaryKeyConstraint('modelname', 'epoch', name='_modelname_epoch_pk_constraint'),
     )
+
+
+class Skillinfo_DoubleDutch_Type(db.Model):
+    __tablename__ = 'Skillinfo_DoubleDutch_Type'
+    id = db.Column(TINYINT(unsigned=True), primary_key=True, autoincrement=True)
+    name = db.Column(db.String(127), nullable=False)
+
+class Skillinfo_DoubleDutch_Turner(db.Model):
+    __tablename__ = 'Skillinfo_DoubleDutch_Turner'
+    id = db.Column(TINYINT(unsigned=True), primary_key=True, autoincrement=True)
+    name = db.Column(db.String(127), nullable=False)
+
+class Skillinfo_DoubleDutch_Skill(db.Model):
+    __tablename__ = 'Skillinfo_DoubleDutch_Skill'
+    id = db.Column(TINYINT(unsigned=True), primary_key=True, autoincrement=True)
+    name = db.Column(db.String(127), nullable=False)
+
+class Skillinfo_DoubleDutch(db.Model):
+    __tablename__ = 'Skillinfo_DoubleDutch'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
+    frameStart = db.Column(db.Integer, nullable=False)
+    frameEnd = db.Column(db.Integer, nullable=False)
+    type = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Type.id'), nullable=False)
+    rotations = db.Column(TINYINT(unsigned=True), nullable=False)
+    turner1 = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Turner.id'), nullable=False)
+    turner2 = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Turner.id'), nullable=False)
+    skill = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Skill.id'), nullable=False)
+    hands = db.Column(TINYINT(unsigned=True), nullable=False)
+    feet = db.Column(TINYINT(unsigned=True), nullable=False)
+    turntable = db.Column(TINYINT(unsigned=True), nullable=False)
+    bodyRotations = db.Column(TINYINT(unsigned=True), nullable=False)
+    backwards = db.Column(db.Boolean, nullable=False)
+    sloppy = db.Column(db.Boolean, nullable=False)

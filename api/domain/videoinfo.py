@@ -21,8 +21,8 @@ class VideoInfo:
     Skills: Set[Skill] = set()
 
     def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float):
-        self.Frames: self.Frames = []  # Initialize frames as an empty dictionary
-        self.Skills: self.Skills = set()  # Initialize skills as an empty set
+        self.Frames = []  # Initialize frames as an empty dictionary
+        self.Skills = set()  # Initialize skills as an empty set
 
         self.__setId(id)
         self.__setName(name)
@@ -141,7 +141,28 @@ class VideoInfo:
             raise ValueError("Skill may not be None")
         if skill in self.Skills:
             raise ValueError(f"Skill {skill} is already in the list.")
+        if self.has_skill_overlap(skill.FrameStart, skill.FrameEnd):
+            raise ValueError(f"Skill has overlap with another skill")
         self.Skills.add(skill)
+
+    def get_skill(self, start, end) -> None:
+        for s in self.Skills:
+            if s.FrameStart == start or s.FrameEnd == end:
+                return s
+        return None
+    
+    def has_skill_overlap(self, start, end) -> bool:
+        for s in self.Skills:
+            if (start <= s.FrameStart and end > s.FrameStart) or end >= s.FrameEnd and start < s.FrameEnd:
+                return True
+        return False
+    
+    def remove_skill(self, skill):
+        self.Skills.remove(skill)
+
+    #########
+    # Other #
+    #########    
 
     # TODO : update when videoinfo metadata is extended
     def __eq__(self, value : object):

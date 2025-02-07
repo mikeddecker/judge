@@ -5,7 +5,7 @@ from domain.videoinfo import VideoInfo
 from domain.frameinfo import FrameInfo
 from flask_sqlalchemy import SQLAlchemy
 from helpers.ValueHelper import ValueHelper
-from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel
+from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type
 from repository.MapToDomain import MapToDomain
 from repository.MapToDB import MapToDB
 from typing import List
@@ -52,12 +52,16 @@ class VideoRepository:
         self.db.session.add(frame_label_DB)
         self.db.session.commit()
 
+
     def count(self) -> int:
         return self.db.session.query(VideoInfoDB).count()
     
     def exists(self, id: int) -> bool:
         ValueHelper.check_raise_id(id)
         return self.db.session.query(VideoInfoDB).filter_by(id=id).scalar() is not None
+    
+    def exists_skillinfo(self, discipline: str, table_name_part: str, uc: int) -> bool:
+        raise NotImplementedError("not implemented")
     
     def exists_by_name(self, name: str, folder: Folder) -> bool:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
@@ -116,3 +120,49 @@ class VideoRepository:
         frame_label_DB.height = frameInfo.Height
         frame_label_DB.jumperVisible = frameInfo.JumperVisible
         self.db.session.commit()
+
+
+    ##########
+    # Skills #
+    ##########
+    def add_skill(self, videoId: int, disciplineConfig: dict, skillinfo: dict, start: int, end: int):
+        """Let the service be responsible for good values in the dicts"""
+        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_frameNr(start)
+        ValueHelper.check_raise_frameNr(end)
+
+        assert self.db.session.query(VideoInfo).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"        
+        assert self.db.session.query(Skillinfo_DoubleDutch_Type).filter_by(id=skillinfo["Type"]).count() > 0, f"Skillinfo_DoubleDutch_Type {skillinfo["Type"]} does not exist"
+        assert self.db.session.query(Skillinfo_DoubleDutch_Turner).filter_by(id=skillinfo["Turner1"]).count() > 0, f"Skillinfo_DoubleDutch_Turner {skillinfo["Turner1"]} does not exist"
+        assert self.db.session.query(Skillinfo_DoubleDutch_Turner).filter_by(id=skillinfo["Turner2"]).count() > 0, f"Skillinfo_DoubleDutch_Turner {skillinfo["Turner2"]} does not exist"
+        assert self.db.session.query(Skillinfo_DoubleDutch_Type).filter_by(id=skillinfo["Skill"]).count() > 0, f"Skillinfo_DoubleDutch_Skill {skillinfo["Turner1"]} does not exist"
+
+        skill = Skillinfo_DoubleDutch(
+            videoId = videoId,
+            frameStart = start,
+            frameEnd = end,
+            type = skillinfo["Type"],
+            rotations = skillinfo["Rotations"],
+            turner1 = skillinfo["Turner1"],
+            turner2 = skillinfo["Turner2"],
+            skill = skillinfo["Skill"],
+            hands = skillinfo["Hands"],
+            feet = skillinfo["Feet"],
+            turntable = skillinfo["Turntable"],
+            bodyRotations = skillinfo["BodyRotations"],
+            backwards = skillinfo["Backwards"],
+            sloppy = skillinfo["Sloppy"],
+        )
+
+        self.db.session.add(skill)
+        self.db.session.commit()
+
+    def remove_skill(self, disciplineconfig: dict, videoId, start: int, end: int):
+        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_frameNr(start)
+        ValueHelper.check_raise_frameNr(end)
+
+        skillDB = self.db.session.query(Skillinfo_DoubleDutch).filter_by(frameStart=start, frameEnd=end).first()
+        self.db.session.remove(skillDB)
+        self.db.session.commit()
+    

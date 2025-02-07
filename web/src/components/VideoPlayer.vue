@@ -79,30 +79,9 @@ const modeLocalizationIsAll = ref(false)
 const currentFrameIdx = ref(0)
 const framesLabeledPerSecond = computed(() => { return vidinfo.value ? vidinfo.value.FramesLabeledPerSecond.toFixed(2) : 0 })
 const totalLabels = ref(0)
-const avgLabels = ref(12)
+const avgLabels = ref(0)
 const currentBoxes = ref([])
 
-// Only for dd3 labeling
-const videos = ref(null)
-const nextVideoId = ref(props.videoId)
-onMounted(async () => {
-  // TODO : fix random labeling
-  // console.log("mountin?")
-  // getFolder(3).then((value) => {
-  //   videos.value = Object.keys(value.Videos)
-  //   console.log(videos.value)
-  //   while (nextVideoId.value == props.videoId) {
-  //     console.log("qsidm")
-  //     let potentialNextVideoId = Number(videos.value[Math.floor(Math.random()*videos.value.length)])
-  //     totalLabels.value = Object.values(value.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
-  //     avgLabels.value = totalLabels.value / Object.values(value.Videos).length
-  //     let labeledFramesVideo = value.Videos[potentialNextVideoId].LabeledFrameCount
-  //     if (labeledFramesVideo < avgLabels.value * 0.7 && potentialNextVideoId != 1208) {
-  //       nextVideoId.value = potentialNextVideoId
-  //     }
-  //   }
-  // })
-})
 
 function updatePaused(event) {
   videoduration.value = event.target.duration
@@ -243,7 +222,7 @@ function postFullFrameLabelAndDisplayNextFrame() {
 }
 function displayNextRandomFrame() {
   clearAndReturnCtx()
-  if (Math.random() < framesLabeledPerSecond.value - avgLabels.value / 100 && modeLocalizationIsAll.value) {
+  if (Math.random() < (framesLabeledPerSecond.value - avgLabels.value) / 100 && modeLocalizationIsAll.value) {
     router.push(`/browse`)
   } else {
     let frameNrAlreadyLabeled = true

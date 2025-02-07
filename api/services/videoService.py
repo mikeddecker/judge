@@ -2,7 +2,9 @@ import os
 from domain.folder import Folder
 from domain.videoinfo import VideoInfo
 from domain.frameinfo import FrameInfo
+from domain.skill import Skill
 from helpers.ValueHelper import ValueHelper
+from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
@@ -67,6 +69,41 @@ class VideoService:
             fps=fps,
             srcinfo=ytid, # TODO : make better
         )
+    
+    def add_skill(self, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict):
+        print("adding skill\n", skillinfo)
+        assert isinstance(skillinfo, dict), "Skillinfo is not a dict"
+        assert len(skillinfo > 0), "Skillinfo is empty"
+        config = get_discipline_DoubleDutch_config()
+
+        ValueHelper.check_raise_frameNr(frameStart)
+        ValueHelper.check_raise_frameNr(frameEnd)
+        if videoinfo.has_skill_overlap(frameStart, frameEnd):
+            raise ValueError(f"Skill has overlap with another skill, {frameStart} -> {frameEnd}")
+
+        # Check skillinfo values
+        for key, value in config.items():
+            assert key in skillinfo.keys(), f"Skillinfo does not provide info for {key}"
+            if value[0] == "Numerical":
+                min = value[1]
+                max = value[2]
+                assert isinstance(skillinfo[key], int), f"Skillspecification of {key} must be in integer, got {skillinfo[key]}"
+                assert skillinfo[key] >= min and skillinfo[key] <= max, f"Skillinfo must be between {min} and {max}, got {skillinfo[key]}"
+            elif value[0] == "Categorical":
+                assert isinstance(skillinfo[key], int), f"Skillspecification of {key} must be in integer, got {skillinfo[key]}"
+                print("tablename", config["Tablename"], config[key][1])
+                self.VideoRepo.exists_skillinfo(discipline=config["Tablename"], tablenamepart=config[key][1], uc=skillinfo[key])
+            elif value[0] == "Boolean":
+                assert isinstance(skillinfo[key], bool), f"Boolean value {key} must be a boolean, got {skillinfo[key]}"
+
+        skill = Skill(disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
+        videoinfo.add_skill(skill)
+        self.VideoRepo.add_skill(videoId=videoinfo.Id, disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
+    
+    def remove_skill(self, disciplineconfig: dict, videoinfo: VideoInfo, frameStart: int, frameEnd: int):
+        skill = videoinfo.get_skill(frameStart, frameEnd)
+        self.VideoRepo.remove_skill(disciplineconfig, videoinfo.Id, skill.FrameStart, skill.FrameEnd)
+        videoinfo.remove_skill(skill)
     
     def count(self) -> int:
         return self.VideoRepo.count()
