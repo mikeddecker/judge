@@ -70,7 +70,7 @@ class VideoService:
             srcinfo=ytid, # TODO : make better
         )
     
-    def add_skill(self, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict):
+    def add_skill(self, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict) -> Skill:
         print("adding skill\n", skillinfo)
         assert isinstance(skillinfo, dict), "Skillinfo is not a dict"
         assert len(skillinfo > 0), "Skillinfo is empty"
@@ -99,6 +99,7 @@ class VideoService:
         skill = Skill(disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
         videoinfo.add_skill(skill)
         self.VideoRepo.add_skill(videoId=videoinfo.Id, disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
+        return skill
     
     def remove_skill(self, disciplineconfig: dict, videoinfo: VideoInfo, frameStart: int, frameEnd: int):
         skill = videoinfo.get_skill(frameStart, frameEnd)
@@ -130,7 +131,10 @@ class VideoService:
         ValueHelper.check_raise_id(id)
         if not self.exists_in_database(id=id):
             raise LookupError(f"VideoId {id} does not exist")
-        return self.VideoRepo.get(id=id)
+        video = self.VideoRepo.get(id=id)
+        for skill in self.VideoRepo.get_skills(videoId=id):
+            video.add_skill(skill)
+        return video
 
     def is_already_downloaded(self, sourceinfo:str):
         """Sourceinfo = yt_id"""
@@ -153,6 +157,13 @@ class VideoService:
         if not self.FolderRepo.exists(folderId):
             raise LookupError(f"FolderId {folderId} does not exist")
         return self.VideoRepo.get_videos(folderId=folderId)
+    
+    def get_skills(self, videoId: int) -> List[Skill]:
+        ValueHelper.check_raise_id(videoId)
+        if not self.VideoRepo.exists(videoId):
+            raise LookupError(f"VideoId {videoId} does not exist")
+        return self.VideoRepo.get_skills(videoId)
+
     
     # TODO : nice to have
     def rename(self, id: int, new_name):

@@ -1,6 +1,7 @@
 import math
 from domain.videoinfo import VideoInfo
 from domain.folder import Folder
+from domain.skill import Skill
 from domain.videoinfo import VideoInfo
 from domain.frameinfo import FrameInfo
 from flask_sqlalchemy import SQLAlchemy
@@ -61,7 +62,16 @@ class VideoRepository:
         return self.db.session.query(VideoInfoDB).filter_by(id=id).scalar() is not None
     
     def exists_skillinfo(self, discipline: str, table_name_part: str, uc: int) -> bool:
-        raise NotImplementedError("not implemented")
+        ValueHelper.check_raise_id(uc)
+        match (table_name_part):
+            case 'Type':
+                return self.db.session.query(Skillinfo_DoubleDutch_Type).filter_by(id=uc).first() is not None
+            case 'Turner':
+                return self.db.session.query(Skillinfo_DoubleDutch_Turner).filter_by(id=uc).first() is not None
+            case 'Skill':
+                return self.db.session.query(Skillinfo_DoubleDutch_Skill).filter_by(id=uc).first() is not None
+            case _:
+                raise ValueError(f"tablenamepart {table_name_part} does not exist")
     
     def exists_by_name(self, name: str, folder: Folder) -> bool:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
@@ -156,6 +166,10 @@ class VideoRepository:
 
         self.db.session.add(skill)
         self.db.session.commit()
+    
+    def get_skills(self, videoId: int) -> List[Skill]:
+        skillsDB = self.db.session.query(Skillinfo_DoubleDutch).filter_by(videoId=videoId).all()
+        return MapToDomain.map_skills(skillsDB)
 
     def remove_skill(self, disciplineconfig: dict, videoId, start: int, end: int):
         ValueHelper.check_raise_id(videoId)
