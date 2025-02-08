@@ -71,40 +71,82 @@ class VideoService:
         )
     
     def add_skill(self, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict) -> Skill:
-        print("adding skill\n", skillinfo)
         assert isinstance(skillinfo, dict), "Skillinfo is not a dict"
-        assert len(skillinfo > 0), "Skillinfo is empty"
+        assert len(skillinfo) > 0, "Skillinfo is empty"
         config = get_discipline_DoubleDutch_config()
 
         ValueHelper.check_raise_frameNr(frameStart)
         ValueHelper.check_raise_frameNr(frameEnd)
+        assert frameEnd > frameStart, f"End is smaller than start: s = {frameStart}, e = {frameEnd}"
+        assert frameEnd - frameStart > 5, f"Skill must be long enough"
         if videoinfo.has_skill_overlap(frameStart, frameEnd):
             raise ValueError(f"Skill has overlap with another skill, {frameStart} -> {frameEnd}")
 
         # Check skillinfo values
         for key, value in config.items():
-            assert key in skillinfo.keys(), f"Skillinfo does not provide info for {key}"
+            if key != 'Tablename':
+                assert key in skillinfo.keys(), f"Skillinfo does not provide info for {key}"
+            if value[0] == "Numerical":
+                min = value[1]
+                max = value[2]
+                try:
+                    skillinfo[key] = int(skillinfo[key])
+                except ValueError:
+                    raise ValueError(f"Skillspecification of {key} must be an integer, but got {skillinfo[key]} ({type(skillinfo[key])})")
+                assert skillinfo[key] >= min and skillinfo[key] <= max, f"Skillinfo for {key} must be between {min} and {max}, got {skillinfo[key]}"
+            elif value[0] == "Categorical":
+                try:
+                    skillinfo[key] = int(skillinfo[key])
+                except ValueError:
+                    raise ValueError(f"Skillspecification of {key} must be an integer, but got {skillinfo[key]} ({type(skillinfo[key])})")
+                self.VideoRepo.exists_skillinfo(discipline=config["Tablename"], table_name_part=config[key][1], uc=skillinfo[key])
+            elif value[0] == "Boolean":
+                assert isinstance(skillinfo[key], bool), f"Boolean value {key} must be a boolean, got {skillinfo[key]}"
+
+        insertedId =self.VideoRepo.add_skill(videoId=videoinfo.Id, disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
+        skill = Skill(id=insertedId, disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
+        # videoinfo.add_skill(skill)
+        return skill
+
+    def update_skill(self, id: int, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict) -> VideoInfo:
+        assert isinstance(skillinfo, dict), "Skillinfo is not a dict"
+        assert len(skillinfo) > 0, "Skillinfo is empty"
+        config = get_discipline_DoubleDutch_config()
+
+        ValueHelper.check_raise_frameNr(frameStart)
+        ValueHelper.check_raise_frameNr(frameEnd)
+        assert frameEnd > frameStart, f"End is smaller than start: s = {frameStart}, e = {frameEnd}"
+        assert frameEnd - frameStart > 5, f"Skill must be long enough"
+        if videoinfo.has_skill_overlap(frameStart, frameEnd, skillId=id):
+            raise ValueError(f"Skill has overlap with another skill, {frameStart} -> {frameEnd}")
+
+        # Check skillinfo values
+        for key, value in config.items():
+            if key != 'Tablename':
+                assert key in skillinfo.keys(), f"Skillinfo does not provide info for {key}"
             if value[0] == "Numerical":
                 min = value[1]
                 max = value[2]
                 assert isinstance(skillinfo[key], int), f"Skillspecification of {key} must be in integer, got {skillinfo[key]}"
-                assert skillinfo[key] >= min and skillinfo[key] <= max, f"Skillinfo must be between {min} and {max}, got {skillinfo[key]}"
+                assert skillinfo[key] >= min and skillinfo[key] <= max, f"Skillinfo {key} must be between {min} and {max}, got {skillinfo[key]}"
             elif value[0] == "Categorical":
                 assert isinstance(skillinfo[key], int), f"Skillspecification of {key} must be in integer, got {skillinfo[key]}"
-                print("tablename", config["Tablename"], config[key][1])
-                self.VideoRepo.exists_skillinfo(discipline=config["Tablename"], tablenamepart=config[key][1], uc=skillinfo[key])
+                self.VideoRepo.exists_skillinfo(discipline=config["Tablename"], table_name_part=config[key][1], uc=skillinfo[key])
             elif value[0] == "Boolean":
                 assert isinstance(skillinfo[key], bool), f"Boolean value {key} must be a boolean, got {skillinfo[key]}"
 
-        skill = Skill(disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
-        videoinfo.add_skill(skill)
-        self.VideoRepo.add_skill(videoId=videoinfo.Id, disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
-        return skill
-    
-    def remove_skill(self, disciplineconfig: dict, videoinfo: VideoInfo, frameStart: int, frameEnd: int):
+        self.VideoRepo.update_skill(id=id, videoId=videoinfo.Id, disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
+        video = self.VideoRepo.get(videoinfo.Id)
+        for s in self.VideoRepo.get_skills(video.Id):
+            video.add_skill(s)
+        return video
+
+
+    def remove_skill(self, disciplineconfig: dict, videoinfo: VideoInfo, frameStart: int, frameEnd: int) -> VideoInfo:
         skill = videoinfo.get_skill(frameStart, frameEnd)
         self.VideoRepo.remove_skill(disciplineconfig, videoinfo.Id, skill.FrameStart, skill.FrameEnd)
         videoinfo.remove_skill(skill)
+        return videoinfo
     
     def count(self) -> int:
         return self.VideoRepo.count()
@@ -163,6 +205,11 @@ class VideoService:
         if not self.VideoRepo.exists(videoId):
             raise LookupError(f"VideoId {videoId} does not exist")
         return self.VideoRepo.get_skills(videoId)
+    
+    def get_skilloptions(self, skilltype: str, tablepart: str):
+        assert skilltype == "DoubleDutch", f"Currently only DoubleDutch supported, got {skilltype}"
+        assert tablepart in ["Type", "Turner", "Skill"], f"Only tables Type, turner & skills are created, got {tablepart}"
+        return self.VideoRepo.get_skilloptions(skilltype, tablepart)
 
     
     # TODO : nice to have
@@ -180,7 +227,6 @@ class VideoService:
         return video
 
     def set_frameInfo(self, frameInfo: FrameInfo, video: VideoInfo):
-        print(frameInfo)
         if frameInfo is None or not isinstance(frameInfo, FrameInfo):
             raise ValueError(f"frameInfo is not {FrameInfo}, got {frameInfo}")
         if video is None or not isinstance(video, VideoInfo):

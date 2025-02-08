@@ -33,6 +33,7 @@ class MapToDomain:
     def map_skills(skillsDB: Skillinfo_DoubleDutch) -> List[Skill]:
         return [
             Skill(
+                id=s.id,
                 disciplineConfig=get_discipline_DoubleDutch_config(),
                 skillinfo={
                     "Type" : s.type,
@@ -45,7 +46,7 @@ class MapToDomain:
                     "Turntable" : s.turntable,
                     "BodyRotations" : s.bodyRotations,
                     "Backwards" : s.backwards,
-                    "Sloppy" : s.slopyy,
+                    "Sloppy" : s.sloppy,
                 },
                 start=s.frameStart,
                 end=s.frameEnd

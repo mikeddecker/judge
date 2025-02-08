@@ -44,7 +44,6 @@ class FrameRouter(Resource):
     def delete(self, videoId: int, frameNr: int):
         data = request.get_json()
         frameinfo = data.get('frameinfo')
-        print(frameinfo)
         try:
             ValueHelper.check_raise_id(videoId)
             ValueHelper.check_raise_frameNr(frameNr)

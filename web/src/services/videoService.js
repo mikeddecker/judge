@@ -75,3 +75,47 @@ export const downloadVideo = async (downloadinfo) => {
       throw error;
     });
 };
+
+export const getSkilloptions = async (skilltype, tablepart) => {
+  try {
+    const response = await api.get(`/skilloptions/${skilltype}/${tablepart}`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}
+
+export const postSkill = async (videoId, skillinfo) => {
+  return await api.post(`/skill/${videoId}`, skillinfo, { headers: { 'Content-Type': 'application/json' }})
+    .then(function (response) {
+      return response.data;
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
+};
+
+export const putSkill = async (videoId, skillinfo) => {
+  return await api.put(`/skill/${videoId}`, skillinfo, { headers: { 'Content-Type': 'application/json' }})
+    .then(function (response) {
+      return response.data;
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
+};
+
+export const deleteSkill = async (videoId, start, end) => {
+  console.log("delete skilll", videoId, start, end)
+  return await api.delete(`/skill/${videoId}`, { 
+      headers: { 'Content-Type': 'application/json' },
+      data: { "FrameStart": start, "FrameEnd": end },
+    })
+    .then(function (response) {
+      return response.data;
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
+};

@@ -107,7 +107,6 @@ class VideoInfo:
     ####################
     def has_frame_been_labeled(self, label: FrameInfo):
         # ValueHelper.check_raise_frameNr(frameNr)
-        print(self.Frames)
         return label in self.Frames
     
     def add_framelabel(self, label: FrameInfo):
@@ -151,9 +150,9 @@ class VideoInfo:
                 return s
         return None
     
-    def has_skill_overlap(self, start, end) -> bool:
+    def has_skill_overlap(self, start, end, skillId=None) -> bool:
         for s in self.Skills:
-            if (start <= s.FrameStart and end > s.FrameStart) or end >= s.FrameEnd and start < s.FrameEnd:
+            if ((start <= s.FrameStart and end > s.FrameStart) or end >= s.FrameEnd and start < s.FrameEnd) and (skillId is not None and s.Id != skillId):
                 return True
         return False
     

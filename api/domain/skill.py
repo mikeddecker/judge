@@ -6,22 +6,24 @@ from helpers.ValueHelper import ValueHelper
 class Skill:
     PROPERTIES = [
         'Id', 'DottedName',
-        'DisciplineInfo', 'Skillinfo',
+        'DisciplineInfo', 'SkillInfo',
         'FrameStart', 'FrameEnd'
     ]
     FrameStart: int
     FrameEnd: int # Included --> [Start, End]
 
     def __init__(self,
+                 id: int,
                  disciplineConfig: dict, # Containing keys: column name, value: which foreign key to use (TODO: restrictions)
                  skillinfo: dict, # Containing keys: columns, values: skillIds (ints) or numeric values
                  start: int = None, end: int = None):
         """Either provide dotted name or parts (rotations, skilltype, onehanded, turners...)"""
+        self.__setId(id)
         self.__setDisciplineConfig(disciplineConfig)
         self.__setSkillinfo(skillinfo)
         self.__setFrameStart(start)
         self.__setFrameEnd(end)
-        self.__setDottedNameFromAttributes()
+        # self.__setDottedNameFromAttributes()
             
 
     def __setattr__(self, name, value):
@@ -36,6 +38,14 @@ class Skill:
         elif name not in self.PROPERTIES:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
+
+    def __setId(self, id: int):
+        ValueHelper.check_raise_id(id)
+        if hasattr(self, 'Id') and self.Id is not None:
+            raise AttributeError(f"Cannot modify Id once it is set")
+        if id is None or id <= 0:
+            raise ValueError("Id must be strict positive")
+        object.__setattr__(self, 'Id', id)
 
     def __setDisciplineId(self, id: int):
         ValueHelper.check_raise_id(id)
