@@ -42,11 +42,11 @@ div {
 }
 label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
 }
 
 select {
-    padding: 8px;
+    padding: 4px;
     border: 1px solid #ccc;
 }
 </style>

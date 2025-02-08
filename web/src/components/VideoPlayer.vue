@@ -512,9 +512,13 @@ function frameToEndOfSkill() {
   max-width: 100%;
 }
 
+p {
+  width: 100%;
+}
+
 video {
-  max-width: 95%;
-  max-height: 80vh;
+  max-width: 90%;
+  max-height: 70vh;
 }
 
 .controls {

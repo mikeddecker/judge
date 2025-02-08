@@ -109,7 +109,7 @@ async function downloadYTVideo() {
 
 <style scoped>
 h1 {
-  margin: 0.5rem 0;
+  margin: 0.1rem 0;
 }
 h2 {
   margin-top: 0.8rem;
