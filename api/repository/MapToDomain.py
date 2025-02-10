@@ -47,6 +47,8 @@ class MapToDomain:
                     "BodyRotations" : s.bodyRotations,
                     "Backwards" : s.backwards,
                     "Sloppy" : s.sloppy,
+                    "Hard2see" : s.hard2see,
+                    "Fault" : s.fault,
                 },
                 start=s.frameStart,
                 end=s.frameEnd

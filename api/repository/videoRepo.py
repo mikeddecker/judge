@@ -159,6 +159,8 @@ class VideoRepository:
             bodyRotations = skillinfo["BodyRotations"],
             backwards = skillinfo["Backwards"],
             sloppy = skillinfo["Sloppy"],
+            hard2see = skillinfo["Hard2see"],
+            fault = skillinfo["Fault"]
         )
 
         self.db.session.add(skill)
@@ -193,6 +195,9 @@ class VideoRepository:
         skill.bodyRotations = skillinfo["BodyRotations"]
         skill.backwards = skillinfo["Backwards"]
         skill.sloppy = skillinfo["Sloppy"]
+        skill.hard2see = skillinfo["Hard2see"]
+        skill.fault = skillinfo["Fault"]
+
 
         self.db.session.commit()
     

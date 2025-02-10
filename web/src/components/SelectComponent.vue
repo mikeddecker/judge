@@ -18,7 +18,7 @@
 </template>
   
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue';
+import { defineProps, defineEmits, ref, watch } from 'vue';
   
 const props = defineProps(["skilltype", "options", "title", "defaultValue"]);
 
@@ -27,9 +27,25 @@ const emit = defineEmits(['update:selected']);
 const selectedValue = ref(props.defaultValue);
 
 const handleChange = () => {
-    console.log(selectedValue.value)
-    emit('update:selected', props.skilltype, selectedValue.value, props.options[selectedValue.value]);
+    console.log(selectedValue.value, typeof(selectedValue.value))
+    // Needed as values passed to this component become strings
+    let convertedValue = undefined
+    if (selectedValue.value == "false") {
+        convertedValue = false
+    } else if (selectedValue.value == "true") {
+        convertedValue = true
+    } else {
+        convertedValue = Number(selectedValue.value)
+    }
+    emit('update:selected', props.skilltype, convertedValue, props.options[selectedValue.value]);
 };
+
+watch(() => props.defaultValue, (newValue, oldValue) => {
+  // React to prop changes
+  console.log(`${props.title}:`, newValue);
+  selectedValue.value = newValue; // Update the value in the ref if needed
+});
+
 </script>
 
 <style scoped>

@@ -49,8 +49,9 @@
       <button v-show="modeIsSkills" @click="playJustALittleFurther(+10)">+10</button>
       <button v-show="modeIsSkills" @click="playJustALittleFurther(+15)">+15</button>
       <button v-show="modeIsSkills" @click="playJustALittleFurther(+25)">+25</button>
-      <button v-show="modeIsSkills && selectedSkill" @click="deselectSkill()">Deselect skill</button>
-      <button v-show="modeIsSkills && selectedSkill" @click="frameToEndOfSkill()">Frame to end of selected skill</button>
+      <button v-show="modeIsSkills && selectedSkill" @click="deselectSkill">Deselect skill</button>
+      <button v-show="modeIsSkills && selectedSkill" @click="frameToEndOfSkill">Frame to end of selected skill</button>
+      <button v-show="modeIsSkills && frameStart && frameEnd" @click="replaySection">Replay section</button>
       <div class="review-controls" v-show="modeIsReview">
         <button class="big-arrow" @click="setToPreviousFrameAndDraw">&larr;</button>
         <button class="big-arrow" @click="setToNextFrameAndDraw">&rarr;</button>
@@ -72,6 +73,8 @@
       <SelectComponent :skilltype="'BodyRotations'" :options="optionsBodyRotations" title="BodyRotations" :defaultValue="selectedSkill ? selectedSkill.Skillinfo['BodyRotations'] : selectedOptions['BodyRotations'][0]" @update:selected="handleSelectedChange"/>
       <SelectComponent :skilltype="'Backwards'" :options="optionsBoolean" title="Backwards" :defaultValue="selectedSkill ? selectedSkill.Skillinfo['Backwards'] : selectedOptions['Backwards'][0]" @update:selected="handleSelectedChange"/>
       <SelectComponent :skilltype="'Sloppy'" :options="optionsBoolean" title="Sloppy" :defaultValue="selectedSkill ? selectedSkill.Skillinfo['Sloppy'] : selectedOptions['Sloppy'][0]" @update:selected="handleSelectedChange"/>
+      <SelectComponent :skilltype="'Hard2see'" :options="optionsBoolean" title="Hard2see" :defaultValue="selectedSkill ? selectedSkill.Skillinfo['Hard2see'] : selectedOptions['Hard2see'][0]" @update:selected="handleSelectedChange"/>
+      <SelectComponent :skilltype="'Fault'" :options="optionsBoolean" title="Fault" :defaultValue="selectedSkill ? selectedSkill.Skillinfo['Fault'] : selectedOptions['Fault'][0]" @update:selected="handleSelectedChange"/>
       <button v-show="frameStart && frameEnd && !selectedSkill" @click="addSkill">submit skill</button>
       <button v-show="skillCanUpdate" @click="updateSkill">update</button>
       <button v-if="selectedSkill" @click="removeSkill"><img src="@/assets/delete.png" alt="buttonpng" class="icon"/></button>
@@ -406,9 +409,11 @@ async function playJustALittleFurther(framesToSkip) {
     videoElement.value.currentTime += framesToSkip / vidinfo.value.FPS
     currentFrame.value = Math.round(vidinfo.value.FPS * videoElement.value.currentTime)
   } else {
-    let timeToSkip = 1 / vidinfo.value.FPS * framesToSkip * 1000
+    let endTime = (currentFrame.value + framesToSkip) / vidinfo.value.FPS
     videoElement.value.play()
-    await sleep(timeToSkip)
+    while (videoElement.value.currentTime < endTime) {
+      await sleep(25)
+    }
     videoElement.value.pause()
   }
 }
@@ -431,7 +436,16 @@ function onSkillClicked(skillIdentifier) {
     skillCanUpdate.value = false
   }
 }
-function setDefaultSelectedOptions(fs) {
+function prepareNextLabel(fs) {
+  selectedSkill.value = undefined
+  skillCanUpdate.value = false
+  frameStart.value = fs
+  frameEnd.value = undefined
+  for (let skillIdx in skills.value) {
+    skills.value[skillIdx].inCreation = false
+  }
+}
+function setDefaultSelectedOptions() {
   selectedOptions.value = {
     "Type" : [1, "DoubleDutch"],
     "Rotations" : [1, 1],
@@ -444,19 +458,16 @@ function setDefaultSelectedOptions(fs) {
     "BodyRotations" : [0, 0],
     "Backwards" : [false, false],
     "Sloppy" : [false, false],
+    "Hard2see" : [false, false],
+    "Fault" : [false, false],
   }
-  selectedSkill.value = undefined
-  skillCanUpdate.value = false
-  frameStart.value = fs
-  frameEnd.value = undefined
-  for (let skillIdx in skills.value) {
-    skills.value[skillIdx].inCreation = false
-  }
+  prepareNextLabel()
 }
 function handleSelectedChange(skillinfo, value, description) {
-  selectedOptions.value[skillinfo] = [Number(value) ? Number(value) : Boolean(value), description]
+  selectedOptions.value[skillinfo] = [value, description]
+  console.log("handleSelectedChange", value)
   if (selectedSkill.value) {
-    selectedSkill.value["Skillinfo"][skillinfo] = Number(value) ? Number(value) : Boolean(value)
+    selectedSkill.value["Skillinfo"][skillinfo] = value
     skillCanUpdate.value = true
   }
 }
@@ -470,7 +481,7 @@ async function addSkill() {
     }, {})
   }
   vidinfo.value = await postSkill(vidinfo.value.Id, newSkill)
-  setDefaultSelectedOptions(frameEnd.value)
+  prepareNextLabel(frameEnd.value)
 }
 async function updateSkill() {
   let updatedSkill = Object.entries(selectedSkill.value).reduce((newDict, [key, value]) => {
@@ -480,12 +491,12 @@ async function updateSkill() {
   const updatedVideoinfo = await putSkill(vidinfo.value.Id, updatedSkill)
   vidinfo.value = updatedVideoinfo
   skillCanUpdate.value = false
-  setDefaultSelectedOptions()
+  prepareNextLabel()
 }
 async function removeSkill() {
   vidinfo.value = await deleteSkill(vidinfo.value.Id, selectedSkill.value.FrameStart, selectedSkill.value.FrameEnd)
   skillCanUpdate.value = false
-  setDefaultSelectedOptions()
+  prepareNextLabel()
 }
 function deselectSkill() {
   skillCanUpdate.value = false
@@ -495,9 +506,21 @@ function deselectSkill() {
     skills.value[skillIdx].inCreation = false
   }
   selectedSkill.value = undefined
+  currentFrame.value = frameStart.value
+  setCurrentTime(currentFrame.value / vidinfo.value.FPS)
 }
 function frameToEndOfSkill() {
   currentFrame.value = selectedSkill.value.FrameEnd
+  setCurrentTime(currentFrame.value / vidinfo.value.FPS)
+}
+async function replaySection() {
+  setCurrentTime(frameStart.value / vidinfo.value.FPS)
+  let endTime = frameEnd.value / vidinfo.value.FPS
+  videoElement.value.play()
+  while (videoElement.value.currentTime < endTime) {
+    await sleep(25)
+  }
+  videoElement.value.pause()
 }
 
 // TODO : catch resize of window, because the current frame can be labeled wrong, position wise

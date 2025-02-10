@@ -38,3 +38,6 @@ skillinfo = {
     "Turner2": 2, # Will be ignored if not specified in config
 }
 ```
+
+So adding skill like boolean or numeric:
+Add to ConfigHelper.py, mapToDomain, model.py, flask db migrate, and make sure frontend can accept the extra info.

@@ -7,9 +7,11 @@ def get_discipline_DoubleDutch_config():
         "Turner2": ("Categorical", "Turner"),
         "Skill" : ("Categorical", "Skill"),
         "Hands" : ("Numerical", 0, 2, 1), # 0 for al salto types
-        "Feet" : ("Numerical", 1, 2, 1),
+        "Feet" : ("Numerical", 0, 2, 1),
         "Turntable" : ("Numerical", 0, 6, 0.25), # Per quarter (but still integers)
         "BodyRotations" : ("Numerical", 0, 2, 1),
         "Backwards" : ("Boolean"),
         "Sloppy" : ("Boolean"),
+        "Hard2see" : ("Boolean"),
+        "Fault" : ("Boolean"),
     }

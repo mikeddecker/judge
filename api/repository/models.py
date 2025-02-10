@@ -141,3 +141,5 @@ class Skillinfo_DoubleDutch(db.Model):
     bodyRotations = db.Column(TINYINT(unsigned=True), nullable=False)
     backwards = db.Column(db.Boolean, nullable=False)
     sloppy = db.Column(db.Boolean, nullable=False)
+    hard2see = db.Column(db.Boolean, nullable=False, default=False)
+    fault = db.Column(db.Boolean, nullable=False, default=False)
