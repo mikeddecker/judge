@@ -131,12 +131,12 @@ class VideoService:
     
     def remove_skill(self, disciplineconfig: dict, videoinfo: VideoInfo, frameStart: int, frameEnd: int) -> VideoInfo:
         skill = videoinfo.get_skill(frameStart, frameEnd)
+        print(skill)
         self.VideoRepo.remove_skill(disciplineconfig, videoinfo.Id, skill.FrameStart, skill.FrameEnd)
         videoinfo.remove_skill(skill)
         return videoinfo
     
     def calculate_skill_level(self, disciplineconfig: dict, skillinfo: dict, frameStart: int, videoId: int) -> int:
-        print(";;", skillinfo)
         ValueHelper.check_raise_skillinfo_values(config=disciplineconfig, skillinfo=skillinfo, repo=self.VideoRepo)
         ValueHelper.check_raise_frameNr(frameStart)
 
@@ -158,7 +158,7 @@ class VideoService:
             case 'Irish Dutch':
                 return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart)
             case 'Chinese Wheel':
-                return self.calculate_level_chinese_wheel(skillinfo, options_type, options_skill, options_turner, frameStart)
+                return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart)
             case 'Transition':
                 return 1
             case 'Snapperlike':
@@ -260,16 +260,161 @@ class VideoService:
         print("level total", level_total)
         return level_total
 
-    def calculate_level_single_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int):
-        return 0
+    def calculate_level_single_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
+        print("@"*70)
+        print("start", oskill[skillinfo["Skill"]])
+        base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
+        additional_levels = 0
+        skillname = oskill[skillinfo["Skill"]]["name"]
+
+        print(base_skill_levels)
+        # Return 0 or 0.5 if no skill or footwork
+        match (base_skill_levels):
+            case ['0']:
+                return 0
+            case ['0.5']:
+                return 0.5
+            case ['/']: # Return from power
+                prev_skillinfo, prev_skillname, base_level = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStar)
+                print(type(base_level), base_level)
+                base_skill_levels = [base_level + 1 if prev_skillname == "frog" and prev_skillinfo.SkillInfo["Hands"] == 1 else base_level]
+                # if consequetive_possibility and prev_base_skill_level == 3 and skillname != 'frog': # 1h frog  (high frog has base skill level 2)
+                #     additional_levels += 1
+            case _:
+                base_skill_levels = [int(bs) for bs in base_skill_levels]
+                print("base skill levels", base_skill_levels)
+                prev_skillinfo, prev_skillname, base_level = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
+
+                # high frog?
+                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce"]:
+                    print("+1 highfrog")
+                    additional_levels += 1
+                
+                # one handed frog?
+                if skillname == 'frog' and skillinfo["Hands"] == 1:
+                    print("+1 one handed frog")
+                    additional_levels += 1
+                
+                # consequetive?
+                if skillname == 'frog' and prev_skillname == 'frog':
+                    print("+1 consequetive")
+                    additional_levels += 1
+                
+                # 1h frog -> other skill
+                if prev_skillname == 'frog' and prev_skillinfo and prev_skillinfo.SkillInfo["Hands"] == 1:
+                    print("+1 from 1h frog -> other skill")
+                    additional_levels += 1
+
+                # Turntable
+                if skillname == prev_skillname and prev_skillinfo and skillinfo["Hands"] == prev_skillinfo.SkillInfo["Hands"]:
+                    print(f"+{skillinfo["Turntable"]} turntable")
+                    additional_levels += skillinfo["Turntable"]
+
+                # Air skills
+                if skillname in ["rad", "rondat", "handspring"] and skillinfo["Hands"] == 0:
+                    base_skill_levels = [4]
+                
+        if skillinfo["Rotations"] > 1:
+            print(f'+{skillinfo["Rotations"]-1} multiple under')
+            additional_levels += skillinfo["Rotations"] - 1
+            
+        if skillinfo["BodyRotations"] > 0 and skillname in ["crab", "pushup"]:
+            print(f"+{skillinfo["BodyRotations"]} body rotations (crab/push)")
+            additional_levels += skillinfo["BodyRotations"]
+
+        level_total = []
+        for baselevel in base_skill_levels:
+            level_total.append(int(baselevel) + additional_levels)
+       
+        print("level total", level_total)
+        return level_total
 
     def calculate_level_snapperlike(self, skillinfo: dict, otype, oskill, oturner, frameStart: int):
         if oskill[skillinfo["Skill"]]["name"] == "roll":
             return 2
         return 0
     
-    def calculate_level_chinese_wheel(self, skillinfo: dict, otype, oskill, oturner, frameStart: int):
-        return 0
+    def calculate_level_chinese_wheel(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
+        print("@"*70)
+        print("start", oskill[skillinfo["Skill"]])
+        base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
+        additional_levels = 0
+        skillname = oskill[skillinfo["Skill"]]["name"]
+
+        print(base_skill_levels)
+        # Return 0 or 0.5 if no skill or footwork
+        match (base_skill_levels):
+            case ['0']:
+                return 0
+            case ['0.5']:
+                return 0.5
+            case ['/']: # Return from power
+                prev_skillinfo, prev_skillname, base_level = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
+                print(type(base_level), base_level)
+                base_skill_levels = [base_level + 1 if prev_skillname == "frog" and prev_skillinfo.SkillInfo["Hands"] == 1 else base_level]
+            case _:
+                base_skill_levels = [int(bs) for bs in base_skill_levels]
+                print("base skill levels", base_skill_levels)
+                prev_skillinfo, prev_skillname, base_level = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
+
+                # high frog?
+                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce"]:
+                    print("+1 highfrog")
+                    additional_levels += 1
+                
+                # one handed frog?
+                if skillname == 'frog' and skillinfo["Hands"] == 1:
+                    print("+1 one handed frog")
+                    additional_levels += 1
+                
+                # consequetive?
+                if skillname == 'frog' and prev_skillname == 'frog':
+                    print("+1 consequetive")
+                    additional_levels += 1
+                
+                # 1h frog -> other skill
+                if prev_skillname == 'frog' and prev_skillinfo and prev_skillinfo["Type"] == skillinfo["Type"] and prev_skillinfo.SkillInfo["Hands"] == 1:
+                    print("+1 from 1h frog -> other skill")
+                    additional_levels += 1
+
+                # Turntable
+                if skillname == prev_skillname and prev_skillinfo and prev_skillinfo["Type"] == skillinfo["Type"] and skillinfo["Hands"] == prev_skillinfo.SkillInfo["Hands"]:
+                    print(f"+{skillinfo["Turntable"]} turntable")
+                    additional_levels += skillinfo["Turntable"]
+
+                # Air skills
+                if skillname in ["rad", "rondat", "handspring"] and skillinfo["Hands"] == 0:
+                    base_skill_levels = [4]
+                
+        if skillinfo["Rotations"] > 1:
+            print(f'+{skillinfo["Rotations"]-1} multiple under')
+            additional_levels += skillinfo["Rotations"] - 1
+
+        turnername1 = oturner[skillinfo["Turner1"]]["name"]
+        turnername2 = oturner[skillinfo["Turner2"]]["name"]
+        print(f"turnername", turnername1)
+        # TODO : fix consequetive turns (i.e. keep turning in an EB or cross)
+        # print(f"idk what this is {"noting" if prev_skillinfo is None else oturner[prev_skillinfo.SkillInfo["Turner1"]]["name"]}")
+        if not (turnername1 in ["cross", "crougercross"] and prev_skillinfo is not None and oturner[prev_skillinfo.SkillInfo["Turner1"]]["name"] in ["cross", "crougercross"] and prev_skillinfo.SkillInfo["Rotations"] < 3):
+            extra_level = oturner[skillinfo['Turner1']]['cw']
+            print(f"+{extra_level} {oturner[skillinfo['Turner1']]['name']} turner")
+            additional_levels += extra_level
+            
+        if not (turnername2 in ["cross", "crougercross"] and prev_skillinfo is not None and oturner[prev_skillinfo.SkillInfo["Turner2"]]["name"] in ["cross", "crougercross"] and prev_skillinfo.SkillInfo["Rotations"] < 3):
+            extra_level = oturner[skillinfo['Turner2']]['cw']
+            print(f"+{extra_level} {oturner[skillinfo['Turner2']]['name']} turner")
+            additional_levels += extra_level
+            
+        if skillinfo["BodyRotations"] > 0 and skillname in ["crab", "pushup"]:
+            print(f"+{skillinfo["BodyRotations"]} body rotations (crab/push)")
+            additional_levels += skillinfo["BodyRotations"]
+
+        level_total = []
+        for baselevel in base_skill_levels:
+            level_total.append(int(baselevel) + additional_levels)
+       
+        print("level total", level_total)
+        return level_total
     
 
     def count(self) -> int:
