@@ -23,7 +23,6 @@ class OptionRouter(Resource):
         if skilltype != "DoubleDutch":
             raise ValueError(f"Skilltype is not DoubleDutch")
         return self.videoService.get_skilloptions(skilltype, tableinfo)
-        
 class SkillRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService(STORAGE_DIR)
@@ -105,3 +104,17 @@ class SkillRouter(Resource):
             frameEnd=end,
         ).to_dict(), 200
 
+class SkillLevel(Resource):
+    def __init__(self, **kwargs):
+        self.folderService = FolderService(STORAGE_DIR)
+        self.videoService = VideoService(STORAGE_DIR)
+        super().__init__(**kwargs)
+
+    def post(self):
+        data = request.get_json()
+        skillinfo = data.get('skillinfo')
+        frameStart = data.get('frameStart')
+        videoId = data.get('videoId')
+        ValueHelper.check_raise_frameNr(frameStart)
+        config = get_discipline_DoubleDutch_config()
+        return self.videoService.calculate_skill_level(config, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId)

@@ -9,12 +9,12 @@
     >
     </video>
     <canvas
-      v-show="modeIsReview | modeIsLocalization"
-      ref="canvas" 
-      :width="currentWidth" 
-      :height="currentHeight" 
-      class="overlay-canvas"
-      @mousedown="startDrawing" 
+    v-show="modeIsReview | modeIsLocalization"
+    ref="canvas" 
+    :width="currentWidth" 
+    :height="currentHeight" 
+    class="overlay-canvas"
+    @mousedown="startDrawing" 
       @mousemove="drawRectangle" 
       @mouseup="endDrawing" 
       @mouseleave="endDrawing"
@@ -22,10 +22,10 @@
       Your browser does not support the HTML canvas tag.
     </canvas>
     <SkillBalk v-show="modeIsSkills"
-      :videoinfo="vidinfo" 
-      :Skills="skills" 
-      @skill-clicked="onSkillClicked"
-      :currentFrame="currentFrame"
+    :videoinfo="vidinfo" 
+    :Skills="skills" 
+    @skill-clicked="onSkillClicked"
+    :currentFrame="currentFrame"
     />
     <div class="controls">
       <button @click="toggleLabelMode">Current modus: {{ labelMode }}</button>
@@ -52,6 +52,7 @@
       <button v-show="modeIsSkills && selectedSkill" @click="deselectSkill">Deselect skill</button>
       <button v-show="modeIsSkills && selectedSkill" @click="frameToEndOfSkill">Frame to end of selected skill</button>
       <button v-show="modeIsSkills && frameStart && frameEnd" @click="replaySection">Replay section</button>
+      <button v-show="modeIsSkills && selectedSkill" @click="playNextSection">Play next section</button>
       <div class="review-controls" v-show="modeIsReview">
         <button class="big-arrow" @click="setToPreviousFrameAndDraw">&larr;</button>
         <button class="big-arrow" @click="setToNextFrameAndDraw">&rarr;</button>
@@ -60,7 +61,7 @@
       <BoxCard v-for="(box, index) in currentBoxes" :key="index" :frameinfo="box" @deleteBox="deleteLabel"/>
     </div>
     <p v-if="selectedSkill" style="width: 100%;">Selected skill: {{ selectedSkill }}</p>
-    <p>FrameStart = {{ frameStart }} | FrameEnd = {{ frameEnd }} | skill can update {{ skillCanUpdate }}</p>
+    <p class="fullwidth">FrameStart = {{ frameStart }} | FrameEnd = {{ frameEnd }} | skill can update {{ skillCanUpdate }}</p>
     <div v-if="optionsLoaded && modeIsSkills" class="controls">
       <SelectComponent :skilltype="'Type'" :options="optionsType" title="Type" :defaultValue="selectedSkill ? selectedSkill.Skillinfo['Type'] : selectedOptions['Type'][0]" @update:selected="handleSelectedChange"/>
       <SelectComponent :skilltype="'Rotations'" :options="optionsRotations" title="Rotations" :defaultValue="selectedSkill ? selectedSkill.Skillinfo['Rotations'] : selectedOptions['Rotations'][0]" @update:selected="handleSelectedChange"/>
@@ -78,6 +79,7 @@
       <button v-show="frameStart && frameEnd && !selectedSkill" @click="addSkill">submit skill</button>
       <button v-show="skillCanUpdate" @click="updateSkill">update</button>
       <button v-if="selectedSkill" @click="removeSkill"><img src="@/assets/delete.png" alt="buttonpng" class="icon"/></button>
+      <p class="level">{{ skillLevelOptions }}</p>
     </div>
   </div>
   <pre>{{ selectedOptions }}</pre>
@@ -85,7 +87,7 @@
 </template>
 
 <script setup>
-import { deleteSkill, getSkilloptions, getVideoInfo, postSkill, postVideoFrame, putSkill, removeVideoFrame } from '@/services/videoService';
+import { deleteSkill, getSkillLevel, getSkilloptions, getVideoInfo, postSkill, postVideoFrame, putSkill, removeVideoFrame } from '@/services/videoService';
 import { computed, onBeforeMount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router'
 import BoxCard from './BoxCard.vue';
@@ -173,6 +175,7 @@ const optionsBoolean = {true:true, false:false}
 const selectedOptions = ref({})
 const optionsLoaded = ref(false)
 const skillCanUpdate = ref(false)
+const skillLevelOptions = ref(0)
 
 const labeledFramesCount = computed(() => vidinfo.value ? vidinfo.value.LabeledFrameCount : 0)
 const labelMode = ref("skills")
@@ -435,6 +438,8 @@ function onSkillClicked(skillIdentifier) {
     frameStart.value = frameEnd.value = undefined
     skillCanUpdate.value = false
   }
+
+    updateSkillLevel2CurrentOptions()
 }
 function prepareNextLabel(fs) {
   selectedSkill.value = undefined
@@ -470,18 +475,23 @@ function handleSelectedChange(skillinfo, value, description) {
     selectedSkill.value["Skillinfo"][skillinfo] = value
     skillCanUpdate.value = true
   }
+  console.log("level request", selectedOptions.value)
+  updateSkillLevel2CurrentOptions()
 }
 async function addSkill() {
   let newSkill = {
     "frameStart": frameStart.value,
     "frameEnd" : frameEnd.value,
-    "skillinfo" : Object.entries(selectedOptions.value).reduce((newDict, [key, value]) => {
-      newDict[key] = value[0];
-      return newDict;
-    }, {})
+    "skillinfo" : selectedOptions2SingleValue(selectedOptions.value)
   }
   vidinfo.value = await postSkill(vidinfo.value.Id, newSkill)
   prepareNextLabel(frameEnd.value)
+}
+function selectedOptions2SingleValue(options) {
+  return Object.entries(options).reduce((newDict, [key, value]) => {
+    newDict[key] = value[0];
+    return newDict;
+  }, {})
 }
 async function updateSkill() {
   let updatedSkill = Object.entries(selectedSkill.value).reduce((newDict, [key, value]) => {
@@ -522,7 +532,24 @@ async function replaySection() {
   }
   videoElement.value.pause()
 }
-
+async function playNextSection() {
+  let nextSkill = vidinfo.value.Skills
+    .filter(skill => skill.FrameStart >= selectedSkill.value.FrameEnd)
+    .sort((a,b) => a.FrameEnd - b.FrameEnd)[0]
+  console.log("play next", nextSkill, nextSkill.Id)
+  onSkillClicked(nextSkill.Id)
+  replaySection()
+}
+async function updateSkillLevel2CurrentOptions() {
+  let skillinfo = selectedSkill.value ? selectedSkill.value["Skillinfo"] : selectedOptions2SingleValue(selectedOptions.value)
+  console.log(skillinfo)
+  if (skillinfo) {
+    getSkillLevel(skillinfo, frameStart.value, vidinfo.value.Id).then(data => {
+      console.log("Level", data)
+      skillLevelOptions.value = data
+    })
+  }
+}
 // TODO : catch resize of window, because the current frame can be labeled wrong, position wise
 </script>
 
@@ -535,8 +562,15 @@ async function replaySection() {
   max-width: 100%;
 }
 
-p {
+.fullwidth {
   width: 100%;
+}
+
+.level {
+  height: fit-content;
+  margin: auto 0.3rem;
+  color: blueviolet;
+  font-size: larger;
 }
 
 video {

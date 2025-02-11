@@ -1,4 +1,5 @@
 import re
+# from repository.videoRepo import VideoRepository
 
 MAX_FRAMENR = 65535
 
@@ -64,3 +65,26 @@ class ValueHelper:
         reg = re.compile(r'^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(?:-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|live\/|v\/)?)([\w\-]+)(\S+)?$')
         if not reg.match(val):
             raise ValueError(f"Not a valid yt url, got {val}")
+        
+    def check_raise_skillinfo_values(config: dict, skillinfo: dict, repo):
+        """Checks whether the giving skillinfo corresponds with the giving config info"""
+        assert isinstance(config, dict), f"Config is not a dict, got {config}"
+        assert isinstance(skillinfo, dict), f"Skillinfo is not a dict, got {skillinfo}"
+        assert len(config) > 0, f"Config can not be empty, got {config}"
+        assert len(skillinfo) > 0, f"Skillinfo can not be empty, got {skillinfo}"
+
+        # Check skillinfo values
+        for key, value in config.items():
+            if key != 'Tablename':
+                assert key in skillinfo.keys(), f"Skillinfo does not provide info for {key}"
+            if value[0] == "Numerical":
+                min = value[1]
+                max = value[2]
+                assert isinstance(skillinfo[key], int), f"Skillspecification of {key} must be in integer, got {skillinfo[key]}"
+                assert skillinfo[key] >= min and skillinfo[key] <= max, f"Skillinfo {key} must be between {min} and {max}, got {skillinfo[key]}"
+            elif value[0] == "Categorical":
+                assert isinstance(skillinfo[key], int), f"Skillspecification of {key} must be in integer, got {skillinfo[key]}"
+                repo.exists_skillinfo(discipline=config["Tablename"], table_name_part=config[key][1], uc=skillinfo[key])
+            elif value[0] == "Boolean":
+                assert isinstance(skillinfo[key], bool), f"Boolean value {key} must be a boolean, got {skillinfo[key]}"
+

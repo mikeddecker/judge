@@ -22,7 +22,7 @@ export const getVideoInfo = async (videoId) => {
 
 export const getVideoImagePath = async (videoId) => {
   try {
-    return await api.get(`/video/${videoId}/image`, { responseType: 'blob' })
+    return await api.get(`/video/${videoId}/image`, { responseType: 'blob', timeout: 30000 })
       .then(response => {
         let imagePath = URL.createObjectURL(response.data)
         return imagePath
@@ -119,3 +119,18 @@ export const deleteSkill = async (videoId, start, end) => {
       console.error(error);
     });
 };
+
+export const getSkillLevel = async (skillinfo, frameStart, videoId) => {
+  try {
+    const response = await api.post(`/skilllevel`, { 
+        "skillinfo" : skillinfo,
+        "frameStart" : frameStart,
+        "videoId" : videoId,
+      }, { headers: { 'Content-Type': 'application/json' }})
+    console.log("response.data", response.data)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}

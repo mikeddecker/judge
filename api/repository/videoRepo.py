@@ -5,6 +5,7 @@ from domain.skill import Skill
 from domain.videoinfo import VideoInfo
 from domain.frameinfo import FrameInfo
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 from helpers.ValueHelper import ValueHelper
 from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type
 from repository.MapToDomain import MapToDomain
@@ -205,17 +206,49 @@ class VideoRepository:
         skillsDB = self.db.session.query(Skillinfo_DoubleDutch).filter_by(videoId=videoId).all()
         return MapToDomain.map_skills(skillsDB)
     
-    def get_skilloptions(self, skilltype: str, tablepart: str) -> dict[int, str]:
-        match (tablepart):
-            case 'Type':
-                return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Type).all()}
-            case 'Turner':
-                return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Turner).all()}
-            case 'Skill':
-                return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Skill).all()}
-            case _:
-                raise ValueError(f"{tablepart} does not exist")
+    def get_skilloptions(self, skilltype: str, tablepart: str, include_levels=False) -> dict[int, str]:
+        if not include_levels:
+            match (tablepart):
+                case 'Type':
+                    return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Type).all()}
+                case 'Turner':
+                    return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Turner).all()}
+                case 'Skill':
+                    return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Skill).all()}
+                case _:
+                    raise ValueError(f"{tablepart} does not exist")
+        else:
+            match (tablepart):
+                case 'Type':
+                    return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Type).all()}
+                case 'Turner':
+                    return { so.id : { 
+                        "name" : so.name, 
+                        "dd" : so.level_dd, 
+                        "cw" : so.level_cw,
+                        "dd_requires_both" : so.dd_requires_both,
+                        "cw_requires_both" : so.cw_requires_both,
+                    } for so in self.db.session.query(Skillinfo_DoubleDutch_Turner).all()}
+                case 'Skill':
+                    return { so.id : { 
+                        "name" : so.name, 
+                        "dd" : so.level_dd, 
+                        "cw" : so.level_cw,
+                    } for so in self.db.session.query(Skillinfo_DoubleDutch_Skill).all()}
+                case _:
+                    raise ValueError(f"{tablepart} does not exist")
+
         return None
+
+    def get_previous_skill(self, videoId: int, frameEnd: int) -> tuple[dict, str, int]:
+        """Returns prev_skillinfo, prev_skillname, base_level"""
+        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_frameNr(frameEnd)
+        DDskillDB = self.db.session.query(Skillinfo_DoubleDutch).filter(Skillinfo_DoubleDutch.videoId==videoId).filter(Skillinfo_DoubleDutch.frameEnd <= frameEnd).order_by(desc(Skillinfo_DoubleDutch.frameEnd)).first()
+        if DDskillDB is None:
+            return None, None, 0
+        skillDB = self.db.session.query(Skillinfo_DoubleDutch_Skill).filter_by(id=DDskillDB.skill).first()
+        return MapToDomain.map_skills([DDskillDB])[0], skillDB.name, 0 if skillDB.level_dd == "/" else int(str.split(skillDB.level_dd, '-')[-1])
 
     def remove_skill(self, disciplineconfig: dict, videoId, start: int, end: int):
         ValueHelper.check_raise_id(videoId)

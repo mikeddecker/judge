@@ -118,11 +118,17 @@ class Skillinfo_DoubleDutch_Turner(db.Model):
     __tablename__ = 'Skillinfo_DoubleDutch_Turner'
     id = db.Column(TINYINT(unsigned=True), primary_key=True, autoincrement=True)
     name = db.Column(db.String(127), nullable=False)
+    level_dd = db.Column(TINYINT(unsigned=True), nullable=False, default="2")
+    level_cw = db.Column(TINYINT(unsigned=True), nullable=False, default="2")
+    cw_requires_both = db.Column(db.Boolean, nullable=False, default=False)
+    dd_requires_both = db.Column(db.Boolean, nullable=False, default=False)
 
 class Skillinfo_DoubleDutch_Skill(db.Model):
     __tablename__ = 'Skillinfo_DoubleDutch_Skill'
     id = db.Column(TINYINT(unsigned=True), primary_key=True, autoincrement=True)
     name = db.Column(db.String(127), nullable=False)
+    level_dd = db.Column(db.String(8), nullable=False, default="2")
+    level_cw = db.Column(db.String(8), nullable=False, default="2")
 
 class Skillinfo_DoubleDutch(db.Model):
     __tablename__ = 'Skillinfo_DoubleDutch'
