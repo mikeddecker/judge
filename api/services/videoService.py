@@ -131,7 +131,7 @@ class VideoService:
     
     def remove_skill(self, disciplineconfig: dict, videoinfo: VideoInfo, frameStart: int, frameEnd: int) -> VideoInfo:
         skill = videoinfo.get_skill(frameStart, frameEnd)
-        print(skill)
+        print("remove", skill)
         self.VideoRepo.remove_skill(disciplineconfig, videoinfo.Id, skill.FrameStart, skill.FrameEnd)
         videoinfo.remove_skill(skill)
         return videoinfo
@@ -154,26 +154,24 @@ class VideoService:
             case 'Double Dutch':
                 return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
             case 'Single Dutch':
-                return self.calculate_level_single_dutch(skillinfo, options_type, options_skill, options_turner, frameStart)
+                return self.calculate_level_single_dutch(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
             case 'Irish Dutch':
-                return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart)
+                return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
             case 'Chinese Wheel':
-                return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart)
+                return self.calculate_level_chinese_wheel(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
             case 'Transition':
                 return 1
             case 'Snapperlike':
-                return self.calculate_level_snapperlike(skillinfo, options_type, options_skill, options_turner, frameStart)
+                return self.calculate_level_snapperlike(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
             case _:
                 raise ValueError(f"unknown option {options_type[skillinfo["Type"]]}")
 
     def calculate_level_double_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int) -> List[int]:
         print("@"*70)
-        print("start", oskill[skillinfo["Skill"]])
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
 
-        print(base_skill_levels)
         # Return 0 or 0.5 if no skill or footwork
         match (base_skill_levels):
             case ['0']:
@@ -262,12 +260,10 @@ class VideoService:
 
     def calculate_level_single_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
         print("@"*70)
-        print("start", oskill[skillinfo["Skill"]])
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
 
-        print(base_skill_levels)
         # Return 0 or 0.5 if no skill or footwork
         match (base_skill_levels):
             case ['0']:
@@ -329,19 +325,17 @@ class VideoService:
         print("level total", level_total)
         return level_total
 
-    def calculate_level_snapperlike(self, skillinfo: dict, otype, oskill, oturner, frameStart: int):
+    def calculate_level_snapperlike(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
         if oskill[skillinfo["Skill"]]["name"] == "roll":
             return 2
         return 0
     
     def calculate_level_chinese_wheel(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
         print("@"*70)
-        print("start", oskill[skillinfo["Skill"]])
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
 
-        print(base_skill_levels)
         # Return 0 or 0.5 if no skill or footwork
         match (base_skill_levels):
             case ['0']:
