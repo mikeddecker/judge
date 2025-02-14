@@ -129,7 +129,6 @@ class VideoRepository:
         frame_label_DB.jumperVisible = frameInfo.JumperVisible
         self.db.session.commit()
 
-
     ##########
     # Skills #
     ##########
@@ -258,4 +257,13 @@ class VideoRepository:
         skillDB = self.db.session.query(Skillinfo_DoubleDutch).filter_by(frameStart=start, frameEnd=end).first()
         self.db.session.delete(skillDB)
         self.db.session.commit()
+
+    def update_skills_completed(self, videoId: int, completed: bool):
+        ValueHelper.check_raise_id(videoId)
+        if not isinstance(completed, bool):
+            raise ValueError(f"Completed must be a boolean {completed}")
+        videoDB = self.db.session.query(VideoInfoDB).filter_by(id=videoId).first()
+        videoDB.completed_skill_labels = completed
+        self.db.session.commit()
+
     

@@ -134,3 +134,16 @@ export const getSkillLevel = async (skillinfo, frameStart, videoId) => {
     throw error;
   }
 }
+
+export const updateVideoSkillsCompleted = async (videoId, completed) => {
+  try {
+    const response = await api.post(`/skillcompleted/${videoId}`, { 
+        "completed" : completed,
+      }, { headers: { 'Content-Type': 'application/json' }})
+    console.log("skill completed?", response.data)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}

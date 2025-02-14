@@ -23,8 +23,9 @@ class MapToDomain:
             id = videoDB.id,
             name = videoDB.name,
             folder = MapToDomain.map_folder(videoDB.folder),
-            frameLength= videoDB.frameLength,
-            fps= videoDB.fps,
+            frameLength = videoDB.frameLength,
+            fps = videoDB.fps,
+            completed_skill_labels = videoDB.completed_skill_labels,
         )
         for f in videoDB.frameLabels:
             video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible, labeltype=f.labeltype))

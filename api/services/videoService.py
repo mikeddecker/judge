@@ -167,7 +167,6 @@ class VideoService:
                 raise ValueError(f"unknown option {options_type[skillinfo["Type"]]}")
 
     def calculate_level_double_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int) -> List[int]:
-        print("@"*70)
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
@@ -190,8 +189,14 @@ class VideoService:
                 prev_skillinfo, prev_skillname, base_level = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
 
                 # high frog?
-                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce"]:
+                print("prev", prev_skillname)
+                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce", "rol2kip"]:
                     print("+1 highfrog")
+                    additional_levels += 1
+                
+                # stut?
+                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname == "rol2kip":
+                    print("+1 stut")
                     additional_levels += 1
                 
                 # one handed frog?
@@ -259,7 +264,6 @@ class VideoService:
         return level_total
 
     def calculate_level_single_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
-        print("@"*70)
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
@@ -282,10 +286,14 @@ class VideoService:
                 prev_skillinfo, prev_skillname, base_level = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
 
                 # high frog?
-                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce"]:
+                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce", "rol2kip"]:
                     print("+1 highfrog")
                     additional_levels += 1
                 
+                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname == "rol2kip":
+                    print("+1 stut")
+                    additional_levels += 1
+                                
                 # one handed frog?
                 if skillname == 'frog' and skillinfo["Hands"] == 1:
                     print("+1 one handed frog")
@@ -331,7 +339,6 @@ class VideoService:
         return 0
     
     def calculate_level_chinese_wheel(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
-        print("@"*70)
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
@@ -352,8 +359,12 @@ class VideoService:
                 prev_skillinfo, prev_skillname, base_level = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
 
                 # high frog?
-                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce"]:
+                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce", "rol2kip"]:
                     print("+1 highfrog")
+                    additional_levels += 1
+                
+                if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname == "rol2kip":
+                    print("+1 stut")
                     additional_levels += 1
                 
                 # one handed frog?
@@ -367,12 +378,12 @@ class VideoService:
                     additional_levels += 1
                 
                 # 1h frog -> other skill
-                if prev_skillname == 'frog' and prev_skillinfo and prev_skillinfo["Type"] == skillinfo["Type"] and prev_skillinfo.SkillInfo["Hands"] == 1:
+                if prev_skillname == 'frog' and prev_skillinfo and prev_skillinfo.SkillInfo["Hands"] == 1:
                     print("+1 from 1h frog -> other skill")
                     additional_levels += 1
 
                 # Turntable
-                if skillname == prev_skillname and prev_skillinfo and prev_skillinfo["Type"] == skillinfo["Type"] and skillinfo["Hands"] == prev_skillinfo.SkillInfo["Hands"]:
+                if skillname == prev_skillname and prev_skillinfo and prev_skillinfo.SkillInfo["Type"] == skillinfo["Type"] and skillinfo["Hands"] == prev_skillinfo.SkillInfo["Hands"]:
                     print(f"+{skillinfo["Turntable"]} turntable")
                     additional_levels += skillinfo["Turntable"]
 
@@ -503,6 +514,17 @@ class VideoService:
         else:
             self.VideoRepo.add_frameInfo(video=video, frameInfo=frameInfo)
         return video
+
+    def update_skills_completed(self, video: VideoInfo, completed: bool):
+        if video is None or not isinstance(video, VideoInfo):
+            raise ValueError(f"frameInfo is not {VideoInfo}, got {video}")
+        if not isinstance(completed, bool):
+            raise ValueError(f"Completed must be a boolean {completed}")
+        if not self.VideoRepo.exists(video.Id):
+            raise ValueError(f"Video does not exist, {video.Id}")
+        self.VideoRepo.update_skills_completed(video.Id, completed)
+        return "ok"
+
 
     # TODO : nice to have
     def upload(self):

@@ -82,12 +82,13 @@
       <p class="level">{{ skillLevelOptions }}</p>
     </div>
   </div>
-  <pre>{{ selectedOptions }}</pre>
+  <!-- <pre>{{ selectedOptions }}</pre> -->
   <pre>{{ vidinfo }}</pre>
+  <button v-if="modeIsSkills" class="finished" @click="() => updateVideoSkillsCompleted(vidinfo.Id, true)">Toggle skill labeling finished</button>
 </template>
 
 <script setup>
-import { deleteSkill, getSkillLevel, getSkilloptions, getVideoInfo, postSkill, postVideoFrame, putSkill, removeVideoFrame } from '@/services/videoService';
+import { deleteSkill, getSkillLevel, getSkilloptions, getVideoInfo, postSkill, postVideoFrame, putSkill, removeVideoFrame, updateVideoSkillsCompleted } from '@/services/videoService';
 import { computed, onBeforeMount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router'
 import BoxCard from './BoxCard.vue';
@@ -592,6 +593,10 @@ button {
   min-width: 4rem;
   height: 3rem;
   margin: 0.1rem
+}
+
+.finished {
+  color: darkseagreen;
 }
 
 img {

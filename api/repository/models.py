@@ -46,6 +46,7 @@ class Video(db.Model):
     private = db.Column(db.Boolean, nullable=False, default=False)
     source = db.Column(db.Integer, nullable=True)
     sourceInfo = db.Column(db.String(255), nullable=True)
+    completed_skill_labels = db.Column(db.Boolean, nullable=False, default=False)
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
 

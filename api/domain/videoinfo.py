@@ -14,13 +14,14 @@ class VideoInfo:
         "Frames", 
         "FPS",
         "FrameLength",
-        "Skills", 
+        "Skills",
+        "Completed_Skill_Labels",
     ]
     # Frame does not 
     Frames: List[FrameInfo] # Key = frameId, value is Frame
     Skills: Set[Skill] = set()
 
-    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float):
+    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float, completed_skill_labels: bool = False):
         self.Frames = []  # Initialize frames as an empty dictionary
         self.Skills = set()  # Initialize skills as an empty set
 
@@ -29,6 +30,7 @@ class VideoInfo:
         self.__setFolder(folder)
         self.__setFrameLength(frameLength)
         self.__setFPS(fps)
+        self.__setCompletedSkillLabels(completed_skill_labels)
 
     def __setattr__(self, name, value):
         if hasattr(self, name):
@@ -41,6 +43,8 @@ class VideoInfo:
                 self.__setFolder(value)
             if name == 'FPS':
                 self.__setFPS(value)
+            if name == 'Completed_Skill_Labels':
+                self.__setCompletedSkillLabels(value)
             # if name in ["Name", "Folder"]:
             #     raise AttributeError(f"Cannot modify '{name}' once it is set")
         elif name not in self.PROPERTIES:
@@ -91,6 +95,11 @@ class VideoInfo:
         if fps is None or fps <= 0:
             raise ValueError("FPS must be strict positive")
         object.__setattr__(self, 'FPS', fps)
+
+    def __setCompletedSkillLabels(self, completed: bool):
+        if not isinstance(completed, bool):
+            raise ValueError(f"Completed is not a bool, {completed}")        
+        object.__setattr__(self, 'Completed_Skill_Labels', completed)
 
     def get_image_path(self):
         # TODO
@@ -203,6 +212,7 @@ class VideoInfo:
             "LabeledFrameCount" : len(framecountT1),
             "LabeledFrameCount2": len(framecountT2),
             "RelativePath" : self.get_relative_video_path(),
+            "Completed_Skill_Labels" : self.Completed_Skill_Labels,
         }
 
     

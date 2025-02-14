@@ -33,6 +33,7 @@ onMounted(async () => {
     <div class="info">
       <p>{{ videoId }} {{ title }}</p>
     </div>
+    <img v-if="info.Completed_Skill_Labels" class="completed" src="@/assets/checked.png" alt="folder image" />
     <ProgressBar :bgcolor="'#29ab87'" :completed="completed" />
   </div>
 </template>
@@ -47,6 +48,8 @@ onMounted(async () => {
   border: 1px solid var(--color-border);
   border-radius: 0.55rem;
   box-shadow: 0.5px 0.5px 3px var(--color-heading);
+  display: flex;
+  flex-direction: column;
 }
 
 .info {
@@ -58,11 +61,22 @@ h2 {
   color: var(--color-heading);
   word-wrap: break-word;
 }
+.container {
+  display: flex;
+}
 
 .container img {
   object-fit: contain;
   height: 100%;
   width: 100%;
+}
+
+img.completed {
+  width: 20%;
+  height: 20%;
+  align-self: flex-end;
+  margin-top: auto;
+  margin-bottom: 0.4rem;
 }
 
 .videoinfo:hover {
@@ -72,6 +86,7 @@ h2 {
 .testvideo {
   background-color:aqua;
 }
+
 
 @media (min-width: 1024px) {
   .videoinfo {

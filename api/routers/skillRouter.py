@@ -23,6 +23,25 @@ class OptionRouter(Resource):
         if skilltype != "DoubleDutch":
             raise ValueError(f"Skilltype is not DoubleDutch")
         return self.videoService.get_skilloptions(skilltype, tableinfo)
+
+class SkillLabelingCompletedRouter(Resource):
+    def __init__(self, **kwargs):
+        self.folderService = FolderService(STORAGE_DIR)
+        self.videoService = VideoService(STORAGE_DIR)
+        super().__init__(**kwargs)
+
+    def post(self, videoId: int):
+        data = request.get_json()
+        completed = data.get('completed')
+        try:
+            ValueHelper.check_raise_id(videoId)
+            video = self.videoService.get(videoId)
+            print(videoId, completed)
+            self.videoService.update_skills_completed(video=video, completed=completed)
+            return "done" , 200        
+        except ValueError as ve:
+            return str(ve), 404
+        
 class SkillRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService(STORAGE_DIR)
