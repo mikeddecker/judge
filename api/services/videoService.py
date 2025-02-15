@@ -399,14 +399,20 @@ class VideoService:
         turnername1 = oturner[skillinfo["Turner1"]]["name"]
         turnername2 = oturner[skillinfo["Turner2"]]["name"]
         print(f"turnername", turnername1)
+
         # TODO : fix consequetive turns (i.e. keep turning in an EB or cross)
-        # print(f"idk what this is {"noting" if prev_skillinfo is None else oturner[prev_skillinfo.SkillInfo["Turner1"]]["name"]}")
-        if not (turnername1 in ["cross", "crougercross"] and prev_skillinfo is not None and oturner[prev_skillinfo.SkillInfo["Turner1"]]["name"] in ["cross", "crougercross"] and prev_skillinfo.SkillInfo["Rotations"] < 3):
+        # TODO : fix cross CW, make use of DB property requires both
+        if turnername1 == "cross" and turnername2 == "cross":
+            print(f"+1 for 2 crosses")
+            extra_level = oturner[skillinfo['Turner2']]['cw']
+            additional_levels += extra_level
+        
+        if turnername1 != "cross":
             extra_level = oturner[skillinfo['Turner1']]['cw']
             print(f"+{extra_level} {oturner[skillinfo['Turner1']]['name']} turner")
             additional_levels += extra_level
             
-        if not (turnername2 in ["cross", "crougercross"] and prev_skillinfo is not None and oturner[prev_skillinfo.SkillInfo["Turner2"]]["name"] in ["cross", "crougercross"] and prev_skillinfo.SkillInfo["Rotations"] < 3):
+        if turnername2 != "cross":
             extra_level = oturner[skillinfo['Turner2']]['cw']
             print(f"+{extra_level} {oturner[skillinfo['Turner2']]['name']} turner")
             additional_levels += extra_level
