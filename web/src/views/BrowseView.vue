@@ -22,6 +22,7 @@ export default {
       testLabels2: 0,
       testPercentage: 0,
       currentLabelType: 2,
+      completed: 0,
     };
   },
   methods: {
@@ -40,6 +41,8 @@ export default {
         this.testLabels1 = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount : 0), 0)
         this.testLabels2 = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount2 : 0), 0)
         this.testPercentage = Math.round(this.testLabels / this.totalLabels * 100)
+
+        this.completed = Object.values(response.Videos).filter((v) => v.Completed_Skill_Labels).length
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -56,6 +59,7 @@ export default {
   <div class="browse">
     <h1>Navigate videos : {{ folderName }}</h1>
     <p>Videos: {{ count }}</p>
+    <p>Completly labeled skills: {{ completed }}</p>
     <p>Total frames : {{ totalFrames }}</p>
     <p>Full team labels: {{ totalLabels1 }}</p>
     <p>Individual team labels: {{ totalLabels2 }}</p>

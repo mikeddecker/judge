@@ -181,6 +181,7 @@ class VideoService:
                 prev_skillinfo, prev_skillname, base_level = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
                 print(type(base_level), base_level)
                 base_skill_levels = [base_level + 1 if prev_skillname == "frog" and prev_skillinfo.SkillInfo["Hands"] == 1 else base_level]
+                base_skill_levels = base_skill_levels if prev_skillname != 'stut' else [2]
                 # if consequetive_possibility and prev_base_skill_level == 3 and skillname != 'frog': # 1h frog  (high frog has base skill level 2)
                 #     additional_levels += 1
             case _:
@@ -254,7 +255,7 @@ class VideoService:
             
         if skillinfo["BodyRotations"] > 0 and skillname in ["crab", "pushup"]:
             print(f"+{skillinfo["BodyRotations"]} body rotations (crab/push)")
-            additional_levels += skillinfo["BodyRotations"]
+            additional_levels += skillinfo["BodyRotations"] // 2
 
         level_total = []
         for baselevel in base_skill_levels:
@@ -324,7 +325,7 @@ class VideoService:
             
         if skillinfo["BodyRotations"] > 0 and skillname in ["crab", "pushup"]:
             print(f"+{skillinfo["BodyRotations"]} body rotations (crab/push)")
-            additional_levels += skillinfo["BodyRotations"]
+            additional_levels += skillinfo["BodyRotations"] // 2
 
         level_total = []
         for baselevel in base_skill_levels:
@@ -334,8 +335,8 @@ class VideoService:
         return level_total
 
     def calculate_level_snapperlike(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
-        if oskill[skillinfo["Skill"]]["name"] == "roll":
-            return 2
+        if oskill[skillinfo["Skill"]]["name"] in ["roll", "rad", "rondat", "handspring", "stut"]:
+            return int(oskill[skillinfo["Skill"]]["dd"][0])
         return 0
     
     def calculate_level_chinese_wheel(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
@@ -412,7 +413,7 @@ class VideoService:
             
         if skillinfo["BodyRotations"] > 0 and skillname in ["crab", "pushup"]:
             print(f"+{skillinfo["BodyRotations"]} body rotations (crab/push)")
-            additional_levels += skillinfo["BodyRotations"]
+            additional_levels += skillinfo["BodyRotations"] // 2
 
         level_total = []
         for baselevel in base_skill_levels:

@@ -169,8 +169,8 @@ const optionsTurntable = {
 }
 const optionsBodyRotations = {
   0 : "0 roations",
-  1 : "1 rotation",
-  2 : "2 rotation",
+  1 : "0.5 rotations",
+  2 : "1 rotation",
 }
 const optionsBoolean = {true:true, false:false}
 const selectedOptions = ref({})
