@@ -46,47 +46,64 @@ class Patches(keras.layers.Layer):
         config = super().get_config()
         config.update({"patch_size": self.patch_size})
         return config
+    
+class TimePatches(keras.layers.Layer):
+    def __init__(self, patch_size):
+        super().__init__()
+        self.patch_size = patch_size
 
-class PatchEncoder(keras.layers.Layer):
-    def __init__(self, num_patches, projection_dim):
+    def call(self, images):
+        input_shape = keras.ops.shape(images)
+        batch_size = input_shape[0]
+        # if batch_size > 0:
+        #     raise NotImplementedError(f"keras.ops.image.extract_patches can't handle 5D tensors, I have not implemented a work around")
+        print(images[0].shape)
+        timestep = input_shape[1]
+        height = input_shape[2]
+        width = input_shape[3]
+        channels = input_shape[4]
+        num_patches_h = height // self.patch_size
+        num_patches_w = width // self.patch_size
+        patches = keras.ops.image.extract_patches(images[0], size=self.patch_size)
+        patches = keras.ops.reshape(
+            patches,
+            (
+                batch_size,
+                num_patches_h * num_patches_w * timestep,
+                self.patch_size * self.patch_size * channels,
+            ),
+        )
+        return patches
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"patch_size": self.patch_size})
+        return config
+
+class TimePatchEncoder(keras.layers.Layer):
+    def __init__(self, num_patches, timesteps, projection_dim):
         super().__init__()
         self.num_patches = num_patches
+        self.timesteps = timesteps
         self.projection = keras.layers.Dense(units=projection_dim)
         self.position_embedding = keras.layers.Embedding(
-            input_dim=num_patches, output_dim=projection_dim
+            input_dim=num_patches*timesteps, output_dim=projection_dim
         )
-
-    # Override function to avoid error while saving model
-    # def get_config(self):
-    #     config = super().get_config().copy()
-    #     config.update(
-    #         {
-    #             "input_shape": input_shape,
-    #             "patch_size": PATCH_SIZE,
-    #             "num_patches": num_patches,
-    #             "projection_dim": projection_dim,
-    #             "num_heads": num_heads,
-    #             "transformer_units": transformer_units,
-    #             "transformer_layers": transformer_layers,
-    #             "mlp_head_units": mlp_head_units,
-    #         }
-    #     )
-    #     return config
 
     def call(self, patch):
         positions = keras.ops.expand_dims(
-            keras.ops.arange(start=0, stop=self.num_patches, step=1), axis=0
+            keras.ops.arange(start=0, stop=self.num_patches*self.timesteps, step=1), axis=0
         )
         projected_patches = self.projection(patch)
         encoded = projected_patches + self.position_embedding(positions)
         return encoded
 
 def get_model(modelinfo):
-    inputs = keras.Input(shape=(modelinfo['dim'],modelinfo['dim'],3))
-    patches = Patches(modelinfo['patch_size'])(inputs)
+    inputs = keras.Input(shape=(modelinfo['timesteps'],modelinfo['dim'],modelinfo['dim'],3))
+    patches = TimePatches(modelinfo['patch_size'])(inputs)
     print("shape of patches", patches.shape)
     num_patches = (modelinfo['dim'] // modelinfo['patch_size']) ** 2
-    encoded_patches = PatchEncoder(num_patches, modelinfo['dim_embedding'])(patches)
+    encoded_patches = TimePatchEncoder(num_patches, modelinfo['timesteps'], modelinfo['dim_embedding'])(patches)
     print("shape of encoded_patches", encoded_patches.shape)
 
     # Create multiple layers of the Transformer block.

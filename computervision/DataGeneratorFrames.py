@@ -11,6 +11,7 @@ class DataGeneratorFrames(keras.utils.Sequence):
                  dim: tuple, # e.g. (128,128)
                  batch_size=32, # Default batch size
                  normalized=True,
+                 as_video=False,
                  **kwargs):
         super().__init__(**kwargs)
         assert isinstance(dim, tuple)
@@ -24,6 +25,7 @@ class DataGeneratorFrames(keras.utils.Sequence):
         self.frameloader = frameloader
         self.repo = DataRepository()
         self.Frames = self.repo.get_framelabels(train_test_val)
+        self.as_video = as_video
 
         print('DataGeneratorSkillBorders init done')
         self.on_epoch_end()
@@ -56,8 +58,10 @@ class DataGeneratorFrames(keras.utils.Sequence):
                 print(f"Failed for videoId = {row["videoId"]}, frameNr = {row["frameNr"]}")
                 print(str(err))
                 print(f"*"*80)
-        return np.array(frames), np.array(y_values, dtype=np.float32)
-
+        frames = np.array(frames)
+        if self.as_video:
+            frames = np.expand_dims(frames, axis=0)
+        return frames, np.array(y_values, dtype=np.float32)
 
     def on_epoch_end(self):
         self.Frames = self.Frames.sample(frac=1.)

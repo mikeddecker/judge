@@ -19,6 +19,7 @@ from models.GoogleNet_extra_dense import get_model as get_model_googlenet_extra_
 from models.MobileNetV3Small import get_model as get_model_mobilenet
 from models.RandomCNN import get_model as get_model_randomcnn
 from models.vitransformer_enc import get_model as get_model_vit
+from models.ViViTransformer_enc import get_model as get_model_ViViT
 
 def train_model(model: keras.Sequential, info_train, from_scratch=True):
     """Returns history object"""
@@ -34,13 +35,15 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
         frameloader=FrameLoader(repo),
         train_test_val="train",
         dim=(DIM,DIM),
-        batch_size=info_train['batch_size'],
+        batch_size=info_train['timesteps'],
+        as_video = True,
     )
     val_generator = DataGeneratorFrames(
         frameloader=FrameLoader(repo),
         train_test_val="val",
         dim=(DIM,DIM),
-        batch_size=info_train['batch_size'],
+        batch_size=info_train['timesteps'],
+        as_video = True,
     )
     
     callbacks = [
@@ -133,16 +136,16 @@ info_ViViT = {
     'name' : 'vision_transformer',
     'dim' : 224,
     'patch_size' : 14,
-    'timesteps' : 8,
+    'timesteps' : 16,
     'batch_size' : 1,
-    'dim_embedding' : 64,
+    'dim_embedding' : 48,
     'num_heads': 4,
     'encoder_blocks': 4,
-    'mlp_head_units' : [2048, 1024, 256, 64],  # Size of the dense layers
+    'mlp_head_units' : [1024, 1024, 256, 64],  # Size of the dense layers
     'min_epochs' : 15,
     'learning_rate' : 3e-3,
     'weight_decay' : 4e-5,
-    'get_model_function' : get_model_vit,
+    'get_model_function' : get_model_ViViT,
 }
 info_ViViT['name'] = f"video_vision_transformer_d{info_vit['dim']}_p{info_vit['patch_size']}_e{info_vit['dim_embedding']}_nh{info_vit['num_heads']}"
 
@@ -167,6 +170,7 @@ trainings_info = {
     'restore_best_weights' : False,
     'early_stopping_patience' : 6,
     'batch_size' : selected_info['batch_size'],
+    'timesteps' : None if 'timesteps' not in selected_info.keys() else selected_info['timesteps'],
     'learning_rate' : 8e-4 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
     'train_date' : datetime.now().strftime("%Y%m%d"),
     'save_anyway' : True,
