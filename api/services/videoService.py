@@ -170,6 +170,9 @@ class VideoService:
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
+        
+        if skillinfo["Rotations"] == 0:
+            return 0
 
         # Return 0 or 0.5 if no skill or footwork
         match (base_skill_levels):
@@ -243,12 +246,12 @@ class VideoService:
         print(f"turnername", turnername1)
         # TODO : fix consequetive turns (i.e. keep turning in an EB or cross)
         # print(f"idk what this is {"noting" if prev_skillinfo is None else oturner[prev_skillinfo.SkillInfo["Turner1"]]["name"]}")
-        if not (turnername1 in ["cross", "crougercross"] and prev_skillinfo is not None and oturner[prev_skillinfo.SkillInfo["Turner1"]]["name"] in ["cross", "crougercross"] and prev_skillinfo.SkillInfo["Rotations"] < 3):
+        if not (turnername1 in ["cross", "crougercross", "inverse toad"] and prev_skillinfo is not None and oturner[prev_skillinfo.SkillInfo["Turner1"]]["name"] in ["cross", "crougercross", "inverse toad"] and prev_skillinfo.SkillInfo["Rotations"] < 3):
             extra_level = oturner[skillinfo['Turner1']]['dd']
             print(f"+{extra_level} {oturner[skillinfo['Turner1']]['name']} turner")
             additional_levels += extra_level
             
-        if not (turnername2 in ["cross", "crougercross"] and prev_skillinfo is not None and oturner[prev_skillinfo.SkillInfo["Turner2"]]["name"] in ["cross", "crougercross"] and prev_skillinfo.SkillInfo["Rotations"] < 3):
+        if not (turnername2 in ["cross", "crougercross", "inverse toad"] and prev_skillinfo is not None and oturner[prev_skillinfo.SkillInfo["Turner2"]]["name"] in ["cross", "crougercross", "inverse toad"] and prev_skillinfo.SkillInfo["Rotations"] < 3):
             extra_level = oturner[skillinfo['Turner2']]['dd']
             print(f"+{extra_level} {oturner[skillinfo['Turner2']]['name']} turner")
             additional_levels += extra_level
