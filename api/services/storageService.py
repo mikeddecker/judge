@@ -20,7 +20,6 @@ from services.videoService import VideoService
 from services.folderService import FolderService
 from repository.db import db
 from typing import List
-from pytube import YouTube
 from dotenv import load_dotenv
 
 load_dotenv()

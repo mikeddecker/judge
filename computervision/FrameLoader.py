@@ -190,15 +190,29 @@ class FrameLoader:
 
         return loaded_frames
     
-    # def get_frames(self, relative_path, frameNrs, keepWrongBGRColors=True):
-    #     frames = {}
-    #     cap = cv2.VideoCapture(os.path.join(STORAGE_DIR, relative_path))
-    #     for frameNr in frameNrs:
-    #         cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
-    #         _, frame = cap.read()
-    #         frame = frame if keepWrongBGRColors else cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #         frames[frameNr] = frame
+    def get_skill(self, videoId: int, dim: tuple[int, int],
+                  start: int, end: int, timesteps: int, normalized: bool = True):
+        vpath = os.path.join(STORAGE_DIR, 'cropped-videos', f'{dim[0]}_{videoId}.mp4')
+        cap = cv2.VideoCapture(vpath)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start)
+        _, frame = cap.read()
 
-    #     cap.release()
+        frames_per_timestep = (end - start) / timesteps
 
-    #     return frames
+        i = 0
+        frames = []
+        currentFrame = start
+        while currentFrame < end and i < 80:
+            if round(currentFrame) < int(cap.get(cv2.CAP_PROP_POS_FRAMES)):
+                # print("current", currentFrame, "| pos", cap.get(cv2.CAP_PROP_POS_FRAMES), '| len frames', len(frames))
+                frames.append(frame if not normalized else frame / 255)
+                currentFrame += frames_per_timestep
+            else:
+                # print("current", currentFrame, "| pos", cap.get(cv2.CAP_PROP_POS_FRAMES), '| len frames', len(frames))
+                _, frame = cap.read()
+                continue
+            i += 1
+
+        assert len(frames) == timesteps, f"Something went wrong, frames doesn't have length of timesteps = {timesteps}, got {len(frames)}"
+        
+        return np.array(frames)

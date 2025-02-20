@@ -1,6 +1,7 @@
 # from flask_sqlalchemy import SQLAlchemy
 from repository.db import db
-from sqlalchemy.dialects.mysql import TINYINT, SMALLINT
+from sqlalchemy.dialects.mysql import TINYINT, SMALLINT, JSON
+from sqlalchemy.ext.mutable import MutableDict
 
 class Folder(db.Model):
     __tablename__ = 'Folders'
@@ -109,6 +110,20 @@ class TrainResult(db.Model):
         db.PrimaryKeyConstraint('modelname', 'epoch', name='_modelname_epoch_pk_constraint'),
     )
 
+class TrainResultSkill(db.Model):
+    __tablename__ = 'TrainResultsSkills'
+    modelname = db.Column(db.String(127), nullable=False)
+    train_date = db.Column(db.Integer, nullable=False)
+    epoch = db.Column(SMALLINT(unsigned=True), nullable=False)
+    loss = db.Column(db.Float, nullable=False)
+    accuracy = db.Column(db.Float, nullable=False)
+    val_loss = db.Column(db.Float, nullable=False)
+    val_accuracy = db.Column(db.Float, nullable=False)
+    losses_and_metrics = db.Column(MutableDict.as_mutable(JSON), nullable=False)
+
+    __table_args__ = (
+        db.PrimaryKeyConstraint('modelname', 'epoch', name='_modelname_epoch_pk_constraint'),
+    )
 
 class Skillinfo_DoubleDutch_Type(db.Model):
     __tablename__ = 'Skillinfo_DoubleDutch_Type'

@@ -41,3 +41,15 @@ skillinfo = {
 
 So adding skill like boolean or numeric:
 Add to ConfigHelper.py, mapToDomain, model.py, flask db migrate, and make sure frontend can accept the extra info.
+
+## Creating a backup
+
+```bash
+mysqldump -u root -p -h 127.0.0.1 -P 3377 judge > /media/miked/Elements/Judge/FINISHED-DB-READY/$(date +%Y%m%d)_judge_dump.sql
+```
+
+## Restoring a backup
+
+```bash
+mysql -u root -p -h 127.0.0.1 -P 3377 judge < /media/miked/Elements/Judge/FINISHED-DB-READY/20250216_judge_dump.sql
+```

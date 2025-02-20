@@ -144,7 +144,7 @@ info_ViViT = {
     'weight_decay' : 4e-5,
     'get_model_function' : get_model_vit,
 }
-info_ViViT['name'] = f"video_vision_transformer_d{info_vit['dim']}_p{info_vit['patch_size']}_e{info_vit['dim_embedding']}_nh{info_vit['num_heads']}"
+info_ViViT['name'] = f"video_vision_transformer_d{info_ViViT['dim']}_p{info_ViViT['patch_size']}_e{info_ViViT['dim_embedding']}_nh{info_ViViT['num_heads']}"
 
 
 info_mobilenet = {

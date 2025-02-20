@@ -86,6 +86,11 @@ def my_mse_loss_fn(y_true, y_pred):
     # Return the mean of the squared differences as the loss
     return keras.ops.mean(total_squared_difference)
 
+def metric_mse_max_numeric_accuracy(max: int, y_true, y_pred):
+    rounded_y_true = keras.ops.round(y_true * max)
+    rounded_y_pred = keras.ops.round(y_pred * max)
+    return keras.ops.mean(keras.ops.equal(rounded_y_pred, rounded_y_true))
+
 def iou(y_true, y_pred):
     """
     Calculate IoU loss between the true and predicted bounding boxes.

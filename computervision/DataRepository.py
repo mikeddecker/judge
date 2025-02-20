@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import sqlalchemy as sqlal
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -31,6 +32,15 @@ class DataRepository:
         engine = sqlal.create_engine(DATABASE_CONNECTION)#
         return engine.connect()
 
+    def check_connection(connection):
+        try:
+            # Execute a simple query to check the connection
+            connection.execute("SELECT 1")
+            print("Connection is still alive.")
+            return True
+        except SQLAlchemyError:
+            print("Connection lost.")
+            return False
     def get_framelabels(self, train_test_val, type=1):
         # TODO : update with validation & 'random' sampling
         if train_test_val == "train":
@@ -41,6 +51,26 @@ class DataRepository:
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
+        return pd.read_sql(qry, con=self.con)
+    
+    def get_skills(self, train_test_val, type='DD'):
+        if train_test_val == "train":
+            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5""")
+
+        if train_test_val == "val":
+            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) = 5""")
+
+        if train_test_val == "test":
+            raise ValueError(f"Changed test to val !!")
+        return pd.read_sql(qry, con=self.con)
+    
+    def get_skill_category_counts(self):
+        qry = sqlal.text(f"""SELECT 
+            (SELECT COUNT(*) FROM Skillinfo_DoubleDutch_Skill) AS skills,
+            (SELECT COUNT(*) FROM Skillinfo_DoubleDutch_Type) AS types,
+            (SELECT COUNT(*) FROM Skillinfo_DoubleDutch_Turner) AS turners;
+        """)
+
         return pd.read_sql(qry, con=self.con)
 
     def __load_relativePaths_of_videos_with_framelabels(self):
@@ -66,13 +96,17 @@ class DataRepository:
         df_videos.index = df_videos.id
         self.VideoNames = df_videos
 
-    def save_train_results(self, df_history: pd.DataFrame, from_scratch: bool):
+    def save_train_results(self, df_history: pd.DataFrame, from_scratch: bool, skills: bool = False):
+        if skills:
+            return self.__save_train_results_skills(df_history, from_scratch)
+        
         if from_scratch:
             delete_old = sqlal.text(f"""
                 DELETE FROM TrainResults WHERE modelname = \'{df_history.loc[0,'modelname']}\'
             """)
             self.con.execute(delete_old)
             self.con.commit()
+
         insert = sqlal.text("""
             INSERT INTO TrainResults (modelname, train_date, epoch, iou, loss, val_iou, val_loss)
             VALUES (:modelname, :train_date, :epoch, :iou, :loss, :val_iou, :val_loss)
@@ -87,6 +121,32 @@ class DataRepository:
                 'loss': row['loss'],
                 'val_iou': row['val_iou'],
                 'val_loss': row['val_loss']
+            })
+        self.con.commit()
+    
+    def __save_train_results_skills(self, df_history: pd.DataFrame, from_scratch: bool):
+        if from_scratch:
+            delete_old = sqlal.text(f"""
+                DELETE FROM TrainResultsSkills WHERE modelname = \'{df_history.loc[0,'modelname']}\'
+            """)
+            self.con.execute(delete_old)
+            self.con.commit()
+
+        insert = sqlal.text("""
+            INSERT INTO TrainResultsSkills (modelname, train_date, epoch, loss, accuracy, val_loss, val_accuracy, losses_and_metrics)
+            VALUES (:modelname, :train_date, :epoch, :loss, :accuracy, :val_loss, :val_accuracy, :losses_and_metrics)
+        """)
+
+        for _, row in df_history.iterrows():
+            self.con.execute(insert, {
+                'modelname': row['modelname'],
+                'train_date': row['train_date'],
+                'epoch': row['epoch'],
+                'loss': row['loss'],
+                'accuracy': row['accuracy'],
+                'val_loss': row['val_loss'],
+                'val_accuracy': row['val_accuracy'],
+                'losses_and_metrics': row.to_json(),
             })
         self.con.commit()
 

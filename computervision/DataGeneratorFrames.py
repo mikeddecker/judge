@@ -2,11 +2,12 @@ import keras
 import numpy as np
 import pandas as pd
 from DataRepository import DataRepository
+from FrameLoader import FrameLoader
 
 # TODO : change to tf dataset, so prefetch is possible https://medium.com/analytics-vidhya/write-your-own-custom-data-generator-for-tensorflow-keras-1252b64e41c3
 class DataGeneratorFrames(keras.utils.Sequence):
     def __init__(self,
-                 frameloader,
+                 frameloader: FrameLoader,
                  train_test_val: str, # train, test, val
                  dim: tuple, # e.g. (128,128)
                  batch_size=32, # Default batch size
