@@ -46,11 +46,11 @@ class DataGeneratorSkills(keras.utils.Sequence):
 
     def __len__(self):
         'Denotes the number of batches per epoch'
-        return len(self.Skills) // self.batch_size
+        return len(self.BalancedSkills7) // self.batch_size
 
     def __getitem__(self, batch_nr, normalize=True):
         "batch_nr starts from 0"
-        skillinfo_row = self.Skills.iloc[batch_nr]
+        skillinfo_row = self.BalancedSkills7.iloc[batch_nr]
         videoId = skillinfo_row["videoId"]
         frameStart = skillinfo_row["frameStart"]
         frameEnd = skillinfo_row["frameEnd"]
@@ -91,7 +91,7 @@ class DataGeneratorSkills(keras.utils.Sequence):
         self.BalancedSkills7 = self.__balance_skills(N=7)
         self.BalancedSkills10 = self.__balance_skills(N=10)
         self.BalancedSkills12 = self.__balance_skills(N=12)
-        self.BalancedSkills10 = self.BalancedSkills7.sample(frac=1.)
+        self.BalancedSkills7 = self.BalancedSkills7.sample(frac=1.)
     
     def __get_multiplier(self, occurance_percentage: float, max_occurance_percentage: float, N = 10):
         """Calculate how many times more a skill needs to be added
