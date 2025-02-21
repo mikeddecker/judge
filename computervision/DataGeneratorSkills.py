@@ -34,7 +34,12 @@ class DataGeneratorSkills(keras.utils.Sequence):
         self.repo = DataRepository()
         self.Skills = self.repo.get_skills(train_test_val)
         self.SkillCounts = self.repo.get_skill_category_counts()
-
+        self.BalancedSkills = pd.DataFrame(columns=self.Skills.columns)
+        self.info_columns = [
+            'type', 'rotations', 'turner1', 'turner2', 'skill', 'turntable',
+            'bodyRotations', 'hands', 'feet', 'sloppy', 'hard2see', 'fault',
+            'backwards'
+        ]
 
         print('DataGeneratorSkills init done')
         self.on_epoch_end()
@@ -81,3 +86,39 @@ class DataGeneratorSkills(keras.utils.Sequence):
 
     def on_epoch_end(self):
         self.Skills = self.Skills.sample(frac=1.)
+        self.BalancedSkills3 = self.__balance_skills(N=3)
+        self.BalancedSkills5 = self.__balance_skills(N=5)
+        self.BalancedSkills7 = self.__balance_skills(N=7)
+        self.BalancedSkills10 = self.__balance_skills(N=10)
+        self.BalancedSkills12 = self.__balance_skills(N=12)
+        self.BalancedSkills10 = self.BalancedSkills7.sample(frac=1.)
+    
+    def __get_multiplier(self, occurance_percentage: float, max_occurance_percentage: float, N = 10):
+        """Calculate how many times more a skill needs to be added
+        Returns a number in the interval [1, N["""
+        assert isinstance(occurance_percentage, (int, float))
+        assert isinstance(max_occurance_percentage, (int, float))
+        assert occurance_percentage > 0 and occurance_percentage <= 1
+        assert max_occurance_percentage > 0 and max_occurance_percentage <= 1
+        assert max_occurance_percentage >= occurance_percentage, f"got {max_occurance_percentage} and {occurance_percentage}"
+
+        multiplier = N * np.pow(1 - (np.sqrt(occurance_percentage / max_occurance_percentage)), 2)
+        multiplier = multiplier if multiplier >= 1 else multiplier + 1
+        multiplier_squared = multiplier * multiplier
+        return multiplier_squared
+
+
+    def __balance_skills(self, N=7):        
+        balanced_skills = pd.DataFrame(columns=self.Skills.columns)
+        for col in self.info_columns:
+            series_normalized_occurances = self.Skills[col].value_counts(normalize=True)
+            max_occurance_percentage = series_normalized_occurances.iloc[0]
+
+            for index, value in series_normalized_occurances.items():
+                if value == max_occurance_percentage:
+                    continue
+                rounded_multiplier = int(np.round(self.__get_multiplier(value, max_occurance_percentage, N=N)))
+                extra_skills = [self.Skills[self.Skills[col] == index] for _ in range(rounded_multiplier)]
+                extra_skills.append(balanced_skills)
+                balanced_skills = pd.concat(extra_skills, ignore_index=True)
+        return balanced_skills

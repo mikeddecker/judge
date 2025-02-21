@@ -24,6 +24,18 @@ from models.RandomCNN import get_model as get_model_randomcnn
 from models.vitransformer_enc import get_model as get_model_vit
 from models.ViViTransformer_enc import get_model as get_model_ViViT
 
+
+class PrintEveryNBatch(keras.callbacks.Callback):
+    def __init__(self, display):
+        self.seen = 0
+        self.display = display
+
+    def on_batch_end(self, batch, logs={}):
+        self.seen += logs.get('size', 0)
+        if self.seen % self.display == 0:
+            # you can access loss, accuracy in self.params['metrics']
+            print('\n{0}/{1} - Batch Loss: {2}'.format(self.seen,5, self.params['metrics'][0]))
+
 def train_model(model: keras.Sequential, info_train, from_scratch=True):
     """Returns history object"""
     DIM = selected_info['dim']
@@ -52,7 +64,8 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
     callbacks = []
     callbacks = [
         keras.callbacks.ModelCheckpoint('weights/last_trained_video_model_best.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1),
-        keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1)
+        keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1),
+        # PrintEveryNBatch(display=250)
     ]
     if info_train["early_stopping"]:
         callbacks.append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=6, restore_best_weights=trainings_info["restore_best_weights"], verbose=1))
@@ -80,8 +93,7 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
         train_generator,
         epochs=info_train['epochs'],
         callbacks=callbacks,
-        verbose=1,
-        validation_data=val_generator
+        validation_data=val_generator,
     )
 
     if 'unfreeze_pre_trained_layers_after_training' in info_train.keys():
@@ -194,10 +206,10 @@ selected_info = info_ViViT
 ###############################################################################
 
 trainings_info = {
-    'epochs' : 5, # Take more if first train round of random or transformer
+    'epochs' : 12, # Take more if first train round of random or transformer
     'early_stopping' : True,
     'restore_best_weights' : False,
-    'early_stopping_patience' : 6,
+    'early_stopping_patience' : 25,
     'batch_size' : selected_info['batch_size'],
     'timesteps' : None if 'timesteps' not in selected_info.keys() else selected_info['timesteps'],
     'learning_rate' : 8e-4 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
