@@ -55,10 +55,10 @@ class DataRepository:
     
     def get_skills(self, train_test_val, type='DD'):
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5""")
+            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) = 5""")
+            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) = 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
@@ -150,14 +150,16 @@ class DataRepository:
             })
         self.con.commit()
 
-    def get_last_epoch_nr(self, modelname):
+    def get_last_epoch_nr(self, modelname, type=None):
         """Return last epoch nr or 0"""
-        qry = sqlal.text(f"""SELECT MAX(epoch) as last_epoch FROM TrainResults WHERE modelname = \'{modelname}\'""")
+        tablename = 'TrainResultsSkills' if type == 'DD' else 'TrainResults'
+        qry = sqlal.text(f"""SELECT MAX(epoch) as last_epoch FROM {tablename} WHERE modelname = \'{modelname}\'""")
         df = pd.read_sql(qry, con=self.con)
         epoch = df.loc[0, 'last_epoch']
         epoch = 0 if epoch is None else epoch
         return epoch
     
-    def get_last_epoch_values(self, modelname, epoch):
-        qry = sqlal.text(f"""SELECT * FROM TrainResults WHERE modelname = \'{modelname}\' AND epoch = {epoch}""")
+    def get_last_epoch_values(self, modelname, epoch, type=None):
+        tablename = 'TrainResultsSkills' if type == 'DD' else 'TrainResults'
+        qry = sqlal.text(f"""SELECT * FROM {tablename} WHERE modelname = \'{modelname}\' AND epoch = {epoch}""")
         return pd.read_sql(qry, con=self.con)

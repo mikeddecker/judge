@@ -86,7 +86,7 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
             max_value = value[2]
             metrics[key] = lambda y_true, y_pred : metric_mse_max_numeric_accuracy(max=max_value, y_true=y_true, y_pred=y_pred)
 
-    optimizer = keras.optimizers.Adam(learning_rate=info_train['learning_rate'])
+    optimizer = keras.optimizers.Lion(learning_rate=info_train['learning_rate'])
     model.compile(optimizer=optimizer, loss=losses, metrics=metrics)
 
     history = model.fit(
@@ -107,8 +107,8 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
     print(df_history)
     df_history["modelname"] = [selected_info['name'] for _ in range(len(df_history))]
     df_history["train_date"] = [info_train['train_date'] for _ in range(len(df_history))]
-    accuracy_columns = [col for col in df_history.columns if '_accuracy' in col and not 'val_' in col]
-    val_accuracy_columns =  [col for col in df_history.columns if '_accuracy' in col and 'val_' in col]
+    accuracy_columns = [col for col in df_history.columns if ('_accuracy' in col or '_lambda' in col) and not 'val_' in col]
+    val_accuracy_columns =  [col for col in df_history.columns if ('_accuracy' in col or '_lambda' in col) and 'val_' in col]
     print(accuracy_columns)
     df_history["accuracy"] = df_history[accuracy_columns].mean(axis=1)
     df_history["val_accuracy"] = df_history[val_accuracy_columns].mean(axis=1)
@@ -117,14 +117,14 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
     print("acc in columns", "loss" in df_history.columns)
     print("val loss in columns", "val_loss" in df_history.columns)
     print("val acc in columns", "val_accuracy" in df_history.columns)
-    last_epoch_nr = int(repo2.get_last_epoch_nr(selected_info['name']))
+    last_epoch_nr = int(repo2.get_last_epoch_nr(selected_info['name'], type='DD'))
     print("last_epoch", last_epoch_nr, from_scratch)
     if last_epoch_nr > 0:
         # Return when training from scratch has worse results than last time
         # TODO : make a function to update val_iou based on last validation set
-        last_result = repo2.get_last_epoch_values(modelname=selected_info["name"], epoch=last_epoch_nr)
-        print('result now', df_history.loc[df_history.index[-1], 'val_iou'])
-        print('last result was: ', last_result.loc[0, 'val_iou'])
+        last_result = repo2.get_last_epoch_values(modelname=selected_info["name"], epoch=last_epoch_nr, type='DD')
+        print('result now', df_history.loc[df_history.index[-1], 'val_accuracy'])
+        print('last result was: ', last_result.loc[0, 'val_accuracy'])
         if not trainings_info['save_anyway'] and df_history.loc[df_history.index[-1], 'val_iou'] < last_result.loc[0, 'val_iou']:
             print("RESULTS WEREN'T BETTER")
             return df_history
@@ -184,11 +184,11 @@ info_ViViT = {
     'encoder_blocks': 4,
     'mlp_head_units' : [512, 1024, 256, 64],  # Size of the dense layers
     'min_epochs' : 15,
-    'learning_rate' : 3e-3,
+    'learning_rate' : 1e-4,
     'weight_decay' : 4e-5,
     'get_model_function' : get_model_ViViT,
 }
-info_ViViT['name'] = f"video_vision_transformer_d{info_ViViT['dim']}_p{info_ViViT['patch_size']}_e{info_ViViT['dim_embedding']}_nh{info_ViViT['num_heads']}"
+info_ViViT['name'] = f"video_vision_transformer_lion_d{info_ViViT['dim']}_p{info_ViViT['patch_size']}_e{info_ViViT['dim_embedding']}_nh{info_ViViT['num_heads']}"
 
 
 info_mobilenet = {
@@ -206,7 +206,7 @@ selected_info = info_ViViT
 ###############################################################################
 
 trainings_info = {
-    'epochs' : 12, # Take more if first train round of random or transformer
+    'epochs' : 1, # Take more if first train round of random or transformer
     'early_stopping' : True,
     'restore_best_weights' : False,
     'early_stopping_patience' : 25,
@@ -221,6 +221,6 @@ trainings_info['weight_decay'] = trainings_info['learning_rate'] / 20 if 'weight
 model = selected_info['get_model_function'](selected_info, DataRepository().get_skill_category_counts())
 model.summary()
 
-history = train_model(model, info_train=trainings_info, from_scratch=True)
+history = train_model(model, info_train=trainings_info, from_scratch=False)
 
 print(history)
