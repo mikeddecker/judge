@@ -78,7 +78,7 @@ class VideoService:
         ValueHelper.check_raise_frameNr(frameStart)
         ValueHelper.check_raise_frameNr(frameEnd)
         assert frameEnd > frameStart, f"End is smaller than start: s = {frameStart}, e = {frameEnd}"
-        assert frameEnd - frameStart > 5, f"Skill must be long enough"
+        assert frameEnd - frameStart > 4, f"Skill must be long enough"
         if videoinfo.has_skill_overlap(frameStart, frameEnd):
             raise ValueError(f"Skill has overlap with another skill, {frameStart} -> {frameEnd}")
 
@@ -116,7 +116,7 @@ class VideoService:
         ValueHelper.check_raise_frameNr(frameStart)
         ValueHelper.check_raise_frameNr(frameEnd)
         assert frameEnd > frameStart, f"End is smaller than start: s = {frameStart}, e = {frameEnd}"
-        assert frameEnd - frameStart > 5, f"Skill must be long enough"
+        assert frameEnd - frameStart > 4, f"Skill must be long enough"
         if videoinfo.has_skill_overlap(frameStart, frameEnd, skillId=id):
             raise ValueError(f"Skill has overlap with another skill, {frameStart} -> {frameEnd}")
 
@@ -338,7 +338,11 @@ class VideoService:
         return level_total
 
     def calculate_level_snapperlike(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
-        if oskill[skillinfo["Skill"]]["name"] in ["roll", "rad", "rondat", "handspring", "stut"]:
+        skillname = oskill[skillinfo["Skill"]]["name"]
+        if skillname in ["roll", "rad", "rondat", "handspring", "stut"]:
+            # Air skills
+            if skillname in ["rad", "rondat", "handspring"] and skillinfo["Hands"] == 0:
+                return [4]
             return int(oskill[skillinfo["Skill"]]["dd"][0])
         return 0
     

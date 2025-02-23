@@ -502,7 +502,10 @@ async function updateSkill() {
   const updatedVideoinfo = await putSkill(vidinfo.value.Id, updatedSkill)
   vidinfo.value = updatedVideoinfo
   skillCanUpdate.value = false
-  prepareNextLabel()
+  let tmp = frameEnd.value
+  prepareNextLabel(frameStart.value)
+  selectedSkill.value = updatedSkill
+  frameEnd.value = tmp
 }
 async function removeSkill() {
   vidinfo.value = await deleteSkill(vidinfo.value.Id, selectedSkill.value.FrameStart, selectedSkill.value.FrameEnd)
