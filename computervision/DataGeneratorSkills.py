@@ -1,6 +1,7 @@
 import keras
 import numpy as np
 import pandas as pd
+import random
 from DataRepository import DataRepository
 from FrameLoader import FrameLoader
 import sys
@@ -60,7 +61,10 @@ class DataGeneratorSkills(keras.utils.Sequence):
                                                     start=frameStart, 
                                                     end=frameEnd,
                                                     timesteps=self.timesteps, 
-                                                    normalized=normalize)
+                                                    normalized=normalize,
+                                                    augment=True if self.train_test_val == 'train' else False,
+                                                    flip_image=(self.train_test_val == 'train' and random.random() < 0.5)
+                                                    )
             loaded_frames = np.expand_dims(loaded_frames, axis=0)
             y = {}
             for key, value in ConfigHelper.get_discipline_DoubleDutch_config().items():
@@ -84,6 +88,7 @@ class DataGeneratorSkills(keras.utils.Sequence):
             print(f"Failed for videoId = {videoId}, skillId = {skillinfo_row["id"]}")
             print(str(err))
             print(f"*"*80)
+            raise err
 
         return loaded_frames, y
 

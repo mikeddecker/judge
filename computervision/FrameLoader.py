@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 STORAGE_DIR = os.getenv("STORAGE_DIR")
+MAX_SKILL_PIXEL_PADDING = 50
 
 class FrameLoader:
     def __init__(self, datarepo):
@@ -192,34 +193,49 @@ class FrameLoader:
         return loaded_frames
     
     def get_skill(self, videoId: int, dim: tuple[int, int],
-                  start: int, end: int, timesteps: int, normalized: bool = True):
+                  start: int, end: int, timesteps: int, normalized: bool = True, augment=False, flip_image=False):
         vpath = os.path.join(STORAGE_DIR, 'cropped-videos', f'{dim[0]}_{videoId}.mp4')
         cap = cv2.VideoCapture(vpath)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
         _, frame = cap.read()
 
         frames_per_timestep = (end - start) / timesteps
-        flip_turner = random.random() < 0.5
 
-        i = 0
+        # Shift skill a little
+        if augment and random.random() < 0.7:
+            start = start - 2 * frames_per_timestep * random.random() + 2 * frames_per_timestep * random.random()
+            end = end - 2 * frames_per_timestep * random.random() + 2 * frames_per_timestep * random.random()
+            frames_per_timestep = (end - start) / timesteps
+
+        # pad = False
+        # if augment and random.random() < 0.6:
+        #     padding = int(random.random() * 50)
+        #     top = int(random.random() * padding)
+        #     left = int(random.random() * padding)
+        #     pad = True
+
         frames = []
         currentFrame = start
-        while currentFrame < end and i < 80:
+        while currentFrame < end and len(frames) < timesteps:
             if round(currentFrame) < int(cap.get(cv2.CAP_PROP_POS_FRAMES)):
-                # print("current", currentFrame, "| pos", cap.get(cv2.CAP_PROP_POS_FRAMES), '| len frames', len(frames))
-                frame = frame if not normalized else frame / 255
+                # print("current", currentFrame, "| pos", cap.get(cv2.CAP_PROP_POS_FRAMES), '| len frames', len(frames))                
+                # if augment and pad:
+                #     zeros = np.full((frame.shape[0] + padding, frame.shape[1] + padding, frame.shape[2]), 127)
+                #     zeros[top:top+frame.shape[0], left:left+frame.shape[1]] = frame
+                #     zeros = zeros.astype(float)
+                #     frame = cv2.resize(zeros, (frame.shape[0], frame.shape[1])).astype(int)
 
-                if flip_turner:
+                if flip_image:
                     frame = cv2.flip(frame, 1)
 
+                frame = frame if not normalized else (frame / 255)
                 frames.append(frame)
                 currentFrame += frames_per_timestep
             else:
                 # print("current", currentFrame, "| pos", cap.get(cv2.CAP_PROP_POS_FRAMES), '| len frames', len(frames))
                 _, frame = cap.read()
                 continue
-            i += 1
 
         assert len(frames) == timesteps, f"Something went wrong, frames doesn't have length of timesteps = {timesteps}, got {len(frames)}"
         
-        return np.array(frames), flip_turner
+        return np.array(frames), flip_image

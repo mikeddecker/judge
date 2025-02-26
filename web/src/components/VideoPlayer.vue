@@ -46,7 +46,7 @@
       <button v-show="modeIsSkills" @click="playJustALittleFurther(+1)">+1</button>
       <button v-show="modeIsSkills" @click="playJustALittleFurther(+2)">+2</button>
       <button v-show="modeIsSkills" @click="playJustALittleFurther(+5)">+5</button>
-      <button v-show="modeIsSkills" @click="playJustALittleFurther(+10)">+10</button>
+      <button v-show="modeIsSkills" @click="playJustALittleFurther(+10)" ref="focusBtn">+10</button>
       <button v-show="modeIsSkills" @click="playJustALittleFurther(+15)">+15</button>
       <button v-show="modeIsSkills" @click="playJustALittleFurther(+25)">+25</button>
       <button v-show="modeIsSkills && selectedSkill" @click="deselectSkill">Deselect skill</button>
@@ -122,6 +122,7 @@ const relativeWidth = computed(() => Math.abs(currentX.value - startX.value) / c
 const relativeHeight = computed(() => Math.abs(currentY.value - startY.value) / currentHeight.value)
 const videoduration = ref(1)
 const vidinfo = ref(null)
+const focusBtn = ref(null)
 
 const skills = computed(() => {
   let s = vidinfo.value ? [...vidinfo.value.Skills] : []
@@ -211,6 +212,9 @@ function updatePaused(event) {
     currentFrame.value = Math.floor(!modeIsReview.value ? vidinfo.value.FPS * event.target.currentTime : vidinfo.value.Frames[currentFrameIdx.value].FrameNr)
   }
   paused.value = event.target.paused;
+  if (currentFrame.value != frameStart.value) {
+    frameEnd.value = currentFrame.value
+  }
 }
 function play() {
   videoElement.value.play();
@@ -487,6 +491,7 @@ async function addSkill() {
   }
   vidinfo.value = await postSkill(vidinfo.value.Id, newSkill)
   prepareNextLabel(frameEnd.value)
+  focusBtn.value.focus()
 }
 function selectedOptions2SingleValue(options) {
   return Object.entries(options).reduce((newDict, [key, value]) => {
