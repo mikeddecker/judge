@@ -1,5 +1,6 @@
 import cv2
 import math
+import random
 import numpy as np
 import os
 import sys
@@ -198,6 +199,7 @@ class FrameLoader:
         _, frame = cap.read()
 
         frames_per_timestep = (end - start) / timesteps
+        flip_turner = random.random() < 0.5
 
         i = 0
         frames = []
@@ -205,7 +207,12 @@ class FrameLoader:
         while currentFrame < end and i < 80:
             if round(currentFrame) < int(cap.get(cv2.CAP_PROP_POS_FRAMES)):
                 # print("current", currentFrame, "| pos", cap.get(cv2.CAP_PROP_POS_FRAMES), '| len frames', len(frames))
-                frames.append(frame if not normalized else frame / 255)
+                frame = frame if not normalized else frame / 255
+
+                if flip_turner:
+                    frame = cv2.flip(frame, 1)
+
+                frames.append(frame)
                 currentFrame += frames_per_timestep
             else:
                 # print("current", currentFrame, "| pos", cap.get(cv2.CAP_PROP_POS_FRAMES), '| len frames', len(frames))
@@ -215,4 +222,4 @@ class FrameLoader:
 
         assert len(frames) == timesteps, f"Something went wrong, frames doesn't have length of timesteps = {timesteps}, got {len(frames)}"
         
-        return np.array(frames)
+        return np.array(frames), flip_turner
