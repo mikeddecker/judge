@@ -2,6 +2,7 @@
 from repository.db import db
 from sqlalchemy.dialects.mysql import TINYINT, SMALLINT, JSON
 from sqlalchemy.ext.mutable import MutableDict
+from datetime import datetime, date
 
 class Folder(db.Model):
     __tablename__ = 'Folders'
@@ -165,3 +166,4 @@ class Skillinfo_DoubleDutch(db.Model):
     sloppy = db.Column(db.Boolean, nullable=False)
     hard2see = db.Column(db.Boolean, nullable=False, default=False)
     fault = db.Column(db.Boolean, nullable=False, default=False)
+    labeldate = db.Column(db.DateTime, default=date.today())
