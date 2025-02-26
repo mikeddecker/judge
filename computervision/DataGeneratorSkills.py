@@ -56,7 +56,7 @@ class DataGeneratorSkills(keras.utils.Sequence):
         frameEnd = skillinfo_row["frameEnd"]
 
         try:
-            loaded_frames = self.frameloader.get_skill(videoId, self.dim, 
+            loaded_frames, flip_turner = self.frameloader.get_skill(videoId, self.dim, 
                                                     start=frameStart, 
                                                     end=frameEnd,
                                                     timesteps=self.timesteps, 
@@ -67,6 +67,9 @@ class DataGeneratorSkills(keras.utils.Sequence):
                 if key == "Tablename":
                     continue
                 key_lower = key[0].lower() + key[1:]
+                if flip_turner and key in ["Turner1", "Turner2"]:
+                    key = "Turner2" if key == "Turner1" else "Turner1"
+
                 y[key] = skillinfo_row[key_lower]
 
                 if value[0] == "Categorical":

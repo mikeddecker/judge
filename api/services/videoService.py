@@ -402,6 +402,8 @@ class VideoService:
         if skillinfo["Rotations"] > 1:
             print(f'+{skillinfo["Rotations"]-1} multiple under')
             additional_levels += skillinfo["Rotations"] - 1
+        elif skillinfo["Rotations"] == 0:
+            return 0
 
         turnername1 = oturner[skillinfo["Turner1"]]["name"]
         turnername2 = oturner[skillinfo["Turner2"]]["name"]
