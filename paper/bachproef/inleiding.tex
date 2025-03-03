@@ -5,32 +5,108 @@
 \chapter{\IfLanguageName{dutch}{Inleiding}{Introduction}}%
 \label{ch:inleiding}
 
-De inleiding moet de lezer net genoeg informatie verschaffen om het onderwerp te begrijpen en in te zien waarom de onderzoeksvraag de moeite waard is om te onderzoeken. In de inleiding ga je literatuurverwijzingen beperken, zodat de tekst vlot leesbaar blijft. Je kan de inleiding verder onderverdelen in secties als dit de tekst verduidelijkt. Zaken die aan bod kunnen komen in de inleiding~\autocite{Pollefliet2011}:
+Jump rope is an evolving sport.
+Year after year, an increasing amount of high-level competitors are pushing the limits of jump rope.
+% TODO : source?
+This results in new skills, new combinations, better physiques, better rope material, and faster movements. For the judges to keep up with the jumpers and to correctly assess scores to a routine, Double Dutch freestyles\footnote{Two turners, with one or more jumpers}, one of the jump rope disciplines, are reviewed at half speed in International competitions or even at nationals in Belgium.
 
-\begin{itemize}
-  \item context, achtergrond
-  \item afbakenen van het onderwerp
-  \item verantwoording van het onderwerp, methodologie
-  \item probleemstelling
-  \item onderzoeksdoelstelling
-  \item onderzoeksvraag
-  \item \ldots
-\end{itemize}
+Head judges around the world question the best way to judge athletes correctly so as to give an accurate and objective ranking in national or international competitions.
+Many solutions have been provided: another judging rule set\footnote{The current rule set is enforced and maintained by \href{https://www.gymfed.be/}{Gymfed}, closely related to the international judging-rules from the \href{https://ijru.sport/}{International Jump Rope Union}}, splitting judge responsibility, replaying the routine at half speed \dots
+
+However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022}, implementations detecting simple human actions \autocite{LUQMAN_2022}, examples of action recognition in other sports \autocite{Yin_2024} and the successful test of \href{https://nextjump.app/}{NextJump}'s AI speed-counter, head jurors wondered about the possibility of using modern technologies like artificial intelligence to improve assigned scores of judges on jump rope freestyles.
 
 \section{\IfLanguageName{dutch}{Probleemstelling}{Problem Statement}}%
 \label{sec:probleemstelling}
 
-Uit je probleemstelling moet duidelijk zijn dat je onderzoek een meerwaarde heeft voor een concrete doelgroep. De doelgroep moet goed gedefinieerd en afgelijnd zijn. Doelgroepen als ``bedrijven,'' ``KMO's'', systeembeheerders, enz.~zijn nog te vaag. Als je een lijstje kan maken van de personen/organisaties die een meerwaarde zullen vinden in deze bachelorproef (dit is eigenlijk je steekproefkader), dan is dat een indicatie dat de doelgroep goed gedefinieerd is. Dit kan een enkel bedrijf zijn of zelfs één persoon (je co-promotor/opdrachtgever).
+Jump rope, like gymnastics or athletics, exists in many disciplines like Speed, Single Rope freestyle (single/pair/team), Chinese Wheel (CW) or Double Dutch (single/pair).
+To accurately judge routines, each discipline has its own rules. Although interlapped, differences exist. Each athlete or team then performs a choreography of 60 to 75 seconds showcasing their favorite skills and uniqueness.
+
+\subsubsection{What are the challenges for judges today?}
+\label{subsubsec:intro-bp-question-challenges-for-judges}
+
+On competitions, judges watch the routine live to annotate the difficulty or creativity. Each judge then pays attention to his assigned part, e.g. movement, musicality or difficulty, all of those elements contributing to the total score of the freestyle. The main problem now is for judges to keep up with double dutch routines. To increase the accuracy, difficulty-certified judges \footnote{Those judges judging the difficulty of double dutch routines.} are already allowed to review freestyles at half speed in order to score them accurately.
+
+\subsubsection{How is difficulty scored?}
+\label{subsubsec:intro-bp-question-difficulty-scored}
+
+Performed skills each have a level, which will be written down when seen by the judge. Each level also has a numeric score that contributes to the total difficulty of the routine. Judges see and calculate/memorize the level of each skill, write it down, count the number of levels jumped and calculate the diff score.
+
+\subsubsection{What are the skills and transitions that need to be recognized?}
+\label{subsubsec:intro-bp-question-what-are-the-skill}
+
+% TODO : provide examples of skills
+For double dutch freestyles, there are two turners and at least one jumper. All of them act as a unit and execute skills or turner combinations. Jumpers can do a handstand, a push-up or a cartwheel. Meanwhile, turners can cross their arms, hold them on their back or multiple times underneath the jumper in a single jump. Each skill and turner has its base level, which contributes to the total level when combined. Furthermore, some skill transitions allow for bonus points to reward the more difficult ones. An example of this is performing a push-up to a push-up while your body position changes a quarter is a different transition.
+
+
+% TODO : omit or shift
+%\subsubsection{What can be done to increase the accuracy of judging?}
+%\label{subsubsec:intro-question-how-to-increase-accuracy}
+
+% The preferred solution in this proposal is an AI-model recognizing (sub)skills and transitions in a double dutch single freestyle (DD3) as assigning correct levels at world championships or even nationals in Belgium is perceived to be hard and the current main issue.
 
 \section{\IfLanguageName{dutch}{Onderzoeksvraag}{Research question}}%
 \label{sec:onderzoeksvraag}
 
-Wees zo concreet mogelijk bij het formuleren van je onderzoeksvraag. Een onderzoeksvraag is trouwens iets waar nog niemand op dit moment een antwoord heeft (voor zover je kan nagaan). Het opzoeken van bestaande informatie (bv. ``welke tools bestaan er voor deze toepassing?'') is dus geen onderzoeksvraag. Je kan de onderzoeksvraag verder specifiëren in deelvragen. Bv.~als je onderzoek gaat over performantiemetingen, dan 
+This results in the main research question of this paper: \textbf{``How can artificial intelligence be incorporated into jump rope freestyles to increase the objectiveness and accuracy of judging?''}.
+
+Until now, only the scope has been narrowed down. The focus will be put on double dutch freestyles. Getting to know the topic is great, but this doesn't get us further into the solution. Let's jump into it.
+
+% TODO : update order
+\subsubsection{Which modern technologies can be used to increase score accuracy of jump rope freestyles}
+\label{subsubsec:intro-question-integration}
+
+As reviewing routines at half speed still has his limits, using a machine learning (an AI-model) could reduce time spent on judging routines. The idea would be a machine learning model recognizing (sub)skills and transitions in a double dutch single freestyle. (DD3)
+
+\subsubsection{Which data is available for the machine learning model to use?}
+\label{subsubsec:intro-question-data}
+
+Working with machine learning requires data which raises the question whether its available. To recognize hundreds of skills, variations and transitions, lots of data is needed. Both individual and team freestyles are mostly recorded by clubs themselves or event organizers, some of which are available on social media. The task is to explore and gather as much as possible.
+
+\subsubsection{When are predictions acceptable to potentially use on competitions?}
+\label{subsubsec:intro-question-acceptable-results}
+
+Judges do make mistakes, just like the machine learning models, but we do need a baseline for acceptable results. Past competition scores can be used to define a target.
+
+\subsubsection{How can the AI-judge as a hybrid model increasing judge quality of the judges?}
+\label{subsubsec:intro-question-hybrid-model-judge-quality}
+Can the AI-judge \footnote{The machine learning model predicting performed skills} be used to train new judges or brush up the knowledge of current judges? Meanwhile, can they verify the predicted labels by the model to use as new training data?
+
+\subsubsection{Which activity recognition examples can be used or altered as a base guidance?}
+\label{subsubsec:intro-question-earlier-research-guidance}
+
+Quick searches give examples of object recognition \autocite{Diwaker_2022}, detecting sign language \autocite{Bora_2023} or activity recognition (e.g. the kinetics dataset - riding a bike, reading a book, playing an instrument \autocite{Kay_2017}).
+These implementations can be used as a first guide.
+Those examples give the idea that data mostly seem more to be centered, which is not the case in jump rope videos, a solution needs to be found for that. The second problem is that freestyles can consist of more than fifty different skills, which takes a long time to cut manually.
+
+
+Wees zo concreet mogelijk bij het formuleren van je onderzoeksvraag. Een onderzoeksvraag is trouwens iets waar nog niemand op dit moment een antwoord heeft (voor zover je kan nagaan). Het opzoeken van bestaande informatie (bv. ``welke tools bestaan er voor deze toepassing?'') is dus geen onderzoeksvraag. Je kan de onderzoeksvraag verder specifiëren in deelvragen. Bv.~als je onderzoek gaat over performantiemetingen, dan
 
 \section{\IfLanguageName{dutch}{Onderzoeksdoelstelling}{Research objective}}%
 \label{sec:onderzoeksdoelstelling}
 
 Wat is het beoogde resultaat van je bachelorproef? Wat zijn de criteria voor succes? Beschrijf die zo concreet mogelijk. Gaat het bv.\ om een proof-of-concept, een prototype, een verslag met aanbevelingen, een vergelijkende studie, enz.
+
+\subsubsection{What would be a minimal Proof of Concept (PoC)?}
+\label{subsubsec:intro-question-poc}
+
+The PoC would be a model recognizing the most common skills and transitions.
+This could mean omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. Preferably, the PoC should be able to generalize uncommon skills that are still definable as normal. Better described would be knocking on the door three times, someone's at the door, but knocking four times or with a bonk in between is also recognizable \footnote{See specified example in section \ref{subsec:literature-unknown-unusual-skills}} for a more concrete case.
+
+\subsubsection{How much data is expected to increase the accuracy off the Judge?}
+\label{subsubsec:intro-question-expected-data-to-increase-accuracy}
+
+The amount of videos will keep rising, but will the current amount be sufficient? If it's not enough, how much more would be expected and what about uncommon skills. Do we need to specially record them? But what about new skills on competitions?
+
+\subsection{Additional questions}
+\label{subsubsec:intro-question-additional}
+
+The proof of concept will probably raise a lot of questions as a byproduct such as:
+
+\begin{itemize}
+    \item How can we use the AI-Judge to improve judges?
+    \item What needs to change on a working model, to apply it on other judge-related sports such as gymnastics, synchronized swimming, figure skating \dots
+\end{itemize}
+
 
 \section{\IfLanguageName{dutch}{Opzet van deze bachelorproef}{Structure of this bachelor thesis}}%
 \label{sec:opzet-bachelorproef}
@@ -39,12 +115,14 @@ Wat is het beoogde resultaat van je bachelorproef? Wat zijn de criteria voor suc
 % geven van de opbouw van de rest van de tekst. Deze sectie bevat al een aanzet
 % die je kan aanvullen/aanpassen in functie van je eigen tekst.
 
-De rest van deze bachelorproef is als volgt opgebouwd:
+With some general knowledge about jump rope and the objective of the thesis defined, further research, (label)definitions, model selection, and implementation can be performed.
 
-In Hoofdstuk~\ref{ch:stand-van-zaken} wordt een overzicht gegeven van de stand van zaken binnen het onderzoeksdomein, op basis van een literatuurstudie.
+Let’s start by exploring earlier work in section~\ref{ch:stand-van-zaken} while slowly increasing the number of jump rope definitions.
 
-In Hoofdstuk~\ref{ch:methodologie} wordt de methodologie toegelicht en worden de gebruikte onderzoekstechnieken besproken om een antwoord te kunnen formuleren op de onderzoeksvragen.
+Using this research, a methodology can be created in order to recognize double dutch skills. This will be clarified in section~\ref{ch:methodologie}
 
-% TODO: Vul hier aan voor je eigen hoofstukken, één of twee zinnen per hoofdstuk
+% TODO : improve text
+Next up result section 4.
+To reach conclusions in 5...
 
 In Hoofdstuk~\ref{ch:conclusie}, tenslotte, wordt de conclusie gegeven en een antwoord geformuleerd op de onderzoeksvragen. Daarbij wordt ook een aanzet gegeven voor toekomstig onderzoek binnen dit domein.

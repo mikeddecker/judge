@@ -3,9 +3,8 @@
 % Meer info op https://github.com/HoGentTIN/latex-hogent-report
 %===============================================================================
 
-\documentclass[dutch,dit,thesis]{hogentreport}
+\documentclass[english,dit,thesis]{hogentreport}
 
-% TODO:
 % - If necessary, replace the option `dit`' with your own department!
 %   Valid entries are dbo, dbt, dgz, dit, dlo, dog, dsa, soa
 % - If you write your thesis in English (remark: only possible after getting
@@ -18,11 +17,11 @@
 
 %% For source code highlighting, requires pygments to be installed
 %% Compile with the -shell-escape flag!
-%% \usepackage[chapter]{minted}
+\usepackage[chapter]{minted}
 %% If you compile with the make_thesis.{bat,sh} script, use the following
 %% import instead:
-\usepackage[chapter,outputdir=../output]{minted}
-\usemintedstyle{solarized-light}
+%% \usepackage[chapter,outputdir=../output]{minted}
+%% \usemintedstyle{solarized-light}
 
 %% Formatting for minted environments.
 \setminted{%
@@ -32,6 +31,8 @@
     linenos,
     tabsize=4
 }
+
+\emergencystretch=1em
 
 %% Ensure the list of listings is in the table of contents
 \renewcommand\listoflistingscaption{%
@@ -49,11 +50,11 @@
 
 %%---------- Document metadata -------------------------------------------------
 % TODO: Replace this with your own information
-\author{Ernst Aarden}
-\supervisor{Dhr. F. Van Houte}
-\cosupervisor{Mevr. S. Beeckman}
-\title[Optionele ondertitel]%
-    {Titel van de bachelorproef}
+\author{Mike De Decker}
+\supervisor{Ms. L. De Mol}
+\cosupervisor{Mr. D. Plummer}
+\title[Optional subtitle]%
+    {AI Judge for recognition of jump rope skills in videos}
 \academicyear{\advance\year by -1 \the\year--\advance\year by 1 \the\year}
 \examperiod{1}
 \degreesought{\IfLanguageName{dutch}{Professionele bachelor in de toegepaste informatica}{Bachelor of applied computer science}}
@@ -148,12 +149,18 @@
 
 \appendix
 
-\chapter{Onderzoeksvoorstel}
+\chapter{Research proposal}
 
-Het onderwerp van deze bachelorproef is gebaseerd op een onderzoeksvoorstel dat vooraf werd beoordeeld door de promotor. Dat voorstel is opgenomen in deze bijlage.
+The subject of this applied thesis is based on the earlier approved research proposal. This submission is added as attachment.
 
-%% TODO: 
-%\section*{Samenvatting}
+%% TODO:
+\section*{Proposal abstract}
+
+    Judging jump rope freestyle routines at the highest competitive level has become increasingly challenging due to the evolution of jump rope. Both the number of skills that are included in a routine as well as the speed with which these are executed keep increasing. This is particularly evident in so-called Double Dutch Freestyle routines, which is why assigning scores to these freestyles is done by a combination of live and delayed evaluation. The creativity of a routine (including its variation and musicality) is scored in real time but the assignment of the appropriate difficulty level is done based on a recording of the routine replayed at half speed right after it is performed. Even though this helps reduce errors in difficulty scoring, a certain variability in the assigned scores persists/can still be seen. With the increased accessibility of artificial intelligence, particularly neural networks, the question arises whether an AI judge or assistant can be developed to obtain a more accurate (objective) difficulty scoring.
+
+    This research explores the possibility and development of such an AI assistant, as well as the techniques and challenges required to obtain the desired level of objectivity.
+    The current idea is divided into three sections. The first section will be localizing the jumpers in the field as most obtained recordings are not fully zoomed in or recorded using a static camera. As recorded jumpers sometimes take up less than a fifth of the recording, they can be cropped out sparing computational resources for the parts to come. The second part involves isolating skills from a routine into individual skills or subskills. This enables the assistant to not only label a single skill, but also dozens of skills performed sequentially without interference. Lastly, each segment can be assigned to its corresponding skill. For Double Dutch Freestyles this means the combined action of jumpers and turners resulting in a large possibility of unique combinations. By further marking presentational skills or difficult to see skills as unknown (e.g. when one athlete stands between others and the camera) it is expected that the AI judge will indicate unknown or unclear skills by itself. This way the the assistant can be put into practice when reaching similar or more accurate results than the live jury panel. The assistant's results allow for verification of scores during and after the competition, increasing transparency and accuracy even further. Using the current obtained competition videos displaying the most common skills a few hundred times, it is expected that the AI judge will start to distinguish between skills like a cartwheel, split or salto.
+    In case it works, it is not only useful for jump rope freestyles but also applicable in other judge-related competitions such as gymnastic routines, figure skating, or synchronized swimming.
 
 % Kopieer en plak hier de samenvatting (abstract) van je onderzoeksvoorstel.
 

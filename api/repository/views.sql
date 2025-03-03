@@ -81,3 +81,12 @@ LEFT JOIN SkillTrainDistribution_Turner2 t ON sdt.name = t.name
 LEFT JOIN SkillValDistribution_Turner2 v ON sdt.name = v.name;
 
 /* Skill distribution turners end */
+
+
+CREATE OR REPLACE VIEW Skills_labeled_per_day AS
+SELECT so.labeldate, ji.count as jumps_included, so.count as skills
+FROM (SELECT labeldate, COUNT(*) as count FROM Skillinfo_DoubleDutch
+GROUP BY labeldate) AS ji -- jumps_included
+JOIN (SELECT labeldate, COUNT(*) as count FROM Skillinfo_DoubleDutch WHERE skill <> 1
+GROUP BY labeldate) AS so -- skills only 
+ON ji.labeldate = so.labeldate;

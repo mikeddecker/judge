@@ -1,7 +1,7 @@
 %---------- Inleiding ---------------------------------------------------------
 
 \section{Introduction}
-\label{sec:introduction}
+\label{sec:proposal-introduction}
 
 Jump rope is an evolving sport.
 Year after year, an increasing amount of high-level competitors are pushing the limits of jump rope.
@@ -16,23 +16,23 @@ However, with the increasing popularity of image recognition, more powerful comp
 This results some in the main research question of this paper: \textbf{``How can artificial intelligence be incorporated into jump rope freestyles to increase the objectiveness and accuracy of judging?''}.
 
 \subsection{Problem domain}
-\label{subsec:intro-problem-domain}
+\label{subsec:proposal-intro-problem-domain}
 
 Jump rope, like gymnastics or athletics, exists in many disciplines like Speed, Single Rope freestyle (single/pair/team), Chinese Wheel (CW) or Double Dutch (single/pair).
 To accurately judge routines, each discipline has its own rules. Although interlapped, differences exist. Each athlete or team then performs a choreography of 60 to 75 seconds showcasing their favorite skills and uniqueness.
 
 \subsubsection{What are the challenges for judges today?}
-\label{subsubsec:intro-question-challenges-for-judges}
+\label{subsubsec:proposal-intro-question-challenges-for-judges}
 
 On competitions, judges watch the routine live to annotate the difficulty or creativity. Each judge then pays attention to his assigned part, e.g. movement, musicality or difficulty, all of those elements contributing to the total score of the freestyle. The main problem now is for judges to keep up with double dutch routines. Single rope freestyles are still manageable. To increase the accuracy, difficulty-certified judges \footnote{Those judges judging the difficulty of double dutch routines.} are already allowed to review freestyles at half speed in order to score them accurately.
 
 \subsubsection{How is difficulty scored?}
-\label{subsubsec:intro-question-difficulty-scored}
+\label{subsubsec:proposal-intro-question-difficulty-scored}
 
 Performed skills each have a level, which will be written down when seen by the judge. Each level also has a numeric score that contributes to the total difficulty of the routine. Judges see and calculate/memorize the level of each skill, write it down, count the number of levels jumped and calculate the diff score.
 
 \subsubsection{What are the skills and transitions that need to be recognized?}
-\label{subsubsec:intro-question-what-are-the-skill}
+\label{subsubsec:proposal-intro-question-what-are-the-skill}
 
 % TODO : provide examples of skills
 For double dutch, there are two turners and at least one jumper. All three of them act as a unit and execute skills or turner combinations. Jumpers can do a handstand, push-up or a cartwheel, while turners can turn with their arms crossed, on the back or rotating two ropes underneath the jumper at once. Furthermore, combining skills of a jumper while doing a special rotation contributes to more difficulty and more points. Even different transitions like a turntable, which is a push-up to a push-up while your body position changes a quarter is a different transition.
@@ -46,32 +46,32 @@ For double dutch, there are two turners and at least one jumper. All three of th
 
 
 \subsection{Solution domain}
-\label{subsec:intro-solution-domain}
+\label{subsec:proposal-intro-solution-domain}
 
 Until now, only the scope has been narrowed down. The focus will be put on double dutch freestyles. Getting to know the topic is great, but this doesn't get us further into the solution. Let's jump into it.
 
 % TODO : update order
 \subsubsection{Which modern technologies can be used to increase score accuracy of jump rope freestyles}
-\label{subsubsec:intro-question-integration}
+\label{subsubsec:proposal-intro-question-integration}
 
 As reviewing routines at half speed still has his limits, using machine learning (an AI-model) could reduce time spent on judging routines. The idea would be a machine learning model recognizing (sub)skills and transitions in a double dutch single freestyle. (DD3)
 
 \subsubsection{Which data is available for the machine learning model to use?}
-\label{subsubsec:intro-question-data}
+\label{subsubsec:proposal-intro-question-data}
 
 To recognize hundreds of skills, variations and transitions, lots of data is needed. Both individual and team freestyles are mostly recorded by clubs themselves or event organizers, some which are available on social media. The task is to explore and gather as much as possible.
 
 \subsubsection{When are predictions acceptable to potentially use on competitions?}
-\label{subsubsec:intro-question-acceptable-results}
+\label{subsubsec:proposal-intro-question-acceptable-results}
 
 Judges do make mistakes, just like the machine learning models, but we do need a baseline for acceptable results. Past competition scores can be used to define a target.
 
 \subsubsection{How can the AI-judge as a hybrid model increasing judge quality of the judges?}
-\label{subsubsec:intro-question-hybrid-model-judge-quality}
+\label{subsubsec:proposal-intro-question-hybrid-model-judge-quality}
 Can the AI-judge \footnote{The machine learning model predicting performed skills} be used to train new judges or brush up the knowledge of current judges? Meanwhile, can they verify the predicted labels by the model to use as new training data?
 
 \subsubsection{Which activity recognition examples can be used or altered as a base guidance?}
-\label{subsubsec:intro-question-earlier-research-guidance}
+\label{subsubsec:proposal-intro-question-earlier-research-guidance}
 
 Quick searches give examples of object recognition \autocite{Diwaker_2022}, detecting sign language \autocite{Bora_2023} or activity recognition (e.g. the kinetics dataset - riding a bike, reading a book, playing an instrument \autocite{Kay_2017}).
 These implementations can be used as a first guide.
@@ -79,18 +79,18 @@ Those examples give the idea that data mostly seem more to be centered, which is
 
 
 \subsubsection{What would be a minimal Proof of Concept (PoC)?}
-\label{subsubsec:intro-question-poc}
+\label{subsubsec:proposal-intro-question-poc}
 
 The PoC would be a model recognizing the most common skills and transitions.
 This could mean omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. Preferably, the PoC should be able to generalize uncommon skills that are still definable as normal. Better described would be knocking on the door three times, someone's at the door, but knocking four times or with a bonk in between is also recognizable \footnote{See specified example in section \ref{subsec:literature-unknown-unusual-skills}} for a more concrete case.
 
 \subsubsection{How much data is expected to increase the accuracy off the Judge?}
-\label{subsubsec:intro-question-expected-data-to-increase-accuracy}
+\label{subsubsec:proposal-intro-question-expected-data-to-increase-accuracy}
 
 The amount of videos will keep rising, but will the current amount be sufficient? If it's not enough, how much more would be expected and what about uncommon skills. Do we need to specially record them? But what about new skills on competitions?
 
 \subsection{Additional questions}
-\label{subsubsec:intro-question-additional}
+\label{subsubsec:proposal-intro-question-additional}
 
 The proof of concept will probably raise a lot of questions as a byproduct such as:
 
@@ -101,7 +101,7 @@ The proof of concept will probably raise a lot of questions as a byproduct such 
 
 
 \subsection{Introduction summary}
-\label{subsubsec:intro-summary}
+\label{subsubsec:proposal-intro-summary}
 
 With some general knowledge about jump rope and thethesis goal defined, further research, (label)definitions, model selection, and implementation can be performed.
 Let’s start by exploring earlier work while slowly increasing the number of jump rope definitions.
@@ -325,14 +325,14 @@ Other possibilities would be Cutie \autocite{Cheng_2023}, DensePose (see fig [\r
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.3\linewidth]{img/sr_wrap}
+    \includegraphics[width=0.3\linewidth]{img/sr}
     \caption{Jumper wrapping the rope, SR}
     \label{fig:srwrap}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.3\linewidth]{img/sr_wrap_dense}
+    \includegraphics[width=0.3\linewidth]{img/sr-dense}
     \caption{Jumper wrapping the rope, denseposed}
     \label{fig:srwrapdense}
 \end{figure}
