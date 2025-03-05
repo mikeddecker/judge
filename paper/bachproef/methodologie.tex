@@ -44,14 +44,18 @@ The main purpose of the action segmentation is to enable predictions on full rou
 
 For jump rope, this mostly means moments when an athlete leaves or lands on the floor. Other cases could be a cartwheel not over a rope or recovering from a mistake. As the idea of leaving and landing on the floor seems simplistic, a couple of models can be tried. This means more simple convolutional models to models incorporating temporal information.
 The best model or an ensemble of the best ones will be used in the full sequence.
-
+c
 A couple of ideas exist in order to increase accuracy. Both the frame before and the frame after each split point can be assigned as split point, selecting the one with the highest prediction as the final split point. Another idea would be to assign higher values to split points using a cyclic function like the sinus depending on its distance between two split points.
 
 \section{Skill recognition}
 
-The last part involves recognizing the performed skill, which is, as introduced in the literature, a combination of different aspects. What are the turners doing, repelling yourself from the ground with one or both feet, etc.
+The last part involves recognizing the performed skill, which is, as introduced in the literature, a combination of different aspects. What are the turners doing, using one or both arms, an additional body rotation, etc.
 For this part, a video vision model is definitely required to fill in the temporal information, e.g. amount of rotations.
+Along the way, additional aspects to a skill label can be added in order to incorporate every level and skill or once-in-a-lifetime skills can be marked as unknown in order for the model to be robust in predicting new skills. Each prediction can then be mapped to its corresponding level.
+Multiple different models can be tried in order to find the best one.
 
 
+\section{Model verification}
 
+Finally, when skills are predictable, a comparison between the jury assigned scores, the models prediction and the effective score can be made in order to check whether model predictions could be used or more research/training is needed. This is an additional check, beside the accuracy of the model or confusion matrices.
 
