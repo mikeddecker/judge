@@ -10,7 +10,7 @@
 %% de doelstelling was, welke deliverables daar uit gekomen zijn, en welke
 %% onderzoeksmethoden je daarbij toegepast hebt. Verantwoord waarom je
 %% op deze manier te werk gegaan bent.
-%% 
+%%
 %% Voorbeelden van zulke fasen zijn: literatuurstudie, opstellen van een
 %% requirements-analyse, opstellen long-list (bij vergelijkende studie),
 %% selectie van geschikte tools (bij vergelijkende studie, "short-list"),
@@ -26,5 +26,32 @@
 %% Maak voor elke fase (behalve het literatuuronderzoek) een NIEUW HOOFDSTUK aan
 %% en geef het een gepaste titel.
 
-\lipsum[21-25]
+In this section follows a brief description of the road map in order to build the proof of concept (PoC), which combines the general key insights from the literature.
+
+You could see the proposed model as a three-way modular model. Each step can be improved individually in order to acquire the best possible result and shouldn't depend on each other.
+The first section will be localizing the athletes in the field in order to crop them out and spare computational resources. Next up is segmenting each skill performed in a given routine as doing it on competitions would take longer then reviewing a recording at half speed. The final part involves recognizing what each displayed skill is.
+
+\section{Jumper localization}
+
+For predicting the location of the athletes, any object detection model is fine with slight preference towards a model like YOLO or EfficientDet having a higher FPS rate then others \autocite{Zaidi_2021}.
+Using the predicted locations of the skippers, each frame of video can be cropped around the athletes.
+
+Potential obstacles are predicted spectators or blurry athletes mid-skill being unrecognizable. Refer to the result chapter~\ref{ch:results} for more details on the solution.
+
+\section{Action segmentation}
+
+The main purpose of the action segmentation is to enable predictions on full routines in order to actually use the whole model. Using the cropped images, and the assigned start and end frame of a skill, the model can predict whether a given frame is an interesting split point or not.
+
+For jump rope, this mostly means moments when an athlete leaves or lands on the floor. Other cases could be a cartwheel not over a rope or recovering from a mistake. As the idea of leaving and landing on the floor seems simplistic, a couple of models can be tried. This means more simple convolutional models to models incorporating temporal information.
+The best model or an ensemble of the best ones will be used in the full sequence.
+
+A couple of ideas exist in order to increase accuracy. Both the frame before and the frame after each split point can be assigned as split point, selecting the one with the highest prediction as the final split point. Another idea would be to assign higher values to split points using a cyclic function like the sinus depending on its distance between two split points.
+
+\section{Skill recognition}
+
+The last part involves recognizing the performed skill, which is, as introduced in the literature, a combination of different aspects. What are the turners doing, repelling yourself from the ground with one or both feet, etc.
+For this part, a video vision model is definitely required to fill in the temporal information, e.g. amount of rotations.
+
+
+
 
