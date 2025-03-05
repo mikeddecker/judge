@@ -5,8 +5,33 @@
 \chapter{\IfLanguageName{dutch}{Resultaten}{Results}}%
 \label{ch:results}
 
+The result section focuses on displaying and elaborating the acquired results for each main topic. Along with the outcome, each required alteration in order to improve results is discussed.
 
 \section{Jumper localization}
+
+Ultralytics \autocite{Khanam2024} provides an easy to use implementation for predicting people and objects in images which can be fine-tuned for specific use cases. Fine-tuning was needed as spectators, also humans, were also being predicted as athletes. Using these predictions, a crop around the three jumpers can be created using the predicted jumper boxes from the fine-tuned YOLO model, after using the pre-trained weights on the COCO dataset \autocite{Lin2014}. In order to improve the crops some steps were required. They may not be perfect, but it works for now.
+
+\subsection{Eliminate spectators - IoU comparison}
+
+In order to make te best possible crop there are probably thousands of methods. The current implementation involves taking the minium and maximum x- \& y-coordinates to draw the box containing all skippers.
+At this moment, it is expected that the YOLO model has been fine-tuned to distinguish athlete and spectator.
+
+Even though the model is fine-tuned on almost two-thousand images, occasionally coaches or spectators were still predicted as jumpers, requiring a solution.
+When a spectator or more than one is predicted, this means that total crop of all 'athletes' could be bigger than the actual location of all jumpers. A comparison in overlap between previous predictions (N seconds) and the current prediction enables the possibility to keep the crop position of the previous frame for the current frame. Comparing overlap is called Intersection over Union or IoU for short.
+
+(Clarifying images will follow in a next version)
+
+A possible improvement could be matching previous boxes with the new predictions, eliminating the spectator. Which begs the question, what if the jumpers are entering the field? There are no earlier predicted boxes to match.
+
+\subsection{Eliminate shakiness}
+
+A video is a sequence of frames changing the position of the skipper a little bit each frame. Even if actions are fluidly executed, the actual predictions of the jumpers location can shift a few pixels to the left or right between consecutive boxes. This means that raw crops are shaking around the jumper, disturbing the natural feel.
+
+Smoothing values (S), two parameters, where added to eliminate the shaking of consecutive crops. One of the parameters is used for smoothly shrinking the frame (0.94), the other for expanding the frame (0.85).
+This means that the crop of a new frame is S times the crop value of the previous frame added with 1 - S times the new prediction, elimination shakiness. The second parameter was added in order to fix jumpers running out the crop while executing a larger actions covering a lot of position on the floor.
+
+It was playing around with these parameters (smooth values \& N) to get a working setup which works in most cases, sporadically changing one if the crop of a video was not sufficient, e.g. running out of the cropped view.
+
 
 \section{Action segmentation}
 

@@ -9,57 +9,6 @@
 
 The research towards skill-recognition will be done by steps. First will be an introduction of skills, after which computer vision will be explored along with NextJump's speed-counter. With a general proposed flow in mind, enables an improved research towards specific models and fine-tuning of the expected approach and potential challenges to recognize skills.
 
-\section{Skills intro}
-\label{subsec:literature-basisskills}
-
-Earlier we described the presence of multiple disciplines in Jump Rope. To keep the research doable, skill recognition will be started for one discipline, namely DD3 freestyles, which already contains some Chinese wheel integration.
-
-% \subsection{Double Dutch Single Freestyle - DD3}
-% \label{subsubsec:literature-dd3}
-\medskip
-
-% TODO : add DD figure for clarification
-DD3 consists of two turners and one jumper alternating ropes. Elements in Double Dutch are similar to single rope, but different at the same time. The jumper does all the skills, mainly powers, gymnastics or footwork, since he doesn't need to hold the rope. Turners can manipulate the rope using multiple unders, turner-skills like crossed arms, EB, toad\dots or even involve gymnastics themselves.
-To judge double dutch, `snapshots` are taken, then the corresponding level will be given depending on the combination of turners, skills and rope-rotations.
-
-Like any discipline, mistakes can happen, they'll be deducted from the total score.
-
-Some examples with their current corresponding levels in double dutch.
-
-% TODO : bijlage bij BP?
-\begin{itemize}
-    \item Powers
-    \begin{itemize}
-        \item push-up - to plank position and pushing upwards while pulling the rope underneath your feet. (lvl 2)
-        \item split (2)
-        \item frog - handstand (2)
-        \item swift/V-kick (3)
-    \end{itemize}
-    \item Gymnastics
-    \begin{itemize}
-        \item cartwheel (2)
-        \item kip (3)
-        \item salto (4)
-    \end{itemize}
-    \item Turners
-    \begin{itemize}
-        \item cross (c - crossed arms on the stomach) (+2/+0)
-        \item crouger (raise knee, put your arm underneath it) (+1)
-        \item EB (arm on stomach + arm on back) (+1)
-        \item TS (arms crossed behind the back) (+1/+1)
-    \end{itemize}
-    \item Multiples
-    \begin{itemize}
-        \item double - DU - 2 rotations (+1)
-        \item triple - TU - 3 rotations (+2)
-        \item quad - QU - 4 rotations (+2)
-        \item quint - 5 rotations (+3)
-    \end{itemize}
-\end{itemize}
-
-Each power can then be varied one handed, as a turntable, as a consecutive \dots, which gains extra levels. Judges calculate or memorize the whole level of each skill/transition. Without further context, annotations like (+1/+1) can already seem confusing, well it is.
-
-
 
 \section{Challenges of judging}
 \label{subsubsec:literature-judge-challenges}
@@ -126,6 +75,56 @@ judges, was created to give judges enough time to review the routine. Even in sl
 
 \subsection{Challenges summary}
 Incorporating all these things brought jump rope to where it is. To make our lives easier, we try to find improvements. One of these is exploring automatic skill-recognition by using AI. When skills are recognizable by a program, they can be mapped to a corresponding level contributing towards the end score. Knowing what's represented in an image or a video is called computer vision. % TODO : source
+
+\section{Skills intro}
+\label{subsec:literature-basisskills}
+
+Earlier we described the presence of multiple disciplines in Jump Rope. To keep the research doable, skill recognition will be started for one discipline, namely DD3 freestyles, which already contains some Chinese wheel integration.
+
+% \subsection{Double Dutch Single Freestyle - DD3}
+% \label{subsubsec:literature-dd3}
+\medskip
+
+% TODO : add DD figure for clarification
+DD3 consists of two turners and one jumper alternating ropes. Elements in Double Dutch are similar to single rope, but different at the same time. The jumper does all the skills, mainly powers, gymnastics or footwork, since he doesn't need to hold the rope. Turners can manipulate the rope using multiple unders, turner-skills like crossed arms, EB, toad\dots or even involve gymnastics themselves.
+To judge double dutch, `snapshots` are taken, then the corresponding level will be given depending on the combination of turners, skills and rope-rotations.
+
+Like any discipline, mistakes can happen, they'll be deducted from the total score.
+
+Some examples with their current corresponding levels in double dutch.
+
+% TODO : bijlage bij BP?
+\begin{itemize}
+    \item Powers
+    \begin{itemize}
+        \item push-up - to plank position and pushing upwards while pulling the rope underneath your feet. (lvl 2)
+        \item split (2)
+        \item frog - handstand (2)
+        \item swift/V-kick (3)
+    \end{itemize}
+    \item Gymnastics
+    \begin{itemize}
+        \item cartwheel (2)
+        \item kip (3)
+        \item salto (4)
+    \end{itemize}
+    \item Turners
+    \begin{itemize}
+        \item cross (c - crossed arms on the stomach) (+2/+0)
+        \item crouger (raise knee, put your arm underneath it) (+1)
+        \item EB (arm on stomach + arm on back) (+1)
+        \item TS (arms crossed behind the back) (+1/+1)
+    \end{itemize}
+    \item Multiples
+    \begin{itemize}
+        \item double - DU - 2 rotations (+1)
+        \item triple - TU - 3 rotations (+2)
+        \item quad - QU - 4 rotations (+2)
+        \item quint - 5 rotations (+3)
+    \end{itemize}
+\end{itemize}
+
+Each power can then be varied one handed, as a turntable, as a consecutive \dots, which gains extra levels. Judges calculate or memorize the whole level of each skill/transition. Without further context, annotations like (+1/+1) can already seem confusing, well it is.
 
 \section{Computer vision}
 \label{subsec:literature-computer-vision}
