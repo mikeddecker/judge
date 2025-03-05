@@ -2,6 +2,7 @@ import keras
 import numpy as np
 import pandas as pd
 import random
+import math
 from DataRepository import DataRepository
 from FrameLoader import FrameLoader
 import sys
@@ -17,6 +18,7 @@ class DataGeneratorSkills(keras.utils.Sequence):
                  timesteps=16,
                  batch_size=1,
                  normalized=True,
+                 rounds=10,
                  **kwargs):
         super().__init__(**kwargs)
         assert isinstance(dim, tuple)
@@ -31,6 +33,8 @@ class DataGeneratorSkills(keras.utils.Sequence):
         self.augment = train_test_val == 'train'
         self.timesteps = timesteps
         self.batch_size = batch_size
+        self.rounds = rounds if train_test_val == 'train' else 1
+        self.current_round = -1
         self.frameloader = frameloader
         self.repo = DataRepository()
         self.Skills = self.repo.get_skills(train_test_val)
@@ -41,17 +45,28 @@ class DataGeneratorSkills(keras.utils.Sequence):
             'bodyRotations', 'hands', 'feet', 'sloppy', 'hard2see', 'fault',
             'backwards'
         ]
+        self.BalancedSkills3 = self.__balance_skills(N=3)
+        self.BalancedSkills5 = self.__balance_skills(N=5)
+        self.BalancedSkills7 = self.__balance_skills(N=7)
+        self.BalancedSkills10 = self.__balance_skills(N=10)
+        self.BalancedSkills12 = self.__balance_skills(N=12)
+        self.Skills = self.Skills.sample(frac=1.)
+        self.BalancedSkills7 = self.BalancedSkills7.sample(frac=1.)
+
 
         print('DataGeneratorSkills init done')
         self.on_epoch_end()
 
     def __len__(self):
         'Denotes the number of batches per epoch'
-        return len(self.BalancedSkills7 if self.train_test_val == 'train' else self.Skills) // self.batch_size
+        return len(self.BalancedSkills7) // self.rounds if self.train_test_val == 'train' else len(self.Skills) // self.batch_size
 
     def __getitem__(self, batch_nr, normalize=True):
         "batch_nr starts from 0"
-        skillinfo_row = self.BalancedSkills7.iloc[batch_nr] if self.train_test_val == 'train' else self.Skills.iloc[batch_nr]
+        cr = 0 if self.current_round < 0 or self.current_round >= self.rounds else self.current_round
+        
+        corrected_batch_nr = cr * self.__len__() + batch_nr
+        skillinfo_row = self.BalancedSkills7.iloc[corrected_batch_nr] if self.train_test_val == 'train' else self.Skills.iloc[corrected_batch_nr]
         videoId = skillinfo_row["videoId"]
         frameStart = skillinfo_row["frameStart"]
         frameEnd = skillinfo_row["frameEnd"]
@@ -93,13 +108,12 @@ class DataGeneratorSkills(keras.utils.Sequence):
         return loaded_frames, y
 
     def on_epoch_end(self):
-        self.Skills = self.Skills.sample(frac=1.)
-        self.BalancedSkills3 = self.__balance_skills(N=3)
-        self.BalancedSkills5 = self.__balance_skills(N=5)
-        self.BalancedSkills7 = self.__balance_skills(N=7)
-        self.BalancedSkills10 = self.__balance_skills(N=10)
-        self.BalancedSkills12 = self.__balance_skills(N=12)
-        self.BalancedSkills7 = self.BalancedSkills7.sample(frac=1.)
+        print("round nr before adding 1 and potentially shuffeling the data", self.current_round)
+        self.current_round += 1
+        if self.current_round >= self.rounds:
+            self.current_round = 0
+            self.Skills = self.Skills.sample(frac=1.)
+            self.BalancedSkills7 = self.BalancedSkills7.sample(frac=1.)
     
     def __get_multiplier(self, occurance_percentage: float, max_occurance_percentage: float, N = 10):
         """Calculate how many times more a skill needs to be added

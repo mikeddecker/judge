@@ -86,7 +86,7 @@ def train_model(model: keras.Sequential, info_train, from_scratch=True):
             max_value = value[2]
             metrics[key] = lambda y_true, y_pred : metric_mse_max_numeric_accuracy(max=max_value, y_true=y_true, y_pred=y_pred)
 
-    optimizer = keras.optimizers.Lion(learning_rate=info_train['learning_rate'])
+    optimizer = keras.optimizers.AdamW(learning_rate=info_train['learning_rate'])
     model.compile(optimizer=optimizer, loss=losses, metrics=metrics)
 
     history = model.fit(
@@ -191,6 +191,26 @@ info_ViViT = {
 info_ViViT['name'] = f"video_vision_transformer_lion_d{info_ViViT['dim']}_p{info_ViViT['patch_size']}_e{info_ViViT['dim_embedding']}_nh{info_ViViT['num_heads']}"
 
 
+# Second try-out
+info_ViViT = {
+    'video_model' : True,
+    'name' : 'vision_transformer',
+    'dim' : 224,
+    'patch_size' : 14,
+    'timesteps' : 16,
+    'batch_size' : 1,
+    'dim_embedding' : 32,
+    'num_heads': 4,
+    'encoder_blocks': 4,
+    'mlp_head_units' : [128 + 512, 1024, 256, 64],  # Size of the dense layers
+    'min_epochs' : 10,
+    'learning_rate' : 1e-4,
+    'weight_decay' : 4e-5,
+    'get_model_function' : get_model_ViViT,
+}
+info_ViViT['name'] = f"video_vision_transformer_adamw_d{info_ViViT['dim']}_p{info_ViViT['patch_size']}_e{info_ViViT['dim_embedding']}_nh{info_ViViT['num_heads']}"
+
+
 info_mobilenet = {
     'name' : 'mobilenet',
     'dim' : 224, # pre-trained default
@@ -206,7 +226,7 @@ selected_info = info_ViViT
 ###############################################################################
 
 trainings_info = {
-    'epochs' : 1, # Take more if first train round of random or transformer
+    'epochs' : 4, # Take more if first train round of random or transformer
     'early_stopping' : True,
     'restore_best_weights' : False,
     'early_stopping_patience' : 25,
