@@ -36,7 +36,18 @@
 \IfLanguageName{english}{%
 \selectlanguage{dutch}
 \chapter*{Samenvatting}
-\lipsum[1-4]
+
+Door de evolutie van de sport is het jureren van ropeskipping freestyles op hoog niveau moeilijk geworden. Zowel het aantal skills in de routine, alsook de snelheid waarmee ze worden uitgevoerd neemt toe. Dit is vooral te merken in Double Dutch freestyles. Daarom worden deze routines zowel live (creativiteit, variatie, muziekgebruik) als vertraagd (moeilijkheidsgraad) gejureerd.
+Desondanks freestyles op halve snelheid worden herbekeken en hierdoor jureerfouten worden vermeden, merkt men dat er nog enig verschil zit op scores toegekend door juryleden. Door de toegenomen toegankelijkheid van kunstmatige intelligentie, voornamelijk neurale netwerken, werd de vraag gesteld of een AI juryassistent ontwikkelt kan worden die helpt een betere en objectievere score zou opleveren.
+
+Dit onderzoek verkent de mogelijkheid tot het bouwen van zo een juryassistent, de benodigde technieken en uitdagingen. De huidige vorm van de juryassistent bestaat uit drie hoofdzakelijke delen. Het eerste deel gaat over het lokaliseren van springers in de opnames. Niet alle videos zoomen in op de springer of zijn net eerder statische opname. Dit deel is noodzakelijk om computationele overhead te beperken, daar springers soms minder dan een vijfde van het beeld in beslag nemen.
+De tweede groote stap is het splitsen van volledige routines in elke uitgevoerde skill. Dit wordt gedaan aangezien het onbegonnen werk zou zijn om op een wedstrijd om dit manueel te doen.
+Het derde deel omvat het herkennen van de gesprongen skill. Voor Double Dutch Freestyles betekent dit een combinatie van uitvoering door draaiers en springers.
+Door louter presentatieskills of moeilijk zichtbare skills te makeren als 'unknown' (e.g. wanneer een draaier tussen de springer en camera staat), wordt er verwacht dat het model aangeeft wanneer het niet zeker is.
+Op deze manier kunnen scores makkelijker geverifieerd worden, door juryleden, coaches of springers zelf, tijdens en na competities, wat de transparantie en nauwkeurigheid van de assistent verder verhoogt.
+Door gebruik te maken van competitievideos die de meestvoorkomende skills een hondertal keer tonen, wordt verwacht dat de juryassistent de meest voorkomende skills, zoals een pushup, split of salto van elkaar onderscheid. Indien dit werkt, is hiet niet alleen interessant voor rope skipping, maar ook andere sporten zoals gymnastiek, kunstschaatsen of synchroonzwemmen.
+
+
 \selectlanguage{english}
 }{}
 

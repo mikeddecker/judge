@@ -8,23 +8,24 @@
 Jump rope is an evolving sport.
 Year after year, an increasing amount of high-level competitors are pushing the limits of jump rope.
 % TODO : source?
-This results in new skills, new combinations, better physiques, better rope material, and faster movements. For the judges to keep up with the jumpers and to correctly assess scores to a routine, Double Dutch freestyles\footnote{Two turners, with one or more jumpers}, one of the jump rope disciplines, are reviewed at half speed in International competitions or even at nationals in Belgium.
+This results in new skills, new combinations, better physiques, better rope material, and faster movements. For the judges to keep up with the jumpers and to correctly assess scores to a routine, Double Dutch freestyles \footnote{Two turners, with one or more jumpers}, one of the jump rope disciplines, are reviewed at half speed in International competitions or even at nationals in Belgium.
 
 Head judges around the world question the best way to judge athletes correctly so as to give an accurate and objective ranking in national or international competitions.
-Many solutions have been provided: another judging rule set\footnote{The current rule set is enforced and maintained by \href{https://www.gymfed.be/}{Gymfed}, closely related to the international judging-rules from the \href{https://ijru.sport/}{International Jump Rope Union}}, splitting judge responsibility, replaying the routine at half speed \dots
+Many solutions have been provided: another judging rule set~\footnote{The current rule set is enforced and maintained by \href{https://www.gymfed.be/}{Gymfed}, closely related to the international judging-rules from the \href{https://ijru.sport/}{International Jump Rope Union}}, splitting judge responsibility, replaying the routine at half speed \dots
 
-However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022}, implementations detecting simple human actions \autocite{LUQMAN_2022}, examples of action recognition in other sports \autocite{Yin_2024} and the successful test of \href{https://nextjump.app/}{NextJump}'s AI speed-counter, head jurors wondered about the possibility of using modern technologies like artificial intelligence to improve assigned scores of judges on jump rope freestyles.
+However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022}, implementations detecting simple human actions \autocite{LUQMAN_2022}, examples of action recognition in other sports \autocite{Yin_2024}, the integration of AI in gymnastics judging since 2017, namely the Judging Support System (\href{https://www.gymnastics.sport/site/pages/judges-support.php}{JSS}) and the successful test of \href{https://nextjump.app/}{NextJump}'s AI speed-counter, head jurors wondered about the possibility of using modern technologies like artificial intelligence to improve assigned scores of judges on jump rope freestyles.
 
 \section{\IfLanguageName{dutch}{Probleemstelling}{Problem Statement}}%
 \label{sec:probleemstelling}
 
-Jump rope, like gymnastics or athletics, exists in many disciplines like Speed, Single Rope freestyle (single/pair/team), Chinese Wheel (CW) or Double Dutch (single/pair).
+Jump rope, like gymnastics or athletics, exists in many disciplines. Examples include Speed, Single Rope freestyles (single/pair/team), Chinese Wheel (CW) or Double Dutch (single/pair/triad).
+
 To accurately judge routines, each discipline has its own rules. Although interlapped, differences exist. Each athlete or team then performs a choreography of 60 to 75 seconds showcasing their favorite skills and uniqueness.
 
 \subsubsection{What are the challenges for judges today?}
 \label{subsubsec:intro-bp-question-challenges-for-judges}
 
-On competitions, judges watch the routine live to annotate the difficulty or creativity. Each judge then pays attention to his assigned part, e.g. movement, musicality or difficulty, all of those elements contributing to the total score of the freestyle. The main problem now is for judges to keep up with double dutch routines. To increase the accuracy, difficulty-certified judges \footnote{Those judges judging the difficulty of double dutch routines.} are already allowed to review freestyles at half speed in order to score them accurately.
+On competitions, judges watch the routine live or delayed to annotate the difficulty or creativity. Each judge then pays attention to his assigned part, e.g. movement, musicality or difficulty, all of which contribute to the total score of the freestyle. The main problem now is for judges to keep up with double dutch routines. To increase the accuracy, difficulty-certified judges \footnote{Those judges judging the difficulty of double dutch routines.} are already allowed to review freestyles at half speed in order to score them accurately.
 
 \subsubsection{How is difficulty scored?}
 \label{subsubsec:intro-bp-question-difficulty-scored}
@@ -35,21 +36,15 @@ Performed skills each have a level, which will be written down when seen by the 
 \label{subsubsec:intro-bp-question-what-are-the-skill}
 
 % TODO : provide examples of skills
-For double dutch freestyles, there are two turners and at least one jumper. All of them act as a unit and execute skills or turner combinations. Jumpers can do a handstand, a push-up or a cartwheel. Meanwhile, turners can cross their arms, hold them on their back or multiple times underneath the jumper in a single jump. Each skill and turner has its base level, which contributes to the total level when combined. Furthermore, some skill transitions allow for bonus points to reward the more difficult ones. An example of this is performing a push-up to a push-up while your body position changes a quarter is a different transition.
+For double dutch freestyles, there are two turners and at least one jumper. All of them act as a unit executing skills or turner combinations. Jumpers can do a handstand, a push-up or a cartwheel. Meanwhile, turners can cross their arms, hold them on their back or rotate multiple times underneath the jumper in a single jump. Each skill and turner has its base level, which contributes to the total level when combined. Furthermore, some skill transitions allow for bonus points to reward the more difficult ones. An example of this is performing a push-up to a push-up while your body position changes a quarter which gives an additional level.
 
-
-% TODO : omit or shift
-%\subsubsection{What can be done to increase the accuracy of judging?}
-%\label{subsubsec:intro-question-how-to-increase-accuracy}
-
-% The preferred solution in this proposal is an AI-model recognizing (sub)skills and transitions in a double dutch single freestyle (DD3) as assigning correct levels at world championships or even nationals in Belgium is perceived to be hard and the current main issue.
 
 \section{\IfLanguageName{dutch}{Onderzoeksvraag}{Research question}}%
 \label{sec:onderzoeksvraag}
 
-This results in the main research question of this paper: \textbf{``How can artificial intelligence be incorporated into jump rope freestyles to increase the objectiveness and accuracy of judging?''}.
+Combining the problem statement, this results in the main research question of this paper: \textbf{``How can artificial intelligence be incorporated into jump rope freestyles to increase the objectiveness and accuracy of judging?''}.
 
-Until now, only the scope has been narrowed down. The focus will be put on double dutch freestyles. Getting to know the topic is great, but this doesn't get us further into the solution. Let's jump into it.
+To narrow down the scope, this is will be researched for Double Dutch Single freestyles (DD3), already containing Chinese Wheel parts. Getting to know the topic is great, but this doesn't get us further into the solution. Let's jump into it.
 
 % TODO : update order
 \subsubsection{Which modern technologies can be used to increase score accuracy of jump rope freestyles}
@@ -78,24 +73,16 @@ Quick searches give examples of object recognition \autocite{Diwaker_2022}, dete
 These implementations can be used as a first guide.
 Those examples give the idea that data mostly seem more to be centered, which is not the case in jump rope videos, a solution needs to be found for that. The second problem is that freestyles can consist of more than fifty different skills, which takes a long time to cut manually.
 
-
-Wees zo concreet mogelijk bij het formuleren van je onderzoeksvraag. Een onderzoeksvraag is trouwens iets waar nog niemand op dit moment een antwoord heeft (voor zover je kan nagaan). Het opzoeken van bestaande informatie (bv. ``welke tools bestaan er voor deze toepassing?'') is dus geen onderzoeksvraag. Je kan de onderzoeksvraag verder specifiëren in deelvragen. Bv.~als je onderzoek gaat over performantiemetingen, dan
-
 \section{\IfLanguageName{dutch}{Onderzoeksdoelstelling}{Research objective}}%
 \label{sec:onderzoeksdoelstelling}
 
-Wat is het beoogde resultaat van je bachelorproef? Wat zijn de criteria voor succes? Beschrijf die zo concreet mogelijk. Gaat het bv.\ om een proof-of-concept, een prototype, een verslag met aanbevelingen, een vergelijkende studie, enz.
-
-\subsubsection{What would be a minimal Proof of Concept (PoC)?}
-\label{subsubsec:intro-question-poc}
-
-The PoC would be a model recognizing the most common skills and transitions.
-This could mean omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. Preferably, the PoC should be able to generalize uncommon skills that are still definable as normal. Better described would be knocking on the door three times, someone's at the door, but knocking four times or with a bonk in between is also recognizable \footnote{See specified example in section \ref{subsec:literature-unknown-unusual-skills}} for a more concrete case.
+The object is to create a proof of concept (PoC), which would be a model recognizing the most common skills and transitions.
+This could mean omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. Preferably, the PoC should be able to generalize uncommon skills that are still definable as normal. An example of this would be the model having seen triple unders, which may not have been performed with a cartwheel yet, but when it happens, it should know what it is.
 
 \subsubsection{How much data is expected to increase the accuracy off the Judge?}
 \label{subsubsec:intro-question-expected-data-to-increase-accuracy}
 
-The amount of videos will keep rising, but will the current amount be sufficient? If it's not enough, how much more would be expected and what about uncommon skills. Do we need to specially record them? But what about new skills on competitions?
+The amount of videos will keep rising, but will the current amount be sufficient? If it's not enough, how much more would be expected and what about uncommon skills. Do we need to specially record them? And what will really happen with new skills on competitions?
 
 \subsection{Additional questions}
 \label{subsubsec:intro-question-additional}
@@ -117,12 +104,12 @@ The proof of concept will probably raise a lot of questions as a byproduct such 
 
 With some general knowledge about jump rope and the objective of the thesis defined, further research, (label)definitions, model selection, and implementation can be performed.
 
-Let’s start by exploring earlier work in section~\ref{ch:stand-van-zaken} while slowly increasing the number of jump rope definitions.
+Let’s start by exploring earlier work in section~\ref{ch:stand-van-zaken}, while slowly increasing the number of jump rope definitions.
 
-Using this research, a methodology can be created in order to recognize double dutch skills. This will be clarified in section~\ref{ch:methodologie}
+Using this research, a methodology can be created in order to recognize double dutch skills. This will be clarified in section~\ref{ch:methodologie}.
 
-% TODO : improve text
-Next up result section 4.
-To reach conclusions in 5...
+In the fourth section (\ref{ch:results}), you can read all about the proof of concept, the most important highlights and code implementations.
 
-In Hoofdstuk~\ref{ch:conclusie}, tenslotte, wordt de conclusie gegeven en een antwoord geformuleerd op de onderzoeksvragen. Daarbij wordt ook een aanzet gegeven voor toekomstig onderzoek binnen dit domein.
+Finally, you can read the conclusion in section~\ref{ch:conclusie}, where answers will be provided about the research questions.
+
+% In Hoofdstuk~\ref{ch:conclusie}, tenslotte, wordt de conclusie gegeven en een antwoord geformuleerd op de onderzoeksvragen. Daarbij wordt ook een aanzet gegeven voor toekomstig onderzoek binnen dit domein.
