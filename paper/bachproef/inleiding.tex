@@ -69,6 +69,7 @@ Can the AI-judge \footnote{The machine learning model predicting performed skill
 \subsubsection{Which activity recognition examples can be used or altered as a base guidance?}
 \label{subsubsec:intro-question-earlier-research-guidance}
 
+While the gymnastics judge support system (JSS) is a great example for recognizing skills, its based on sensory data. The lack of sensors and the availability of video material explores this area.
 Quick searches give examples of object recognition \autocite{Diwaker_2022}, detecting sign language \autocite{Bora_2023} or activity recognition (e.g. the kinetics dataset - riding a bike, reading a book, playing an instrument \autocite{Kay_2017}).
 These implementations can be used as a first guide.
 Those examples give the idea that data mostly seem more to be centered, which is not the case in jump rope videos, a solution needs to be found for that. The second problem is that freestyles can consist of more than fifty different skills, which takes a long time to cut manually.
@@ -76,7 +77,7 @@ Those examples give the idea that data mostly seem more to be centered, which is
 \section{\IfLanguageName{dutch}{Onderzoeksdoelstelling}{Research objective}}%
 \label{sec:onderzoeksdoelstelling}
 
-The object is to create a proof of concept (PoC), which would be a model recognizing the most common skills and transitions.
+The objective is to create a proof of concept (PoC), which would be a model recognizing the most common skills and transitions.
 This could mean omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. Preferably, the PoC should be able to generalize uncommon skills that are still definable as normal. An example of this would be the model having seen triple unders, which may not have been performed with a cartwheel yet, but when it happens, it should know what it is.
 
 \subsubsection{How much data is expected to increase the accuracy off the Judge?}
