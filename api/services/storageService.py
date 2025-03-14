@@ -158,7 +158,7 @@ class StorageService:
                 orphans[parent.Id] = { videoinfo.Id : orpan_name }
 
         # Now loop al children
-        reserved_names = [VIDEO_IMAGE_PREVIEW_FOLDER, new_videos_name_key, "cropped-videos", "labeled-frames"]
+        reserved_names = [VIDEO_IMAGE_PREVIEW_FOLDER, new_videos_name_key, "cropped-videos", "labeled-frames", "cropped-skills"]
         for child in children:
             if isRoot and child["name"] in reserved_names:
                     print(f"{Fore.YELLOW}Skipping folder {reserved_names}, is VIDEO_IMAGE_PREVIEW_FOLDER{Style.RESET_ALL}")

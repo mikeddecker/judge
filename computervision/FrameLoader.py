@@ -202,7 +202,7 @@ class FrameLoader:
         frames_per_timestep = (end - start) / timesteps
 
         # Shift skill a little
-        if augment and random.random() < 0.7:
+        if normalized and augment and random.random() < 0.7:
             start = start - 2 * frames_per_timestep * random.random() + 2 * frames_per_timestep * random.random()
             end = end - 2 * frames_per_timestep * random.random() + 2 * frames_per_timestep * random.random()
             frames_per_timestep = (end - start) / timesteps
