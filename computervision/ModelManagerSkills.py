@@ -226,7 +226,7 @@ selected_info = info_ViViT
 ###############################################################################
 
 trainings_info = {
-    'epochs' : 4, # Take more if first train round of random or transformer
+    'epochs' : 5, # Take more if first train round of random or transformer
     'early_stopping' : True,
     'restore_best_weights' : False,
     'early_stopping_patience' : 25,
@@ -241,6 +241,6 @@ trainings_info['weight_decay'] = trainings_info['learning_rate'] / 20 if 'weight
 model = selected_info['get_model_function'](selected_info, DataRepository().get_skill_category_counts())
 model.summary()
 
-history = train_model(model, info_train=trainings_info, from_scratch=False)
+history = train_model(model, info_train=trainings_info, from_scratch=True)
 
 print(history)

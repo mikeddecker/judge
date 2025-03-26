@@ -239,3 +239,25 @@ class FrameLoader:
         assert len(frames) == timesteps, f"Something went wrong, frames doesn't have length of timesteps = {timesteps}, got {len(frames)}"
         
         return np.array(frames), flip_image
+
+    def get_segment(self, videoId: int, dim: tuple[int, int],
+                  start: int, end: int, normalized: bool = True, augment=False, flip_image=False):
+        vpath = os.path.join(STORAGE_DIR, 'cropped-videos', f'{dim[0]}_{videoId}.mp4')
+        cap = cv2.VideoCapture(vpath)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start)
+        _, frame = cap.read()
+
+        frames = []
+        currentFrame = start
+        while currentFrame < end:
+            if flip_image:
+                frame = cv2.flip(frame, 1)
+
+            frame = frame if not normalized else (frame / 255)
+            frames.append(frame)
+            currentFrame += 1
+            _, frame = cap.read()
+
+        assert len(frames) == end-start, f"Something went wrong, frames doesn't have length of timesteps = {end-start}, got {len(frames)}"
+        
+        return np.array(frames)

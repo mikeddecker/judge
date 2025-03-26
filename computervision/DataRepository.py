@@ -41,6 +41,7 @@ class DataRepository:
         except SQLAlchemyError:
             print("Connection lost.")
             return False
+        
     def get_framelabels(self, train_test_val, type=1):
         # TODO : update with validation & 'random' sampling
         if train_test_val == "train":
@@ -53,6 +54,28 @@ class DataRepository:
             raise ValueError(f"Changed test to val !!")
         return pd.read_sql(qry, con=self.con)
     
+    def get_fully_segmented_videos(self, train_test_val, type='DD'):
+        if train_test_val == "train":
+            qry = sqlal.text(f"""SELECT * FROM Videos WHERE MOD(id, 10) <> 5 AND completed_skill_labels = 1""")  
+
+        if train_test_val == "val":
+            qry = sqlal.text(f"""SELECT * FROM Videos WHERE MOD(id, 10) = 5 AND completed_skill_labels = 1""")
+
+        if train_test_val == "test":
+            raise ValueError(f"Changed test to val !!")
+        return pd.read_sql(qry, con=self.con)
+
+    def get_skills_of_fully_segmented_videos(self, train_test_val, type='DD'):
+        if train_test_val == "train":
+            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")  
+
+        if train_test_val == "val":
+            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) = 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")
+
+        if train_test_val == "test":
+            raise ValueError(f"Changed test to val !!")
+        return pd.read_sql(qry, con=self.con)
+
     def get_skills(self, train_test_val, type='DD'):
         if train_test_val == "train":
             qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)

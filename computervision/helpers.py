@@ -91,6 +91,20 @@ def metric_mse_max_numeric_accuracy(max: int, y_true, y_pred):
     rounded_y_pred = keras.ops.round(y_pred * max)
     return keras.ops.mean(keras.ops.equal(rounded_y_pred, rounded_y_true))
 
+def metric_mse_segmentation_close_accuracy(N, y_true, y_pred):
+    rounded_y_true = keras.ops.round(y_true * N)
+    rounded_y_pred = keras.ops.round(y_pred * N)
+    return keras.ops.mean(keras.ops.equal(rounded_y_pred, rounded_y_true))
+
+def off_by_0_1(y_true, y_pred):
+    return metric_mse_segmentation_close_accuracy(10, y_true=y_true, y_pred=y_pred)
+
+def off_by_0_2(y_true, y_pred):
+    return metric_mse_segmentation_close_accuracy(5, y_true=y_true, y_pred=y_pred)
+
+def off_by_0_33(y_true, y_pred):
+    return metric_mse_segmentation_close_accuracy(3, y_true=y_true, y_pred=y_pred)
+
 def iou(y_true, y_pred):
     """
     Calculate IoU loss between the true and predicted bounding boxes.
