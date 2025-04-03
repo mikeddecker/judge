@@ -142,7 +142,6 @@ def get_model(modelinfo, df_table_counts: pd.DataFrame):
 
     features = mlp(representation, hidden_units=modelinfo['mlp_head_units'], dropout_rate=0.3)
 
-
     dd_config = ConfigHelper.get_discipline_DoubleDutch_config()
     outputs = {}
     for key, value in dd_config.items():

@@ -23,7 +23,9 @@ from models.MobileNetV3Small import get_model as get_model_mobilenet
 from models.RandomCNN import get_model as get_model_randomcnn
 from models.vitransformer_enc import get_model as get_model_vit
 from models.ViViTransformer_enc import get_model as get_model_ViViT
-
+from models.HAR_SA_ConvLSTM_Deepseek_adaption import get_model as get_model_SA_ConvLSTM_deepseek
+from models.HAR_SA_Conv3D_short import get_model as get_model_SA_Conv3D_short
+from models.HAR_SA_Conv3D_medium import get_model as get_model_SA_Conv3D_medium
 
 class PrintEveryNBatch(keras.callbacks.Callback):
     def __init__(self, display):
@@ -210,23 +212,66 @@ info_ViViT = {
 }
 info_ViViT['name'] = f"video_vision_transformer_adamw_d{info_ViViT['dim']}_p{info_ViViT['patch_size']}_e{info_ViViT['dim_embedding']}_nh{info_ViViT['num_heads']}"
 
-
-info_mobilenet = {
-    'name' : 'mobilenet',
-    'dim' : 224, # pre-trained default
-    'batch_size' : 32,
-    'min_epochs' : 15,
-    'has_frozen_layers' : True,
-    'learning_rate' : 8e-3,
-    'get_model_function' : get_model_mobilenet,
+info_SA_ConvLSTM_Deepseek = {
+    'video_model' : True,
+    'name' : 'SA_ConvLSTM_Deepseek',
+    'dim' : 224,
+    'timesteps' : 16,
+    'batch_size' : 1,
+    'learning_rate' : 1e-4,
+    'weight_decay' : 4e-5,
+    'get_model_function' : get_model_SA_ConvLSTM_deepseek,
 }
 
+info_SA_Conv3D_short = {
+    'video_model' : True,
+    'name' : 'SA_Conv3D_short',
+    'dim' : 224,
+    'timesteps' : 16,
+    'batch_size' : 1,
+    'learning_rate' : 1e-4,
+    'weight_decay' : 4e-5,
+    'get_model_function' : get_model_SA_Conv3D_short,
+}
+
+info_SA_Conv3D_medium = {
+    'video_model' : True,
+    'name' : 'SA_Conv3D_medium',
+    'dim' : 224,
+    'timesteps' : 16,
+    'batch_size' : 1,
+    'learning_rate' : 1e-4,
+    'weight_decay' : 4e-5,
+    'get_model_function' : get_model_SA_Conv3D_medium,
+}
+
+info_SA_Conv3D_medium_strides_skip_lstm = {
+    'video_model' : True,
+    'name' : 'SA_SA_Conv3D_medium_strides_skip_lstm',
+    'dim' : 224,
+    'timesteps' : 16,
+    'batch_size' : 1,
+    'learning_rate' : 1e-4,
+    'weight_decay' : 4e-5,
+    'get_model_function' : get_model_SA_Conv3D_medium,
+}
+
+info_SA_Conv3D_medium_strides_skip = {
+    'video_model' : True,
+    'name' : 'SA_SA_Conv3D_medium_strides_skip',
+    'dim' : 224,
+    'timesteps' : 16,
+    'batch_size' : 1,
+    'learning_rate' : 1e-4,
+    'weight_decay' : 4e-5,
+    'get_model_function' : get_model_SA_Conv3D_medium,
+}
 ###############################################################################
-selected_info = info_ViViT
+selected_info = info_SA_Conv3D_medium_strides_skip
 ###############################################################################
 
 trainings_info = {
-    'epochs' : 5, # Take more if first train round of random or transformer
+    'epochs' : 1, # Take more if first train round of random or transformer
     'early_stopping' : True,
     'restore_best_weights' : False,
     'early_stopping_patience' : 25,
