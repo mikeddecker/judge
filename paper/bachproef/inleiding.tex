@@ -11,16 +11,28 @@ Year after year, an increasing amount of high-level competitors are pushing the 
 This results in new skills, new combinations, better physiques, better rope material, and faster movements. For the judges to keep up with the jumpers and to correctly assess scores to a routine, Double Dutch freestyles \footnote{Two turners, with one or more jumpers}, one of the jump rope disciplines, are reviewed at half speed in International competitions or even at nationals in Belgium.
 
 Head judges around the world question the best way to judge athletes correctly so as to give an accurate and objective ranking in national or international competitions.
-Many solutions have been provided: another judging rule set~\footnote{The current rule set is enforced and maintained by \href{https://www.gymfed.be/}{Gymfed}, closely related to the international judging-rules from the \href{https://ijru.sport/}{International Jump Rope Union}}, splitting judge responsibility, replaying the routine at half speed \dots
+Many solutions have been provided: another judging rule set~\footnote{The current rule set is internationally enforced and maintained by the \href{https://ijru.sport/}{International Jump Rope Union} where local adaptions are possible, such as the Belgian adaption enforced by \href{https://www.gymfed.be/}{Gymfed}, closely related to the international judging-rules.}, splitting
+judge responsibility, replaying the routine at half speed \dots
 
-However, with the increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022}, implementations detecting simple human actions \autocite{LUQMAN_2022}, examples of action recognition in other sports \autocite{Yin_2024}, the integration of AI in gymnastics judging since 2017, namely the Judging Support System (\href{https://www.gymnastics.sport/site/pages/judges-support.php}{JSS}) and the successful test of \href{https://nextjump.app/}{NextJump}'s AI speed-counter, head jurors wondered about the possibility of using modern technologies like artificial intelligence to improve assigned scores of judges on jump rope freestyles.
+Head jurors wonder about the possibility of using modern technologies like artificial intelligence to improve assigned scores of judges on jump rope freestyles. This idea is supported by an increasing popularity of image recognition, more powerful computers, applications that recognize objects in images \autocite{Singh_Gill_2022}, implementations detecting simple human actions \autocite{LUQMAN_2022}, examples of action recognition in other sports \autocite{Yin_2024}, the integration of AI in gymnastics judging since 2017, namely the Judging Support System (\href{https://www.gymnastics.sport/site/pages/judges-support.php}{JSS}) and the successful test of \href{https://nextjump.app/}{NextJump}'s AI speed-counter.
 
 \section{\IfLanguageName{dutch}{Probleemstelling}{Problem Statement}}%
 \label{sec:probleemstelling}
 
-Jump rope, like gymnastics or athletics, exists in many disciplines. Examples include Speed, Single Rope freestyles (single/pair/team), Chinese Wheel (CW) or Double Dutch (single/pair/triad).
+Jump rope, like gymnastics or athletics, consists of many subdisciplines. Examples include Speed, Single Rope freestyles (SR - single / pair / team), Chinese Wheel (CW) or Double Dutch (DD - single / pair / triad). On competitions, athletes perform different skills of a single subdiscipline within a timespan of 60-75 seconds which is called a freestyle \footnote{Double Dutch freestyles already contains some Chinese Wheel}.
 
-To accurately judge routines, each discipline has its own rules. Although interlapped, differences exist. Each athlete or team then performs a choreography of 60 to 75 seconds showcasing their favorite skills and uniqueness.
+As jumpers can turn the rope with many arm restrictions or in different body positions, a lot of combinations can be created, especially in Double Dutch Routines. In order to decide the victor on competitions, levels are assigned to each performed skills, along with additions or deductions for proper execution of skills, use of music, movement and entertainment or variation.
+
+To accurately judge routines, each discipline has its own rules. Although there is some overlap, there are also important differences.
+
+As judging is prone to human error (\textbf{SOURCE}), this research is aimed to improving jump rope judging. % TODO : source!!!!
+
+\section{\IfLanguageName{dutch}{Onderzoeksvraag}{Research question}}%
+\label{sec:onderzoeksvraag}
+
+Combining the problem statement, this results in the main research question of this paper: \textbf{``How can artificial intelligence be incorporated into jump rope freestyles to increase the objectiveness and accuracy of judging?''}.
+
+To narrow down the scope, this is will be researched for Double Dutch Single freestyles (DD3), already containing Chinese Wheel parts. Getting to know the topic is great, but this doesn't get us further into the solution. Let's jump into it.
 
 \subsubsection{What are the challenges for judges today?}
 \label{subsubsec:intro-bp-question-challenges-for-judges}
@@ -38,13 +50,6 @@ Performed skills each have a level, which will be written down when seen by the 
 % TODO : provide examples of skills
 For double dutch freestyles, there are two turners and at least one jumper. All of them act as a unit executing skills or turner combinations. Jumpers can do a handstand, a push-up or a cartwheel. Meanwhile, turners can cross their arms, hold them on their back or rotate multiple times underneath the jumper in a single jump. Each skill and turner has its base level, which contributes to the total level when combined. Furthermore, some skill transitions allow for bonus points to reward the more difficult ones. An example of this is performing a push-up to a push-up while your body position changes a quarter which gives an additional level.
 
-
-\section{\IfLanguageName{dutch}{Onderzoeksvraag}{Research question}}%
-\label{sec:onderzoeksvraag}
-
-Combining the problem statement, this results in the main research question of this paper: \textbf{``How can artificial intelligence be incorporated into jump rope freestyles to increase the objectiveness and accuracy of judging?''}.
-
-To narrow down the scope, this is will be researched for Double Dutch Single freestyles (DD3), already containing Chinese Wheel parts. Getting to know the topic is great, but this doesn't get us further into the solution. Let's jump into it.
 
 % TODO : update order
 \subsubsection{Which modern technologies can be used to increase score accuracy of jump rope freestyles}
