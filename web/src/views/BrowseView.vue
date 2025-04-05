@@ -31,8 +31,8 @@ export default {
       .then(response => {
         this.children = response.Children;
         this.folderName = response.Name;
-        this.videos = Object.values(response.Videos).sort((a, b) => a.FramesLabeledPerSecond - b.FramesLabeledPerSecond);
-        
+        this.videos = Object.values(response.Videos).sort((a, b) => b.Id - a.Id);
+        // this.videos = Object.values(response.Videos).sort((a, b) => a.FramesLabeledPerSecond - b.FramesLabeledPerSecond);        
         this.count = response.VideoCount;
         this.parentId = response.Parent ? response.Parent.Id : 0;
         this.totalLabels1 = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
