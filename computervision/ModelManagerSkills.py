@@ -26,6 +26,9 @@ from models.ViViTransformer_enc import get_model as get_model_ViViT
 from models.HAR_SA_ConvLSTM_Deepseek_adaption import get_model as get_model_SA_ConvLSTM_deepseek
 from models.HAR_SA_Conv3D_short import get_model as get_model_SA_Conv3D_short
 from models.HAR_SA_Conv3D_medium import get_model as get_model_SA_Conv3D_medium
+from models.HAR_SA_Conv3D_medium_strides_skip import get_model as get_model_SA_Conv3D_medium_strides_skip
+from models.HAR_SA_Conv3D_medium_strides_skip_lstm import get_model as get_model_SA_Conv3D_medium_strides_skip_lstm
+
 
 class PrintEveryNBatch(keras.callbacks.Callback):
     def __init__(self, display):
@@ -212,7 +215,7 @@ info_ViViT = {
 }
 info_ViViT['name'] = f"video_vision_transformer_adamw_d{info_ViViT['dim']}_p{info_ViViT['patch_size']}_e{info_ViViT['dim_embedding']}_nh{info_ViViT['num_heads']}"
 
-info_SA_ConvLSTM_Deepseek = {
+info_SA_ConvLSTM_Deepseek = { # Doesn't fit in memory
     'video_model' : True,
     'name' : 'SA_ConvLSTM_Deepseek',
     'dim' : 224,
@@ -247,24 +250,24 @@ info_SA_Conv3D_medium = {
 
 info_SA_Conv3D_medium_strides_skip_lstm = {
     'video_model' : True,
-    'name' : 'SA_SA_Conv3D_medium_strides_skip_lstm',
+    'name' : 'SA_Conv3D_medium_strides_skip_lstm',
     'dim' : 224,
     'timesteps' : 16,
     'batch_size' : 1,
     'learning_rate' : 1e-4,
     'weight_decay' : 4e-5,
-    'get_model_function' : get_model_SA_Conv3D_medium,
+    'get_model_function' : get_model_SA_Conv3D_medium_strides_skip_lstm,
 }
 
 info_SA_Conv3D_medium_strides_skip = {
     'video_model' : True,
-    'name' : 'SA_SA_Conv3D_medium_strides_skip',
+    'name' : 'SA_Conv3D_medium_strides_skip',
     'dim' : 224,
     'timesteps' : 16,
     'batch_size' : 1,
     'learning_rate' : 1e-4,
     'weight_decay' : 4e-5,
-    'get_model_function' : get_model_SA_Conv3D_medium,
+    'get_model_function' : get_model_SA_Conv3D_medium_strides_skip,
 }
 ###############################################################################
 selected_info = info_SA_Conv3D_medium_strides_skip
@@ -286,6 +289,6 @@ trainings_info['weight_decay'] = trainings_info['learning_rate'] / 20 if 'weight
 model = selected_info['get_model_function'](selected_info, DataRepository().get_skill_category_counts())
 model.summary()
 
-history = train_model(model, info_train=trainings_info, from_scratch=True)
+history = train_model(model, info_train=trainings_info, from_scratch=False)
 
 print(history)

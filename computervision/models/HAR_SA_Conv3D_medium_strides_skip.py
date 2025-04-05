@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import tensorflow as tf
-from tensorflow.keras.layers import Layer, ConvLSTM2D, ConvLSTM3D, Conv2D, Conv3D, Multiply, Add, Activation, TimeDistributed, Flatten, Dense
+from keras.layers import Layer, ConvLSTM2D, ConvLSTM3D, Conv2D, Conv3D, Multiply, Add, Activation, TimeDistributed, Flatten, Dense
 from tensorflow.keras import backend as K
 
 import sys
@@ -78,41 +78,36 @@ def get_model(modelinfo, df_table_counts: pd.DataFrame):
     
     # ConvLSTM layers with self-attention
     x = Conv3D(filters=filters, kernel_size=kernel_size,
-                  padding='same')(inputs)
+                  padding='same', activation="relu")(inputs)
     x = Conv3D(filters=int(filters * 1.5), kernel_size=kernel_size,
-                  padding='same')(inputs)
-    x = skip = SelfAttention()(x)
+                  padding='same', activation="relu")(inputs)
+    x = SelfAttention()(x)
+
+    x = Conv3D(filters=int(filters * 2), kernel_size=kernel_size,
+                  padding='same', activation="relu")(x)
     
+    skip = x
+     
     x = Conv3D(filters=int(filters * 2), kernel_size=kernel_size,
-                  padding='same')(x)
-    x = Conv3D(filters=int(filters * 2), kernel_size=kernel_size,
-                  padding='same')(x)
+                  padding='same', activation="relu")(x)
     
     x = SelfAttention()(x) + skip
 
-    x = Conv3D(filters=int(filters * 3), kernel_size=kernel_size, strides=(1,2,2),
-                  padding='same')(x)    
-    x = Conv3D(filters=int(filters * 4), kernel_size=kernel_size, strides=1,
-                  padding='same')(x)
+    x = Conv3D(filters=int(filters * 3), kernel_size=kernel_size, strides=(1,2,2), padding='same', activation="relu")(x)    
+    x = Conv3D(filters=int(filters * 4), kernel_size=kernel_size, strides=1, padding='same', activation="relu")(x)
 
     x = skip = SelfAttention()(x)
 
-    x = Conv3D(filters=int(filters * 4), kernel_size=kernel_size, strides=1,
-                  padding='same')(x)    
-    x = Conv3D(filters=int(filters * 4), kernel_size=kernel_size, strides=1,
-                  padding='same')(x)
-    # skip = x
+    x = Conv3D(filters=int(filters * 4), kernel_size=kernel_size, strides=1, padding='same', activation="relu")(x)    
+    x = Conv3D(filters=int(filters * 4), kernel_size=kernel_size, strides=1, padding='same', activation="relu")(x)
+
     x = SelfAttention()(x) + skip
     
-    x = Conv3D(filters=int(filters * 6), kernel_size=kernel_size, strides=2,
-                  padding='same', return_sequences=False)(x)
+    x = Conv3D(filters=int(filters * 6), kernel_size=kernel_size, strides=2, padding='same', activation="relu")(x)
     
     # Additional processing
-    x = Conv3D(filters=int(filters*6), kernel_size=kernel_size, strides=1,
-               activation='relu', padding='same')(x)
-    x = Conv3D(filters=int(filters*8), kernel_size=kernel_size, strides=2,
-               activation='relu', padding='same')(x)
-    
+    x = Conv3D(filters=int(filters*6), kernel_size=kernel_size, strides=1, activation='relu', padding='same')(x)
+    x = Conv3D(filters=int(filters*8), kernel_size=kernel_size, strides=(1,2,2), activation='relu', padding='same')(x)
     x = Conv3D(filters=int(filters*8), kernel_size=1, strides=2, activation='relu')(x)
     x = Flatten()(x)
     # x = Dense(512, activation='softmax')(x)
