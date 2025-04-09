@@ -21,12 +21,18 @@
       >
       Your browser does not support the HTML canvas tag.
     </canvas>
+    <video class="cropped" id="cropped_vid" ref="croppedVideoPlayer" :src="croppedVideoSrc"
+    controls autoplay loop
+    @canplay="updatePaused" @playing="updatePaused" @pause="updatePaused">
+    </video>
     <SkillBalk v-show="modeIsSkills"
     :videoinfo="vidinfo" 
     :Skills="skills" 
     @skill-clicked="onSkillClicked"
     :currentFrame="currentFrame"
     />
+  </div>
+  <div class="container">
     <div class="controls">
       <button @click="toggleLabelMode">Current modus: {{ labelMode }}</button>
       <button v-show="modeLocalizationIsAll && !modeIsSkills" @click="toggleLocalizationType">1 box 4 all</button>
@@ -95,7 +101,7 @@ import BoxCard from './BoxCard.vue';
 import SkillBalk from './SkillBalk.vue';
 import SelectComponent from './SelectComponent.vue';
 
-const props = defineProps(['title', 'videoId', 'videoSrc'])
+const props = defineProps(['title', 'videoId', 'videoSrc', 'croppedVideoSrc'])
 const router = useRouter()
 const colors = [
   "blue",
@@ -105,6 +111,7 @@ const colors = [
 ] // Each color here must have a class in box card!
 
 const videoElement = ref(null)
+const croppedVideoElement = ref(null)
 const canvas = ref(null)
 const paused = ref(null)
 const playing = computed(() => { return !paused.value})
@@ -202,6 +209,7 @@ onBeforeMount(async () => {
 })
 onMounted(async () => {
   videoElement.value = document.getElementById("vid")
+  croppedVideoElement.value = document.getElementById("cropped_vid")
 })
 
 function updatePaused(event) {
@@ -218,12 +226,16 @@ function updatePaused(event) {
 }
 function play() {
   videoElement.value.play();
+  croppedVideoElement.value.play();
+
 }
 function pause() {
   videoElement.value.pause();
+  croppedVideoElement.value.pause();
 }
 function setCurrentTime(val) {
   videoElement.value.currentTime = val
+  croppedVideoElement.value.currentTime = val;
 }
 function clearAndReturnCtx() {
   const ctx = canvas.value.getContext("2d");
@@ -415,14 +427,15 @@ async function playJustALittleFurther(framesToSkip) {
   // setCurrentTime(currentFrame.value / vidinfo.value.FPS)
   if (framesToSkip < 0) {
     videoElement.value.currentTime += framesToSkip / vidinfo.value.FPS
+    croppedVideoElement.value.currentTime += framesToSkip / vidinfo.value.FPS
     currentFrame.value = Math.round(vidinfo.value.FPS * videoElement.value.currentTime)
   } else {
     let endTime = (currentFrame.value + framesToSkip) / vidinfo.value.FPS
-    videoElement.value.play()
+    play()
     while (videoElement.value.currentTime < endTime) {
       await sleep(25)
     }
-    videoElement.value.pause()
+    pause()
   }
 }
 function onSkillClicked(skillIdentifier) {
@@ -535,11 +548,11 @@ function frameToEndOfSkill() {
 async function replaySection() {
   setCurrentTime(frameStart.value / vidinfo.value.FPS)
   let endTime = frameEnd.value / vidinfo.value.FPS
-  videoElement.value.play()
+  play()
   while (videoElement.value.currentTime < endTime) {
     await sleep(25)
   }
-  videoElement.value.pause()
+  pause()
 }
 async function playNextSection() {
   let nextSkill = vidinfo.value.Skills

@@ -3,7 +3,7 @@
     <h1>Label {{ videoinfo.Name }}</h1>
     <div v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
-    <VideoPlayer v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath"></VideoPlayer>
+    <VideoPlayer v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :cropped-video-src="croppedVideoSrc"></VideoPlayer>
   </div>
   <div v-else>
     Loading...
@@ -12,7 +12,7 @@
 
 <script setup>
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath } from '../services/videoService';
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router';
 
@@ -23,6 +23,7 @@ const error = ref('')
 const videoinfo = ref({})
 const videoId = ref(route.params.id)
 const videoPath = ref('')
+const croppedVideoSrc = ref('')
 
 watch(
   () => route.params.id,
@@ -37,7 +38,8 @@ onMounted(async () => {
 async function loadVideo(id) {
   loading.value = true;
   try {
-    videoPath.value = await getVideoPath(id);
+    videoPath.value = await getVideoPath(id)
+    croppedVideoSrc.value = await getCroppedVideoPath(id)
     videoinfo.value = await getVideoInfo(id)
   } catch {
     error.value = 'Failed To load';

@@ -9,6 +9,8 @@ from helpers.ValueHelper import ValueHelper
 load_dotenv()
 STORAGE_DIR = os.getenv("STORAGE_DIR")
 VIDEO_IMAGE_PREVIEW_FOLDER = os.getenv("VIDEO_IMAGE_PREVIEW_FOLDER")
+CROPPED_VIDEOS_FOLDER = "cropped-videos"
+CROPPED_VIDEOS_STATUSES = ["OK", "OK_NET_NIET_PERFECT", "SLECHT"]
 
 class VideoRouter(Resource):
     def __init__(self, **kwargs):
@@ -25,9 +27,32 @@ class VideoRouter(Resource):
         videoinfo = self.videoService.get(videoId)
         video_path = os.path.join(STORAGE_DIR, videoinfo.get_relative_video_path())
         with open(video_path, 'rb') as f:
-            return Response(f.read()) # TODO :mimetype='image/png' ?
-        # TODO : denseposed videos are not recognized by flask, others are
-        # return send_file(video_path)
+            return Response(f.read())
+
+class VideoRouterCropped(Resource):
+    def __init__(self, **kwargs):
+        self.folderService = FolderService(STORAGE_DIR)
+        self.videoService = VideoService(STORAGE_DIR)
+        super().__init__(**kwargs)
+    
+    def get(self, videoId: int):
+        try:
+            ValueHelper.check_raise_id(videoId)
+        except ValueError as ve:
+            return ve, 404
+        
+        DIM = 224
+        for status in CROPPED_VIDEOS_STATUSES:
+            video_path = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, status, f"{DIM}_{videoId}.mp4")
+            print(status, video_path)
+            if os.path.exists(video_path):
+                with open(video_path, 'rb') as f:
+                    return Response(f.read())
+        
+        video_path = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f"{DIM}_{videoId}.mp4")
+        print("bestaat het?", "@"*50,os.path.exists(video_path))
+        with open(video_path, 'rb') as f:
+            return Response(f.read())
 
 class VideoInfoRouter(Resource):
     def __init__(self, **kwargs):

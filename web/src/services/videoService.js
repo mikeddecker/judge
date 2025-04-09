@@ -46,6 +46,19 @@ export const getVideoPath = async (videoId) => {
   }
 };
 
+export const getCroppedVideoPath = async (videoId) => {
+  try {
+    return await api.get(`/video/${videoId}/cropped`, { responseType: 'blob' })
+      .then(response => {
+        let videoPath = URL.createObjectURL(response.data)
+        return videoPath
+      });
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};
+
 export const postVideoFrame = async (videoId, frameNr, frameinfo) => {
   return await api.post(`/video/${videoId}/frameNr/${frameNr}`, frameinfo, { headers: { 'Content-Type': 'application/json' }})
     .then(function (response) {
