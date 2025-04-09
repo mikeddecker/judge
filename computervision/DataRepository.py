@@ -20,7 +20,7 @@ class DataRepository:
         self.con = self.__get_connection()
         print('connection established, loading frame paths')
         self.__load_relativePaths_of_videos_with_framelabels()
-        print("rel paths of framelabels loaded")
+        print("relative paths of framelabels loaded")
 
     def __get_connection(self):
         HOST = '127.0.0.1'
@@ -41,7 +41,14 @@ class DataRepository:
         except SQLAlchemyError:
             print("Connection lost.")
             return False
-        
+
+
+    def get_dd3_videoIds(self, ):
+        # TODO : update with validation & 'random' sampling
+        qry = sqlal.text(f"""SELECT id FROM Videos WHERE folderId = 3""")
+
+        return pd.read_sql(qry, con=self.con)
+
     def get_framelabels(self, train_test_val, type=1):
         # TODO : update with validation & 'random' sampling
         if train_test_val == "train":

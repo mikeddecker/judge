@@ -86,6 +86,7 @@ class FrameLabel(db.Model):
     height = db.Column(db.Float, nullable=False)
     jumperVisible = db.Column(db.Boolean, nullable=False, default=True)
     labeltype = db.Column(db.Integer, db.ForeignKey('FrameLabelTypes.id'), nullable=False, default=1)
+    labeldate = db.Column(db.DateTime, default=date.today())
 
     def to_dict(self):
         return {
@@ -167,3 +168,20 @@ class Skillinfo_DoubleDutch(db.Model):
     hard2see = db.Column(db.Boolean, nullable=False, default=False)
     fault = db.Column(db.Boolean, nullable=False, default=False)
     labeldate = db.Column(db.DateTime, default=date.today())
+
+class Prediction_Frames(db.Model):
+    __tablename__ = 'Predictions_Localization'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
+    frameNr = db.Column(db.Integer, nullable=False)
+    
+    rawPredictions = db.Column(MutableDict.as_mutable(JSON), nullable=False)
+    rawBoxes = db.Column(db.Integer, nullable=False)
+    jumpersLocation = db.Column(MutableDict.as_mutable(JSON), nullable=False)
+    locationChecked = db.Column(db.Boolean, nullable=False, default=False)
+    
+    segmentSplitValue = db.Column(db.Float, nullable=True)
+    segmentsChecked = db.Column(db.Boolean, nullable=False, default=False)
+    
+    predictionDate = db.Column(db.DateTime, default=date.today())
+
