@@ -246,12 +246,12 @@ function afterPlayingOrPaused(event) {
 }
 function play() {
   if (videoElement.value.paused) { videoElement.value.play() }
-  // if (croppedVideoElement.value.paused) { croppedVideoElement.value.play() }
+  if (croppedVideoElement.value.paused) { croppedVideoElement.value.play() }
 
 }
 function pause() {
   if (!videoElement.value.paused) { videoElement.value.pause() }
-  // if (!croppedVideoElement.value.paused) { croppedVideoElement.value.pause() }
+  if (!croppedVideoElement.value.paused) { croppedVideoElement.value.pause() }
 }
 function setCurrentTime(val) {
   videoElement.value.currentTime = val
