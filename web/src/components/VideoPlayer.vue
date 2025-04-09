@@ -5,7 +5,7 @@
     id="vid"
     ref="videoPlayer" :src="videoSrc"
     controls autoplay loop 
-    @playing="updatePlaying" @pause="updatePaused" @seeked="onSeeked"
+    @playing="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @ontimeupdate="ontimeupdate"
     >
     </video>
     <canvas
@@ -21,9 +21,7 @@
       >
       Your browser does not support the HTML canvas tag.
     </canvas>
-    <video class="cropped" id="cropped_vid" ref="croppedVideoPlayer" :src="croppedVideoSrc"
-    controls autoplay loop
-    @playing="updatePlaying" @pause="updatePaused" @seeked="onSeeked">
+    <video class="cropped" id="cropped_vid" ref="croppedVideoPlayer" :src="croppedVideoSrc">
     </video>
     <SkillBalk v-show="modeIsSkills"
     :videoinfo="vidinfo" 
@@ -38,7 +36,7 @@
       <button v-show="modeLocalizationIsAll && !modeIsSkills" @click="toggleLocalizationType">1 box 4 all</button>
       <button v-show="!modeLocalizationIsAll && !modeIsSkills" @click="toggleLocalizationType">1 box / jumper</button>
       <button v-show="paused" @click="play">&#9654;</button>
-      <button v-show="playing" @click="pause">&#9208;</button>
+      <button v-show="!paused" @click="pause">&#9208;</button>
       <button v-show="modeIsLocalization && modeLocalizationIsAll" @click="postFullFrameLabelAndDisplayNextFrame">label as full screen</button>
       <button v-show="modeIsLocalization" @click="displayNextRandomFrame">random next frame</button>
       <button v-show="modeIsSkills && paused" @click="setFrameStartEnd('start')">set frameStart</button>
@@ -114,7 +112,6 @@ const videoElement = ref(null)
 const croppedVideoElement = ref(null)
 const canvas = ref(null)
 const paused = ref(true)
-const playing = computed(() => { return !paused.value})
 const currentFrame = ref(0)
 const currentWidth = ref(null)
 const currentHeight = ref(null)
@@ -130,6 +127,7 @@ const relativeHeight = computed(() => Math.abs(currentY.value - startY.value) / 
 const videoduration = ref(1)
 const vidinfo = ref(null)
 const focusBtn = ref(null)
+const playingALittleFurther = ref(false)
 
 const skills = computed(() => {
   let s = vidinfo.value ? [...vidinfo.value.Skills] : []
@@ -213,28 +211,25 @@ onMounted(async () => {
 })
 
 function updatePlaying(event) {
-  videoElement.value.play();
-  croppedVideoElement.value.play();
-  afterPlayingOrPaused(event)
+  if (croppedVideoElement.value.paused) { croppedVideoElement.value.play() }
+  // afterPlayingOrPaused(event)
+  paused.value = event.target.paused;
 }
 
 function updatePaused(event) {
-  videoElement.value.pause();
-  croppedVideoElement.value.pause();
+  if (!croppedVideoElement.value.paused) { croppedVideoElement.value.pause() }
   afterPlayingOrPaused(event)
 }
 
 function onSeeked(event) {
-  console.log("onSeeked", event)
+  if (playingALittleFurther.value) { return }
+
   // onSeeked = time changed where the video is playing
-  if (event.target.id === 'cropped_vid' && videoElement.value.currentTime != event.target.currentTime) {
-    console.log("event.target.currentTime", event.target.currentTime)
-    console.log("croppedVideoElement.value.currentTime", croppedVideoElement.value.currentTime)
+  if (event.target.id == 'cropped_vid' && videoElement.value.currentTime != event.target.currentTime) {
     videoElement.value.currentTime = event.target.currentTime
-  } else if (event.target.id === 'vid' && croppedVideoElement.value.currentTime != event.target.currentTime) {
+  } else if (event.target.id == 'vid' && croppedVideoElement.value.currentTime != event.target.currentTime) {
     croppedVideoElement.value.currentTime = event.target.currentTime
   }
-  console.log("onSeeked", event.target.currentTime, event)
 }
 
 function afterPlayingOrPaused(event) {
@@ -250,13 +245,13 @@ function afterPlayingOrPaused(event) {
   }
 }
 function play() {
-  videoElement.value.play();
-  croppedVideoElement.value.play();
+  if (videoElement.value.paused) { videoElement.value.play() }
+  // if (croppedVideoElement.value.paused) { croppedVideoElement.value.play() }
 
 }
 function pause() {
-  videoElement.value.pause();
-  croppedVideoElement.value.pause();
+  if (!videoElement.value.paused) { videoElement.value.pause() }
+  // if (!croppedVideoElement.value.paused) { croppedVideoElement.value.pause() }
 }
 function setCurrentTime(val) {
   videoElement.value.currentTime = val
@@ -270,7 +265,7 @@ function clearAndReturnCtx() {
 }
 function startDrawing(event) {
   if (modeLocalizationIsAll.value && !modeIsLocalization.value) { return }
-  if (playing.value) { pause() }
+  if (!paused.value) { pause() }
   isDrawing.value = true;
   startX.value = event.offsetX;
   startY.value = event.offsetY;
@@ -448,11 +443,13 @@ function setFrameStartEnd(start_or_end) {
 // Skils
 //////////////////////////////////////////////////////////////////////////////
 async function playJustALittleFurther(framesToSkip) {
+  playingALittleFurther.value = true
+
   if (!modeIsSkills.value) { return }
   // setCurrentTime(currentFrame.value / vidinfo.value.FPS)
   if (framesToSkip < 0) {
     videoElement.value.currentTime += framesToSkip / vidinfo.value.FPS
-    croppedVideoElement.value.currentTime += framesToSkip / vidinfo.value.FPS
+    // croppedVideoElement.value.currentTime += framesToSkip / vidinfo.value.FPS
     currentFrame.value = Math.round(vidinfo.value.FPS * videoElement.value.currentTime)
   } else {
     let endTime = (currentFrame.value + framesToSkip) / vidinfo.value.FPS
@@ -462,6 +459,7 @@ async function playJustALittleFurther(framesToSkip) {
     }
     pause()
   }
+  playingALittleFurther.value = false
 }
 function onSkillClicked(skillIdentifier) {
   let isClicked = selectedSkill.value ? selectedSkill.value.Id == skillIdentifier : false
@@ -513,12 +511,10 @@ function setDefaultSelectedOptions() {
 }
 function handleSelectedChange(skillinfo, value, description) {
   selectedOptions.value[skillinfo] = [value, description]
-  console.log("handleSelectedChange", value)
   if (selectedSkill.value) {
     selectedSkill.value["Skillinfo"][skillinfo] = value
     skillCanUpdate.value = true
   }
-  console.log("level request", selectedOptions.value)
   updateSkillLevel2CurrentOptions()
 }
 async function addSkill() {
@@ -583,16 +579,13 @@ async function playNextSection() {
   let nextSkill = vidinfo.value.Skills
     .filter(skill => skill.FrameStart >= selectedSkill.value.FrameEnd)
     .sort((a,b) => a.FrameEnd - b.FrameEnd)[0]
-  console.log("play next", nextSkill, nextSkill.Id)
   onSkillClicked(nextSkill.Id)
   replaySection()
 }
 async function updateSkillLevel2CurrentOptions() {
   let skillinfo = selectedSkill.value ? selectedSkill.value["Skillinfo"] : selectedOptions2SingleValue(selectedOptions.value)
-  console.log(skillinfo)
   if (skillinfo) {
     getSkillLevel(skillinfo, frameStart.value, vidinfo.value.Id).then(data => {
-      console.log("Level", data)
       skillLevelOptions.value = data
     })
   }
