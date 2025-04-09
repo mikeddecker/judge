@@ -5,7 +5,7 @@
     id="vid"
     ref="videoPlayer" :src="videoSrc"
     controls autoplay loop 
-    @canplay="updatePaused" @playing="updatePaused" @pause="updatePaused"
+    @playing="updatePlaying" @pause="updatePaused" @seeked="onSeeked"
     >
     </video>
     <canvas
@@ -16,14 +16,14 @@
     class="overlay-canvas"
     @mousedown="startDrawing" 
       @mousemove="drawRectangle" 
-      @mouseup="endDrawing" 
+      @mouseup="endDrawing"
       @mouseleave="endDrawing"
       >
       Your browser does not support the HTML canvas tag.
     </canvas>
     <video class="cropped" id="cropped_vid" ref="croppedVideoPlayer" :src="croppedVideoSrc"
     controls autoplay loop
-    @canplay="updatePaused" @playing="updatePaused" @pause="updatePaused">
+    @playing="updatePlaying" @pause="updatePaused" @seeked="onSeeked">
     </video>
     <SkillBalk v-show="modeIsSkills"
     :videoinfo="vidinfo" 
@@ -37,7 +37,7 @@
       <button @click="toggleLabelMode">Current modus: {{ labelMode }}</button>
       <button v-show="modeLocalizationIsAll && !modeIsSkills" @click="toggleLocalizationType">1 box 4 all</button>
       <button v-show="!modeLocalizationIsAll && !modeIsSkills" @click="toggleLocalizationType">1 box / jumper</button>
-      <button v-show="paused && modeIsLocalization" @click="play">&#9654;</button>
+      <button v-show="paused" @click="play">&#9654;</button>
       <button v-show="playing" @click="pause">&#9208;</button>
       <button v-show="modeIsLocalization && modeLocalizationIsAll" @click="postFullFrameLabelAndDisplayNextFrame">label as full screen</button>
       <button v-show="modeIsLocalization" @click="displayNextRandomFrame">random next frame</button>
@@ -113,7 +113,7 @@ const colors = [
 const videoElement = ref(null)
 const croppedVideoElement = ref(null)
 const canvas = ref(null)
-const paused = ref(null)
+const paused = ref(true)
 const playing = computed(() => { return !paused.value})
 const currentFrame = ref(0)
 const currentWidth = ref(null)
@@ -212,7 +212,32 @@ onMounted(async () => {
   croppedVideoElement.value = document.getElementById("cropped_vid")
 })
 
+function updatePlaying(event) {
+  videoElement.value.play();
+  croppedVideoElement.value.play();
+  afterPlayingOrPaused(event)
+}
+
 function updatePaused(event) {
+  videoElement.value.pause();
+  croppedVideoElement.value.pause();
+  afterPlayingOrPaused(event)
+}
+
+function onSeeked(event) {
+  console.log("onSeeked", event)
+  // onSeeked = time changed where the video is playing
+  if (event.target.id === 'cropped_vid' && videoElement.value.currentTime != event.target.currentTime) {
+    console.log("event.target.currentTime", event.target.currentTime)
+    console.log("croppedVideoElement.value.currentTime", croppedVideoElement.value.currentTime)
+    videoElement.value.currentTime = event.target.currentTime
+  } else if (event.target.id === 'vid' && croppedVideoElement.value.currentTime != event.target.currentTime) {
+    croppedVideoElement.value.currentTime = event.target.currentTime
+  }
+  console.log("onSeeked", event.target.currentTime, event)
+}
+
+function afterPlayingOrPaused(event) {
   videoduration.value = event.target.duration
   currentWidth.value = event.target.clientWidth
   currentHeight.value = event.target.clientHeight
@@ -640,6 +665,10 @@ img {
 
 .material-icons {
   font-size: 1.36rem
+}
+
+.cropped {
+  max-height: 224px;
 }
 
 @media (min-width: 1024px) {
