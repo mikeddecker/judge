@@ -13,7 +13,7 @@ const cssColorClass = computed(() => { return props.videoId % 10 == 5 ? 'testvid
 // completed target 10% of frames labeled
 // const labelthreshold = 0.1 // Minimun % to be labeled to reach 100%
 // const completed = computed(() => Math.min(100, Math.floor(props.info.LabeledFrameCount / props.info.FrameLength / labelthreshold * 100)))
-const completed = computed(() => props.info.LabeledFrameCount2.toFixed(0))
+const completed = computed(() => Number.isInteger(props.info.LabeledFrameCount2.toFixed(0)) ? props.info.LabeledFrameCount2.toFixed(0) : 0)
 
 onMounted(async () => {
   try {
