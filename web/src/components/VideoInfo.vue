@@ -13,7 +13,7 @@ const cssColorClass = computed(() => { return props.videoId % 10 == 5 ? 'testvid
 // completed target 10% of frames labeled
 // const labelthreshold = 0.1 // Minimun % to be labeled to reach 100%
 // const completed = computed(() => Math.min(100, Math.floor(props.info.LabeledFrameCount / props.info.FrameLength / labelthreshold * 100)))
-const completed = computed(() => props.info.FramesLabeledPerSecond.toFixed(2) * 100)
+const completed = computed(() => props.info.LabeledFrameCount2.toFixed(0))
 
 onMounted(async () => {
   try {
@@ -31,9 +31,12 @@ onMounted(async () => {
       <p v-else>Loading image...</p>
     </div>
     <div class="info">
-      <p>{{ videoId }} {{ title }}</p>
+      <span>{{ title }}</span>
     </div>
-    <img v-if="info.Completed_Skill_Labels" class="completed" src="@/assets/checked.png" alt="folder image" />
+    <div class="flex bottom-left">
+      <span class="flex-end">video {{ videoId }}</span>
+      <img v-if="info.Completed_Skill_Labels" class="completed" src="@/assets/checked.png" alt="folder image" />
+    </div>
     <ProgressBar :bgcolor="'#29ab87'" :completed="completed" />
   </div>
 </template>
@@ -73,14 +76,27 @@ h2 {
 
 img.completed {
   width: 20%;
-  height: 20%;
   align-self: flex-end;
   margin-top: auto;
   margin-bottom: 0.4rem;
+  margin-right: 0.2rem;
+  margin-left: auto;
 }
 
 .videoinfo:hover {
   background-color: khaki;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-end {
+  align-self: flex-end;
+}
+
+.bottom-left {
+  margin: auto 0.2rem 0.2rem 0.2rem;
 }
 
 .testvideo {
