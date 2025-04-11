@@ -120,7 +120,6 @@ export const putSkill = async (videoId, skillinfo) => {
 };
 
 export const deleteSkill = async (videoId, start, end) => {
-  console.log("delete skilll", videoId, start, end)
   return await api.delete(`/skill/${videoId}`, { 
       headers: { 'Content-Type': 'application/json' },
       data: { "FrameStart": start, "FrameEnd": end },
@@ -140,7 +139,6 @@ export const getSkillLevel = async (skillinfo, frameStart, videoId) => {
         "frameStart" : frameStart,
         "videoId" : videoId,
       }, { headers: { 'Content-Type': 'application/json' }})
-    console.log("response.data", response.data)
     return response.data
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -153,7 +151,6 @@ export const updateVideoSkillsCompleted = async (videoId, completed) => {
     const response = await api.post(`/skillcompleted/${videoId}`, { 
         "completed" : completed,
       }, { headers: { 'Content-Type': 'application/json' }})
-    console.log("skill completed?", response.data)
     return response.data
   } catch (error) {
     console.error('Error fetching data:', error);

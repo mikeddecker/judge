@@ -225,9 +225,9 @@ function updatePlaying(event) {
 
 function updatePaused(event) {
   if (!croppedVideoElement.value.paused) { croppedVideoElement.value.pause() }
-  if (!event.target.id == 'cropped_vid' && !playingALittleFurther.value) {
-    afterPlayingOrPaused(event)
-  }
+  afterPlayingOrPaused(event)
+  paused.value = true
+  croppedVideoElement.value.currentTime = videoElement.value.currentTime
 }
 
 function onSeeked(event) {
@@ -248,9 +248,7 @@ function afterPlayingOrPaused(event) {
     currentFrame.value = Math.floor(!modeIsReview.value ? vidinfo.value.FPS * event.target.currentTime : vidinfo.value.Frames[currentFrameIdx.value].FrameNr)
   }
   paused.value = event.target.paused;
-  console.log("hhaa")
-  if (currentFrame.value != frameStart.value) {
-    console.log("hhaa ???")
+  if (frameStart.value && currentFrame.value != frameStart.value) {
     frameEnd.value = currentFrame.value
   }
 }
@@ -461,6 +459,9 @@ async function playJustALittleFurther(framesToSkip) {
     videoElement.value.currentTime += framesToSkip / vidinfo.value.FPS
     // croppedVideoElement.value.currentTime += framesToSkip / vidinfo.value.FPS
     currentFrame.value = Math.round(vidinfo.value.FPS * videoElement.value.currentTime)
+    if (frameStart.value && currentFrame.value != frameStart.value) {
+      frameEnd.value = currentFrame.value
+    }
   } else {
     let endTime = (currentFrame.value + framesToSkip) / vidinfo.value.FPS
     play()

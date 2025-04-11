@@ -27,7 +27,6 @@ const emit = defineEmits(['update:selected']);
 const selectedValue = ref(props.defaultValue);
 
 const handleChange = () => {
-    console.log(selectedValue.value, typeof(selectedValue.value))
     // Needed as values passed to this component become strings
     let convertedValue = undefined
     if (selectedValue.value == "false") {
@@ -42,7 +41,6 @@ const handleChange = () => {
 
 watch(() => props.defaultValue, (newValue, oldValue) => {
   // React to prop changes
-  console.log(`${props.title}:`, newValue);
   selectedValue.value = newValue; // Update the value in the ref if needed
 });
 
