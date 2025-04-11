@@ -1,28 +1,29 @@
 <template>
   <p>LabeledFrames: {{ labeledFramesCount }} | Current frame : {{ currentFrame }} | FramesLabeledPerSecond : {{ framesLabeledPerSecond }} | total labels: {{ totalLabels }} | Full box for all jumpers : {{ modeLocalizationIsAll }}</p>
   <div class="container">
-    <video class="absolute"
-    id="vid"
-    ref="videoPlayer" :src="videoSrc"
-    controls autoplay loop 
-    @playing="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @ontimeupdate="ontimeupdate"
-    >
-    </video>
-    <canvas
-    v-show="modeIsReview | modeIsLocalization"
-    ref="canvas" 
-    :width="currentWidth" 
-    :height="currentHeight" 
-    class="overlay-canvas"
-    @mousedown="startDrawing" 
-      @mousemove="drawRectangle" 
-      @mouseup="endDrawing"
-      @mouseleave="endDrawing"
+    <div class="container overlay-container">
+      <video class="absolute"
+      id="vid"
+      ref="videoPlayer" :src="videoSrc"
+      controls autoplay loop 
+      @playing="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @ontimeupdate="ontimeupdate" @loadeddata="onLoadedData"
       >
-      Your browser does not support the HTML canvas tag.
-    </canvas>
-    <video class="cropped" id="cropped_vid" ref="croppedVideoPlayer" :src="croppedVideoSrc">
-    </video>
+      </video>
+      <canvas
+      v-show="modeIsReview | modeIsLocalization"
+      ref="canvas" 
+      :width="currentWidth" 
+      :height="currentHeight" 
+      class="overlay-canvas"
+      @mousedown="startDrawing" 
+        @mousemove="drawRectangle" 
+        @mouseup="endDrawing"
+        @mouseleave="endDrawing"
+        >
+        Your browser does not support the HTML canvas tag.
+      </canvas>
+    </div>
+    <video class="cropped" id="cropped_vid" ref="croppedVideoPlayer" :src="croppedVideoSrc"></video>
     <SkillBalk v-show="modeIsSkills"
     :videoinfo="vidinfo" 
     :Skills="skills" 
@@ -210,10 +211,16 @@ onMounted(async () => {
   croppedVideoElement.value = document.getElementById("cropped_vid")
 })
 
+function onLoadedData(event) {
+  videoduration.value = event.target.duration
+}
+
 function updatePlaying(event) {
   if (croppedVideoElement.value.paused) { croppedVideoElement.value.play() }
   // afterPlayingOrPaused(event)
   paused.value = event.target.paused;
+  currentWidth.value = event.target.clientWidth
+  currentHeight.value = event.target.clientHeight
 }
 
 function updatePaused(event) {
@@ -235,7 +242,6 @@ function onSeeked(event) {
 }
 
 function afterPlayingOrPaused(event) {
-  videoduration.value = event.target.duration
   currentWidth.value = event.target.clientWidth
   currentHeight.value = event.target.clientHeight
   if (!paused.value == true) {
@@ -618,7 +624,7 @@ async function updateSkillLevel2CurrentOptions() {
 }
 
 video {
-  max-width: 90%;
+  /* max-width: 90%; */
   max-height: 70vh;
 }
 
@@ -652,8 +658,16 @@ img {
   border: 1px solid red;
   top: 0;
   left: 0;
-  /* width: 100%; */
-  /* height: 100%; */
+  max-width: 100%;
+  height: 100%;
+}
+
+.overlay-container {
+  position: relative;
+  /* border: 1px solid black; */
+  /* overflow: auto; */
+  /* width: 90%; */
+  max-height: 70vh;
 }
 
 .big-arrow {
