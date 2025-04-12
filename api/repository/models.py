@@ -175,9 +175,10 @@ class Prediction_Frames(db.Model):
     videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
     frameNr = db.Column(db.Integer, nullable=False)
     
-    rawPredictions = db.Column(MutableDict.as_mutable(JSON), nullable=False)
-    rawBoxes = db.Column(db.Integer, nullable=False)
-    jumpersLocation = db.Column(MutableDict.as_mutable(JSON), nullable=False)
+    x1 = db.Column(db.Integer, nullable=False)
+    y1 = db.Column(db.Integer, nullable=False)
+    x2 = db.Column(db.Integer, nullable=False)
+    y2 = db.Column(db.Integer, nullable=False)
     locationChecked = db.Column(db.Boolean, nullable=False, default=False)
     
     segmentSplitValue = db.Column(db.Float, nullable=True)

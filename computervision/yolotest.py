@@ -9,7 +9,7 @@ import pandas as pd
 # from colorama import Fore, Style
 from typing import List
 from dotenv import load_dotenv
-from DataRepository import DataRepository
+from managers.DataRepository import DataRepository
 
 from ultralytics import YOLO
 from ultralytics.models.yolo.detect import DetectionTrainer
