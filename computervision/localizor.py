@@ -55,8 +55,8 @@ model = YOLO(os.path.join(modelpath, "weights", "best.pt"))
 
 # %%
 DIM = 224
-# videoIds = repo.get_dd3_videoIds()["id"].to_list()
-videoIds = [676]
+videoIds = repo.get_dd3_videoIds()["id"].to_list()
+# videoIds = [676]
 PEOPLE = 3 # TODO : provide as a parameter or solve when skippers are entering the field
 
 for videoId in videoIds:
@@ -64,10 +64,14 @@ for videoId in videoIds:
 
     videoPath = get_video_path(repo, videoId=videoId)
     videoOutputPath = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f"{DIM}_{videoId}_opencv.mp4")
-    videoOutputPathCorrect = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f"{DIM}_{videoId}_v3.mp4")
+    videoOutputPathCorrect = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f"{DIM}_{videoId}.mp4")
+    videoOutputPathCorrectOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK", f"{DIM}_{videoId}.mp4")
+    videoOutputPathCorrectNOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK_NET_NIET_PERFECT", f"{DIM}_{videoId}.mp4")
+    videoOutputPathCorrectAlmostOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "SLECHT", f"{DIM}_{videoId}.mp4")
+
     
-    # if os.path.exists(videoOutputPathCorrect):
-    #     continue
+    if os.path.exists(videoOutputPathCorrect) or os.path.exists(videoOutputPathCorrectOK) or os.path.exists(videoOutputPathCorrectAlmostOK) or os.path.exists(videoOutputPathCorrectNOK):
+        continue
 
     cap = cv2.VideoCapture(videoPath)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -82,8 +86,8 @@ for videoId in videoIds:
     N_FRAMES = N * fps
     SQRT = 8
 
-    smootval = 0.87
-    smootval_shrink = 0.955
+    smootval = 0.86
+    smootval_shrink = 0.945
     smooted_x1_min = None
     smooted_y1_min = None
     smooted_x2_max = None
