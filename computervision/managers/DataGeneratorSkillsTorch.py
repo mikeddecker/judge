@@ -40,8 +40,9 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.repo = DataRepository()
         self.Skills = self.repo.get_skills(train_test_val)
         self.SkillCounts = self.repo.get_skill_category_counts()
-        print("skillcounts", self.SkillCounts)
 
+        self.__enrichSkills()
+        self.balancedType = 'jump_return_push_frog_other' # TODO : make dynamic
         self.BalancedSet = pd.DataFrame(columns=self.Skills.columns)
 
         self.info_columns = [
@@ -136,7 +137,12 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
     #     multiplier_squared = multiplier * multiplier
     #     return multiplier_squared
 
-
+    def __enrichSkills(self):
+        self.Skills['skill'] = np.where(
+            self.Skills['skill'] <= 5,
+            self.Skills['skill'],
+            5
+        )
     def __refillBalancedSet(self):        
         skillValueCounts = self.Skills["skill"].value_counts()
         lowestTrainAmount = min(
@@ -144,13 +150,14 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             skillValueCounts.loc[2], # Returns
             skillValueCounts.loc[3], # Pushups
             skillValueCounts.loc[4], # Frogs
-            skillValueCounts[skillValueCounts.index >= 5].sum(),
+            skillValueCounts.loc[5], # other
         )
+        print(skillValueCounts)
 
         self.BalancedSet = pd.concat([
             self.Skills[self.Skills['skill'] == 1].iloc[:lowestTrainAmount],
             self.Skills[self.Skills['skill'] == 2].iloc[:lowestTrainAmount],
             self.Skills[self.Skills['skill'] == 3].iloc[:lowestTrainAmount],
             self.Skills[self.Skills['skill'] == 4].iloc[:lowestTrainAmount],
-            self.Skills[self.Skills['skill'] >= 5].iloc[:lowestTrainAmount]
+            self.Skills[self.Skills['skill'] == 5].iloc[:lowestTrainAmount]
         ], ignore_index=True)

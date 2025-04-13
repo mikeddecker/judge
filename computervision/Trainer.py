@@ -46,7 +46,7 @@ if __name__ == "__main__":
         type="SKILL",
         modelname=modelname,
         from_scratch=True,
-        epochs=10,
+        epochs=5,
         save_anyway=True,
         unfreeze_all_layers=False,
         modelparams=trainparams

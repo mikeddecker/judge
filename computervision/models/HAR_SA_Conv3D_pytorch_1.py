@@ -86,7 +86,7 @@ class SAConv3D(nn.Module):
         self.features = nn.Linear(self._get_conv_output(input_shape), self.LastNNeurons)
         
         # Output layers
-        self._create_output_layers()
+        self._create_output_layers(balancedType='jump_return_push_frog_other') # TODO : make dynamic
         
     def _get_conv_output(self, shape):
         with torch.no_grad():
@@ -110,7 +110,7 @@ class SAConv3D(nn.Module):
             output = self.flatten(output)
             return output.shape[1]
         
-    def _create_output_layers(self):
+    def _create_output_layers(self, balancedType=None):
         dd_config = get_discipline_DoubleDutch_config()
         self.output_layers = nn.ModuleDict()
         
@@ -118,18 +118,21 @@ class SAConv3D(nn.Module):
             if key == "Tablename":
                 continue
             if value[0] == "Categorical":
-                tablename = "skill"
+                columnname = "skill"
                 if key == 'Skill':
-                    tablename = 'skills'
+                    columnname = 'skills'
                 elif key in ['Turner1', 'Turner2']:
-                    tablename = "turners"
+                    columnname = "turners"
                 elif key == 'Type':
-                    tablename = 'types'
+                    columnname = 'types'
                 
-                classes = int(self.df_table_counts.iloc[0][tablename])
+                classes = int(self.df_table_counts.iloc[0][columnname])
                 self.output_layers[key] = nn.Linear(self.LastNNeurons, classes)
             else:
                 self.output_layers[key] = nn.Linear(self.LastNNeurons, 1)
+        
+        if balancedType == 'jump_return_push_frog_other':
+            self.output_layers['Skill'] = nn.Linear(self.LastNNeurons, 5)
     
     def forward(self, x):
         # Input shape: (batch_size, timesteps, channels, height, width)
