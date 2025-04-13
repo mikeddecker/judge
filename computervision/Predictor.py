@@ -1,4 +1,4 @@
-from TrainerSkills import TrainerSkills
+from managers.TrainerSkills import TrainerSkills
 
 KERAS_MODELS = []
 PYTORCH_MODELS = []
