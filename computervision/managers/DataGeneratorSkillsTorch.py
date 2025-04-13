@@ -110,11 +110,17 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             print(f"*"*80)
             raise err
 
+        if batch_nr + 1 == self.__len__():
+            self.on_epoch_end() # Just in case 4 now
+
         return loaded_frames, y
 
     def on_epoch_end(self):
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
+        print("@"*80)
+        print("@"*80)
+        print("@"*80)
     
     # def __get_multiplier(self, occurance_percentage: float, max_occurance_percentage: float, N = 10):
     #     """Calculate how many times more a skill needs to be added
@@ -132,29 +138,19 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
 
 
     def __refillBalancedSet(self):        
-        self.BalancedSet = pd.DataFrame(columns=self.Skills.columns)
         skillValueCounts = self.Skills["skill"].value_counts()
-        print(skillValueCounts)
         lowestTrainAmount = min(
             skillValueCounts.loc[1], # Jumps
             skillValueCounts.loc[2], # Returns
             skillValueCounts.loc[3], # Pushups
             skillValueCounts.loc[4], # Frogs
-            skillValueCounts.loc[5],
+            skillValueCounts[skillValueCounts.index >= 5].sum(),
         )
-        # TODO : fix
-        self.BalancedSet = self.Skills
-        print(lowestTrainAmount)
-        return
-        for col in self.info_columns:
-            series_normalized_occurances = self.Skills[col].value_counts(normalize=True)
-            max_occurance_percentage = series_normalized_occurances.iloc[0]
 
-            for index, value in series_normalized_occurances.items():
-                if value == max_occurance_percentage:
-                    continue
-                rounded_multiplier = int(np.round(self.__get_multiplier(value, max_occurance_percentage, N=N)))
-                extra_skills = [self.Skills[self.Skills[col] == index] for _ in range(rounded_multiplier)]
-                extra_skills.append(balanced_skills)
-                balanced_skills = pd.concat(extra_skills, ignore_index=True)
-        return balanced_skills
+        self.BalancedSet = pd.concat([
+            self.Skills[self.Skills['skill'] == 1].iloc[:lowestTrainAmount],
+            self.Skills[self.Skills['skill'] == 2].iloc[:lowestTrainAmount],
+            self.Skills[self.Skills['skill'] == 3].iloc[:lowestTrainAmount],
+            self.Skills[self.Skills['skill'] == 4].iloc[:lowestTrainAmount],
+            self.Skills[self.Skills['skill'] >= 5].iloc[:lowestTrainAmount]
+        ], ignore_index=True)

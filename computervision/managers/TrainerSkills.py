@@ -22,6 +22,8 @@ class TrainerSkills:
             
             if key in ['Skill', 'Turner1', 'Turner2', 'Type']:  # Categorical
                 loss = loss_fns['categorical'](pred, target.long())
+                if key == 'Skill':
+                    loss *= 10
             else:  # Regression
                 loss = loss_fns['regression'](pred.squeeze(), target)
             
@@ -83,6 +85,7 @@ class TrainerSkills:
 
             # Training loop
             for epoch in range(epochs):
+                print(f"============= EPOCH {epoch} =============")
                 model.train()
                 total_loss = 0.0
                 i = 0
