@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch.nn import Module, Parameter
 import numpy as np
 import pandas as pd
+from helpers import create_pytorch_skill_output_layers
 
 import sys
 sys.path.append('..')
@@ -86,7 +87,7 @@ class SAConv3D(nn.Module):
         self.features = nn.Linear(self._get_conv_output(input_shape), self.LastNNeurons)
         
         # Output layers
-        self._create_output_layers(balancedType='jump_return_push_frog_other') # TODO : make dynamic
+        self.output_layers = self.create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType='jump_return_push_frog_other', df_table_counts = self.df_table_counts) # TODO : make dynamic
         
     def _get_conv_output(self, shape):
         with torch.no_grad():
@@ -109,30 +110,6 @@ class SAConv3D(nn.Module):
             output = self.conv12(output)
             output = self.flatten(output)
             return output.shape[1]
-        
-    def _create_output_layers(self, balancedType=None):
-        dd_config = get_discipline_DoubleDutch_config()
-        self.output_layers = nn.ModuleDict()
-        
-        for key, value in dd_config.items():
-            if key == "Tablename":
-                continue
-            if value[0] == "Categorical":
-                columnname = "skill"
-                if key == 'Skill':
-                    columnname = 'skills'
-                elif key in ['Turner1', 'Turner2']:
-                    columnname = "turners"
-                elif key == 'Type':
-                    columnname = 'types'
-                
-                classes = int(self.df_table_counts.iloc[0][columnname])
-                self.output_layers[key] = nn.Linear(self.LastNNeurons, classes)
-            else:
-                self.output_layers[key] = nn.Linear(self.LastNNeurons, 1)
-        
-        if balancedType == 'jump_return_push_frog_other':
-            self.output_layers['Skill'] = nn.Linear(self.LastNNeurons, 5)
     
     def forward(self, x):
         # Input shape: (batch_size, timesteps, channels, height, width)
