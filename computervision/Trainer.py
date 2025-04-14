@@ -45,7 +45,7 @@ if __name__ == "__main__":
     trainer.train(
         type="SKILL",
         modelname=modelname,
-        from_scratch=True,
+        from_scratch=False,
         epochs=5,
         save_anyway=True,
         unfreeze_all_layers=False,

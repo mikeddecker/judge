@@ -6,7 +6,7 @@ from api.helpers.ConfigHelper import get_discipline_DoubleDutch_config
 
 def create_pytorch_skill_output_layers(lastNNeurons, balancedType, df_table_counts):
     dd_config = get_discipline_DoubleDutch_config()
-    output_layers = torch.nnModuleDict()
+    output_layers = torch.nn.ModuleDict()
     
     for key, value in dd_config.items():
         if key == "Tablename":
@@ -21,11 +21,11 @@ def create_pytorch_skill_output_layers(lastNNeurons, balancedType, df_table_coun
                 columnname = 'types'
             
             classes = int(df_table_counts.iloc[0][columnname])
-            output_layers[key] = torch.nnLinear(lastNNeurons, classes)
+            output_layers[key] = torch.nn.Linear(lastNNeurons, classes)
         else:
-            output_layers[key] = torch.nnLinear(lastNNeurons, 1)
+            output_layers[key] = torch.nn.Linear(lastNNeurons, 1)
     
     if balancedType == 'jump_return_push_frog_other':
-        output_layers['Skill'] = torch.nnLinear(lastNNeurons, 5)
+        output_layers['Skill'] = torch.nn.Linear(lastNNeurons, 5)
     
     return output_layers

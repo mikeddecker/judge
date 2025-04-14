@@ -2,7 +2,12 @@ from constants import PYTORCH_MODELS_SKILLS
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
+
+from dotenv import load_dotenv
+load_dotenv()
+
 import gc
+import os
 from tqdm import tqdm
 import torch
 import torch.optim as optim
@@ -12,6 +17,12 @@ print(f"Using device: {device}")
 
 torch.backends.cudnn.benchmark = True
 scaler = torch.GradScaler()
+
+STORAGE_DIR = os.getenv("STORAGE_DIR")
+LABELS_FOLDER = "labels"
+SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS")
+CROPPED_VIDEOS_FOLDER = os.getenv("CROPPED_VIDEOS_FOLDER")
+MODELWEIGHT_PATH = "weights"
 
 class TrainerSkills:
     def __compute_losses(self, outputs, batch_y, loss_fns):
@@ -57,7 +68,6 @@ class TrainerSkills:
             # else:  # Regression
             #     loss = loss_fns['regression'](pred.squeeze(), target)
             
-            # losses.append(loss)
         
         # Total loss (sum of all individual losses)
         return correctCounts
@@ -88,22 +98,30 @@ class TrainerSkills:
 
                 i+=1
             # print(f"Validation loss: {val_loss / i:.4f}")
-        print(f"Validation accuracy", accuracyCounts)
+        print(f"Validation accuracy", accuracyCounts['Skill'] / len(dataloader))
 
-
-        return val_loss / len(dataloader)
+        return val_loss / len(dataloader), accuracyCounts["Skill"] / len(dataloader)
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}):
         try:
-
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
+            
+            path = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
+            checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.checkpoint.pt")
+
             
             DIM = 224
             repo = DataRepository()
             model = PYTORCH_MODELS_SKILLS[modelname](modelinfo=trainparams, df_table_counts=repo.get_skill_category_counts()).to(device)
+            optimizer = optim.Adam(model.parameters(), lr=1e-4)
+            epoch_start = 0
+            if not from_scratch and os.path.exists(checkpointPath):
+                checkpoint = torch.load(checkpointPath, weights_only=True)
+                model.load_state_dict(checkpoint['model_state_dict'])
+                optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+                epoch_start = checkpoint['epoch'] + 1
 
-            repo = DataRepository()
             train_generator = DataGeneratorSkills(
                 frameloader=FrameLoader(repo),
                 train_test_val="train",
@@ -119,19 +137,16 @@ class TrainerSkills:
                 batch_size=trainparams['batch_size'],
             )
         
-            # Create DataLoader
             dataloaderTrain = DataLoader(train_generator, batch_size=1, shuffle=True)
             dataloaderVal = DataLoader(val_generator, batch_size=1, shuffle=True)
 
-            # Define optimizer and loss functions
-            optimizer = optim.Adam(model.parameters(), lr=1e-4)
             loss_fns = {
                 'categorical': torch.nn.CrossEntropyLoss(),  # For outputs like 'Skill', 'Turner1'
                 'regression': torch.nn.MSELoss()             # For scalar outputs
             }
 
             # Training loop
-            for epoch in range(epochs):
+            for epoch in range(epoch_start, epochs + epoch_start):
                 print(f"============= EPOCH {epoch} =============")
                 model.train()
                 total_loss = 0.0
@@ -155,8 +170,21 @@ class TrainerSkills:
 
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
-                val_loss = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)
+                val_loss, skill_accuracy = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss / len(dataloaderVal):.4f} (val loss = {val_loss})")
+
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'loss': val_loss,
+                    'skillAccuracy': skill_accuracy,
+                }, checkpointPath)
+        
+            # End training
+            repo = DataRepository()
+            torch.save(model.state_dict(), path)
+
         except Exception as e:
             raise e
         finally:

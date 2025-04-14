@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch.nn import Module, Parameter
 import numpy as np
 import pandas as pd
-from helpers import create_pytorch_skill_output_layers
+from models.torch_output_layers import create_pytorch_skill_output_layers
 
 import sys
 sys.path.append('..')
@@ -87,7 +87,7 @@ class SAConv3D(nn.Module):
         self.features = nn.Linear(self._get_conv_output(input_shape), self.LastNNeurons)
         
         # Output layers
-        self.output_layers = self.create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType='jump_return_push_frog_other', df_table_counts = self.df_table_counts) # TODO : make dynamic
+        self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType='jump_return_push_frog_other', df_table_counts = self.df_table_counts) # TODO : make dynamic
         
     def _get_conv_output(self, shape):
         with torch.no_grad():
