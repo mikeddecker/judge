@@ -137,7 +137,7 @@ class SAConv3D(nn.Module):
         x = F.relu(self.conv12(x))
         
         x = self.flatten(x)
-        features = F.softmax(self.features(x), dim=1)
+        features = F.relu(self.features(x), dim=1)
         
         # Outputs
         outputs = {}

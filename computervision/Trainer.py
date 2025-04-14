@@ -40,7 +40,7 @@ if __name__ == "__main__":
         "timesteps" : 16,
         "batch_size" : 1,
     }
-    modelname = "HAR_SA_Conv3D"
+    modelname = "HAR_MViT"
     trainer = Trainer()
     trainer.train(
         type="SKILL",
