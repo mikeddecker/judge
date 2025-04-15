@@ -2,7 +2,7 @@ from managers.TrainerSkills import TrainerSkills
 from constants import PYTORCH_MODELS_SKILLS
 
 class Trainer:
-    def train(self, type, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, modelparams: dict = None):
+    def train(self, type, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, modelparams: dict = None, learning_rate=1e-5):
         match type:
             case 'LOCALIZE':
                 raise NotImplementedError()
@@ -15,7 +15,8 @@ class Trainer:
                                                    epochs=epochs,
                                                    save_anyway=save_anyway,
                                                    unfreeze_all_layers=unfreeze_all_layers,
-                                                   trainparams=modelparams)
+                                                   trainparams=modelparams,
+                                                   learning_rate=learning_rate)
                 else:
                     raise NotImplementedError()
             case _:
@@ -24,14 +25,15 @@ class Trainer:
     def predict(modelname, videoId):
         pass
 
-    def __train_skills_pytorch(modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict = None):
+    def __train_skills_pytorch(modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict = None, learning_rate=1e-5):
         SkillTrainer = TrainerSkills()
         SkillTrainer.train(modelname=modelname,
                            from_scratch=from_scratch,
                            epochs=epochs,
                            save_anyway=save_anyway,
                            unfreeze_all_layers=unfreeze_all_layers,
-                           trainparams = trainparams)
+                           trainparams = trainparams,
+                           learning_rate=learning_rate)
         
 
 if __name__ == "__main__":
@@ -45,9 +47,21 @@ if __name__ == "__main__":
     trainer.train(
         type="SKILL",
         modelname=modelname,
-        from_scratch=False,
-        epochs=5,
+        from_scratch=True,
+        epochs=3,
         save_anyway=True,
-        unfreeze_all_layers=False,
-        modelparams=trainparams
+        unfreeze_all_layers=True,
+        modelparams=trainparams,
+        learning_rate=4e-5
+    )
+
+    trainer.train(
+        type="SKILL",
+        modelname=modelname,
+        from_scratch=False,
+        epochs=4,
+        save_anyway=True,
+        unfreeze_all_layers=True,
+        modelparams=trainparams,
+        learning_rate=1e-6
     )

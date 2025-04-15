@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import sys
 sys.path.append('..')
 from api.helpers.ConfigHelper import get_discipline_DoubleDutch_config

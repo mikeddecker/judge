@@ -50,7 +50,7 @@ class MViT(nn.Module):
         outputs = {}
         for key, layer in self.output_layers.items():
             if key in ['Skill', 'Turner1', 'Turner2', 'Type']:
-                outputs[key] = F.softmax(layer(features), dim=1)
+                outputs[key] = layer(features)
             else:  # Regression outputs
                 outputs[key] = torch.sigmoid(layer(features))
         

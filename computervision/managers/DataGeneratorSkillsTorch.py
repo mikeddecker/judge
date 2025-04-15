@@ -54,8 +54,8 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         # Shuffle skills
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
-
         print('DataGeneratorSkills init done')
+        print(self.Skills["skill"].value_counts())
         self.on_epoch_end()
 
     def __len__(self):
@@ -119,9 +119,9 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
     def on_epoch_end(self):
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
-        print("@"*80)
-        print("@"*80)
-        print("@"*80)
+        # print("@"*80)
+        # print("@"*80)
+        # print("@"*80)
     
     # def __get_multiplier(self, occurance_percentage: float, max_occurance_percentage: float, N = 10):
     #     """Calculate how many times more a skill needs to be added
@@ -152,7 +152,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             skillValueCounts.loc[4], # Frogs
             skillValueCounts.loc[5], # other
         )
-        print(skillValueCounts)
+        # print(skillValueCounts)
 
         self.BalancedSet = pd.concat([
             self.Skills[self.Skills['skill'] == 1].iloc[:lowestTrainAmount],
@@ -161,3 +161,4 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             self.Skills[self.Skills['skill'] == 4].iloc[:lowestTrainAmount],
             self.Skills[self.Skills['skill'] == 5].iloc[:lowestTrainAmount]
         ], ignore_index=True)
+        self.BalancedSet = self.BalancedSet.sample(frac=1.)

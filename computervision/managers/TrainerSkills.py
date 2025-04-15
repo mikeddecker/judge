@@ -2,6 +2,7 @@ from constants import PYTORCH_MODELS_SKILLS
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
+import torch.nn.functional as F
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -57,6 +58,7 @@ class TrainerSkills:
 
             
             if key in ['Skill', 'Turner1', 'Turner2', 'Type']:  # Categorical
+                pred = F.softmax(pred, dim=1)
                 max_scores, max_idx_class = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
                 # print(max_scores)
                 # print(max_idx_class)
@@ -102,7 +104,7 @@ class TrainerSkills:
 
         return val_loss / len(dataloader), accuracyCounts["Skill"] / len(dataloader)
 
-    def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}):
+    def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         try:
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
@@ -114,13 +116,22 @@ class TrainerSkills:
             DIM = 224
             repo = DataRepository()
             model = PYTORCH_MODELS_SKILLS[modelname](modelinfo=trainparams, df_table_counts=repo.get_skill_category_counts()).to(device)
-            optimizer = optim.Adam(model.parameters(), lr=1e-4)
+            optimizer = optim.Adam(model.parameters(), lr=learning_rate)
             epoch_start = 0
+            accuracies = {}
             if not from_scratch and os.path.exists(checkpointPath):
                 checkpoint = torch.load(checkpointPath, weights_only=True)
                 model.load_state_dict(checkpoint['model_state_dict'])
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 epoch_start = checkpoint['epoch'] + 1
+                accuracies = {} if 'accuracies' not in checkpoint.keys() else checkpoint['accuracies']
+
+            if unfreeze_all_layers:
+                for param in model.parameters():
+                    param.requires_grad = True
+                for name, param in model.named_parameters():
+                    if param.requires_grad:
+                        print(name)
 
             train_generator = DataGeneratorSkills(
                 frameloader=FrameLoader(repo),
@@ -165,23 +176,23 @@ class TrainerSkills:
                     
                     total_loss += total_batch_loss.item()
                     i+=1
-                    if i % 100 == 20:
-                        print(f"Loss: {total_loss / i:.4f}")
 
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
                 val_loss, skill_accuracy = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)
-                print(f"Epoch {epoch+1}, Validation Loss: {val_loss / len(dataloaderVal):.4f} (val loss = {val_loss})")
+                accuracies[epoch] = skill_accuracy
+                print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
 
                 torch.save({
                     'epoch': epoch,
                     'model_state_dict': model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                     'loss': val_loss,
-                    'skillAccuracy': skill_accuracy,
+                    'accuracies': accuracies,
                 }, checkpointPath)
         
             # End training
+            print(accuracies)
             repo = DataRepository()
             torch.save(model.state_dict(), path)
 
