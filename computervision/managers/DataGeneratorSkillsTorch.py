@@ -5,6 +5,7 @@ import random
 import math
 import sys
 import torch
+from helpers import load_batch_X_torch, load_batch_y_torch, adaptSkillLabels
 sys.path.append('..')
 from .DataRepository import DataRepository
 from .FrameLoader import FrameLoader
@@ -21,7 +22,6 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
                  dim: tuple, # e.g. (128,128)
                  timesteps=16,
                  batch_size=1,
-                 normalized=True,
                  **kwargs):
         super().__init__(**kwargs)
         assert isinstance(dim, tuple)
@@ -41,8 +41,8 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.Skills = self.repo.get_skills(train_test_val)
         self.SkillCounts = self.repo.get_skill_category_counts()
 
-        self.__enrichSkills()
-        self.balancedType = 'jump_return_push_frog_other' # TODO : make dynamic
+        self.balancedType = 'jump_return_push_frog_other' # TODO : make dynamic, provide in init
+        self.Skills = adaptSkillLabels(df_skills=self.Skills, balancedType=self.balancedType)
         self.BalancedSet = pd.DataFrame(columns=self.Skills.columns)
 
         self.info_columns = [
@@ -70,51 +70,21 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         frameStart = skillinfo_row["frameStart"]
         frameEnd = skillinfo_row["frameEnd"]
 
-        try:
-            loaded_frames, flip_turner = self.frameloader.get_skill_torch(videoId, self.dim, 
-                                                    start=frameStart, 
-                                                    end=frameEnd,
-                                                    timesteps=self.timesteps, 
-                                                    normalized=normalize,
-                                                    augment=True if self.train_test_val == 'train' and normalize else False,
-                                                    flip_image=False,
-                                                    # flip_image=(normalize and self.train_test_val == 'train' and random.random() < 0.5)
-                                                    )
-            loaded_frames = torch.from_numpy(loaded_frames).float().to(device)  # [timesteps, C, H, W]
-            
-            # Prepare targets - no batch dimension needed
-            y = {}
-            for key, value in ConfigHelper.get_discipline_DoubleDutch_config().items():
-                if key == "Tablename":
-                    continue
-                    
-                key_lower = key[0].lower() + key[1:]
-                if flip_turner and key in ["Turner1", "Turner2"]:
-                    key = "Turner2" if key == "Turner1" else "Turner1"
-
-                target_value = skillinfo_row[key_lower]
-                
-                if value[0] == "Categorical":
-                    # Convert to 0-based index and long tensor
-                    y[key] = torch.tensor(int(target_value) - 1, dtype=torch.long).to(device)
-                elif value[0] == "Numerical":
-                    # Normalize and convert to float tensor
-                    normalized_value = target_value / value[2]
-                    y[key] = torch.tensor(normalized_value, dtype=torch.float).to(device)
-                else:  # Boolean flags
-                    y[key] = torch.tensor(bool(target_value), dtype=torch.float).to(device)
-                    
-        except Exception as err:
-            print(f"*"*80)
-            print(f"Failed for videoId = {videoId}, skillId = {skillinfo_row["id"]}")
-            print(str(err))
-            print(f"*"*80)
-            raise err
-
         if batch_nr + 1 == self.__len__():
-            self.on_epoch_end() # Just in case 4 now
+            self.on_epoch_end()
 
-        return loaded_frames, y
+        X = load_batch_X_torch(
+            frameloader=self.frameloader,
+            videoId=videoId,
+            dim=self.dim,
+            frameStart=frameStart,
+            frameEnd=frameEnd,
+            augment=True if self.train_test_val == 'train' and normalize else False,
+            timesteps=self.timesteps,
+            normalized=normalize,
+        )
+        y = load_batch_y_torch(skillinfo_row=skillinfo_row, flip_turner=False)
+        return X, y
 
     def on_epoch_end(self):
         self.Skills = self.Skills.sample(frac=1.)
@@ -137,12 +107,6 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
     #     multiplier_squared = multiplier * multiplier
     #     return multiplier_squared
 
-    def __enrichSkills(self):
-        self.Skills['skill'] = np.where(
-            self.Skills['skill'] <= 5,
-            self.Skills['skill'],
-            5
-        )
     def __refillBalancedSet(self):        
         skillValueCounts = self.Skills["skill"].value_counts()
         lowestTrainAmount = min(

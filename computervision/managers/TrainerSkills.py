@@ -201,7 +201,6 @@ class TrainerSkills:
                 val_loss, macro_avg_accuracy, class_reports = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)
                 accuracies[epoch] = macro_avg_accuracy
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
-
                 torch.save({
                     'epoch': epoch,
                     'model_state_dict': model.state_dict(),
@@ -222,9 +221,6 @@ class TrainerSkills:
             torch.cuda.empty_cache()
             gc.collect()
 
-
-    def predict(modelname, videoId):
-        pass
 
     def __addPytorchTop(model):
         """Returns a given pytorch model with the skill top predictions"""

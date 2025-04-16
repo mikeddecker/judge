@@ -83,12 +83,13 @@ class DataRepository:
             raise ValueError(f"Changed test to val !!")
         return pd.read_sql(qry, con=self.con)
 
-    def get_skills(self, train_test_val, type='DD'):
+    def get_skills(self, train_test_val, type='DD', videoId:int=None):
         if train_test_val == "train":
             qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
+        and_where_videoId = f"AND videoId = {videoId}" if videoId else ""
         if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) = 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) = 5 {and_where_videoId}""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
@@ -122,9 +123,9 @@ class DataRepository:
             relative_paths[folderId] = os.path.join(*subfolders)
             df_videos.loc[idx,"name"] = os.path.join(*subfolders, name)
         
-        # df_videos["name"] = STORAGE_DIR + os.sep + df_videos["name"]
         df_videos.index = df_videos.id
         self.VideoNames = df_videos
+        self.VideoNames.index = df_videos["id"]
 
     def save_train_results(self, df_history: pd.DataFrame, from_scratch: bool, skills: bool = False):
         if skills:

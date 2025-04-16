@@ -22,9 +22,6 @@ class Trainer:
             case _:
                 raise ValueError(f"Trainer - Type {type} not recognized")
 
-    def predict(modelname, videoId):
-        pass
-
     def __train_skills_pytorch(modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict = None, learning_rate=1e-5):
         SkillTrainer = TrainerSkills()
         SkillTrainer.train(modelname=modelname,
@@ -34,7 +31,6 @@ class Trainer:
                            unfreeze_all_layers=unfreeze_all_layers,
                            trainparams = trainparams,
                            learning_rate=learning_rate)
-        
 
 if __name__ == "__main__":
     trainparams = {

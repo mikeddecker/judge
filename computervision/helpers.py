@@ -1,8 +1,19 @@
-import matplotlib.pyplot as plt
 import cv2
-import matplotlib.patches as patches
-import numpy as np
 import keras
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import sys
+import torch
+import pandas as pd
+
+sys.path.append('..')
+
+from api.helpers import ConfigHelper
+from managers.FrameLoader import FrameLoader
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 def plot(imgs, bboxes=None, row_title=None, **imshow_kwargs):
     """
@@ -143,3 +154,86 @@ def iou(y_true, y_pred):
 
     return iou
 
+
+def load_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool):
+    try:
+        loaded_frames, flip_turner = frameloader.get_skill_torch(videoId, dim=dim, 
+                                                    start=frameStart, 
+                                                    end=frameEnd,
+                                                    timesteps=timesteps, 
+                                                    normalized=normalized,
+                                                    augment=augment,
+                                                    flip_image=False)
+        return torch.from_numpy(loaded_frames).float().to(device)  # [timesteps, C, H, W]
+    except Exception as err:
+        print(f"*"*80)
+        print(f"Failed for videoId = {videoId}, frameStart = {frameStart}, frameEnd = {frameEnd}")
+        print(str(err))
+        print(f"*"*80)
+        raise err
+
+
+def load_batch_y_torch(skillinfo_row, flip_turner:bool=False):
+    """"skillinfo_row is a pandas dataframe row"""
+
+    # Prepare targets - no batch dimension needed
+    y = {}
+    for key, value in ConfigHelper.get_discipline_DoubleDutch_config().items():
+        if key == "Tablename":
+            continue
+            
+        key_lower = key[0].lower() + key[1:]
+        if flip_turner and key in ["Turner1", "Turner2"]:
+            key = "Turner2" if key == "Turner1" else "Turner1"
+
+        target_value = skillinfo_row[key_lower]
+        
+        if value[0] == "Categorical":
+            # Convert to 0-based index and long tensor
+            y[key] = torch.tensor(int(target_value) - 1, dtype=torch.long).to(device)
+        elif value[0] == "Numerical":
+            # Normalize and convert to float tensor
+            normalized_value = target_value / value[2]
+            y[key] = torch.tensor(normalized_value, dtype=torch.float).to(device)
+        else:  # Boolean flags
+            y[key] = torch.tensor(bool(target_value), dtype=torch.float).to(device)
+            
+    return y
+
+def adaptSkillLabels(df_skills: pd.DataFrame, balancedType: str):
+    if balancedType == 'jump_return_push_frog_other':
+        df_skills['skill'] = np.where(
+            df_skills['skill'] <= 5,
+            df_skills['skill'],
+            5
+        )
+        return df_skills
+    raise ValueError(f"Unrecognized type: {balancedType}")
+    
+def mapBalancedSkillIndexToLabel(balancedType: str, index:int):
+    if balancedType == 'jump_return_push_frog_other':
+        categories = {
+            0: 'jump',
+            1: 'return from power',
+            2: 'pushup',
+            3: 'frog',
+            4: 'other',
+        }
+        return categories[index]
+    
+def draw_text(img, text,
+          font=cv2.FONT_HERSHEY_PLAIN,
+          pos=(0, 0),
+          font_scale=3,
+          font_thickness=2,
+          text_color=(0, 255, 0),
+          text_color_bg=(0, 0, 0)
+          ):
+
+    x, y = pos
+    text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
+    text_w, text_h = text_size
+    cv2.rectangle(img, pos, (x + text_w, y + text_h), text_color_bg, -1)
+    cv2.putText(img, text, (x, y + text_h + font_scale - 1), font, font_scale, text_color, font_thickness)
+
+    return text_size

@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 STORAGE_DIR = os.getenv("STORAGE_DIR")
-MAX_SKILL_PIXEL_PADDING = 50
 
 class FrameLoader:
     def __init__(self, datarepo):
@@ -280,7 +279,6 @@ class FrameLoader:
             vpath = vpathUNK
         elif os.path.exists(vpathNOK):
             vpath = vpathNOK
-
 
         if not os.path.exists(vpath):
             raise ValueError("path does not exist", vpath)
