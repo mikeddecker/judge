@@ -116,7 +116,6 @@ class Predictor:
                 videoPath = repo.VideoNames.loc[videoId, "name"]
                 videoPath = os.path.join(STORAGE_DIR, videoPath)
                 print(videoPath)
-                print(os.path.exists(videoPath))
                 print(f"saving predictions as a video.....")
                 self.__save_skill_predictions_as_video(
                     videoId=videoId,
@@ -159,7 +158,6 @@ class Predictor:
         txt_color = (0, 0, 0)
         bg_color = (0, 255, 255)
         thickness = 2
-        print(ret)
         while ret:
             if pos % 500 == 0:
                 print(f"{int(pos)}/{N}")
