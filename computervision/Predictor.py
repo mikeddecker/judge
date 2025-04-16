@@ -208,3 +208,11 @@ if __name__ == "__main__":
         modelparams=modelparams,
         saveAsVideo=True,
     )
+
+    predictor.predict(
+        type="SKILL",
+        videoId=2285,
+        modelname=modelname,
+        modelparams=modelparams,
+        saveAsVideo=True,
+    )
