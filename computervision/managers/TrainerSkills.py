@@ -3,6 +3,7 @@ from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
 import torch.nn.functional as F
+from sklearn.metrics import classification_report
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -62,7 +63,8 @@ class TrainerSkills:
                 max_scores, max_idx_class = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
                 # print(max_scores)
                 # print(max_idx_class)
-
+                print(key, max_idx_class, max_scores)
+                print(target)
                 acc = (max_idx_class == target).sum().item() / max_scores.size(0)
                 # print(f"Acc for {key} is {acc}")
                 
@@ -77,32 +79,52 @@ class TrainerSkills:
     def validate(self, model, dataloader, optimizer, loss_fns, device='cuda'):
         model.eval()
         val_loss = 0.0
-        accuracyCounts = {
-            'Skill' : 0, 
-            'Turner1': 0,
-            'Turner2': 0, 
-            'Type' : 0,
+
+        # Confusion matrix, classification report
+        y_pred = {  'Skill' : [], 'Turner1': [], 'Turner2': [], 'Type' : [], }
+        y_true = {  'Skill' : [], 'Turner1': [], 'Turner2': [], 'Type' : [], }
+        target_names = {
+            'Skill' : ['jump', 'return from power', 'pushup', 'frog', 'other'],
+            'Turner' : ['normal', 'crouger', 'cross', 'cross BW', 'jump over cross BW', 'EB', 'toad', 'toad BW', 'EB toad', 'TS', 'inverse toad', 'elephant', 'crougercross', 'pinwheel', 'suicide', 'inverse crouger', 'flip', 'T-toad', 'MULTIPLE+1', 'EB toad BW', 'L2-power-gym', 'L3-power-gym', 'L4-power-gym', 'UNKNOWN', 'jump-through', 'EB inverse toad'],
+            'Type' : ['Double Dutch', 'Single Dutch', 'Irish Dutch', 'Chinese Wheel', 'Transition', 'Snapperlike'],
         }
+
         with torch.no_grad():
-            i = 0
             for batch_X, batch_y in tqdm(dataloader):
                 with torch.amp.autocast(device_type='cuda'):
                     optimizer.zero_grad()  # Clear gradients
-                    
-                    # Forward pass
                     outputs = model(batch_X / 255)
-                    total_batch_loss = self.__compute_losses(outputs=outputs, batch_y=batch_y, loss_fns=loss_fns)
-                    accuracies = self.__compute_accuracy(outputs=outputs, targets=batch_y)
-                    for key, value in accuracies.items():
-                        accuracyCounts[key] += value
                     
+                    # Loss
+                    total_batch_loss = self.__compute_losses(outputs=outputs, batch_y=batch_y, loss_fns=loss_fns)
                     val_loss += total_batch_loss.item()
 
-                i+=1
-            # print(f"Validation loss: {val_loss / i:.4f}")
-        print(f"Validation accuracy", accuracyCounts['Skill'] / len(dataloader))
+                    # Accuracy
+                    for key, pred in outputs.items():
+                        target = batch_y[key]
 
-        return val_loss / len(dataloader), accuracyCounts["Skill"] / len(dataloader)
+                        if key in ['Skill', 'Turner1', 'Turner2', 'Type']:
+                            pred = F.softmax(pred, dim=1)
+                            max_scores, max_idx_class = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
+
+                            y_pred[key].extend(max_idx_class.data.cpu().numpy())
+                            y_true[key].extend(target.data.cpu().numpy())
+        
+        print(f"="*80)
+        classification_reports = {}
+        for key in y_true.keys():
+            # y_true_key = [int(i) for i in y_true[key]]
+            # y_pred_key = [int(i) for i in y_pred[key]]
+            classKey = key if key not in ['Turner1', 'Turner2'] else 'Turner'
+            classification_reports_string = classification_report(y_true[key], y_pred[key], labels=range(len(target_names[classKey])), target_names=target_names[classKey], zero_division=0)
+            classification_reports[key] = classification_report(y_true[key], y_pred[key], output_dict=True, labels=range(len(target_names[classKey])), target_names=target_names[classKey], zero_division=0)
+            print(f"----- Details ----")
+            print(classification_reports_string)
+            print(f"="*80)
+
+        print(f"Total (macro avg) accuracy", classification_reports['Skill']['macro avg'])
+
+        return val_loss / len(dataloader), classification_reports['Skill']['macro avg'], classification_reports
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         try:
@@ -129,9 +151,6 @@ class TrainerSkills:
             if unfreeze_all_layers:
                 for param in model.parameters():
                     param.requires_grad = True
-                for name, param in model.named_parameters():
-                    if param.requires_grad:
-                        print(name)
 
             train_generator = DataGeneratorSkills(
                 frameloader=FrameLoader(repo),
@@ -179,8 +198,8 @@ class TrainerSkills:
 
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
-                val_loss, skill_accuracy = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)
-                accuracies[epoch] = skill_accuracy
+                val_loss, macro_avg_accuracy, class_reports = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)
+                accuracies[epoch] = macro_avg_accuracy
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
 
                 torch.save({
@@ -189,8 +208,9 @@ class TrainerSkills:
                     'optimizer_state_dict': optimizer.state_dict(),
                     'loss': val_loss,
                     'accuracies': accuracies,
+                    'class_reports' : class_reports
                 }, checkpointPath)
-        
+            
             # End training
             print(accuracies)
             repo = DataRepository()

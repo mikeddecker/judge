@@ -60,12 +60,12 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
 
     def __len__(self):
         'Denotes the number of batches per epoch'
-        return len(self.BalancedSet) // self.batch_size # if self.train_test_val == 'train' else len(self.Skills) // self.batch_size
+        return len(self.BalancedSet) // self.batch_size if self.train_test_val == 'train' else len(self.Skills) // self.batch_size
 
     def __getitem__(self, batch_nr, normalize=True):
         "batch_nr starts from 0"
         
-        skillinfo_row = self.BalancedSet.iloc[batch_nr] # if self.train_test_val == 'train' else self.Skills.iloc[batch_nr]
+        skillinfo_row = self.BalancedSet.iloc[batch_nr] if self.train_test_val == 'train' else self.Skills.iloc[batch_nr]
         videoId = skillinfo_row["videoId"]
         frameStart = skillinfo_row["frameStart"]
         frameEnd = skillinfo_row["frameEnd"]

@@ -42,15 +42,16 @@ if __name__ == "__main__":
         "timesteps" : 16,
         "batch_size" : 1,
     }
+    modelname = "HAR_SA_Conv3D"
     modelname = "HAR_MViT"
     trainer = Trainer()
     trainer.train(
         type="SKILL",
         modelname=modelname,
         from_scratch=True,
-        epochs=3,
+        epochs=2,
         save_anyway=True,
-        unfreeze_all_layers=True,
+        unfreeze_all_layers=False,
         modelparams=trainparams,
         learning_rate=4e-5
     )
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         type="SKILL",
         modelname=modelname,
         from_scratch=False,
-        epochs=4,
+        epochs=2,
         save_anyway=True,
         unfreeze_all_layers=True,
         modelparams=trainparams,
