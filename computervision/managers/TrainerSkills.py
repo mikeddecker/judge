@@ -1,19 +1,20 @@
+import gc
+import os
+import torch
+import torch.nn.functional as F
+import torch.optim as optim
+
 from constants import PYTORCH_MODELS_SKILLS
+from dotenv import load_dotenv
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
-import torch.nn.functional as F
 from sklearn.metrics import classification_report
+from torch.utils.data import DataLoader, TensorDataset
+from tqdm import tqdm
 
-from dotenv import load_dotenv
 load_dotenv()
 
-import gc
-import os
-from tqdm import tqdm
-import torch
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
@@ -28,7 +29,7 @@ MODELWEIGHT_PATH = "weights"
 
 class TrainerSkills:
     def __compute_losses(self, outputs, batch_y, loss_fns):
-        # Compute losses for each output head
+        """Outputs is a ModelDict, acts like a dictionary"""
         losses = []
 
         for key, pred in outputs.items():
@@ -36,45 +37,11 @@ class TrainerSkills:
             
             if key in ['Skill', 'Turner1', 'Turner2', 'Type']:  # Categorical
                 loss = loss_fns['categorical'](pred, target.long())
-                if key == 'Skill':
-                    loss *= 10
-            else:  # Regression
+            else:
                 loss = loss_fns['regression'](pred.squeeze(), target)
             
             losses.append(loss)
-        
-        # Total loss (sum of all individual losses)
         return sum(losses)
-
-    def __compute_accuracy(self, outputs, targets):
-        # Compute losses for each output head
-        correctCounts = {
-            'Skill' : 0, 
-            'Turner1': 0,
-            'Turner2': 0, 
-            'Type' : 0,
-        }
-        for key, pred in outputs.items():
-            target = targets[key]
-
-            
-            if key in ['Skill', 'Turner1', 'Turner2', 'Type']:  # Categorical
-                pred = F.softmax(pred, dim=1)
-                max_scores, max_idx_class = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
-                # print(max_scores)
-                # print(max_idx_class)
-                print(key, max_idx_class, max_scores)
-                print(target)
-                acc = (max_idx_class == target).sum().item() / max_scores.size(0)
-                # print(f"Acc for {key} is {acc}")
-                
-                correctCounts[key] += acc
-            # else:  # Regression
-            #     loss = loss_fns['regression'](pred.squeeze(), target)
-            
-        
-        # Total loss (sum of all individual losses)
-        return correctCounts
 
     def validate(self, model, dataloader, optimizer, loss_fns, device='cuda'):
         model.eval()
@@ -92,7 +59,7 @@ class TrainerSkills:
         with torch.no_grad():
             for batch_X, batch_y in tqdm(dataloader):
                 with torch.amp.autocast(device_type='cuda'):
-                    optimizer.zero_grad()  # Clear gradients
+                    optimizer.zero_grad()
                     outputs = model(batch_X / 255)
                     
                     # Loss
@@ -113,8 +80,6 @@ class TrainerSkills:
         print(f"="*80)
         classification_reports = {}
         for key in y_true.keys():
-            # y_true_key = [int(i) for i in y_true[key]]
-            # y_pred_key = [int(i) for i in y_pred[key]]
             classKey = key if key not in ['Turner1', 'Turner2'] else 'Turner'
             classification_reports_string = classification_report(y_true[key], y_pred[key], labels=range(len(target_names[classKey])), target_names=target_names[classKey], zero_division=0)
             classification_reports[key] = classification_report(y_true[key], y_pred[key], output_dict=True, labels=range(len(target_names[classKey])), target_names=target_names[classKey], zero_division=0)
@@ -171,8 +136,8 @@ class TrainerSkills:
             dataloaderVal = DataLoader(val_generator, batch_size=1, shuffle=True)
 
             loss_fns = {
-                'categorical': torch.nn.CrossEntropyLoss(),  # For outputs like 'Skill', 'Turner1'
-                'regression': torch.nn.MSELoss()             # For scalar outputs
+                'categorical': torch.nn.CrossEntropyLoss(),
+                'regression': torch.nn.MSELoss()
             }
 
             # Training loop
@@ -189,8 +154,6 @@ class TrainerSkills:
                         outputs = model(batch_X / 255)
                         total_batch_loss = self.__compute_losses(outputs=outputs, batch_y=batch_y, loss_fns=loss_fns)
                         total_batch_loss.backward()
-                    # scaler.unscale_(optimizer)
-                    # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Adjust as needed
                         optimizer.step()
                     
                     total_loss += total_batch_loss.item()
@@ -210,7 +173,6 @@ class TrainerSkills:
                     'class_reports' : class_reports
                 }, checkpointPath)
             
-            # End training
             print(accuracies)
             repo = DataRepository()
             torch.save(model.state_dict(), path)
@@ -220,12 +182,3 @@ class TrainerSkills:
         finally:
             torch.cuda.empty_cache()
             gc.collect()
-
-
-    def __addPytorchTop(model):
-        """Returns a given pytorch model with the skill top predictions"""
-        raise NotImplementedError()
-
-    def __addKerasTop(model):
-        """Returns a given keras model with the skill top predictions"""
-        raise NotImplementedError()
