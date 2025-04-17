@@ -16,6 +16,29 @@ class FrameLoader:
         self.VideoNames = datarepo.VideoNames
         self.VideoNames.index = self.VideoNames["id"]
 
+    def __get_cropped_video_path(self, videoId, dim:int = 224):
+        CROPPED_VIDEOS_FOLDER = 'cropped-videos'
+        vpathUNK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f'{dim}_{videoId}.mp4')
+        vpathOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK", f"{dim}_{videoId}.mp4")
+        vpathNOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK_NET_NIET_PERFECT", f"{dim}_{videoId}.mp4")
+        vpathAlmostOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "SLECHT", f"{dim}_{videoId}.mp4")
+        
+        vpath = ""
+        if os.path.exists(vpathOK):
+            vpath = vpathOK
+        elif os.path.exists(vpathAlmostOK):
+            vpath = vpathAlmostOK
+        elif os.path.exists(vpathUNK):
+            vpath = vpathUNK
+        elif os.path.exists(vpathNOK):
+            vpath = vpathNOK
+
+        if not os.path.exists(vpath):
+            raise ValueError("path does not exist", vpath)
+
+        return vpath
+        
+
     def get_frame_original(self, videoId, frameNr, dim, original_x, original_y, original_width, original_height, printId=False):
         if printId:
             print(frameNr)
@@ -241,7 +264,8 @@ class FrameLoader:
     
     def get_segment(self, videoId: int, dim: tuple[int, int],
                   start: int, end: int, normalized: bool = True, augment=False, flip_image=False):
-        vpath = os.path.join(STORAGE_DIR, 'cropped-videos', f'{dim[0]}_{videoId}.mp4')
+        vpath = self.__get_cropped_video_path(videoId=videoId, dim=dim[0])
+
         cap = cv2.VideoCapture(vpath)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
         _, frame = cap.read()
@@ -259,29 +283,12 @@ class FrameLoader:
 
         assert len(frames) == end-start, f"Something went wrong, frames doesn't have length of timesteps = {end-start}, got {len(frames)}"
         
-        return np.array(frames)
+        return np.transpose(np.array(frames), (3, 0, 1, 2))
 
     def get_skill_torch(self, videoId: int, dim: tuple[int, int],
                   start: int, end: int, timesteps: int, normalized: bool = True, augment=False, flip_image=False):
         DIM = dim[0]
-        CROPPED_VIDEOS_FOLDER = 'cropped-videos'
-        vpathUNK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f'{DIM}_{videoId}.mp4')
-        vpathOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK", f"{DIM}_{videoId}.mp4")
-        vpathNOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK_NET_NIET_PERFECT", f"{DIM}_{videoId}.mp4")
-        vpathAlmostOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "SLECHT", f"{DIM}_{videoId}.mp4")
-        
-        vpath = ""
-        if os.path.exists(vpathOK):
-            vpath = vpathOK
-        elif os.path.exists(vpathAlmostOK):
-            vpath = vpathAlmostOK
-        elif os.path.exists(vpathUNK):
-            vpath = vpathUNK
-        elif os.path.exists(vpathNOK):
-            vpath = vpathNOK
-
-        if not os.path.exists(vpath):
-            raise ValueError("path does not exist", vpath)
+        vpath = self.__get_cropped_video_path(videoId=videoId, dim=DIM)
         
         cap = cv2.VideoCapture(vpath)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
