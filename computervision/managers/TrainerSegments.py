@@ -39,7 +39,7 @@ class TrainerSegments:
                     outputs = model(batch_X / 255)
                     
                     # Loss
-                    total_batch_loss = self.__compute_losses(outputs=outputs, batch_y=batch_y, loss_fns=loss_fns)
+                    total_batch_loss = loss_fns['regression'](outputs, batch_y)
                     val_loss += total_batch_loss.item()
 
                     # Accuracy TODO : think about how
@@ -93,7 +93,6 @@ class TrainerSegments:
                 'categorical': torch.nn.CrossEntropyLoss(),
                 'regression': torch.nn.MSELoss()
             }
-            mse_loss = torch.nn.MSELoss(reduction='sum')
 
             # Training loop
             for epoch in range(epoch_start, epochs + epoch_start):
@@ -107,7 +106,7 @@ class TrainerSegments:
                         
                         # Forward pass
                         outputs = model(batch_X / 255)
-                        batch_loss = mse_loss(outputs, batch_y)
+                        batch_loss = loss_fns['regression'](outputs, batch_y)
                         batch_loss.backward()
                         optimizer.step()
                     
@@ -118,7 +117,7 @@ class TrainerSegments:
 
                 val_loss = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)
 
-                print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
+                print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f}")
                 torch.save({
                     'epoch': epoch,
                     'model_state_dict': model.state_dict(),
