@@ -276,7 +276,7 @@ class FrameLoader:
             if flip_image:
                 frame = cv2.flip(frame, 1)
 
-            frame = frame if not normalized else (frame / 255)
+            frame = frame if not normalized and frame is not None else (frame / 255)
             frames.append(frame)
             currentFrame += 1
             _, frame = cap.read()

@@ -48,7 +48,7 @@ class DataGeneratorSegmentation(torch.utils.data.Dataset):
         'Denotes the number of batches per epoch'
         return len(self.df_segments)
 
-    def __getitem__(self, batch_nr, normalize=True):
+    def __getitem__(self, batch_nr, normalize=False):
         "batch_nr starts from 0"
         
         segmentinfo_row = self.df_segments.iloc[batch_nr]
@@ -61,8 +61,7 @@ class DataGeneratorSegmentation(torch.utils.data.Dataset):
             loaded_frames = self.frameloader.get_segment(videoId, self.dim, 
                                                     start=frameStart, 
                                                     end=frameEnd,
-                                                    normalized=normalize,
-                                                    )
+                                                    normalized=normalize)
             # loaded_frames = np.expand_dims(loaded_frames, axis=0)
             loaded_frames = torch.from_numpy(loaded_frames).float().to(device)  # [timesteps, C, H, W]
 
@@ -72,7 +71,7 @@ class DataGeneratorSegmentation(torch.utils.data.Dataset):
 
         except Exception as err:
             print(f"*"*80)
-            print(f"Failed for videoId = {videoId}, skillId = {segmentinfo_row["id"]}")
+            print(f"Failed for videoId = {videoId}, skillId = {segmentinfo_row}, {batch_nr}/{self.__len__()}")
             print(str(err))
             print(f"*"*80)
             raise err

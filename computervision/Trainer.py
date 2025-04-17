@@ -42,7 +42,7 @@ if __name__ == "__main__":
     modelname = "HAR_SA_Conv3D"
     modelname = "HAR_MViT"
     trainer = Trainer()
-    max_rounds = [1, 1]
+    max_rounds = [2, 20]
     type="SEGMENT"
     
     

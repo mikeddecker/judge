@@ -107,7 +107,7 @@ class TrainerSkills:
             epoch_start = 0
             accuracies = {}
             if not from_scratch and os.path.exists(checkpointPath):
-                checkpoint = torch.load(checkpointPath, weights_only=True)
+                checkpoint = torch.load(checkpointPath)
                 model.load_state_dict(checkpoint['model_state_dict'])
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 epoch_start = checkpoint['epoch'] + 1
