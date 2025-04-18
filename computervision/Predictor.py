@@ -92,7 +92,7 @@ class Predictor:
                 frameStart = int(skillinfo_row["frameStart"])
                 frameEnd = int(skillinfo_row["frameEnd"])
 
-                batch_X = load_skill_batch_X_torch(
+                batch_X, _ = load_skill_batch_X_torch(
                     frameloader=frameloader,
                     videoId=videoId,
                     dim=(DIM,DIM),

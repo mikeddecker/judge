@@ -48,16 +48,16 @@ if __name__ == "__main__":
     
     
     ################################    
-    trainer.train(
-        type="SEGMENT",
-        modelname=modelname,
-        from_scratch=True,
-        epochs=max_rounds[0],
-        save_anyway=True,
-        unfreeze_all_layers=False,
-        modelparams=trainparams,
-        learning_rate=4e-5
-    )
+    # trainer.train(
+    #     type="SEGMENT",
+    #     modelname=modelname,
+    #     from_scratch=True,
+    #     epochs=max_rounds[0],
+    #     save_anyway=True,
+    #     unfreeze_all_layers=False,
+    #     modelparams=trainparams,
+    #     learning_rate=4e-5
+    # )
 
     trainer.train(
         type="SEGMENT",
@@ -70,16 +70,16 @@ if __name__ == "__main__":
         learning_rate=1e-6
     )
 
-    trainer.train(
-        type="SKILL",
-        modelname=modelname,
-        from_scratch=True,
-        epochs=max_rounds[0],
-        save_anyway=True,
-        unfreeze_all_layers=False,
-        modelparams=trainparams,
-        learning_rate=4e-5
-    )
+    # trainer.train(
+    #     type="SKILL",
+    #     modelname=modelname,
+    #     from_scratch=True,
+    #     epochs=max_rounds[0],
+    #     save_anyway=True,
+    #     unfreeze_all_layers=False,
+    #     modelparams=trainparams,
+    #     learning_rate=4e-5
+    # )
 
     trainer.train(
         type="SKILL",

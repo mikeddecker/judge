@@ -74,7 +74,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         if batch_nr + 1 == self.__len__():
             self.on_epoch_end()
 
-        X = load_skill_batch_X_torch(
+        X, flip_turner = load_skill_batch_X_torch(
             frameloader=self.frameloader,
             videoId=videoId,
             dim=self.dim,
@@ -84,7 +84,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             timesteps=self.timesteps,
             normalized=normalize,
         )
-        y = load_skill_batch_y_torch(skillinfo_row=skillinfo_row, flip_turner=False)
+        y = load_skill_batch_y_torch(skillinfo_row=skillinfo_row, flip_turner=flip_turner)
         return X, y
 
     def on_epoch_end(self):

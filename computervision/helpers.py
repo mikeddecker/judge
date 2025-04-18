@@ -1,5 +1,6 @@
 import cv2
 import keras
+import random
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -157,14 +158,19 @@ def iou(y_true, y_pred):
 
 def load_skill_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool):
     try:
-        loaded_frames, flip_turner = frameloader.get_skill_torch(videoId, dim=dim, 
+        loaded_frames = frameloader.get_skill_torch(videoId, dim=dim, 
                                                     start=frameStart, 
                                                     end=frameEnd,
                                                     timesteps=timesteps,
                                                     normalized=normalized,
                                                     augment=augment,
                                                     flip_image=False)
-        return torch.from_numpy(loaded_frames).float().to(device)  # [timesteps, C, H, W]
+        loaded_frames = torch.from_numpy(loaded_frames).float().to(device)  # [C, timesteps, H, W]
+        flip_image = random.random() < 0.5 if augment else 0
+        if flip_image:
+            loaded_frames = torch.flip(loaded_frames, dims=(3,))
+        return loaded_frames, flip_image
+
     except Exception as err:
         print(f"*"*80)
         print(f"Failed for videoId = {videoId}, frameStart = {frameStart}, frameEnd = {frameEnd}")
@@ -209,9 +215,13 @@ def load_segment_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[i
                                                     start=frameStart, 
                                                     end=frameEnd,
                                                     normalized=normalized,
-                                                    augment=augment,
-                                                    flip_image=False)
-        return torch.from_numpy(loaded_frames).float().to(device)  # [timesteps, C, H, W]
+                                                    augment=augment)
+        loaded_frames = torch.from_numpy(loaded_frames).float().to(device)  # [C, timesteps, H, W]
+        flip_image = random.random() < 0.5 if augment else 0
+        if flip_image:
+            loaded_frames = torch.flip(loaded_frames, dims=(3,))
+        return loaded_frames
+
     except Exception as err:
         print(f"*"*80)
         print(f"Failed for videoId = {videoId}, frameStart = {frameStart}, frameEnd = {frameEnd}")

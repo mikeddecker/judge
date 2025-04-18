@@ -263,7 +263,7 @@ class FrameLoader:
         return np.array(frames), flip_image
     
     def get_segment(self, videoId: int, dim: tuple[int, int],
-                  start: int, end: int, normalized: bool = True, augment=False, flip_image=False):
+                  start: int, end: int, normalized: bool = True, augment=False):
         """Returns frames in interval [start, end["""
         vpath = self.__get_cropped_video_path(videoId=videoId, dim=dim[0])
 
@@ -274,20 +274,24 @@ class FrameLoader:
         frames = []
         currentFrame = start
         while currentFrame < end:
-            if flip_image:
-                frame = cv2.flip(frame, 1)
-
             frame = frame if not normalized and frame is not None else (frame / 255)
             frames.append(frame)
             currentFrame += 1
-            _, frame = cap.read()
+            ret, frame = cap.read()
+            if not ret:
+                frame = np.zeros(shape=(dim[0], dim[0], 3), dtype=int)
+            if frame is None:
+                print("@"*80)
+                print(f"Read a None frame", videoId, currentFrame)
+                print("@"*80)
+
 
         assert len(frames) == end-start, f"Something went wrong, frames doesn't have length of timesteps = {end-start}, got {len(frames)}"
         
         return np.transpose(np.array(frames), (3, 0, 1, 2))
 
     def get_skill_torch(self, videoId: int, dim: tuple[int, int],
-                  start: int, end: int, timesteps: int, normalized: bool = True, augment=False, flip_image=False):
+                  start: int, end: int, timesteps: int, normalized: bool = True, augment=False):
         DIM = dim[0]
         vpath = self.__get_cropped_video_path(videoId=videoId, dim=DIM)
         
@@ -334,4 +338,4 @@ class FrameLoader:
 
         assert len(frames) == timesteps, f"Something went wrong, frames doesn't have length of timesteps = {timesteps}, got {len(frames)}"
         
-        return np.transpose(np.array(frames), (3, 0, 1, 2)), flip_image
+        return np.transpose(np.array(frames), (3, 0, 1, 2))
