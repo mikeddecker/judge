@@ -43,12 +43,11 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     trainer = Trainer()
     max_rounds = [2, 20]
-    type="SEGMENT"
     
     
     ################################    
     trainer.train(
-        type=type,
+        type="SEGMENT",
         modelname=modelname,
         from_scratch=True,
         epochs=max_rounds[0],
@@ -59,7 +58,29 @@ if __name__ == "__main__":
     )
 
     trainer.train(
-        type=type,
+        type="SEGMENT",
+        modelname=modelname,
+        from_scratch=False,
+        epochs=max_rounds[1],
+        save_anyway=True,
+        unfreeze_all_layers=True,
+        modelparams=trainparams,
+        learning_rate=1e-6
+    )
+
+    trainer.train(
+        type="SKILL",
+        modelname=modelname,
+        from_scratch=True,
+        epochs=max_rounds[0],
+        save_anyway=True,
+        unfreeze_all_layers=False,
+        modelparams=trainparams,
+        learning_rate=4e-5
+    )
+
+    trainer.train(
+        type="SKILL",
         modelname=modelname,
         from_scratch=False,
         epochs=max_rounds[1],

@@ -1,7 +1,7 @@
 from managers.TrainerSkills import TrainerSkills
 from constants import PYTORCH_MODELS_SKILLS
 
-from helpers import load_batch_X_torch, load_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text
+from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
@@ -40,7 +40,12 @@ class Predictor:
             case 'LOCALIZE':
                 raise NotImplementedError()
             case 'SEGMENT':
-                raise NotImplementedError()
+                if modelname in PYTORCH_MODELS_SKILLS.keys():
+                    self.__predict_segments_pytorch(videoId=videoId,
+                                                       modelname=modelname,
+                                                       modelparams=modelparams)
+                else:
+                    raise NotImplementedError()
             case 'SKILL':
                 if modelname in PYTORCH_MODELS_SKILLS.keys():
                     self.__predict_skills_pytorch(videoId=videoId,
@@ -61,14 +66,14 @@ class Predictor:
             if use_segment_predictions:
                 raise NotImplementedError()
             
+            # TODO : update to use best val checkpoint 
             modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
 
             DIM = 224
             repo = DataRepository()
-            model = PYTORCH_MODELS_SKILLS[modelname](modelinfo=modelparams, df_table_counts=repo.get_skill_category_counts()).to(device)
+            model = PYTORCH_MODELS_SKILLS[modelname](modelinfo=modelparams, df_table_counts=repo.get_skill_category_counts(), skill_or_segment='skills').to(device)
             model.load_state_dict(torch.load(modelPath, weights_only=True))
             model.eval()
-
 
 
             timesteps = modelparams['timesteps']
@@ -76,7 +81,6 @@ class Predictor:
             assert batch_size == 1, f"Batch size must be one currently"
             frameloader = FrameLoader(repo)
         
-            repo = DataRepository()
             balancedType = 'jump_return_push_frog_other'
             labeledSkills = repo.get_skills(train_test_val='val', videoId=videoId)
             labeledSkills = adaptSkillLabels(labeledSkills, balancedType)
@@ -88,7 +92,7 @@ class Predictor:
                 frameStart = int(skillinfo_row["frameStart"])
                 frameEnd = int(skillinfo_row["frameEnd"])
 
-                batch_X = load_batch_X_torch(
+                batch_X = load_skill_batch_X_torch(
                     frameloader=frameloader,
                     videoId=videoId,
                     dim=(DIM,DIM),
@@ -98,7 +102,7 @@ class Predictor:
                     timesteps=timesteps,
                     normalized=False,
                 ).unsqueeze(dim=0)
-                batch_y = load_batch_y_torch(skillinfo_row=skillinfo_row)
+                batch_y = load_skill_batch_y_torch(skillinfo_row=skillinfo_row)
                 outputs = model(batch_X / 255)
                 pred = F.softmax(outputs["Skill"], dim=1)
                 max_score, max_idx_class = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
@@ -186,6 +190,81 @@ class Predictor:
         # clip.write_videofile(videoOutputPath, codec='libx264')
         # os.remove(tmp_mp4)
 
+    def __predict_segments_pytorch(self, videoId, modelname, modelparams: dict = None):
+        try:
+            if modelname not in PYTORCH_MODELS_SKILLS.keys():
+                raise ValueError(modelname)
+            
+            # TODO : update to use best val checkpoint 
+            modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_segmentation.state_dict.pt")
+
+            DIM = 224
+            repo = DataRepository()
+            model = PYTORCH_MODELS_SKILLS[modelname](skill_or_segment='segments', modelinfo=modelparams, df_table_counts=repo.get_skill_category_counts()).to(device)
+            model.load_state_dict(torch.load(modelPath, weights_only=True))
+            model.eval()
+
+            timesteps = modelparams['timesteps']
+            batch_size = modelparams['batch_size']
+            assert batch_size == 1, f"Batch size must be one currently"
+            frameloader = FrameLoader(repo)
+        
+            videoInfo = repo.get_videoinfo(videoId)
+            frameLength = videoInfo.loc[0, "frameLength"]
+            fps = videoInfo.loc[0, "fps"]
+            timesteps = modelparams["timesteps"]
+            offset = (frameLength % timesteps) // 2
+            batches = frameLength // timesteps
+            labeledSkills = repo.get_skills(train_test_val='val', videoId=videoId)
+            # labeledSkills = adaptSkillLabels(labeledSkills, balancedType)
+
+            window_size = 7
+            split_threshold = 0.5
+            df_splitpoint_values = calculate_splitpoint_values(
+                videoId=videoId,
+                frameLength=frameLength,
+                df_Skills=labeledSkills,
+                fps=fps,
+                Nsec_frames_around=1/window_size
+            )
+
+            predictions = {}
+            print(f"============= Initiation done, start segment predictions for video {videoId} =============")
+            for idx in tqdm(range(batches)):
+                frameStart = idx * timesteps + offset
+                frameEnd = frameStart + timesteps
+
+                batch_X = load_segment_batch_X_torch(
+                    frameloader=frameloader,
+                    videoId=videoId,
+                    dim=(DIM,DIM),
+                    frameStart=frameStart,
+                    frameEnd=frameEnd,
+                    augment=False,
+                    timesteps=timesteps,
+                    normalized=False,
+                ).unsqueeze(dim=0) # Unsqueeze(dim=0) = add batch dimension
+
+                batch_y = load_segment_batch_y_torch(
+                    frameStart=frameStart,
+                    frameEnd=frameEnd,
+                    df_splitpoint_values=df_splitpoint_values
+                )
+
+                outputs = model(batch_X / 255)[0] # [0] Remove batch size
+                
+                print('targets', batch_y)
+                print('-'*50)
+                print('outputs', outputs)
+                
+            print()
+            pprint(predictions, sort_dicts=False)
+
+        except Exception as e:
+            raise e
+        finally:
+            torch.cuda.empty_cache()
+            gc.collect()
 
 
 ##################################################################################################################################
@@ -201,6 +280,7 @@ if __name__ == "__main__":
     modelname = "HAR_SA_Conv3D"
     modelname = "HAR_MViT"
     predictor = Predictor()
+
     predictor.predict(
         type="SKILL",
         videoId=1315,
@@ -212,6 +292,14 @@ if __name__ == "__main__":
     predictor.predict(
         type="SKILL",
         videoId=2285,
+        modelname=modelname,
+        modelparams=modelparams,
+        saveAsVideo=True,
+    )
+
+    predictor.predict(
+        type="SEGMENT",
+        videoId=1315,
         modelname=modelname,
         modelparams=modelparams,
         saveAsVideo=True,

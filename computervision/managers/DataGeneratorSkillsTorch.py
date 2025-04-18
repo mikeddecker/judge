@@ -5,7 +5,7 @@ import random
 import math
 import sys
 import torch
-from helpers import load_batch_X_torch, load_batch_y_torch, adaptSkillLabels
+from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, adaptSkillLabels
 sys.path.append('..')
 from .DataRepository import DataRepository
 from .FrameLoader import FrameLoader
@@ -64,7 +64,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
 
     def __getitem__(self, batch_nr, normalize=True):
         "batch_nr starts from 0"
-        
+
         skillinfo_row = self.BalancedSet.iloc[batch_nr] if self.train_test_val == 'train' else self.Skills.iloc[batch_nr]
         videoId = skillinfo_row["videoId"]
         frameStart = skillinfo_row["frameStart"]
@@ -73,7 +73,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         if batch_nr + 1 == self.__len__():
             self.on_epoch_end()
 
-        X = load_batch_X_torch(
+        X = load_skill_batch_X_torch(
             frameloader=self.frameloader,
             videoId=videoId,
             dim=self.dim,
@@ -83,7 +83,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             timesteps=self.timesteps,
             normalized=normalize,
         )
-        y = load_batch_y_torch(skillinfo_row=skillinfo_row, flip_turner=False)
+        y = load_skill_batch_y_torch(skillinfo_row=skillinfo_row, flip_turner=False)
         return X, y
 
     def on_epoch_end(self):
@@ -92,7 +92,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         # print("@"*80)
         # print("@"*80)
         # print("@"*80)
-    
+
     # def __get_multiplier(self, occurance_percentage: float, max_occurance_percentage: float, N = 10):
     #     """Calculate how many times more a skill needs to be added
     #     Returns a number in the interval [1, N["""
@@ -107,7 +107,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
     #     multiplier_squared = multiplier * multiplier
     #     return multiplier_squared
 
-    def __refillBalancedSet(self):        
+    def __refillBalancedSet(self):
         skillValueCounts = self.Skills["skill"].value_counts()
         lowestTrainAmount = min(
             skillValueCounts.loc[1], # Jumps

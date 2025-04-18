@@ -42,6 +42,10 @@ class DataRepository:
             print("Connection lost.")
             return False
 
+    def get_videoinfo(self, videoId):
+        qry = sqlal.text(f"""SELECT * FROM Videos WHERE id = {videoId}""")
+
+        return pd.read_sql(qry, con=self.con)
 
     def get_dd3_videoIds(self, ):
         # TODO : update with validation & 'random' sampling
@@ -84,6 +88,7 @@ class DataRepository:
         return pd.read_sql(qry, con=self.con)
 
     def get_skills(self, train_test_val, type='DD', videoId:int=None):
+        """videoId is optional, then it returns only skills from that videoId"""
         if train_test_val == "train":
             qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 

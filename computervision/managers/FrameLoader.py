@@ -264,6 +264,7 @@ class FrameLoader:
     
     def get_segment(self, videoId: int, dim: tuple[int, int],
                   start: int, end: int, normalized: bool = True, augment=False, flip_image=False):
+        """Returns frames in interval [start, end["""
         vpath = self.__get_cropped_video_path(videoId=videoId, dim=dim[0])
 
         cap = cv2.VideoCapture(vpath)

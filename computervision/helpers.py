@@ -155,12 +155,12 @@ def iou(y_true, y_pred):
     return iou
 
 
-def load_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool):
+def load_skill_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool):
     try:
         loaded_frames, flip_turner = frameloader.get_skill_torch(videoId, dim=dim, 
                                                     start=frameStart, 
                                                     end=frameEnd,
-                                                    timesteps=timesteps, 
+                                                    timesteps=timesteps,
                                                     normalized=normalized,
                                                     augment=augment,
                                                     flip_image=False)
@@ -172,8 +172,7 @@ def load_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int,int],
         print(f"*"*80)
         raise err
 
-
-def load_batch_y_torch(skillinfo_row, flip_turner:bool=False):
+def load_skill_batch_y_torch(skillinfo_row, flip_turner:bool=False):
     """"skillinfo_row is a pandas dataframe row"""
 
     # Prepare targets - no batch dimension needed
@@ -199,6 +198,57 @@ def load_batch_y_torch(skillinfo_row, flip_turner:bool=False):
             y[key] = torch.tensor(bool(target_value), dtype=torch.float).to(device)
             
     return y
+
+def load_segment_batch_y_torch(frameStart:int, frameEnd:int, df_splitpoint_values:pd.DataFrame):
+    y = df_splitpoint_values[(df_splitpoint_values['frameNr'] >= frameStart) & (df_splitpoint_values['frameNr'] < frameEnd)]['splitpoint'].to_numpy()
+    return torch.from_numpy(y).float().to(device)
+
+def load_segment_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool=False):
+    try:
+        loaded_frames = frameloader.get_segment(videoId, dim=dim, 
+                                                    start=frameStart, 
+                                                    end=frameEnd,
+                                                    normalized=normalized,
+                                                    augment=augment,
+                                                    flip_image=False)
+        return torch.from_numpy(loaded_frames).float().to(device)  # [timesteps, C, H, W]
+    except Exception as err:
+        print(f"*"*80)
+        print(f"Failed for videoId = {videoId}, frameStart = {frameStart}, frameEnd = {frameEnd}")
+        print(str(err))
+        print(f"*"*80)
+        raise err
+
+
+def calculate_splitpoint_values(videoId: int, frameLength:int, df_Skills:pd.DataFrame, fps:float, Nsec_frames_around=0.15):
+    """Creates a dataframe: 'videoId', 'frameNr', 'splitpoint'
+    Where splitpoint is the value 0 -> 1 whether the video needs to be split at that point or not"""
+    splitpoint_values = {
+        'videoId' : [videoId for _ in range(frameLength)],
+        'frameNr' : range(frameLength),
+        'splitpoint' : [0 for _ in range(frameLength)],
+    }
+
+    frames_around_splitpoint = round(Nsec_frames_around * fps)
+    for _, skillrow in df_Skills.iterrows():
+        frameStart = skillrow["frameStart"]
+        frameEnd = skillrow["frameEnd"]
+
+        currentFrameStart = frameStart - frames_around_splitpoint
+        currentFrameEnd = frameEnd - frames_around_splitpoint
+        while currentFrameStart < frameStart + frames_around_splitpoint:
+            framesApart = abs(currentFrameStart - frameStart)
+            splitvalue = 1 - (framesApart / frames_around_splitpoint) ** 2
+            splitvalue *= splitvalue
+
+            currentFrameStart += 1
+            currentFrameEnd += 1
+
+            splitpoint_values['splitpoint'][currentFrameStart] = splitvalue
+            if currentFrameEnd < frameLength:
+                splitpoint_values['splitpoint'][currentFrameEnd] = splitvalue
+
+    return pd.DataFrame(splitpoint_values)
 
 def adaptSkillLabels(df_skills: pd.DataFrame, balancedType: str):
     if balancedType == 'jump_return_push_frog_other':
