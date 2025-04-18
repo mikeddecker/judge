@@ -81,7 +81,7 @@ class Predictor:
             assert batch_size == 1, f"Batch size must be one currently"
             frameloader = FrameLoader(repo)
         
-            balancedType = 'jump_return_push_frog_other'
+            balancedType = modelparams["balancedType"]
             labeledSkills = repo.get_skills(train_test_val='val', videoId=videoId)
             labeledSkills = adaptSkillLabels(labeledSkills, balancedType)
 
@@ -135,7 +135,7 @@ class Predictor:
             gc.collect()
 
 #### Save video predictions #####################################################################################################
-    def __save_skill_predictions_as_video(self, videoId:int, predictions:dict, balancedType:str, vpath:str):
+    def __save_skill_predictions_as_video(self, videoId:int, predictions:dict, balancedType:str, vpath:str, targetNames:dict):
         cap = cv2.VideoCapture(vpath)
         pos = cap.get(cv2.CAP_PROP_POS_FRAMES)
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -170,7 +170,7 @@ class Predictor:
             # draw_text(frame, )
             if pos in predictions.keys():
                 currentLabel = predictions[pos]
-                skill = mapBalancedSkillIndexToLabel(balancedType=balancedType, index=currentLabel["y_pred"])
+                skill = targetNames["Skill"][currentLabel["y_pred"]] if balancedType != 'jump_return_push_frog_other' else mapBalancedSkillIndexToLabel(balancedType=balancedType, index=currentLabel["y_pred"])
                 bg_color = (0, 255, 0) if currentLabel["isCorrect"] else (255, 20, 0)
             elif currentLabel is not None and pos == currentLabel["frameEnd"]:
                 currentLabel = None
@@ -273,6 +273,8 @@ class Predictor:
 
 if __name__ == "__main__":
     modelparams = {
+        # "balancedType" : "jump_return_push_frog_other",
+        "balancedType" : "limit_10procent",
         "dim" : 224,
         "timesteps" : 16,
         "batch_size" : 1,

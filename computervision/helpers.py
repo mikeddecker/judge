@@ -258,6 +258,8 @@ def adaptSkillLabels(df_skills: pd.DataFrame, balancedType: str):
             5
         )
         return df_skills
+    elif balancedType == 'limit_10procent':
+        return df_skills
     raise ValueError(f"Unrecognized type: {balancedType}")
     
 def mapBalancedSkillIndexToLabel(balancedType: str, index:int):

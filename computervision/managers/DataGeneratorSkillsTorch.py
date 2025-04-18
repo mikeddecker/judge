@@ -42,6 +42,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.SkillCounts = self.repo.get_skill_category_counts()
 
         self.balancedType = 'jump_return_push_frog_other' # TODO : make dynamic, provide in init
+        self.balancedType = 'limit_10procent'
         self.Skills = adaptSkillLabels(df_skills=self.Skills, balancedType=self.balancedType)
         self.BalancedSet = pd.DataFrame(columns=self.Skills.columns)
 
@@ -55,7 +56,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
         print('DataGeneratorSkills init done')
-        print(self.Skills["skill"].value_counts())
+        print(self.BalancedSet["skill"].value_counts().sort_index() if self.train_test_val == 'train' else self.Skills["skill"].value_counts().sort_index())
         self.on_epoch_end()
 
     def __len__(self):
@@ -89,40 +90,34 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
     def on_epoch_end(self):
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
-        # print("@"*80)
-        # print("@"*80)
-        # print("@"*80)
-
-    # def __get_multiplier(self, occurance_percentage: float, max_occurance_percentage: float, N = 10):
-    #     """Calculate how many times more a skill needs to be added
-    #     Returns a number in the interval [1, N["""
-    #     assert isinstance(occurance_percentage, (int, float))
-    #     assert isinstance(max_occurance_percentage, (int, float))
-    #     assert occurance_percentage > 0 and occurance_percentage <= 1
-    #     assert max_occurance_percentage > 0 and max_occurance_percentage <= 1
-    #     assert max_occurance_percentage >= occurance_percentage, f"got {max_occurance_percentage} and {occurance_percentage}"
-
-    #     multiplier = N * np.pow(1 - (np.sqrt(occurance_percentage / max_occurance_percentage)), 2)
-    #     multiplier = multiplier if multiplier >= 1 else multiplier + 1
-    #     multiplier_squared = multiplier * multiplier
-    #     return multiplier_squared
 
     def __refillBalancedSet(self):
         skillValueCounts = self.Skills["skill"].value_counts()
-        lowestTrainAmount = min(
-            skillValueCounts.loc[1], # Jumps
-            skillValueCounts.loc[2], # Returns
-            skillValueCounts.loc[3], # Pushups
-            skillValueCounts.loc[4], # Frogs
-            skillValueCounts.loc[5], # other
-        )
-        # print(skillValueCounts)
+        if self.balancedType == 'jump_return_push_frog_other':
+            lowestTrainAmount = min(
+                skillValueCounts.loc[1], # Jumps
+                skillValueCounts.loc[2], # Returns
+                skillValueCounts.loc[3], # Pushups
+                skillValueCounts.loc[4], # Frogs
+                skillValueCounts.loc[5], # other
+            )
 
-        self.BalancedSet = pd.concat([
-            self.Skills[self.Skills['skill'] == 1].iloc[:lowestTrainAmount],
-            self.Skills[self.Skills['skill'] == 2].iloc[:lowestTrainAmount],
-            self.Skills[self.Skills['skill'] == 3].iloc[:lowestTrainAmount],
-            self.Skills[self.Skills['skill'] == 4].iloc[:lowestTrainAmount],
-            self.Skills[self.Skills['skill'] == 5].iloc[:lowestTrainAmount]
-        ], ignore_index=True)
-        self.BalancedSet = self.BalancedSet.sample(frac=1.)
+            self.BalancedSet = pd.concat([
+                self.Skills[self.Skills['skill'] == 1].iloc[:lowestTrainAmount],
+                self.Skills[self.Skills['skill'] == 2].iloc[:lowestTrainAmount],
+                self.Skills[self.Skills['skill'] == 3].iloc[:lowestTrainAmount],
+                self.Skills[self.Skills['skill'] == 4].iloc[:lowestTrainAmount],
+                self.Skills[self.Skills['skill'] == 5].iloc[:lowestTrainAmount]
+            ], ignore_index=True)
+            self.BalancedSet = self.BalancedSet.sample(frac=1.)
+        elif self.balancedType == 'limit_10procent':
+            limit = len(self.Skills) // 10
+            skillIndexesToBeLimited = skillValueCounts[skillValueCounts.values > limit].index.to_list()
+            otherSkillIndexes = skillValueCounts[skillValueCounts.values <= limit].index.to_list()
+            df_limited_skills = pd.concat([
+                self.Skills[self.Skills['skill'] == i].iloc[:limit]
+                for i in skillIndexesToBeLimited
+            ])
+            df_others = self.Skills[self.Skills['skill'].isin(otherSkillIndexes)]
+            self.BalancedSet = pd.concat([df_limited_skills, df_others], ignore_index=True)
+            self.BalancedSet = self.BalancedSet.sample(frac=1.)

@@ -35,6 +35,8 @@ class Trainer:
 
 if __name__ == "__main__":
     trainparams = {
+        # "balancedType" : "jump_return_push_frog_other",
+        "balancedType" : "limit_10procent",
         "dim" : 224,
         "timesteps" : 16,
         "batch_size" : 1,
@@ -42,7 +44,7 @@ if __name__ == "__main__":
     modelname = "HAR_SA_Conv3D"
     modelname = "HAR_MViT"
     trainer = Trainer()
-    max_rounds = [2, 20]
+    max_rounds = [4, 40]
     
     
     ################################    

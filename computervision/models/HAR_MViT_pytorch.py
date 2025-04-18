@@ -32,7 +32,7 @@ class MViT(nn.Module):
         self.features = nn.Linear(self._get_mvit_output(input_shape), self.LastNNeurons)
         
         if self.isSkillModel:
-            self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType='jump_return_push_frog_other', df_table_counts = self.df_table_counts) # TODO : make dynamic
+            self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType=modelinfo['balancedType'], df_table_counts = self.df_table_counts) # TODO : make dynamic
         else:
             self.output_layer = create_pytorch_segmentation_output_layers(lastNNeurons=self.LastNNeurons, timesteps=modelinfo['timesteps'])
 

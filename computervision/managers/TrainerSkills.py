@@ -43,18 +43,13 @@ class TrainerSkills:
             losses.append(loss)
         return sum(losses)
 
-    def validate(self, model, dataloader, optimizer, loss_fns, device='cuda'):
+    def validate(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda'):
         model.eval()
         val_loss = 0.0
 
         # Confusion matrix, classification report
         y_pred = {  'Skill' : [], 'Turner1': [], 'Turner2': [], 'Type' : [], }
         y_true = {  'Skill' : [], 'Turner1': [], 'Turner2': [], 'Type' : [], }
-        target_names = {
-            'Skill' : ['jump', 'return from power', 'pushup', 'frog', 'other'],
-            'Turner' : ['normal', 'crouger', 'cross', 'cross BW', 'jump over cross BW', 'EB', 'toad', 'toad BW', 'EB toad', 'TS', 'inverse toad', 'elephant', 'crougercross', 'pinwheel', 'suicide', 'inverse crouger', 'flip', 'T-toad', 'MULTIPLE+1', 'EB toad BW', 'L2-power-gym', 'L3-power-gym', 'L4-power-gym', 'UNKNOWN', 'jump-through', 'EB inverse toad'],
-            'Type' : ['Double Dutch', 'Single Dutch', 'Irish Dutch', 'Chinese Wheel', 'Transition', 'Snapperlike'],
-        }
 
         with torch.no_grad():
             for batch_X, batch_y in tqdm(dataloader):
@@ -81,8 +76,9 @@ class TrainerSkills:
         classification_reports = {}
         for key in y_true.keys():
             classKey = key if key not in ['Turner1', 'Turner2'] else 'Turner'
-            classification_reports_string = classification_report(y_true[key], y_pred[key], labels=range(len(target_names[classKey])), target_names=target_names[classKey], zero_division=0)
-            classification_reports[key] = classification_report(y_true[key], y_pred[key], output_dict=True, labels=range(len(target_names[classKey])), target_names=target_names[classKey], zero_division=0)
+            labels = range(len(target_names[classKey]))
+            classification_reports_string = classification_report(y_true[key], y_pred[key], labels=labels, target_names=target_names[classKey], zero_division=0)
+            classification_reports[key] = classification_report(y_true[key], y_pred[key], output_dict=True, labels=labels, target_names=target_names[classKey], zero_division=0)
             print(f"----- Details ----")
             print(classification_reports_string)
             print(f"="*80)
@@ -143,6 +139,8 @@ class TrainerSkills:
                 'categorical': torch.nn.CrossEntropyLoss(),
                 'regression': torch.nn.MSELoss()
             }
+            balancedType = trainparams["balancedType"]
+            target_names = repo.get_category_names(balancedType=balancedType)
 
             # Training loop
             for epoch in range(epoch_start, epochs + epoch_start):
@@ -165,7 +163,7 @@ class TrainerSkills:
 
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
-                val_loss, macro_avg_accuracy, class_reports = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)
+                val_loss, macro_avg_accuracy, class_reports = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
                 losses.append(val_loss)
                 scheduler.step(val_loss)
                 accuracies[epoch] = macro_avg_accuracy
