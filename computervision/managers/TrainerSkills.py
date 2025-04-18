@@ -104,13 +104,17 @@ class TrainerSkills:
             repo = DataRepository()
             model = PYTORCH_MODELS_SKILLS[modelname](skill_or_segment="skills", modelinfo=trainparams, df_table_counts=repo.get_skill_category_counts()).to(device)
             optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=1)
             epoch_start = 0
             accuracies = {}
+            losses = []
             if not from_scratch and os.path.exists(checkpointPath):
                 checkpoint = torch.load(checkpointPath)
                 model.load_state_dict(checkpoint['model_state_dict'])
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+                scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
                 epoch_start = checkpoint['epoch'] + 1
+                losses = checkpoint['losses']
                 accuracies = {} if 'accuracies' not in checkpoint.keys() else checkpoint['accuracies']
 
             if unfreeze_all_layers:
@@ -162,19 +166,31 @@ class TrainerSkills:
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
                 val_loss, macro_avg_accuracy, class_reports = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)
+                losses.append(val_loss)
+                scheduler.step(val_loss)
                 accuracies[epoch] = macro_avg_accuracy
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
-                torch.save({
-                    'epoch': epoch,
-                    'model_state_dict': model.state_dict(),
-                    'optimizer_state_dict': optimizer.state_dict(),
-                    'loss': val_loss,
-                    'accuracies': accuracies,
-                    'class_reports' : class_reports
-                }, checkpointPath)
+                
+                minIndex = losses.index(min(losses))
+                epochsNoImprovement = len(losses) - minIndex - 1
+                hasValLossImproved = epochsNoImprovement == 0
+
+                if epochsNoImprovement > 1:
+                    print(f"No improvement for {epochsNoImprovement} - stopping")
+                    break
+
+                if hasValLossImproved:
+                    torch.save({
+                        'epoch': epoch,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        'scheduler_state_dict': scheduler.state_dict(),
+                        'losses': losses,
+                        'accuracies': accuracies,
+                        'class_reports' : class_reports
+                    }, checkpointPath)
             
             print(accuracies)
-            repo = DataRepository()
             torch.save(model.state_dict(), path)
 
         except Exception as e:

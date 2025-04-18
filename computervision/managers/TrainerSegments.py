@@ -10,8 +10,7 @@ from dotenv import load_dotenv
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSegmentationTorch import DataGeneratorSegmentation
 from managers.FrameLoader import FrameLoader
-from sklearn.metrics import classification_report
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 load_dotenv()
@@ -97,7 +96,7 @@ class TrainerSegments:
 
             loss_fns = {
                 'categorical': torch.nn.CrossEntropyLoss(),
-                'regression': torch.nn.MSELoss()
+                'regression': torch.nn.L1Loss()
             }
 
             # Training loop
@@ -144,7 +143,6 @@ class TrainerSegments:
                     }, checkpointPath)
             
             # print(accuracies)
-            repo = DataRepository()
             torch.save(model.state_dict(), path)
 
         except Exception as e:
