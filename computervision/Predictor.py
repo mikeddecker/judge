@@ -125,7 +125,8 @@ class Predictor:
                     videoId=videoId,
                     predictions=predictions,
                     balancedType=balancedType,
-                    vpath=videoPath
+                    vpath=videoPath,
+                    targetNames=repo.get_category_names(balancedType=balancedType)
                 )
 
         except Exception as e:
