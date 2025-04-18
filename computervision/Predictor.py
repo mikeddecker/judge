@@ -101,7 +101,8 @@ class Predictor:
                     augment=False,
                     timesteps=timesteps,
                     normalized=False,
-                ).unsqueeze(dim=0)
+                )
+                batch_X = batch_X.unsqueeze(dim=0)
                 batch_y = load_skill_batch_y_torch(skillinfo_row=skillinfo_row)
                 outputs = model(batch_X / 255)
                 pred = F.softmax(outputs["Skill"], dim=1)

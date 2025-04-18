@@ -163,8 +163,7 @@ def load_skill_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int
                                                     end=frameEnd,
                                                     timesteps=timesteps,
                                                     normalized=normalized,
-                                                    augment=augment,
-                                                    flip_image=False)
+                                                    augment=augment)
         loaded_frames = torch.from_numpy(loaded_frames).float().to(device)  # [C, timesteps, H, W]
         flip_image = random.random() < 0.5 if augment else 0
         if flip_image:
