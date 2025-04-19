@@ -96,7 +96,7 @@ class TrainerSegments:
 
             loss_fns = {
                 'categorical': torch.nn.CrossEntropyLoss(),
-                'regression': torch.nn.L1Loss()
+                'regression': torch.nn.MSELoss()
             }
 
             # Training loop
@@ -129,7 +129,7 @@ class TrainerSegments:
                 epochsNoImprovement = len(losses) - minIndex - 1
                 hasValLossImproved = epochsNoImprovement == 0
 
-                if epochsNoImprovement > 1:
+                if epochsNoImprovement > 2:
                     print(f"No improvement for {epochsNoImprovement} - stopping")
                     break
 

@@ -173,7 +173,7 @@ class TrainerSkills:
                 epochsNoImprovement = len(losses) - minIndex - 1
                 hasValLossImproved = epochsNoImprovement == 0
 
-                if epochsNoImprovement > 1:
+                if epochsNoImprovement > 2:
                     print(f"No improvement for {epochsNoImprovement} - stopping")
                     break
 
