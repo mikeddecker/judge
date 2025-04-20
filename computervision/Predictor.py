@@ -11,6 +11,9 @@ from sklearn.metrics import classification_report
 from pprint import pprint
 import cv2
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -230,7 +233,8 @@ class Predictor:
                 Nsec_frames_around=1/window_size
             )
 
-            predictions = {}
+            targets = []
+            predictions = []
             print(f"============= Initiation done, start segment predictions for video {videoId} =============")
             for idx in tqdm(range(batches)):
                 frameStart = idx * timesteps + offset
@@ -254,13 +258,38 @@ class Predictor:
                 )
 
                 outputs = model(batch_X / 255)[0] # [0] Remove batch size
+
+                targets.extend(batch_y.tolist())
+                predictions.extend(outputs.tolist())
                 
-                print('targets', batch_y)
-                print('-'*50)
-                print('outputs', outputs)
+                # print('targets', batch_y)
+                # print('-'*50)
+                # print('outputs', outputs)
                 
-            print()
-            pprint(predictions, sort_dicts=False)
+            
+            points = 250
+            for startIdx in range(0, frameLength, points):
+                if startIdx + points > frameLength:
+                    break
+                fig, ax1 = plt.subplots()
+
+                # Plot the first y-axis data
+                color = 'tab:red'
+                ax1.set_ylabel('pred', color=color)
+                ax1.plot(range(startIdx, points+startIdx), predictions[startIdx:startIdx+points], color=color)
+                ax1.tick_params(axis='y', labelcolor=color)
+
+                # Create a second y-axis that shares the same x-axis
+                ax2 = ax1.twinx()  # instantiate a second Axes that shares the same x-axis
+
+                # Plot the second y-axis data
+                color = 'tab:blue'
+                ax2.set_ylabel('target', color=color)  # we already handled the x-label with ax1
+                ax2.plot(range(startIdx, points+startIdx), targets[startIdx:startIdx+points], color=color)
+                ax2.tick_params(axis='y', labelcolor=color)
+                os.makedirs(os.path.join("plots"), exist_ok=True)
+                plt.savefig(f"segmentplot_{videoId}_frameStart_{startIdx}_with_{points}_points.png")  # Save to file
+            plt.close()
 
         except Exception as e:
             raise e
@@ -285,25 +314,25 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    predictor.predict(
-        type="SKILL",
-        videoId=1315,
-        modelname=modelname,
-        modelparams=modelparams,
-        saveAsVideo=True,
-    )
+    # predictor.predict(
+    #     type="SKILL",
+    #     videoId=1315,
+    #     modelname=modelname,
+    #     modelparams=modelparams,
+    #     saveAsVideo=True,
+    # )
 
-    predictor.predict(
-        type="SKILL",
-        videoId=2285,
-        modelname=modelname,
-        modelparams=modelparams,
-        saveAsVideo=True,
-    )
+    # predictor.predict(
+    #     type="SKILL",
+    #     videoId=2285,
+    #     modelname=modelname,
+    #     modelparams=modelparams,
+    #     saveAsVideo=True,
+    # )
 
     predictor.predict(
         type="SEGMENT",
-        videoId=1315,
+        videoId=2285,
         modelname=modelname,
         modelparams=modelparams,
         saveAsVideo=True,
