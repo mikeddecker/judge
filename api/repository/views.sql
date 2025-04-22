@@ -90,3 +90,21 @@ GROUP BY labeldate) AS ji -- jumps_included
 JOIN (SELECT labeldate, COUNT(*) as count FROM Skillinfo_DoubleDutch WHERE skill <> 1
 GROUP BY labeldate) AS so -- skills only 
 ON ji.labeldate = so.labeldate;
+
+CREATE OR REPLACE VIEW SkillTrainTestComparison_Skills_5classes AS
+SELECT 
+    CASE 
+        WHEN train_count >= 400 THEN skillname
+        ELSE 'other'
+    END AS skillname,
+    SUM(train_count) AS train_count,
+    SUM(train_percentage) AS train_percentage,
+    SUM(val_count) AS val_count,
+    SUM(val_total) AS val_total
+FROM SkillTrainTestComparison_Skills
+GROUP BY 
+    CASE 
+        WHEN train_count >= 400 THEN skillname
+        ELSE 'other'
+    END
+ORDER BY train_count DESC;
