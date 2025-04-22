@@ -21,7 +21,7 @@ GROUP BY sd.skill, sds.name, c.total
 ORDER BY skill_count DESC;
 
 CREATE OR REPLACE VIEW SkillTrainTestComparison_Skills AS
-SELECT t.total as train_percentage, t.skill_count as train_count, t.name as skillname, v.skill_count as val_percentage, v.total as val_total
+SELECT t.total as train_percentage, t.skill_count as train_count, t.name as skillname, v.skill_count as val_count, v.total as val_total
 FROM SkillTrainDistribution t
 JOIN SkillValDistribution v
 ON t.name = v.name;
