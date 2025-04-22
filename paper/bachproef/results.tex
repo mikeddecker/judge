@@ -5,9 +5,38 @@
 \chapter{\IfLanguageName{dutch}{Resultaten}{Results}}%
 \label{ch:results}
 
-The result section focuses on displaying and elaborating the acquired results for each main topic. Along with the outcome, each required alteration in order to improve results is discussed.
+The result section focuses on elaborating conducted experiments and acquired results, divided into the three main phases, localization, segmentation and recognition. In order to label, annotate videos and gain insights in the results a Vue3 web-app is created on a python flask API which reads and stores labels and video annotations from a MySQL database. Furthermore, the experiments are all performed using an Acer Nitro ANV15-51, running Ubuntu 24.04.2 LTS, using a 13th Gen Intel® Core™ i5-13420H × 12, with 16GB RAM and a NVIDIA GeForce RTX™ 4050 Laptop GPU (6GB).
 
 \section{Jumper localization}
+
+% TODO: add, this is relevant
+% TODO: convex hull the 3 jumpers and train on yolo model.
+As DD3 routines are the focus of this research, the idea to predict the location of the whole team instead of individuals was made. As there aren't any public jump rope labels, the idea was that this would increase labeling speed. Predicting full teams didn't work out which allowed for a transition to labeling and predicting individuals athletes. Below you find more information about the following experiments.
+
+1. Labeling boxes 4 all jumpers -> training models (from scratch). -> low accuracy, naive bias.
+1.1 random conv
+1.2 googlenet, mobilenet...
+
+2.0 Mask-RCNN
+2.1 Labeling individual jumpers \& pre-trained model yolo -> OK
+
+\subsection{Box coordinates}
+
+Before discussing the different results, let's discuss how the location of skippers are marked.
+... Image, full team vs individual coordinates.
+XYXY vs CenterX CenterY W H.
+How to measure accuracy -> IoU.
+
+\subsection{Random convolutional network}
+To get a first idea whether it would start learning, so a transition can be made towards more advanced architectures.
+
+\subsection{Dedicated architectures}
+GoogleNet, MobileNet... (on individual labels)
+
+\subsection{Mask-RCNN}
+Failed experiment, C error, no results.
+
+\subsection{Jumper localization using YOLO}
 
 Ultralytics \autocite{Khanam2024} provides an easy to use implementation for predicting people and objects in images which can be fine-tuned for specific use cases. Fine-tuning was needed as spectators, also humans, were also being predicted as athletes. Using these predictions, a crop around the three jumpers can be created using the predicted jumper boxes from the fine-tuned YOLO model, after using the pre-trained weights on the COCO dataset \autocite{Lin2014}. In order to improve the crops some steps were required. They may not be perfect, but it works for now.
 
@@ -48,5 +77,75 @@ It was playing around with these parameters (smooth values \& N) to get a workin
 \section{Action segmentation}
 
 \section{Skill recognition}
+
+The first trials from scratch, a video vision transformer, which is adapted from the transformer created during classes. Adding the convolution layer in front and the time dimension created the ViViT transformer as proposed in (source).
+Idea's add extra convolution layers \& use pre-trained model.
+
+Elaborate 16 frame time aspect.
+
+\subsection{Video Vision Transformer}
+
+For training the video vision transformer, the data is upsampeled
+
+\subsection{Multiscale Video Vision Transformer - MViT}
+\href{https://pytorch.org/vision/main/models/video_mvit.html}{Pytorch MViT}
+
+Pytorch implementation of source.
+
+For the first training round a double upgrade has been performed. The first adaption is downsampling the skills in 5 main classes to predict.  \& pre-trained model.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|r|r|l|r|r|}
+        \hline
+        \textbf{Train \%} & \textbf{Train Count} & \textbf{Skill} & \textbf{Val Count} & \textbf{Val \%} \\
+        \hline
+        50.6687 & 2273 & jump & 379 & 56.6517 \\
+        14.0660 & 631 & pushup & 77 & 11.5097 \\
+        13.0629 & 586 & return from power & 84 & 12.5561 \\
+        9.8529 & 442 & frog & 59 & 8.8191 \\
+        3.2100 & 144 & crab & 9 & 1.3453 \\
+        2.0062 & 90 & split & 12 & 1.7937 \\
+        1.1146 & 50 & flip & 5 & 0.7474 \\
+        0.9140 & 41 & rondat & 5 & 0.7474 \\
+        0.8917 & 40 & rad & 3 & 0.4484 \\
+        0.8025 & 36 & suicide & 8 & 1.1958 \\
+        0.7356 & 33 & handspring & 5 & 0.7474 \\
+        0.6910 & 31 & rol2kip & 7 & 1.0463 \\
+        0.4458 & 20 & kip & 6 & 0.8969 \\
+        0.3567 & 16 & speed & NULL & NULL \\
+        0.3121 & 14 & kopkip & 1 & 0.1495 \\
+        0.2675 & 12 & roll & 3 & 0.4484 \\
+        0.1783 & 8 & stut & 2 & 0.2990 \\
+        0.1337 & 6 & swift & NULL & NULL \\
+        0.1337 & 6 & UNKOWN & 1 & 0.1495 \\
+        0.0669 & 3 & leapfrog & NULL & NULL \\
+        0.0446 & 2 & footwork-kick & NULL & NULL \\
+        0.0223 & 1 & mountainclimber & NULL & NULL \\
+        0.0223 & 1 & footwork-open & 1 & 0.1495 \\
+        \hline
+    \end{tabular}
+    \caption{Skill distribution with training and validation counts and percentages. Null values indicate missing validation data.}
+    \label{tab:skill_distribution_full_with_nulls}
+\end{table}
+
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|l|r|r|r|r|}
+        \hline
+        \textbf{Skill} & \textbf{Train Count} & \textbf{Train \%} & \textbf{Val Count} & \textbf{Val \%} \\
+        \hline
+        jump & 2273 & 50.6687 & 379 & 56.6517 \\
+        pushup & 631 & 14.0660 & 77 & 11.5097 \\
+        return from power & 586 & 13.0629 & 84 & 12.5561 \\
+        frog & 442 & 9.8529 & 59 & 8.8191 \\
+        other & 526 & 11.7253 & 68 & 10.1645 \\
+        \hline
+    \end{tabular}
+    \caption{Train and validation skill distribution with low-frequency skills grouped as "other"}
+    \label{tab:skill_distribution_grouped_final}
+\end{table}
+
 
 \section{Model verification}
