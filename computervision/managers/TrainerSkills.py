@@ -13,6 +13,10 @@ from sklearn.metrics import classification_report
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
+import sys
+sys.path.append('..')
+from api.helpers import ConfigHelper
+
 load_dotenv()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -47,16 +51,20 @@ class TrainerSkills:
         model.eval()
         val_loss = 0.0
 
-        # Confusion matrix, classification report
-        y_pred = {  'Skill' : [], 'Turner1': [], 'Turner2': [], 'Type' : [], }
-        y_true = {  'Skill' : [], 'Turner1': [], 'Turner2': [], 'Type' : [], }
+        skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config()
+
+        # Confusion matrix, classification report values
+        y_pred = { key : [] for key, _ in skillconfig.items() }
+        y_true = { key : [] for key, _ in skillconfig.items() }
+        del y_pred["Tablename"]
+        del y_true["Tablename"]
+
 
         with torch.no_grad():
             for batch_X, batch_y in tqdm(dataloader):
                 with torch.amp.autocast(device_type='cuda'):
                     optimizer.zero_grad()
                     outputs = model(batch_X / 255)
-                    
                     # Loss
                     total_batch_loss = self.__compute_losses(outputs=outputs, batch_y=batch_y, loss_fns=loss_fns)
                     val_loss += total_batch_loss.item()
@@ -65,20 +73,30 @@ class TrainerSkills:
                     for key, pred in outputs.items():
                         target = batch_y[key]
 
-                        if key in ['Skill', 'Turner1', 'Turner2', 'Type']:
+                        valueType = skillconfig[key][0]
+                        if valueType == "Categorical":
                             pred = F.softmax(pred, dim=1)
-                            max_scores, max_idx_class = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
-
-                            y_pred[key].extend(max_idx_class.data.cpu().numpy())
-                            y_true[key].extend(target.data.cpu().numpy())
+                            _, pred = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
+                        elif valueType == "Numerical":
+                            maxValue = skillconfig[key][2]
+                            pred = torch.round(pred * maxValue).squeeze(dim=0)
+                            target = torch.round(target * maxValue) 
+                        else:
+                            pred = torch.round(pred).squeeze(dim=0)
+                            target = torch.round(target)
+                        
+                        y_pred[key].extend(pred.data.cpu().numpy())
+                        y_true[key].extend(target.data.cpu().numpy())
+                    
         
         print(f"="*80)
         classification_reports = {}
         for key in y_true.keys():
             classKey = key if key not in ['Turner1', 'Turner2'] else 'Turner'
-            labels = range(len(target_names[classKey]))
-            classification_reports_string = classification_report(y_true[key], y_pred[key], labels=labels, target_names=target_names[classKey], zero_division=0)
-            classification_reports[key] = classification_report(y_true[key], y_pred[key], output_dict=True, labels=labels, target_names=target_names[classKey], zero_division=0)
+            labels = None if classKey not in target_names.keys() else range(len(target_names[classKey]))
+            tn = None if classKey not in target_names.keys() else target_names[classKey]
+            classification_reports_string = classification_report(y_true[key], y_pred[key], labels=labels, target_names=tn, zero_division=0)
+            classification_reports[key] = classification_report(y_true[key], y_pred[key], output_dict=True, labels=labels, target_names=tn, zero_division=0)
             print(f"----- Details ----")
             print(classification_reports_string)
             print(f"="*80)
@@ -89,6 +107,7 @@ class TrainerSkills:
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         try:
+            testrun = True
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
@@ -123,6 +142,7 @@ class TrainerSkills:
                 dim=(DIM,DIM),
                 timesteps=trainparams['timesteps'],
                 batch_size=trainparams['batch_size'],
+                testrun=testrun
             )
             val_generator = DataGeneratorSkills(
                 frameloader=FrameLoader(repo),
@@ -130,6 +150,7 @@ class TrainerSkills:
                 dim=(DIM,DIM),
                 timesteps=trainparams['timesteps'],
                 batch_size=trainparams['batch_size'],
+                testrun=testrun
             )
         
             dataloaderTrain = DataLoader(train_generator, batch_size=1, shuffle=True)
@@ -177,7 +198,7 @@ class TrainerSkills:
                     print(f"No improvement for {epochsNoImprovement} - stopping")
                     break
 
-                if hasValLossImproved:
+                if not testrun and hasValLossImproved:
                     torch.save({
                         'epoch': epoch,
                         'model_state_dict': model.state_dict(),

@@ -199,7 +199,7 @@ def load_skill_batch_y_torch(skillinfo_row, flip_turner:bool=False):
             # Normalize and convert to float tensor
             normalized_value = target_value / value[2]
             y[key] = torch.tensor(normalized_value, dtype=torch.float).to(device)
-        else:  # Boolean flags
+        else:  # Boolean
             y[key] = torch.tensor(bool(target_value), dtype=torch.float).to(device)
             
     return y

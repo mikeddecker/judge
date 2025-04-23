@@ -22,6 +22,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
                  dim: tuple, # e.g. (128,128)
                  timesteps=16,
                  batch_size=1,
+                 testrun: bool = False,
                  **kwargs):
         super().__init__(**kwargs)
         assert isinstance(dim, tuple)
@@ -36,6 +37,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.augment = train_test_val == 'train'
         self.timesteps = timesteps
         self.batch_size = batch_size
+        self.isTestrun = testrun
         self.frameloader = frameloader
         self.repo = DataRepository()
         self.Skills = self.repo.get_skills(train_test_val)
@@ -61,6 +63,8 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
 
     def __len__(self):
         'Denotes the number of batches per epoch'
+        if self.isTestrun:
+            return 280
         return len(self.BalancedSet) // self.batch_size if self.train_test_val == 'train' else len(self.Skills) // self.batch_size
 
     def __getitem__(self, batch_nr, normalize=True):
