@@ -13,6 +13,8 @@ import cv2
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import time
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -43,6 +45,7 @@ MODELWEIGHT_PATH = "weights"
 
 class Predictor:
     def predict(self, type, videoId, modelname, modelparams: dict = None, saveAsVideo:bool=False):
+        start = time.time()
         match type:
             case 'LOCALIZE':
                 raise NotImplementedError()
@@ -62,19 +65,27 @@ class Predictor:
                                                        saveAsVideo=saveAsVideo)
                 else:
                     raise NotImplementedError()
+            case 'FULL':
+                if modelname in PYTORCH_MODELS_SKILLS.keys():
+                    self.__predict_skills_pytorch(videoId=videoId,
+                                                       modelname=modelname,
+                                                       use_segment_predictions=True,
+                                                       modelparams=modelparams,
+                                                       saveAsVideo=saveAsVideo,
+                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, modelname=modelname, modelparams=modelparams))
+                else:
+                    raise NotImplementedError()
             case _:
                 raise ValueError(f"Trainer - Type {type} not recognized")
+        seconds = time.time() - start
+        print(f"Done, took {seconds:.1f} seconds")
 
-    def __predict_skills_pytorch(self, videoId, modelname, use_segment_predictions, modelparams: dict = None, saveAsVideo:bool=False):
+    def __predict_skills_pytorch(self, videoId, modelname, use_segment_predictions, modelparams: dict = None, saveAsVideo:bool=False, segment_predictions:list = []):
         try:
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
             skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
-            y_pred = { key : [] for key, _ in skillconfig.items() }
-            y_true = { key : [] for key, _ in skillconfig.items() }
-
-            # TODO : update to use best val checkpoint 
             modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
 
             DIM = 224
@@ -84,19 +95,27 @@ class Predictor:
             model.eval()
 
 
+            balancedType = modelparams["balancedType"]
             timesteps = modelparams['timesteps']
             batch_size = modelparams['batch_size']
             assert batch_size == 1, f"Batch size must be one currently"
             frameloader = FrameLoader(repo)
         
-            balancedType = modelparams["balancedType"]
-            labeledSkills = repo.get_skills(train_test_val='val', videoId=videoId)
-            labeledSkills = adaptSkillLabels(labeledSkills, balancedType)
+            skillsInformation = None
+            if use_segment_predictions:
+                skillsInformation = pd.DataFrame({
+                    "frameStart" : segment_predictions[:-1],
+                    "frameEnd" : segment_predictions[1:]
+                })
+                print(skillsInformation)
+            else:
+                skillsInformation = repo.get_skills(train_test_val='val', videoId=videoId)
+                skillsInformation = adaptSkillLabels(skillsInformation, balancedType)
 
             predictions = {}
             print(f"============= Initiation done, start predictions of video {videoId} - Using labeled segments {use_segment_predictions} =============")
-            for idx in tqdm(range(len(labeledSkills))):
-                skillinfo_row = labeledSkills.iloc[idx]
+            for idx in tqdm(range(len(skillsInformation))):
+                skillinfo_row = skillsInformation.iloc[idx]
                 frameStart = int(skillinfo_row["frameStart"])
                 frameEnd = int(skillinfo_row["frameEnd"])
 
@@ -112,7 +131,7 @@ class Predictor:
                 )
                 batch_X = batch_X.unsqueeze(dim=0)
                 
-                batch_y = load_skill_batch_y_torch(skillinfo_row=skillinfo_row)
+                batch_y = {} if use_segment_predictions else load_skill_batch_y_torch(skillinfo_row=skillinfo_row)
                 outputs = model(batch_X / 255)
                 predictions[frameStart] = {}
                 
@@ -201,6 +220,9 @@ class Predictor:
                 highfrog = "high" if skill == "frog" and predictions[pos]["Feet"]["y_pred"] == 2 else ""
                 bg_color = (0, 255, 0) if currentLabel["y_true"] == currentLabel["y_pred"] else (255, 20, 0)
                 bg_color_high = (0, 255, 0) if predictions[pos]["Feet"]["y_true"] == predictions[pos]["Feet"]["y_pred"] else (255, 20, 0)
+                if currentLabel['y_true'] is None: # or currentLabel["y_true"] is None:
+                    bg_color = (255 * (1 - currentLabel['y_score'] ** 2), 255 * currentLabel['y_score'] ** 0.5, 100 * max(0, 0.6 - currentLabel['y_score']))
+                    bg_color_high = (0, 0, 255)
 
             elif currentLabel is not None and pos == currentLabel["frameEnd"]:
                 currentLabel = None
@@ -248,7 +270,6 @@ class Predictor:
             offset = (frameLength % timesteps) // 2
             batches = frameLength // timesteps
             labeledSkills = repo.get_skills(train_test_val='val', videoId=videoId)
-            # labeledSkills = adaptSkillLabels(labeledSkills, balancedType)
 
             split_threshold = 0.4
             df_splitpoint_values = calculate_splitpoint_values(
@@ -357,20 +378,28 @@ if __name__ == "__main__":
     predictor = Predictor()
 
     predictor.predict(
-        type="SKILL",
-        videoId=1315,
+        type="FULL",
+        videoId=2296,
         modelname=modelname,
         modelparams=modelparams,
         saveAsVideo=True,
     )
 
-    predictor.predict(
-        type="SKILL",
-        videoId=2285,
-        modelname=modelname,
-        modelparams=modelparams,
-        saveAsVideo=True,
-    )
+    # predictor.predict(
+    #     type="SKILL",
+    #     videoId=1315,
+    #     modelname=modelname,
+    #     modelparams=modelparams,
+    #     saveAsVideo=True,
+    # )
+
+    # predictor.predict(
+    #     type="SKILL",
+    #     videoId=2285,
+    #     modelname=modelname,
+    #     modelparams=modelparams,
+    #     saveAsVideo=True,
+    # )
 
     # predictor.predict(
     #     type="SEGMENT",
