@@ -188,8 +188,8 @@ class TrainerSkills:
                         'class_reports' : class_reports
                     }, checkpointPath)
             
+                    torch.save(model.state_dict(), path)
             print(accuracies)
-            torch.save(model.state_dict(), path)
 
         except Exception as e:
             raise e

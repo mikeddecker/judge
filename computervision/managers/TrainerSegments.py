@@ -142,8 +142,7 @@ class TrainerSegments:
                         'losses': losses,
                     }, checkpointPath)
             
-            # print(accuracies)
-            torch.save(model.state_dict(), path)
+                    torch.save(model.state_dict(), path)
 
         except Exception as e:
             raise e
