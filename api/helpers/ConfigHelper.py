@@ -1,6 +1,5 @@
-def get_discipline_DoubleDutch_config():
-    return {
-        "Tablename" : "DoubleDutch",
+def get_discipline_DoubleDutch_config(include_tablename=True):
+    config = {
         "Type" : ("Categorical", "Type"), # Will be textual representions
         "Rotations" : ("Numerical", 0, 8, 1), # min, max, step
         "Turner1": ("Categorical", "Turner"),
@@ -15,3 +14,6 @@ def get_discipline_DoubleDutch_config():
         "Hard2see" : ("Boolean"),
         "Fault" : ("Boolean"),
     }
+    if include_tablename:
+        config["Tablename"] = "DoubleDutch"
+    return config

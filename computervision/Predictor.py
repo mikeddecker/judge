@@ -17,6 +17,10 @@ import numpy as np
 from dotenv import load_dotenv
 load_dotenv()
 
+import sys
+sys.path.append('..')
+from api.helpers import ConfigHelper
+
 import gc
 import os
 from tqdm import tqdm
@@ -66,9 +70,10 @@ class Predictor:
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
-            if use_segment_predictions:
-                raise NotImplementedError()
-            
+            skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
+            y_pred = { key : [] for key, _ in skillconfig.items() }
+            y_true = { key : [] for key, _ in skillconfig.items() }
+
             # TODO : update to use best val checkpoint 
             modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
 
@@ -89,7 +94,7 @@ class Predictor:
             labeledSkills = adaptSkillLabels(labeledSkills, balancedType)
 
             predictions = {}
-            print(f"============= Initiation done, start predictions of video {videoId} =============")
+            print(f"============= Initiation done, start predictions of video {videoId} - Using labeled segments {use_segment_predictions} =============")
             for idx in tqdm(range(len(labeledSkills))):
                 skillinfo_row = labeledSkills.iloc[idx]
                 frameStart = int(skillinfo_row["frameStart"])
@@ -106,19 +111,34 @@ class Predictor:
                     normalized=False,
                 )
                 batch_X = batch_X.unsqueeze(dim=0)
+                
                 batch_y = load_skill_batch_y_torch(skillinfo_row=skillinfo_row)
                 outputs = model(batch_X / 255)
-                pred = F.softmax(outputs["Skill"], dim=1)
-                max_score, max_idx_class = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
-                predictions[frameStart] = {
-                    'y_pred' : max_idx_class.item(),
-                    'y_true' : batch_y["Skill"].item(),
-                    'y_score': max_score.item(),
-                    'isCorrect' : (max_idx_class == batch_y["Skill"]).item(),
-                    'frameEnd' : frameEnd,
-                }
+                predictions[frameStart] = {}
+                
+                for key, pred in outputs.items():
+                    target = torch.tensor([]) if use_segment_predictions else batch_y[key]
+
+                    valueType = skillconfig[key][0]
+                    if valueType == "Categorical":
+                        pred = F.softmax(pred, dim=1)
+                        max_idx_class, pred = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
+                    elif valueType == "Numerical":
+                        maxValue = skillconfig[key][2]
+                        pred = torch.round(pred * maxValue).type(torch.int64)
+                        target = torch.round(target * maxValue).type(torch.int64)
+                    else:
+                        pred = torch.round(pred).type(torch.int64)
+                        target = torch.round(target).type(torch.int64)
+                    
+                    predictions[frameStart][key] = {
+                        'y_pred' : pred.item(),
+                        'y_true' : None if use_segment_predictions else target.item(),
+                        'y_score': None if skillconfig[key][0] != "Categorical" else max_idx_class.item(),
+                        'frameEnd' : frameEnd,
+                    }
             print()
-            pprint(predictions, sort_dicts=False)
+            # pprint(predictions, sort_dicts=False)
 
             if saveAsVideo:
                 videoPath = repo.VideoNames.loc[videoId, "name"]
@@ -151,6 +171,7 @@ class Predictor:
         ret, frame = cap.read()
         frames = []
         skill = ""
+        highfrog = ""
         endFrame = cap.get(cv2.CAP_PROP_FRAME_COUNT) - 1
         currentLabel = None
         videoOutputPath = os.path.join(STORAGE_DIR, "annotated-videos", f"{videoId}.mp4")
@@ -162,26 +183,32 @@ class Predictor:
 
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        text_pos = (50, 50)
-        fontScale = 2
+        text_pos = 50
+        fontScale = 1
         txt_color = (0, 0, 0)
         bg_color = (0, 255, 255)
-        thickness = 2
+        bg_color_high = (0, 255, 255)
         while ret:
             if pos % 500 == 0:
                 print(f"{int(pos)}/{N}")
             frame = cv2.resize(frame, (0,0), fx=scale, fy=scale)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             # draw_text(frame, )
+            
             if pos in predictions.keys():
-                currentLabel = predictions[pos]
+                currentLabel = predictions[pos]["Skill"]
                 skill = targetNames["Skill"][currentLabel["y_pred"]] if balancedType != 'jump_return_push_frog_other' else mapBalancedSkillIndexToLabel(balancedType=balancedType, index=currentLabel["y_pred"])
-                bg_color = (0, 255, 0) if currentLabel["isCorrect"] else (255, 20, 0)
+                highfrog = "high-" if skill == "frog" and predictions[pos]["Feet"]["y_pred"] == 2 else ""
+                bg_color = (0, 255, 0) if currentLabel["y_true"] == currentLabel["y_pred"] else (255, 20, 0)
+                bg_color_high = (0, 255, 0) if predictions[pos]["Feet"]["y_true"] == predictions[pos]["Feet"]["y_pred"] else (255, 20, 0)
+
             elif currentLabel is not None and pos == currentLabel["frameEnd"]:
                 currentLabel = None
                 skill = ""
 
-            w, h = draw_text(frame, skill, pos=text_pos, font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color)
+            w, h = draw_text(frame, highfrog, pos=(text_pos, text_pos), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            w, h = draw_text(frame, skill, pos=(text_pos + w, 50), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color)
+            
             frames.append(frame)
             # out.write(frame)
             
@@ -329,26 +356,26 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    # predictor.predict(
-    #     type="SKILL",
-    #     videoId=1315,
-    #     modelname=modelname,
-    #     modelparams=modelparams,
-    #     saveAsVideo=True,
-    # )
-
-    # predictor.predict(
-    #     type="SKILL",
-    #     videoId=2285,
-    #     modelname=modelname,
-    #     modelparams=modelparams,
-    #     saveAsVideo=True,
-    # )
-
     predictor.predict(
-        type="SEGMENT",
-        videoId=2305,
+        type="SKILL",
+        videoId=1315,
         modelname=modelname,
         modelparams=modelparams,
         saveAsVideo=True,
     )
+
+    predictor.predict(
+        type="SKILL",
+        videoId=2285,
+        modelname=modelname,
+        modelparams=modelparams,
+        saveAsVideo=True,
+    )
+
+    # predictor.predict(
+    #     type="SEGMENT",
+    #     videoId=2305,
+    #     modelname=modelname,
+    #     modelparams=modelparams,
+    #     saveAsVideo=True,
+    # )

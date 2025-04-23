@@ -52,14 +52,9 @@ class TrainerSkills:
         model.eval()
         val_loss = 0.0
 
-        skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config()
-
-        # Confusion matrix, classification report values
+        skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
         y_pred = { key : [] for key, _ in skillconfig.items() }
         y_true = { key : [] for key, _ in skillconfig.items() }
-        del y_pred["Tablename"]
-        del y_true["Tablename"]
-
 
         with torch.no_grad():
             for batch_X, batch_y in tqdm(dataloader):
