@@ -233,8 +233,8 @@ class Predictor:
                 Nsec_frames_around=1/window_size
             )
 
-            targets = []
-            predictions = []
+            targets = [0 for _ in range(frameLength)]
+            predictions = [0 for _ in range(frameLength)]
             print(f"============= Initiation done, start segment predictions for video {videoId} =============")
             for idx in tqdm(range(batches)):
                 frameStart = idx * timesteps + offset
@@ -259,12 +259,8 @@ class Predictor:
 
                 outputs = model(batch_X / 255)[0] # [0] Remove batch size
 
-                targets.extend(batch_y.tolist())
-                predictions.extend(outputs.tolist())
-                
-                # print('targets', batch_y)
-                # print('-'*50)
-                # print('outputs', outputs)
+                targets[frameStart:frameEnd] = batch_y.tolist()
+                predictions[frameStart:frameEnd] = outputs.tolist()
                 
             
             points = 250
@@ -280,15 +276,16 @@ class Predictor:
                 ax1.tick_params(axis='y', labelcolor=color)
 
                 # Create a second y-axis that shares the same x-axis
-                ax2 = ax1.twinx()  # instantiate a second Axes that shares the same x-axis
+                ax2 = ax1.twinx()
 
                 # Plot the second y-axis data
                 color = 'tab:blue'
-                ax2.set_ylabel('target', color=color)  # we already handled the x-label with ax1
+                ax2.set_ylabel('target', color=color)
                 ax2.plot(range(startIdx, points+startIdx), targets[startIdx:startIdx+points], color=color)
                 ax2.tick_params(axis='y', labelcolor=color)
                 os.makedirs(os.path.join("plots"), exist_ok=True)
-                plt.savefig(f"segmentplot_{videoId}_frameStart_{startIdx}_with_{points}_points.png")  # Save to file
+                plotpath = os.path.join("plots", f"segmentplot_{videoId}_frameStart_{startIdx}_with_{points}_points.png")
+                plt.savefig(plotpath)
             plt.close()
 
         except Exception as e:
@@ -332,7 +329,7 @@ if __name__ == "__main__":
 
     predictor.predict(
         type="SEGMENT",
-        videoId=2285,
+        videoId=1315,
         modelname=modelname,
         modelparams=modelparams,
         saveAsVideo=True,
