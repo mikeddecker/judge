@@ -223,14 +223,13 @@ class Predictor:
             labeledSkills = repo.get_skills(train_test_val='val', videoId=videoId)
             # labeledSkills = adaptSkillLabels(labeledSkills, balancedType)
 
-            window_size = 7
-            split_threshold = 0.5
+            split_threshold = 0.4
             df_splitpoint_values = calculate_splitpoint_values(
                 videoId=videoId,
                 frameLength=frameLength,
                 df_Skills=labeledSkills,
                 fps=fps,
-                Nsec_frames_around=1/window_size
+                Nsec_frames_around=1/6
             )
 
             targets = [0 for _ in range(frameLength)]
@@ -262,11 +261,10 @@ class Predictor:
                 targets[frameStart:frameEnd] = batch_y.tolist()
                 predictions[frameStart:frameEnd] = outputs.tolist()
                 
-            
             points = 250
             for startIdx in range(0, frameLength, points):
                 if startIdx + points > frameLength:
-                    break
+                    points = frameLength % points
                 fig, ax1 = plt.subplots()
 
                 # Plot the first y-axis data
@@ -287,6 +285,19 @@ class Predictor:
                 plotpath = os.path.join("plots", f"segmentplot_{videoId}_frameStart_{startIdx}_with_{points}_points.png")
                 plt.savefig(plotpath)
             plt.close()
+
+            predictions = np.array(predictions)
+            predictions_bigger_than_split_threshold = np.where(predictions > split_threshold, predictions, 0)
+            p_split = predictions_bigger_than_split_threshold
+            window_size = int(fps // 3)
+            predictions_argMax_in_window = [s - window_size + np.argmax(p_split[max(0, s-window_size):min(frameLength, s+window_size)]) for s in range(frameLength)]
+            predictions_splitmoments = np.where(predictions > split_threshold, predictions_argMax_in_window, 0)
+            predictions_splitmoments = np.unique(predictions_splitmoments)
+            predictions_splitmoments = predictions_splitmoments[1:]
+            predictions_splitmoments = [int(g) for g in predictions_splitmoments]
+            print(predictions_splitmoments)
+            print(f"Predicted {len(predictions_splitmoments) - 1} splitpoints (end not included)")
+            return predictions_splitmoments
 
         except Exception as e:
             raise e

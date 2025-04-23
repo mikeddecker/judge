@@ -229,7 +229,7 @@ def load_segment_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[i
         raise err
 
 
-def calculate_splitpoint_values(videoId: int, frameLength:int, df_Skills:pd.DataFrame, fps:float, Nsec_frames_around=0.15):
+def calculate_splitpoint_values(videoId: int, frameLength:int, df_Skills:pd.DataFrame, fps:float, Nsec_frames_around=1/6):
     """Creates a dataframe: 'videoId', 'frameNr', 'splitpoint'
     Where splitpoint is the value 0 -> 1 whether the video needs to be split at that point or not"""
     splitpoint_values = {
