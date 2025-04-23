@@ -294,7 +294,8 @@ def draw_text(img, text,
     x, y = pos
     text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
     text_w, text_h = text_size
-    cv2.rectangle(img, pos, (x + text_w, y + text_h), text_color_bg, -1)
-    cv2.putText(img, text, (x, y + text_h + font_scale - 1), font, font_scale, text_color, font_thickness)
+    box_margin = 16
+    cv2.rectangle(img, pos, (x + text_w, y + text_h + box_margin), text_color_bg, -1)
+    cv2.putText(img, text, (x, y + text_h + font_scale - 1 + box_margin // 2), font, font_scale, text_color, font_thickness)
 
     return text_size

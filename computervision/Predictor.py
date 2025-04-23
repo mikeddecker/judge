@@ -198,7 +198,7 @@ class Predictor:
             if pos in predictions.keys():
                 currentLabel = predictions[pos]["Skill"]
                 skill = targetNames["Skill"][currentLabel["y_pred"]] if balancedType != 'jump_return_push_frog_other' else mapBalancedSkillIndexToLabel(balancedType=balancedType, index=currentLabel["y_pred"])
-                highfrog = "high-" if skill == "frog" and predictions[pos]["Feet"]["y_pred"] == 2 else ""
+                highfrog = "high" if skill == "frog" and predictions[pos]["Feet"]["y_pred"] == 2 else ""
                 bg_color = (0, 255, 0) if currentLabel["y_true"] == currentLabel["y_pred"] else (255, 20, 0)
                 bg_color_high = (0, 255, 0) if predictions[pos]["Feet"]["y_true"] == predictions[pos]["Feet"]["y_pred"] else (255, 20, 0)
 
