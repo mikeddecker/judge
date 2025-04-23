@@ -5,7 +5,7 @@ from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_seg
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
-from moviepy import ImageSequenceClip
+from moviepy import ImageSequenceClip, VideoFileClip
 import torch.nn.functional as F
 from sklearn.metrics import classification_report
 from pprint import pprint
@@ -239,6 +239,7 @@ class Predictor:
         # out.release()
         
         clip = ImageSequenceClip(frames, fps=fps)
+        clip: ImageSequenceClip = clip.with_audio(VideoFileClip(vpath).audio)
         clip.write_videofile(videoOutputPath, codec='libx264')
         # clip = ImageSequenceClip(frames, (tmp_mp4)
         # clip.write_videofile(videoOutputPath, codec='libx264')
@@ -377,13 +378,14 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    predictor.predict(
-        type="FULL",
-        videoId=2296,
-        modelname=modelname,
-        modelparams=modelparams,
-        saveAsVideo=True,
-    )
+    for videoId in [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
+        predictor.predict(
+            type="FULL",
+            videoId=videoId,
+            modelname=modelname,
+            modelparams=modelparams,
+            saveAsVideo=True,
+        )
 
     # predictor.predict(
     #     type="SKILL",
