@@ -293,10 +293,17 @@ class Predictor:
             predictions_argMax_in_window = [s - window_size + np.argmax(p_split[max(0, s-window_size):min(frameLength, s+window_size)]) for s in range(frameLength)]
             predictions_splitmoments = np.where(predictions > split_threshold, predictions_argMax_in_window, 0)
             predictions_splitmoments = np.unique(predictions_splitmoments)
+            
+            distances = predictions_splitmoments[1:] - predictions_splitmoments[:-1]
             predictions_splitmoments = predictions_splitmoments[1:]
+            predictions_splitmoments = predictions_splitmoments[np.where(distances < window_size // 3, False, True)]
+            # print([f"{d:4d}" for d in distances])
             predictions_splitmoments = [int(g) for g in predictions_splitmoments]
-            print(predictions_splitmoments)
+            # print(predictions_splitmoments)
+
+            print([f"{d:4d}" for d in predictions_splitmoments])
             print(f"Predicted {len(predictions_splitmoments) - 1} splitpoints (end not included)")
+
             return predictions_splitmoments
 
         except Exception as e:
@@ -340,7 +347,7 @@ if __name__ == "__main__":
 
     predictor.predict(
         type="SEGMENT",
-        videoId=1315,
+        videoId=2305,
         modelname=modelname,
         modelparams=modelparams,
         saveAsVideo=True,
