@@ -189,8 +189,7 @@ class Predictor:
         scale = 0.4
         ret, frame = cap.read()
         frames = []
-        skill = ""
-        highfrog = ""
+        skill = highfrog = hands = fault = turntable = rotations = turners = type = hard2see = sloppy = bodyRotations = ""
         endFrame = cap.get(cv2.CAP_PROP_FRAME_COUNT) - 1
         currentLabel = None
         videoOutputPath = os.path.join(STORAGE_DIR, "annotated-videos", f"{videoId}.mp4")
@@ -202,11 +201,13 @@ class Predictor:
 
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        text_pos = 50
-        fontScale = 1
+        text_pos = 20
+        fontScale = 0.75
         txt_color = (0, 0, 0)
         bg_color = (0, 255, 255)
         bg_color_high = (0, 255, 255)
+        bg_color_default = (137,207,240)
+        bg_color_special = (255, 13, 220)
         while ret:
             if pos % 500 == 0:
                 print(f"{int(pos)}/{N}")
@@ -218,19 +219,55 @@ class Predictor:
                 currentLabel = predictions[pos]["Skill"]
                 skill = targetNames["Skill"][currentLabel["y_pred"]] if balancedType != 'jump_return_push_frog_other' else mapBalancedSkillIndexToLabel(balancedType=balancedType, index=currentLabel["y_pred"])
                 highfrog = "high" if skill == "frog" and predictions[pos]["Feet"]["y_pred"] == 2 else ""
-                bg_color = (0, 255, 0) if currentLabel["y_true"] == currentLabel["y_pred"] else (255, 20, 0)
-                bg_color_high = (0, 255, 0) if predictions[pos]["Feet"]["y_true"] == predictions[pos]["Feet"]["y_pred"] else (255, 20, 0)
+                hands = f"{predictions[pos]["Hands"]["y_pred"]}h"
+                turntable = f"TT{predictions[pos]["Turntable"]["y_pred"]}" if predictions[pos]["Turntable"]["y_pred"] != 0 else ""
+                rotations = f"Rotations: {predictions[pos]["Rotations"]["y_pred"]}"
+                turners = f"Turners: {targetNames["Turner"][predictions[pos]["Turner1"]["y_pred"]]} - {targetNames["Turner"][predictions[pos]["Turner2"]["y_pred"]]}"
+                type = f"{targetNames["Type"][predictions[pos]["Type"]["y_pred"]]}"
+                fault = str(predictions[pos]["Fault"]["y_pred"]) # "Fault" if predictions[pos]["Fault"]["y_pred"] == 1 else ""
+                hard2see = str(predictions[pos]["Hard2see"]["y_pred"]) # "Hard2see" if predictions[pos]["Hard2see"]["y_pred"] == 1 else ""
+                sloppy = str(predictions[pos]["Sloppy"]["y_pred"]) # "Sloppy" if predictions[pos]["Sloppy"]["y_pred"] == 1 else ""
+                bodyRotations = f"BodyRotations: {predictions[pos]["BodyRotations"]["y_pred"]}" if predictions[pos]["BodyRotations"]["y_pred"] != 0 else ""
+
+                bg_color = (0, 255, 0) if currentLabel["y_true"] == currentLabel["y_pred"] else bg_color_default
+                bg_color_high = (0, 255, 0) if predictions[pos]["Feet"]["y_true"] == predictions[pos]["Feet"]["y_pred"] else bg_color_default
+                
                 if currentLabel['y_true'] is None: # or currentLabel["y_true"] is None:
                     bg_color = (255 * (1 - currentLabel['y_score'] ** 2), 255 * currentLabel['y_score'] ** 0.5, 100 * max(0, 0.6 - currentLabel['y_score']))
                     bg_color_high = (0, 0, 255)
 
             elif currentLabel is not None and pos == currentLabel["frameEnd"]:
                 currentLabel = None
-                skill = ""
+                skill = highfrog = hands = fault = turntable = rotations = turners = type = hard2see = sloppy = bodyRotations = ""
 
-            w, h = draw_text(frame, highfrog, pos=(text_pos, text_pos), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
-            w, h = draw_text(frame, skill, pos=(text_pos + w, 50), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color)
             
+            horizontal = 0
+            vertical = 0
+            w, h = draw_text(frame, type, pos=(text_pos, text_pos), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            vertical += 2 * h
+            
+            w, h = draw_text(frame, hands, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            horizontal += w
+            w, h = draw_text(frame, highfrog, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            horizontal += w
+            w, h = draw_text(frame, turntable, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            horizontal += w
+            w, h = draw_text(frame, skill, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color)
+            vertical += 2 * h
+            
+            w, h = draw_text(frame, turners, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            vertical += 2 * h
+            w, h = draw_text(frame, rotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            vertical += 2 * h
+            w, h = draw_text(frame, bodyRotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            # vertical += 2 * h
+            # w, h = draw_text(frame, hard2see, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            # vertical += 2 * h
+            # w, h = draw_text(frame, sloppy, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            # vertical += 2 * h
+            # w, h = draw_text(frame, fault, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_special)
+            # vertical += 2 * h
+
             frames.append(frame)
             # out.write(frame)
             
