@@ -1,5 +1,6 @@
 import gc
 import os
+import pandas as pd
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
@@ -9,7 +10,7 @@ from dotenv import load_dotenv
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
@@ -79,11 +80,11 @@ class TrainerSkills:
                             _, pred = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
                         elif valueType == "Numerical":
                             maxValue = skillconfig[key][2]
-                            pred = torch.round(pred * maxValue).squeeze(dim=0)
-                            target = torch.round(target * maxValue) 
+                            pred = torch.round(pred * maxValue).squeeze(dim=0).type(torch.int64)
+                            target = torch.round(target * maxValue).type(torch.int64)
                         else:
-                            pred = torch.round(pred).squeeze(dim=0)
-                            target = torch.round(target)
+                            pred = torch.round(pred).squeeze(dim=0).type(torch.int64)
+                            target = torch.round(target).type(torch.int64)
                         
                         y_pred[key].extend(pred.data.cpu().numpy())
                         y_true[key].extend(target.data.cpu().numpy())
@@ -97,13 +98,20 @@ class TrainerSkills:
             tn = None if classKey not in target_names.keys() else target_names[classKey]
             classification_reports_string = classification_report(y_true[key], y_pred[key], labels=labels, target_names=tn, zero_division=0)
             classification_reports[key] = classification_report(y_true[key], y_pred[key], output_dict=True, labels=labels, target_names=tn, zero_division=0)
-            print(f"----- Details ----")
+            print(f"----- Details {key} ----")
             print(classification_reports_string)
+
+            lbls = labels if labels is not None else range(max(max(y_true[key]), max(y_pred[key])) + 1)
+            cm = confusion_matrix(y_true[key], y_pred[key], labels=lbls)
+            cm_df = pd.DataFrame(cm, index=labels, columns=labels)
+
+            print("Confusion Matrix:", key)
+            print(cm_df)
             print(f"="*80)
 
         print(f"Total (macro avg) accuracy", classification_reports['Skill']['macro avg'])
 
-        return val_loss / len(dataloader), classification_reports['Skill']['macro avg'], classification_reports
+        return val_loss / len(dataloader), classification_reports['Skill']['macro avg'], classification_reports, cm
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         try:
@@ -184,7 +192,7 @@ class TrainerSkills:
 
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
-                val_loss, macro_avg_accuracy, class_reports = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
+                val_loss, macro_avg_accuracy, class_reports, conf_matrix = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
                 losses.append(val_loss)
                 scheduler.step(val_loss)
                 accuracies[epoch] = macro_avg_accuracy
@@ -206,7 +214,8 @@ class TrainerSkills:
                         'scheduler_state_dict': scheduler.state_dict(),
                         'losses': losses,
                         'accuracies': accuracies,
-                        'class_reports' : class_reports
+                        'class_reports' : class_reports,
+                        'confusion_matrix': conf_matrix,
                     }, checkpointPath)
             
                     torch.save(model.state_dict(), path)
