@@ -33,6 +33,16 @@ export const getVideoImagePath = async (videoId) => {
   }
 };
 
+export const createVideoImage = async (videoId, frameNr) => {
+  return await api.post(`/video/${videoId}/image`, frameNr, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+};
+
 export const getVideoPath = async (videoId) => {
   try {
     return await api.get(`/video/${videoId}`, { responseType: 'blob' })
