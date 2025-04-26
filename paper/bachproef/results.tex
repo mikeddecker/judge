@@ -11,46 +11,103 @@ The result section focuses on elaborating conducted experiments and acquired res
 
 % TODO: add, this is relevant
 % TODO: convex hull the 3 jumpers and train on yolo model.
-As DD3 routines are the focus of this research, the idea to predict the location of the whole team instead of individuals was made. As there aren't any public jump rope labels, the idea was that this would increase labeling speed. Predicting full teams didn't work out which allowed for a transition to labeling and predicting individuals athletes. Below you find more information about the following experiments.
+As DD3 routines are the focus of this research, the idea was to predict the coordinates and position of a team as a single unit, instead of individuals. This idea was supported by the fact that there aren't any public jump rope datasets and it was expected to increase the speed of labeling. The AI generated image \ref{fig:sr2-performance-ai-generated} shows an example of a competition setting where two athletes are performing a routine. The goal here would be to crop out the jumpers.
 
-1. Labeling boxes 4 all jumpers -> training models (from scratch). -> low accuracy, naive bias.
-1.1 random conv
-1.2 googlenet, mobilenet...
+Below you can find a shortlist of experiments executed on localization.
 
-2.0 Mask-RCNN
-2.1 Labeling individual jumpers \& pre-trained model yolo -> OK
-
-\subsection{Box coordinates}
-
-Before discussing the different results, let's discuss how the location of skippers are marked.
-... Image, full team vs individual coordinates.
-XYXY vs CenterX CenterY W H.
-How to measure accuracy -> IoU.
+\begin{itemize}
+    \item random conv
+    \item googlenet, mobilenet...
+    \item Mask-RCNN
+    \item Labeling individual jumpers \& pre-trained model yolo -> OK
+\end{itemize}
 
 \subsection{Random convolutional network}
+
+% TODO : illustrative image of box coords?
+
+Before discussing the different results, let's discuss how the location of skippers are marked. To mark the position of an object on an image, there are multiple possibilities.
+For this project, the relative center point along the x-axis, y-axis, width and height of the box are stored. So regardless of the scale of the image, whether the image has size 1920 x 1080 pixels or 1080 x 720 pixels, the position of the box remains the same.
+An example of a box would be [0.6, 0.5, 0.4, 0.4], all values between 0 and 1. IoU accuracy can then be performed.
+... As explained in the literature (todo reference to lit)...
+% TODO : shift IoU comparison to literature
+
+In order to get an idea, whether following models are able to learn, a random convolutional network is created.
+... elaborate results % TODO
+
+-> low accuracy, naive predictions.
+
 To get a first idea whether it would start learning, so a transition can be made towards more advanced architectures.
 
 \subsection{Dedicated architectures}
+
+From scratch
+
 GoogleNet, MobileNet... (on individual labels)
+
+Conclusion:
+Predicting full teams didn't work out which allowed for a transition to labeling and predicting individuals athletes. Below you find more information about those experiments.
 
 \subsection{Mask-RCNN}
 Failed experiment, C error, no results.
 
-\subsection{Jumper localization using YOLO}
+\subsection{YOLO}
 
-Ultralytics \autocite{Khanam2024} provides an easy to use implementation for predicting people and objects in images which can be fine-tuned for specific use cases. Fine-tuning was needed as spectators, also humans, were also being predicted as athletes. Using these predictions, a crop around the three jumpers can be created using the predicted jumper boxes from the fine-tuned YOLO model, after using the pre-trained weights on the COCO dataset \autocite{Lin2014}. In order to improve the crops some steps were required. They may not be perfect, but it works for now.
+Experiment 3, pre-trained models \& individual boxes.
 
-\subsection{Eliminate spectators - IoU comparison}
+The third experiment incorporates a double upgrade. The first upgrade involves annotating individual athletes on images instead of one big box around all jumpers, which allows more varying labels on collected single rope or double dutch 4 videos. The second upgrade is trying a pre-trained object detection model.
 
-In order to make te best possible crop there are probably thousands of methods. The current implementation involves taking the minium and maximum x- \& y-coordinates to draw the box containing all skippers.
-At this moment, it is expected that the YOLO model has been fine-tuned to distinguish athlete and spectator.
+Ultralytics \autocite{Khanam2024} provides an easy-to-use pre-trained implementation for predicting people and objects in images which can be fine-tuned for specific use cases. Fine-tuning was needed as spectators, also humans, were also included in the predictions.
 
+Using these predictions, a crop around the three jumpers can be created using the predicted jumper boxes from the fine-tuned YOLO model, after using the pre-trained weights on the COCO dataset \autocite{Lin2014}. In order to improve the crops some steps were required. Details are discussed below.
+
+\subsubsection{Eliminate spectators - IoU comparison}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{img/1267_292_boxes}
+    \includegraphics[width=0.95\linewidth]{img/1267_292_boxes_reduced_spectators}
+    \caption[raw vs fine-tuned YOLOv11 nano model predictions]{Raw predictions of the unrefined YOLOv11 nano model compared to the fine-tuned model which reduces predictions of spectators.}
+    \label{fig:raw-vs-fine-tuned-boxes}
+\end{figure}
+
+\begin{figure}
+    \centering
+%%    \includegraphics[width=0.35\linewidth]{img/PR_curve}
+    \includegraphics[width=0.95\linewidth]{img/results}
+    \includegraphics[width=0.85\linewidth]{img/confusion_matrix_normalized}
+    \caption[metrics after fine-tuning YOLOv11]{Metrics after fine-tuning YOLOv11 on the validation set of 161 images}
+    \label{fig:localization-results}
+\end{figure}
+
+In order to eliminate the spectators, coaches or judges, only athletes are marked on images. Using 729 annotated frames as refinement, predictions of spectators are reduced considerately, while occasional spectators are still predicted. See figure \ref{fig:raw-vs-fine-tuned-boxes} for clarity.
+This results in imperfect crops \ref{fig:dd3-crop-error} as compared to valid crops \ref{fig:dd3-crop}.
+
+See
+
+In order to reach stability in the predictions, box-coordinates of the last
 Even though the model is fine-tuned on almost two-thousand images, occasionally coaches or spectators were still predicted as jumpers, requiring a solution.
 When a spectator or more than one is predicted, this means that total crop of all 'athletes' could be bigger than the actual location of all jumpers. A comparison in overlap between previous predictions (N seconds) and the current prediction enables the possibility to keep the crop position of the previous frame for the current frame. Comparing overlap is called Intersection over Union or IoU for short.
 
 (Clarifying images will follow in a next version)
 
 A possible improvement could be matching previous boxes with the new predictions, eliminating the spectator. Which begs the question, what if the jumpers are entering the field? There are no earlier predicted boxes to match.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.45\linewidth]{img/1267_292_cropped}
+    \includegraphics[width=0.45\linewidth]{img/1405_1061_cropped}
+    \caption[dd3-crop-error]{Two crops were a spectator alongside the athletes.}
+    \label{fig:dd3-crop-error}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.45\linewidth]{img/1315_2935}
+    \includegraphics[width=0.45\linewidth]{img/2297_134}
+    \label{fig:dd3-crop}
+    \caption[Valid crops of a DD3 routine on competition.]{Valid crops of a DD3 routine on competition.}
+\end{figure}
 
 \subsection{Eliminate shakiness}
 
@@ -61,17 +118,14 @@ This means that the crop of a new frame is S times the crop value of the previou
 
 It was playing around with these parameters (smooth values \& N) to get a working setup which works in most cases, sporadically changing one if the crop of a video was not sufficient, e.g. running out of the cropped view.
 
+Full code:
 
-% \begin{listing}
-%    \begin{minted}{python}
-%        import pandas as pd
-%        import seaborn as sns
-
-%        penguins = sns.load_dataset('penguins')
-%        sns.relplot(data=penguins, x="flipper_length_mm", y="bill_length_mm", hue="species")
-%    \end{minted}
-%    \caption[Voorbeeld codefragment]{Voorbeeld van het invoegen van een codefragment.}
-%\end{listing}
+\begin{listing}
+   \begin{minted}{python}
+       print('TODO : cleanup code')
+   \end{minted}
+   \caption[Example codefragment]{Example of adding cropping code.}
+\end{listing}
 
 
 \section{Action segmentation}

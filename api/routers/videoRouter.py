@@ -119,6 +119,7 @@ class VideoImageRouter(Resource):
         print(frameNr)
 
         cropped = True
+        croptext = "_cropped" if cropped else ""
 
         videopath = os.path.join(STORAGE_DIR, videoinfo.get_relative_video_path()) if not cropped else get_cropped_video_path(videoId=videoId)
         cap = cv2.VideoCapture(videopath)
@@ -127,6 +128,6 @@ class VideoImageRouter(Resource):
         
         cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
         res, frame = cap.read()
-        filename = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER, f"{videoId}_{frameNr}.jpg")
+        filename = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER, f"{videoId}_{frameNr}{croptext}.jpg")
         cv2.imwrite(filename, frame)
         return 'ok', 200

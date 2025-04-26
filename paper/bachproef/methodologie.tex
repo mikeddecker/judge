@@ -26,26 +26,38 @@
 %% Maak voor elke fase (behalve het literatuuronderzoek) een NIEUW HOOFDSTUK aan
 %% en geef het een gepaste titel.
 
-In this section follows a brief description of the road map in order to build the proof of concept (PoC), which combines the general key insights from the literature.
+This section contains a brief description of the road map to build the proof of concept (PoC), which combines the general key insights from the literature.
 
-You could see the proposed model as a three-way modular model. Each step can be improved individually in order to acquire the best possible result and shouldn't depend on each other.
-The first section will be localizing the athletes in the field in order to crop them out and spare computational resources. Next up is segmenting each skill performed in a given routine as doing it on competitions would take longer then reviewing a recording at half speed. The final part involves recognizing what each displayed skill is.
+The proposed model can be seen as a three-way modular setup. Each step can be improved individually in order to acquire the best possible result and is implemented independently.
+The first step focuses on localizing the athletes in the field in order to crop them out and spare computational resources. Next up is segmenting each skill performed in a given routine. The final part involves recognizing each isolated skill.
+
+% TODO : chart overview of model.
 
 \section{Jumper localization}
 
-For predicting the location of the athletes, any object detection model is fine with slight preference towards a model like YOLO or EfficientDet having a higher FPS rate then others \autocite{Zaidi_2021}.
+Jumper localization is needed in order crop a zoomed-in video of the skippers performing their routine. The AI generated image \ref{fig:sr2-performance-ai-generated} perfectly illustrates a competition setting, where the majority of the image and computation is lost on surroundings, judges and spectators.
+
+For predicting the location of the athletes, any object detection model is fine with slight preference towards a model like YOLO or EfficientDet having a higher FPS rate than others based on survey of \textcite{Zaidi_2021}.
 Using the predicted locations of the skippers, each frame of video can be cropped around the athletes.
 
 Potential obstacles are predicted spectators or blurry athletes mid-skill being unrecognizable. Refer to the result chapter~\ref{ch:results} for more details on the solution.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{img/sr2-performance-ai-generated-HF-cinedifusion.png}
+    \caption[AI Generated image using takajordans CineDiffusion implementation on huggingface of two skippers performing a single rope 2 freestyle in front of judges and public]{AI Generated image using takajordans CineDiffusion implementation on huggingface of two skippers performing a single rope 2 freestyle in front of judges and public \autocite{HF_takarajordan_CineDiffusion}.}
+    \label{fig:sr2-performance-ai-generated}
+\end{figure}
+
 
 \section{Action segmentation}
 
 The main purpose of the action segmentation is to enable predictions on full routines in order to actually use the whole model. Using the cropped images, and the assigned start and end frame of a skill, the model can predict whether a given frame is an interesting split point or not.
 
-For jump rope, this mostly means moments when an athlete leaves or lands on the floor. Other cases could be a cartwheel not over a rope or recovering from a mistake. As the idea of leaving and landing on the floor seems simplistic, a couple of models can be tried. This means more simple convolutional models to models incorporating temporal information.
+For jump rope, this mostly means moments when an athlete leaves or lands on the floor. However there are special cases such as cartwheels. Only moments when either hands or feet landed over a rope, then only ends the skill. A couple of models can be tried as the idea of leaving and landing on the floor seems relatively straightforward. This means more simple convolutional models to models incorporating temporal information.
 The best model or an ensemble of the best ones will be used in the full sequence.
-c
-A couple of ideas exist in order to increase accuracy. Both the frame before and the frame after each split point can be assigned as split point, selecting the one with the highest prediction as the final split point. Another idea would be to assign higher values to split points using a cyclic function like the sinus depending on its distance between two split points.
+
+A couple of ideas exist in order mark interesting split moments. Both the frame before and the frame after each split point can be assigned as split point, selecting the one with the highest probability as the final split point. Another idea would be to assign higher values to split points using a cyclic function like the sinus depending on its distance between two split points.
 
 \section{Skill recognition}
 

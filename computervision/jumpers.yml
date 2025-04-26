@@ -16,4 +16,3 @@ val: images/val # val images (relative to 'path') 4 images
 # Classes
 names:
   0: jumper
-  1: coach # Just an idea
