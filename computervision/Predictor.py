@@ -243,29 +243,29 @@ class Predictor:
             
             horizontal = 0
             vertical = 0
-            w, h = draw_text(frame, type, pos=(text_pos, text_pos), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            w, h = draw_text(frame, type, pos=(text_pos, text_pos), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             vertical += 2 * h
             
-            w, h = draw_text(frame, hands, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            w, h = draw_text(frame, hands, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             horizontal += w
-            w, h = draw_text(frame, highfrog, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            w, h = draw_text(frame, highfrog, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             horizontal += w
-            w, h = draw_text(frame, turntable, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            w, h = draw_text(frame, turntable, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             horizontal += w
             w, h = draw_text(frame, skill, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color)
             vertical += 2 * h
             
-            w, h = draw_text(frame, turners, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            w, h = draw_text(frame, turners, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             vertical += 2 * h
-            w, h = draw_text(frame, rotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            w, h = draw_text(frame, rotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             vertical += 2 * h
-            w, h = draw_text(frame, bodyRotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            w, h = draw_text(frame, bodyRotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             # vertical += 2 * h
-            # w, h = draw_text(frame, hard2see, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            # w, h = draw_text(frame, hard2see, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             # vertical += 2 * h
-            # w, h = draw_text(frame, sloppy, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_high)
+            # w, h = draw_text(frame, sloppy, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             # vertical += 2 * h
-            # w, h = draw_text(frame, fault, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_special)
+            # w, h = draw_text(frame, fault, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             # vertical += 2 * h
 
             frames.append(frame)
@@ -415,7 +415,7 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    for videoId in [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
+    for videoId in [2289]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
         predictor.predict(
             type="FULL",
             videoId=videoId,

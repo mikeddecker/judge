@@ -286,7 +286,7 @@ def draw_text(img, text,
           font=cv2.FONT_HERSHEY_PLAIN,
           pos=(0, 0),
           font_scale=3,
-          font_thickness=1,
+          font_thickness=2,
           text_color=(0, 255, 0),
           text_color_bg=(0, 0, 0)
           ):
