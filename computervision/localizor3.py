@@ -1,5 +1,6 @@
 import os
 import cv2
+import json
 import math
 import shutil
 import pandas as pd
@@ -108,6 +109,8 @@ def calculate_cosine_similarity(new_x_min, new_y_min, new_x_max, new_y_max, old_
 
     return cosine_similarity
 
+rawfolder = "raw-predictions"
+os.makedirs(os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, rawfolder), exist_ok=True)
 
 # %%
 DIM = 256
@@ -117,6 +120,7 @@ videoIds = repo.get_dd3_videoIds()["id"].to_list()
 for videoId in videoIds:
     start = time.time()
     videoPath = get_video_path(repo, videoId=videoId)
+    rawOutputPath = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, rawfolder, f"{DIM}_{videoId}.json")
     videoOutputPath = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f"{DIM}_{videoId}.mp4")
     videoOutputPathCorrect = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f"{DIM}_{videoId}.mp4")
     videoOutputPathCorrectOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK", f"{DIM}_{videoId}.mp4")
@@ -163,12 +167,14 @@ for videoId in videoIds:
     times_with_no_jumper = 0
     cropping_started = False
     frames = []
+    predicted_boxes = []
 
     ret, frame = cap.read()
     while ret:
         i += 1
         result = model(frame, verbose=False)
         xyxy_boxes = result[0].boxes.xyxy
+        predicted_boxes.append(xyxy_boxes.tolist())
 
         # ## DD3 only, additional labeling
         # if xyxy_boxes.shape[0] != 3:
@@ -299,10 +305,8 @@ for videoId in videoIds:
         
         ret, frame = cap.read()
 
-    # print("min width", min_w, "max_w", max_w)   
-    # print("min_height", min_h, "max_h", max_h)
-    # print(i)
-
+    with open(rawOutputPath, "w") as fp:
+        json.dump(predicted_boxes, fp, indent=4)  # The indent is optional but makes the file more readable
     # Release everything if job is finished
     cap.release()
     cv2.destroyAllWindows()
