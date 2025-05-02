@@ -5,13 +5,15 @@
 \chapter{\IfLanguageName{dutch}{Resultaten}{Results}}%
 \label{ch:results}
 
-The result section focuses on elaborating conducted experiments and acquired results, divided into the three main phases, localization, segmentation and recognition. In order to label, annotate videos and gain insights in the results a Vue3 web-app is created on a python flask API which reads and stores labels and video annotations from a MySQL database. Furthermore, the experiments are all performed using an Acer Nitro ANV15-51, running Ubuntu 24.04.2 LTS, using a 13th Gen Intel® Core™ i5-13420H × 12, with 16GB RAM and a NVIDIA GeForce RTX™ 4050 Laptop GPU (6GB).
+The result section focuses on elaborating conducted experiments and acquired results, divided into the three main phases, localization, segmentation and recognition. In order to label, annotate videos and gain insights in the results a Vue3 web-app is created on a python flask API which reads and stores labels and video annotations from a MySQL database. Furthermore, the experiments are all performed using an Acer Nitro ANV15-51, running Ubuntu 24.04.2 LTS, using a 13th Gen Intel® Core™ i5-13420H × 12, with 16GB RAM and a NVIDIA GeForce RTX™ 4050 Laptop GPU 5898MiB.
 
 \section{Jumper localization}
 
 % TODO: add, this is relevant
 % TODO: convex hull the 3 jumpers and train on yolo model.
 As DD3 routines are the focus of this research, the idea was to predict the coordinates and position of a team as a single unit, instead of individuals. This idea was supported by the fact that there aren't any public jump rope datasets and it was expected to increase the speed of labeling. The AI generated image \ref{fig:sr2-performance-ai-generated} shows an example of a competition setting where two athletes are performing a routine. The goal here would be to crop out the jumpers.
+
+% TODO : add crop around jupers
 
 Below you can find a shortlist of experiments executed on localization.
 
@@ -45,6 +47,8 @@ From scratch
 
 GoogleNet, MobileNet... (on individual labels)
 
+Display code \& mention unbalanced augmented, but still unbalanced dataset \& higher learning rate as compared below.
+
 Conclusion:
 Predicting full teams didn't work out which allowed for a transition to labeling and predicting individuals athletes. Below you find more information about those experiments.
 
@@ -55,13 +59,13 @@ Failed experiment, C error, no results.
 
 Experiment 3, pre-trained models \& individual boxes.
 
-The third experiment incorporates a double upgrade. The first upgrade involves annotating individual athletes on images instead of one big box around all jumpers, which allows more varying labels on collected single rope or double dutch 4 videos. The second upgrade is trying a pre-trained object detection model.
+The third experiment incorporates a double upgrade. The first upgrade involves annotating individual athletes on images instead of one big box around all jumpers. This method allows to annotate other routines such as single rope, chinese wheel or double dutch 4. The second upgrade is trying a pre-trained object detection model.
 
 Ultralytics \autocite{Khanam2024} provides an easy-to-use pre-trained implementation for predicting people and objects in images which can be fine-tuned for specific use cases. Fine-tuning was needed as spectators, also humans, were also included in the predictions.
 
 Using these predictions, a crop around the three jumpers can be created using the predicted jumper boxes from the fine-tuned YOLO model, after using the pre-trained weights on the COCO dataset \autocite{Lin2014}. In order to improve the crops some steps were required. Details are discussed below.
 
-\subsubsection{Eliminate spectators - IoU comparison}
+\subsubsection{Crop stability}
 
 \begin{figure}
     \centering
@@ -76,22 +80,17 @@ Using these predictions, a crop around the three jumpers can be created using th
 %%    \includegraphics[width=0.35\linewidth]{img/PR_curve}
     \includegraphics[width=0.95\linewidth]{img/results}
     \includegraphics[width=0.85\linewidth]{img/confusion_matrix_normalized}
-    \caption[metrics after fine-tuning YOLOv11]{Metrics after fine-tuning YOLOv11 on the validation set of 161 images}
+    \caption[metrics after fine-tuning YOLOv11]{Metrics after fine-tuning YOLOv11 on the validation set of 161 images, mAP50 of 0.953 \& mAP50-95 of 0.63, annotation of coaches was an idea.}
     \label{fig:localization-results}
 \end{figure}
 
-In order to eliminate the spectators, coaches or judges, only athletes are marked on images. Using 729 annotated frames as refinement, predictions of spectators are reduced considerately, while occasional spectators are still predicted. See figure \ref{fig:raw-vs-fine-tuned-boxes} for clarity.
-This results in imperfect crops \ref{fig:dd3-crop-error} as compared to valid crops \ref{fig:dd3-crop}.
-
-See
-
-In order to reach stability in the predictions, box-coordinates of the last
-Even though the model is fine-tuned on almost two-thousand images, occasionally coaches or spectators were still predicted as jumpers, requiring a solution.
-When a spectator or more than one is predicted, this means that total crop of all 'athletes' could be bigger than the actual location of all jumpers. A comparison in overlap between previous predictions (N seconds) and the current prediction enables the possibility to keep the crop position of the previous frame for the current frame. Comparing overlap is called Intersection over Union or IoU for short.
-
-(Clarifying images will follow in a next version)
-
-A possible improvement could be matching previous boxes with the new predictions, eliminating the spectator. Which begs the question, what if the jumpers are entering the field? There are no earlier predicted boxes to match.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.45\linewidth]{img/1315_2935}
+    \includegraphics[width=0.45\linewidth]{img/2297_134}
+    \caption[Valid crops of a DD3 routine on competition.]{Valid crops of a DD3 routine on competition.}
+    \label{fig:dd3-crop}
+\end{figure}
 
 \begin{figure}
     \centering
@@ -101,22 +100,39 @@ A possible improvement could be matching previous boxes with the new predictions
     \label{fig:dd3-crop-error}
 \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.45\linewidth]{img/1315_2935}
-    \includegraphics[width=0.45\linewidth]{img/2297_134}
-    \label{fig:dd3-crop}
-    \caption[Valid crops of a DD3 routine on competition.]{Valid crops of a DD3 routine on competition.}
-\end{figure}
+Annotating only athletes on 732 images \& fine-tuning the pre-trained nano yolo model, the first predictions of spectators are reduced considerately.
+This way crops can be created by taking the minimum and maximum \(x\) \& \(y\)-coordinates. Reviewing cropped videos show indicate occasional frames predicting spectators, coaches or judges and moments of instability, as if you are watching camera footage of an earthquake.
 
-\subsection{Eliminate shakiness}
+In order to avoid a sudden zoom out, because of spectators, an IoU comparison of the previous predicted box with the new box is made. If the IoU value is larger than the average IoU of the last \(N\) seconds, powered to the fourth, than crop coordinates will be updated. Using the IoU comparison, reduces video crops including spectators, maintaining the earthquake effect.
 
-A video is a sequence of frames changing the position of the skipper a little bit each frame. Even if actions are fluidly executed, the actual predictions of the jumpers location can shift a few pixels to the left or right between consecutive boxes. This means that raw crops are shaking around the jumper, disturbing the natural feel.
 
-Smoothing values (S), two parameters, where added to eliminate the shaking of consecutive crops. One of the parameters is used for smoothly shrinking the frame (0.94), the other for expanding the frame (0.85).
-This means that the crop of a new frame is S times the crop value of the previous frame added with 1 - S times the new prediction, elimination shakiness. The second parameter was added in order to fix jumpers running out the crop while executing a larger actions covering a lot of position on the floor.
+To reduce shakiness and maintain a nice to watch cropped video, box-coordinates are smoothed out adapting box predictions of previous frames with the current one. This way, drastic changes in a predicted location, e.g. model ererrorror, arm or field movements aren't that drastic. Adaptation is done by incorporating two smooth values, indicating how much weight you give to the smoothed prediction of the previous frame. \footnote{Smoothed values are obtained by playing around with values, choosing those leading to the best, subjective, smoothed review}
 
-It was playing around with these parameters (smooth values \& N) to get a working setup which works in most cases, sporadically changing one if the crop of a video was not sufficient, e.g. running out of the cropped view.
+$$ smth = smootval = 0.86  \quad \& \quad smths = smootval\_shrink = 0.94 $$
+
+Which makes the new coordinates:
+
+\begin{equation}
+   smooted_{x1_{min}} =
+   \begin{cases}
+       smooted_{x1_{min}} & \text{if} \quad iou < iou_{threshold} \\
+       smth * smooted_{x1_{min}} + (1-smth) * x1_{min} & \text{else if} \quad x1_{min} < smooted_{x1_{min}} \\
+       smths^ * smooted_{x1_{min}} + (1-smths) * x1_{min} & \text{otherwise}
+   \end{cases}
+\end{equation}
+
+The same is done for \( y1_{min}, x2_{max}, y2_{max} \).
+
+Utilizing these steps allows for videos where a team is always on display (\ref{fig:dd3-crop}), with some videos still predicting spectators (\ref{fig:dd3-crop-error}) and a newly introduced problem, namely skippers running out of view.
+
+% TODO : add movement corrector
+
+
+
+
+
+A possible improvement could be matching individual boxes with the new predictions, eliminating the spectator. Which raises concerns about jumpers entering the competition field. There are no earlier predicted boxes to match.
+The total algorithm isn't perfect yet, but the results indicate sufficient valid video crops to use and experiment on segmentation and recognition.
 
 Full code:
 
