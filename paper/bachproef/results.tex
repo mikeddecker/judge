@@ -274,6 +274,7 @@ Each frame than has a value from zero to one. An example of consecutive splitpoi
 
 
 \subsection{Video Vision Transformer \& Self-attention ConvLSTM}
+\label{subsec:video-models-from-scratch}
 
 The first and second experiment for segmention use code implementations of the video vision transformer as described in \textcite{Arnab2021} and the Self-Attention ConvLSTM from \textcite{Lin_2020}.
 Implementations of these models, ViViT \ref{code:get_model_ViViT} and SA-ConvLSTM (TODO), are aided by \textcite{OpenAI_ChatGPT_2025} and \textcite{Deepseek_2025}.
@@ -426,14 +427,13 @@ To get al sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) hav
     \label{code:predictions-to-splitpoints}
 \end{listing}
 
-
 \begin{figure}
     \centering
     \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2250_with_250_points}
     \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2500_with_250_points}    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2750_with_250_points}    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_3000_with_250_points}
     \caption[Segmentation plot]{Segmentation plot comparing predictions with the splitpoint values indicating a match of interesting splitpoint. Visible errors are: \\
         at frame 2459, a relatively lower jump out of the rope with a snapper. \\
-        at frames 2700 until 2900 indicating a transition which is labeled in one segment, but the athletes are rather bouncy on their feet, letting the model think those are splitpoints.
+        at frames 2700 until 2900 indicating a transition which is labeled in one segment, but the athletes are rather bouncy on their feet, letting the model think those are splitpoints. \\
         a handspring occurs from frame 3140 until 3192, but the model indicates to much during the skill, while it doesn't indicate the moment right after the handspring.
     }
     \label{fig:segmentation-plot}
@@ -446,21 +446,46 @@ These predicted segments are the first usable split moments to use for splitting
 \section{Skill recognition}
 \label{results:recognition}
 
-The first trials from scratch, a video vision transformer, which is adapted from the transformer created during classes. Adding the convolution layer in front and the time dimension created the ViViT transformer as proposed in (source).
-Idea's add extra convolution layers \& use pre-trained model.
-
 Elaborate 16 frame time aspect.
 
-\subsection{Video Vision Transformer}
+\subsection{Video Vision Transformer \& Self-attention ConvLSTM}
 
-For training the video vision transformer, the data is upsampeled
+Using about 5k skills, 4550 to train and 669 to validate, the same video models as described in the segmentation phase \ref{subsec:video-models-from-scratch} can be trained the skill properties defined in \ref{subsec:skillcomplexiteit}.
+During the annotation of videos, it is noticed how screwed the skill-data is. Other action properties like turners, hands, type or faults are equally skewed. See table \ref{tab:skill_distribution_full_with_nulls} for a breakdown of skill occurrences.
+
+Both the ViViT and the SA-ConvLSTM were plateauing on the most appearing value, always predicting normal jumps, normally turned, without a mistake etc.
+Even up-sampling less occurring combination didn't help. The models stagnated on validation losses of 5.9 and 6.5. See figure \ref{fig:skill-upsampling-distribution} to see how many times a skill appears in a training round, depending on its uniqueness.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/skill-upsampling-distribution}
+    \caption[upsampling distribution of skills]{Occurance of upsampeled segmented skills. Unqiue combinations, e.g. a mistake, where the turners turned a triple under with an EB and a front-flip could occure multiple times (e.g. 20 times), as compared to a normal jump, normally turned, re-appearing twice in a training round as normal jumps already has many more labels in the dataset.}
+    \label{fig:skill-upsampling-distribution}
+\end{figure}
+
+In order to reach better results, the search for a pre-trained model leads us to the following experiment, namely the usage of PyTorch implementation of the Multiscale Video Vision Transformer.
 
 \subsection{Multiscale Video Vision Transformer - MViT}
-\href{https://pytorch.org/vision/main/models/video_mvit.html}{Pytorch MViT}
 
-Pytorch implementation of source.
 
-For the first training round a double upgrade has been performed. The first adaption is downsampling the skills in 5 main classes to predict.  \& pre-trained model.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/mvit-5-classes}
+    \caption[Classification report on only 5 skill classes]{Classification report on the 5 classes jumps, pushups, return from powers, frogs or other skills after training mvit on an equally distributed, max 442 samples per skill as seen in table \ref{tab:skill_distribution_grouped_final}.}
+    \label{fig:mvit-5-classes}
+\end{figure}
+
+
+\href{https://pytorch.org/vision/main/models/video_mvit.html}{PyTorch's Video MViT} is an implementation based on the Multiscale Vision Transformer created by \textcite{Fan2021} and possibly pre-trained on the kinetics dataset.
+The first experiment using this model used a perfectly balanced dataset for skills only, namely taking a random subset of maximum of 442 samples on each of the 5 classes seen in table \ref{tab:skill_distribution_grouped_final}.
+The first results showed accuracies of 87\% to 98\% (see fig. \ref{fig:mvit-5-classes}) even some turner skills getting predicted correctly.
+
+Re-enabling all skill classes and all other properties results in a total validation loss of 1.3835, as compared to 5.9 or 6.5 earlier.
+For skills only, the weighted f1-accuracy is 93\%, while macro f1-accuracy is 40\%.
+The macro accuracy gives a better indication as accuracies on all defined classes, e.g. pushup, jump, swift, are taken into account equally. In this experiment, the less appearing skills lower the score of the macro accuracy, as they do not appear as often.
+
+Like the previous subsection, these results are trained on the skilldistribution displayed in table \ref{tab:skill_distribution_full_with_nulls}).
+A breakdown of all classification reports can be found in tables \ref{tbl:mvit-class-report-type} -> \ref{tbl:mvit-class-report-fault}. You may notice that the predictions for bodyRotations, sloppy, hard2see \& faults have yet to start learning.
 
 \begin{table}[h!]
     \centering
@@ -493,7 +518,7 @@ For the first training round a double upgrade has been performed. The first adap
         0.0223 & 1 & footwork-open & 1 & 0.1495 \\
         \hline
     \end{tabular}
-    \caption{Skill distribution with training and validation counts and percentages. Null values indicate missing validation data.}
+    \caption{Skill distribution with training and validation counts and percentages. Null values indicate absence of skill occurrence in the validation data.}
     \label{tab:skill_distribution_full_with_nulls}
 \end{table}
 
@@ -516,17 +541,313 @@ For the first training round a double upgrade has been performed. The first adap
 \end{table}
 
 
-\section{Model verification}
+\section{Model verification - act as a judge}
 
 Comming soon... (Mapping predicted skills, turners, rotations... to its perspective level which will be compared with the score assigned by judges on competition.)
 
 \begin{listing}
     \begin{minted}{python}
-        print('TODO : cleanup code')
+        dd_config = ConfigHelper.get_discipline_DoubleDutch_config()
+        outputs = {}
+        for key, value in dd_config.items():
+            if key == "Tablename":
+                continue
+            if value[0] == "Categorical":
+                tablename = "skill"
+                match (key):
+                    case 'Skill':
+                        tablename = 'skills'
+                    case 'Turner1' | 'Turner2':
+                        tablename = "turners"
+                    case 'Type':
+                        tablename = 'types'
+                classes = int(df_table_counts.iloc[0][tablename])
+                outputs[key] = keras.layers.Dense(classes, activation='softmax', name=key)(features)
+            else:
+                outputs[key] = keras.layers.Dense(1, activation='sigmoid', name=key)(features)
+
+        return keras.Model(inputs=inputs, outputs=outputs)
     \end{minted}
     \caption[]{}
-    \label{code:}
+    \label{code:keras-skill-top-layers}
 \end{listing}
+
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+        \hline          & precision & recall & f1-score & support \\
+        \hline
+        Double Dutch    &   0.97    &   0.98    &   0.97    &  525 \\
+        Single Dutch    &   1.00    &   0.25    &   0.40    &  4   \\
+        Irish Dutch     &   0.00    &   0.00    &   0.00    &  0   \\
+        Chinese Wheel   &   0.92    &   0.97    &   0.94    &  86  \\
+        Transition      &   0.72    &   0.88    &   0.79    &  24  \\
+        Snapperlike     &   0.90    &   0.63    &   0.75    &  30  \\
+        \hline
+        accuracy        &           &           &   0.95    &  669 \\
+        macro avg       &   0.75    &   0.62    &   0.64    &  669 \\
+        weighted avg    &   0.95    &   0.95    &   0.95    &  669 \\ \hline
+    \end{tabular}
+    \caption{mvit-class-report-type}
+    \label{tbl:mvit-class-report-type}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+        \hline
+          &  precision &   recall & f1-score &  support \\ \hline
+        0 &       0.00 &     0.00 &     0.00 &       26 \\
+        1 &       0.91 &     0.95 &     0.93 &      544 \\
+        2 &       0.59 &     0.67 &     0.63 &       70 \\
+        3 &       0.39 &     0.44 &     0.41 &       16 \\
+        4 &       0.50 &     0.10 &     0.17 &       10 \\
+        5 &       0.00 &     0.00 &     0.00 &        2 \\
+        8 &       0.00 &     0.00 &     0.00 &        1 \\
+        \hline
+        accuracy &            &          &     0.86 &      669 \\
+        macro avg &       0.34 &     0.31 &     0.31 &      669 \\
+        weighted avg &       0.82 &     0.86 &     0.83 &      669 \\ \hline
+    \end{tabular}
+    \caption{mvit-class-report-rotations}
+    \label{tbl:mvit-class-report-rotations}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+               normal &      0.93 &     0.98 &     0.96 &      542 \\
+              crouger &      0.90 &     0.88 &     0.89 &       40 \\
+                cross &      0.80 &     0.58 &     0.67 &       57 \\
+             cross BW &      0.00 &     0.00 &     0.00 &        2 \\
+   jump over cross BW &      0.00 &     0.00 &     0.00 &        3 \\
+                   EB &      0.57 &     0.36 &     0.44 &       11 \\
+                 toad &      0.54 &     0.88 &     0.67 &        8 \\
+              toad BW &      0.00 &     0.00 &     0.00 &        1 \\
+              EB toad &      0.00 &     0.00 &     0.00 &        3 \\
+                   TS &      0.00 &     0.00 &     0.00 &        0 \\
+         inverse toad &      0.00 &     0.00 &     0.00 &        0 \\
+             elephant &      0.00 &     0.00 &     0.00 &        0 \\
+         crougercross &      0.00 &     0.00 &     0.00 &        0 \\
+             pinwheel &      0.00 &     0.00 &     0.00 &        1 \\
+              suicide &      0.00 &     0.00 &     0.00 &        0 \\
+      inverse crouger &      0.00 &     0.00 &     0.00 &        0 \\
+                 flip &      0.00 &     0.00 &     0.00 &        0 \\
+               T-toad &      0.00 &     0.00 &     0.00 &        0 \\
+MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
+           EB toad BW &      0.00 &     0.00 &     0.00 &        0 \\
+         L2-power-gym &      0.00 &     0.00 &     0.00 &        0 \\
+         L3-power-gym &      0.00 &     0.00 &     0.00 &        0 \\
+         L4-power-gym &      0.00 &     0.00 &     0.00 &        0 \\
+              UNKNOWN &      0.00 &     0.00 &     0.00 &        0 \\
+         jump-through &      0.00 &     0.00 &     0.00 &        0 \\
+      EB inverse toad &      0.00 &     0.00 &     0.00 &        1 \\ \hline
+             accuracy &           &          &     0.91 &      669 \\
+            macro avg &      0.14 &     0.14 &     0.14 &      669 \\
+         weighted avg &      0.89 &     0.91 &     0.90 &      669 \\
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-turner1}
+    \label{tbl:mvit-class-report-turner1}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                normal &       0.92 &     0.97 &     0.94 &      540 \\
+               crouger &       0.80 &     0.84 &     0.82 &       38 \\
+                 cross &       0.79 &     0.60 &     0.68 &       55 \\
+              cross BW &       0.00 &     0.00 &     0.00 &        4 \\
+    jump over cross BW &       0.00 &     0.00 &     0.00 &        2 \\
+                    EB &       0.67 &     0.31 &     0.42 &       13 \\
+                  toad &       0.50 &     0.86 &     0.63 &        7 \\
+               toad BW &       0.00 &     0.00 &     0.00 &        2 \\
+               EB toad &       0.00 &     0.00 &     0.00 &        4 \\
+                    TS &       0.00 &     0.00 &     0.00 &        0 \\
+          inverse toad &       0.00 &     0.00 &     0.00 &        0 \\
+              elephant &       0.00 &     0.00 &     0.00 &        0 \\
+          crougercross &       0.00 &     0.00 &     0.00 &        0 \\
+              pinwheel &       0.00 &     0.00 &     0.00 &        3 \\
+               suicide &       0.00 &     0.00 &     0.00 &        0 \\
+       inverse crouger &       0.00 &     0.00 &     0.00 &        0 \\
+                  flip &       0.00 &     0.00 &     0.00 &        0 \\
+                T-toad &       0.00 &     0.00 &     0.00 &        0 \\
+ MULTIPLE TURNERSKILLS &       0.00 &     0.00 &     0.00 &        0 \\
+            EB toad BW &       0.00 &     0.00 &     0.00 &        0 \\
+          L2-power-gym &       0.00 &     0.00 &     0.00 &        0 \\
+          L3-power-gym &       0.00 &     0.00 &     0.00 &        0 \\
+          L4-power-gym &       0.00 &     0.00 &     0.00 &        0 \\
+               UNKNOWN &       0.00 &     0.00 &     0.00 &        0 \\
+          jump-through &       0.00 &     0.00 &     0.00 &        0 \\
+       EB inverse toad &       0.00 &     0.00 &     0.00 &        1 \\ \hline
+              accuracy &            &          &     0.90 &      669 \\
+             macro avg &       0.14 &     0.14 &     0.13 &      669 \\
+          weighted avg &       0.87 &     0.90 &     0.88 &      669 \\
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-turner2}
+    \label{tbl:mvit-class-report-turner2}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                jump &      1.00 &     0.98 &     0.99 &      380 \\
+   return from power &      0.88 &     0.87 &     0.88 &       85 \\
+              pushup &      0.84 &     0.96 &     0.90 &       72 \\
+                frog &      0.96 &     0.90 &     0.93 &       61 \\
+               split &      0.94 &     1.00 &     0.97 &       15 \\
+             SPAGAAT &      0.00 &     0.00 &     0.00 &        0 \\
+                crab &      0.64 &     0.88 &     0.74 &        8 \\
+               swift &      0.00 &     0.00 &     0.00 &        0 \\
+     mountainclimber &      0.00 &     0.00 &     0.00 &        0 \\
+                 rad &      0.00 &     0.00 &     0.00 &        2 \\
+              rondat &      0.40 &     0.40 &     0.40 &        5 \\
+          handspring &      0.43 &     0.60 &     0.50 &        5 \\
+                 kip &      1.00 &     0.83 &     0.91 &        6 \\
+              kopkip &      0.50 &     1.00 &     0.67 &        1 \\
+                flip &      0.50 &     0.60 &     0.55 &        5 \\
+             arabian &      0.00 &     0.00 &     0.00 &        0 \\
+             rol2kip &      0.83 &     0.83 &     0.83 &        6 \\
+                roll &      1.00 &     0.67 &     0.80 &        3 \\
+            leapfrog &      0.00 &     0.00 &     0.00 &        0 \\
+             suicide &      0.89 &     0.89 &     0.89 &        9 \\
+      flip-to-pushup &      0.00 &     0.00 &     0.00 &        1 \\
+        buddy-bounce &      0.00 &     0.00 &     0.00 &        1 \\
+                stut &      1.00 &     1.00 &     1.00 &        2 \\
+       footwork-kick &      0.00 &     0.00 &     0.00 &        0 \\
+               speed &      0.00 &     0.00 &     0.00 &        0 \\
+       footwork-open &      0.00 &     0.00 &     0.00 &        1 \\
+       footwork-knee &      0.00 &     0.00 &     0.00 &        0 \\
+     footwork-cancan &      0.00 &     0.00 &     0.00 &        0 \\
+      footwork-cross &      0.00 &     0.00 &     0.00 &        0 \\
+              UNKOWN &      0.00 &     0.00 &     0.00 &        1 \\
+        \hline
+            accuracy &           &          &     0.93 &      669 \\
+           macro avg &      0.39 &     0.41 &     0.40 &      669 \\
+        weighted avg &      0.93 &     0.93 &     0.93 &      669 \\
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-skill}
+    \label{tbl:mvit-class-report-skill}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                0 &      0.99 &     0.94 &     0.96 &      481 \\
+                1 &      0.27 &     0.27 &     0.27 &       45 \\
+                2 &      0.75 &     0.88 &     0.81 &      143 \\ \hline
+         accuracy &           &          &     0.88 &      669 \\
+        macro avg &      0.67 &     0.70 &     0.68 &      669 \\
+     weighted avg &      0.89 &     0.88 &     0.88 &      669 \\
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-hands}
+    \label{tbl:mvit-class-report-hands}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                0 &      0.94 &      0.70 &      0.80 &        67 \\
+                1 &      0.52 &      0.52 &      0.52 &        83 \\
+                2 &      0.92 &      0.95 &      0.94 &       519 \\
+         accuracy &           &           &      0.87 &       669 \\ \hline
+        macro avg &      0.80 &      0.72 &      0.75 &       669 \\
+     weighted avg &      0.87 &      0.87 &      0.87 &       669 \\
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-feet}
+    \label{tbl:mvit-class-report-feet}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                0 &      0.98 &     0.99 &     0.99 &      656 \\
+                1 &      0.17 &     0.09 &     0.12 &       11 \\
+                2 &      0.00 &     0.00 &     0.00 &        2 \\ \hline
+         accuracy &           &          &     0.97 &      669 \\
+        macro avg &      0.38 &     0.36 &     0.37 &      669 \\
+     weighted avg &      0.97 &     0.97 &     0.97 &      669 \\
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-turntable}
+    \label{tbl:mvit-class-report-turntable}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                0 &      1.00 &      1.00 &     1.00 &      666 \\
+                1 &      0.00 &      0.00 &     0.00 &        2 \\
+                2 &      0.00 &      0.00 &     0.00 &        1 \\ \hline
+         accuracy &           &           &     1.00 &      669 \\
+        macro avg &      0.33 &      0.33 &     0.33 &      669 \\
+     weighted avg &      0.99 &      1.00 &     0.99 &      669 \\
+
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-bodyRotations}
+    \label{tbl:mvit-class-report-bodyRotations}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                0 &       0.99 &     1.00 &     1.00 &      660 \\
+                1 &       0.80 &     0.44 &     0.57 &        9 \\ \hline
+         accuracy &            &          &     0.99 &      669 \\
+        macro avg &       0.90 &     0.72 &     0.78 &      669 \\
+     weighted avg &       0.99 &     0.99 &     0.99 &      669 \\
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-backwards}
+    \label{tbl:mvit-class-report-backwards}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                0 &      0.97 &     1.00 &     0.99 &      651 \\
+                1 &      0.00 &     0.00 &     0.00 &       18 \\
+         accuracy &           &          &     0.97 &      669 \\ \hline
+        macro avg &      0.49 &     0.50 &     0.49 &      669 \\
+     weighted avg &      0.95 &     0.97 &     0.96 &      669 \\
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-sloppy}
+    \label{tbl:mvit-class-report-sloppy}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                0 &      1.00 &     1.00 &     1.00 &      666 \\
+                1 &      0.00 &     0.00 &     0.00 &        3 \\ \hline
+         accuracy &           &          &     1.00 &      669 \\
+        macro avg &      0.50 &     0.50 &     0.50 &      669 \\
+     weighted avg &      0.99 &     1.00 &     0.99 &      669 \\
+
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-hard2see}
+    \label{tbl:mvit-class-report-hard2see}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|}
+                \hline & precision &   recall & f1-score &  support \\ \hline
+                0 &      0.96 &     1.00 &      0.98 &       639 \\
+                1 &      0.00 &     0.00 &      0.00 &        30 \\ \hline
+         accuracy &           &          &      0.96 &       669 \\
+        macro avg &      0.48 &     0.50 &      0.49 &       669 \\
+     weighted avg &      0.91 &     0.96 &      0.93 &       669 \\
+         \hline
+    \end{tabular}
+    \caption{mvit-class-report-fault}
+    \label{tbl:mvit-class-report-fault}
+\end{table}
 
 \begin{listing}
     \begin{minted}{python}
