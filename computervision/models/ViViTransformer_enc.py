@@ -161,5 +161,4 @@ def get_model(modelinfo, df_table_counts: pd.DataFrame):
         else:
             outputs[key] = keras.layers.Dense(1, activation='sigmoid', name=key)(features)
 
-    # return Keras model.
     return keras.Model(inputs=inputs, outputs=outputs)

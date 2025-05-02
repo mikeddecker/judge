@@ -122,7 +122,6 @@ def get_model(modelinfo):
     for _ in range(modelinfo['encoder_blocks']):
         # Layer normalization 1.
         x1 = keras.layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
-        # Create a multi-head attention layer.
         attention_output = keras.layers.MultiHeadAttention(
             num_heads=modelinfo['num_heads'], key_dim=modelinfo['dim_embedding'], dropout=0.1
         )(x1, x1)
@@ -130,7 +129,6 @@ def get_model(modelinfo):
         x2 = keras.layers.Add()([attention_output, encoded_patches])
         # Layer normalization 2.
         x3 = keras.layers.LayerNormalization(epsilon=1e-6)(x2)
-        # MLP
         x3 = mlp(x3, hidden_units=[modelinfo['dim_embedding'] ** 2, modelinfo['dim_embedding']], dropout_rate=0.1)
         # Skip connection 2.
         encoded_patches = keras.layers.Add()([x3, x2])
@@ -145,5 +143,4 @@ def get_model(modelinfo):
     classes = modelinfo['timesteps']
     outputs = keras.layers.Dense(classes, activation='softmax')(features)
 
-    # return Keras model.
     return keras.Model(inputs=inputs, outputs=outputs)

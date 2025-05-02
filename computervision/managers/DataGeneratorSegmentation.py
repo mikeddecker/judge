@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 import random
 import math
-from DataRepository import DataRepository
-from FrameLoader import FrameLoader
+from managers.DataRepository import DataRepository
+from managers.FrameLoader import FrameLoader
 import sys
 sys.path.append('..')
 from api.helpers import ConfigHelper
@@ -59,7 +59,7 @@ class DataGeneratorSegmentation(keras.utils.Sequence):
                                                     start=frameStart, 
                                                     end=frameEnd,
                                                     normalized=normalize,
-                                                    )
+                                                    channels_last=True)
             loaded_frames = np.expand_dims(loaded_frames, axis=0)
             y = self.df_frames[(self.df_frames['videoId'] == videoId) & (self.df_frames['frameNr'] >= frameStart) & (self.df_frames['frameNr'] < frameEnd)]['splitpoint'].to_numpy()
             y = np.expand_dims(y, axis=0)

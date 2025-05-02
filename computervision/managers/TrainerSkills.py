@@ -110,7 +110,7 @@ class TrainerSkills:
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         try:
-            testrun = True
+            testrun = False
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
@@ -127,7 +127,7 @@ class TrainerSkills:
             accuracies = {}
             losses = []
             if not from_scratch and os.path.exists(checkpointPath):
-                checkpoint = torch.load(checkpointPath)
+                checkpoint = torch.load(checkpointPath, weights_only=False)
                 model.load_state_dict(checkpoint['model_state_dict'])
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])

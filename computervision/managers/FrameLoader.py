@@ -216,7 +216,7 @@ class FrameLoader:
     
     def get_skill(self, videoId: int, dim: tuple[int, int],
                   start: int, end: int, timesteps: int, normalized: bool = True, augment=False, flip_image=False):
-        vpath = os.path.join(STORAGE_DIR, 'cropped-videos', f'{dim[0]}_{videoId}.mp4')
+        vpath = os.path.join(STORAGE_DIR, 'cropped-videos', f'224_{videoId}.mp4')
         cap = cv2.VideoCapture(vpath)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
         _, frame = cap.read()
@@ -263,7 +263,7 @@ class FrameLoader:
         return np.array(frames), flip_image
     
     def get_segment(self, videoId: int, dim: tuple[int, int],
-                  start: int, end: int, normalized: bool = True, augment=False):
+                  start: int, end: int, normalized: bool = True, augment=False, channels_last=False):
         """Returns frames in interval [start, end["""
         vpath = self.__get_cropped_video_path(videoId=videoId, dim=dim[0])
 
@@ -288,7 +288,7 @@ class FrameLoader:
 
         assert len(frames) == end-start, f"Something went wrong, frames doesn't have length of timesteps = {end-start}, got {len(frames)}"
         
-        return np.transpose(np.array(frames), (3, 0, 1, 2))
+        return np.array(frames) if channels_last else np.transpose(np.array(frames), (3, 0, 1, 2))
 
     def get_skill_torch(self, videoId: int, dim: tuple[int, int],
                   start: int, end: int, timesteps: int, normalized: bool = True, augment=False):

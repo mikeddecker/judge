@@ -383,9 +383,7 @@ class Predictor:
             distances = predictions_splitmoments[1:] - predictions_splitmoments[:-1]
             predictions_splitmoments = predictions_splitmoments[1:]
             predictions_splitmoments = predictions_splitmoments[np.where(distances < window_size // 3, False, True)]
-            # print([f"{d:4d}" for d in distances])
             predictions_splitmoments = [int(g) for g in predictions_splitmoments]
-            # print(predictions_splitmoments)
 
             print([f"{d:4d}" for d in predictions_splitmoments])
             print(f"Predicted {len(predictions_splitmoments) - 1} splitpoints (end not included)")
@@ -415,7 +413,7 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    for videoId in [2289]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
+    for videoId in [1315]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
         predictor.predict(
             type="FULL",
             videoId=videoId,

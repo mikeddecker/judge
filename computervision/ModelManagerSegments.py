@@ -10,9 +10,9 @@ from datetime import datetime
 sys.path.append('.')
 
 from helpers import iou, my_mse_loss_fn, metric_mse_segmentation_close_accuracy, off_by_0_1, off_by_0_2, off_by_0_33
-from FrameLoader import FrameLoader
-from DataGeneratorSegmentation import DataGeneratorSegmentation
-from DataRepository import DataRepository
+from managers.FrameLoader import FrameLoader
+from managers.DataGeneratorSegmentation import DataGeneratorSegmentation
+from managers.DataRepository import DataRepository
 
 sys.path.append('..')
 from api.helpers.ConfigHelper import get_discipline_DoubleDutch_config

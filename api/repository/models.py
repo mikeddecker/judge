@@ -186,3 +186,23 @@ class Prediction_Frames(db.Model):
     
     predictionDate = db.Column(db.DateTime, default=date.today())
 
+# class Skillinfo_DoubleDutch(db.Model):
+#     __tablename__ = 'Predictions_SkillSegment'
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
+#     frameStart = db.Column(db.Integer, nullable=False)
+#     frameEnd = db.Column(db.Integer, nullable=False)
+#     type = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Type.id'), nullable=False)
+#     rotations = db.Column(TINYINT(unsigned=True), nullable=False)
+#     turner1 = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Turner.id'), nullable=False)
+#     turner2 = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Turner.id'), nullable=False)
+#     skill = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Skill.id'), nullable=False)
+#     hands = db.Column(TINYINT(unsigned=True), nullable=False)
+#     feet = db.Column(TINYINT(unsigned=True), nullable=False)
+#     turntable = db.Column(TINYINT(unsigned=True), nullable=False)
+#     bodyRotations = db.Column(TINYINT(unsigned=True), nullable=False)
+#     backwards = db.Column(db.Boolean, nullable=False)
+#     sloppy = db.Column(db.Boolean, nullable=False)
+#     hard2see = db.Column(db.Boolean, nullable=False, default=False)
+#     fault = db.Column(db.Boolean, nullable=False, default=False)
+#     predictionDate = db.Column(db.DateTime, default=date.today())

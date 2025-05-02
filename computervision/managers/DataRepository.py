@@ -211,3 +211,11 @@ class DataRepository:
             categoryNames['Skill'] = ['jump', 'return from power', 'pushup', 'frog', 'other']
         
         return categoryNames
+    
+    def upsert_skillsegmented_predictions(self, videoId:int, df_predictions):
+        """Columns: Like Skillinfo_DoubleDutch"""
+        if not self.check_connection():
+            self.con = self.__get_connection()
+        df_predictions["videoId"] = videoId
+        df_predictions.to_sql(name="Predictions_SkillSegment", if_exists='append', con=self.con, chunksize=500, index=False)
+        self.con.commit()
