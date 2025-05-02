@@ -25,7 +25,7 @@ As jumpers can turn the rope with many arm restrictions or in different body pos
 
 To accurately judge routines, each discipline has its own rules. Although there is some overlap, there are also important differences.
 
-As judging is prone to human error (\textbf{SOURCE}), this research is aimed to improving jump rope judging. % TODO : source!!!!
+As judging is prone to human error, \autocite{Heiniger2018}, this research is aimed to improving jump rope judging.
 
 \section{\IfLanguageName{dutch}{Onderzoeksvraag}{Research question}}%
 \label{sec:onderzoeksvraag}
@@ -60,7 +60,7 @@ As reviewing routines at half speed still has his limits, using a machine learni
 \subsubsection{Which data is available for the machine learning model to use?}
 \label{subsubsec:intro-question-data}
 
-Working with machine learning requires data which raises the question whether its available. To recognize hundreds of skills, variations and transitions, lots of data is needed. Both individual and team freestyles are mostly recorded by clubs themselves or event organizers, some of which are available on social media. The task is to explore and gather as much as possible.
+Working with machine learning requires data which raises the question whether it's available. To recognize hundreds of skills, variations and transitions, lots of data is needed. Both individual and team freestyles are mostly recorded by clubs themselves or event organizers, some of which are available on social media. The task is to explore and gather as much as possible.
 
 \subsubsection{When are predictions acceptable to potentially use on competitions?}
 \label{subsubsec:intro-question-acceptable-results}
@@ -74,7 +74,7 @@ Can the AI-judge \footnote{The machine learning model predicting performed skill
 \subsubsection{Which activity recognition examples can be used or altered as a base guidance?}
 \label{subsubsec:intro-question-earlier-research-guidance}
 
-While the gymnastics judge support system (JSS) is a great example for recognizing skills, its based on sensory data. The lack of sensors and the availability of video material explores this area.
+While the gymnastics judge support system (JSS) is a great example for recognizing skills, it's based on sensory data. The lack of sensors and the availability of video material explores this area.
 Quick searches give examples of object recognition \autocite{Diwaker_2022}, detecting sign language \autocite{Bora_2023} or activity recognition (e.g. the kinetics dataset - riding a bike, reading a book, playing an instrument \autocite{Kay_2017}).
 These implementations can be used as a first guide.
 Those examples give the idea that data mostly seem more to be centered, which is not the case in jump rope videos, a solution needs to be found for that. The second problem is that freestyles can consist of more than fifty different skills, which takes a long time to cut manually.
@@ -83,12 +83,12 @@ Those examples give the idea that data mostly seem more to be centered, which is
 \label{sec:onderzoeksdoelstelling}
 
 The objective is to create a proof of concept (PoC), which would be a model recognizing the most common skills and transitions.
-This could mean omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. Preferably, the PoC should be able to generalize uncommon skills that are still definable as normal. An example of this would be the model having seen triple unders, which may not have been performed with a cartwheel yet, but when it happens, it should know what it is.
+This could mean omitting or just marking special combinations, longer double dutch switches or long time sequences of emptiness in general. Preferably, the PoC should be able to generalize uncommon combinations of turners and skills. An example of this would be the model having seen triple unders, which may not have been performed with a cartwheel yet, but when it happens, it should know what it is.
 
-\subsubsection{How much data is expected to increase the accuracy off the Judge?}
+\subsubsection{How much data is expected to increase the accuracy of the Judge?}
 \label{subsubsec:intro-question-expected-data-to-increase-accuracy}
 
-The amount of videos will keep rising, but will the current amount be sufficient? If it's not enough, how much more would be expected and what about uncommon skills. Do we need to specially record them? And what will really happen with new skills on competitions?
+The amount of videos will keep rising, but will the current amount be sufficient? If it's not enough, how much more would be expected and what about uncommon skills. Do we need to specifically record them? And what will really happen with new skills during competitions?
 
 \subsection{Additional questions}
 \label{subsubsec:intro-question-additional}

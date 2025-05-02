@@ -20,7 +20,6 @@ Below you can find a shortlist of experiments executed on localization.
 \begin{itemize}
     \item random conv
     \item googlenet, mobilenet...
-    \item Mask-RCNN
     \item Labeling individual jumpers \& pre-trained model yolo -> OK
 \end{itemize}
 
@@ -51,9 +50,6 @@ Display code \& mention unbalanced augmented, but still unbalanced dataset \& hi
 
 Conclusion:
 Predicting full teams didn't work out which allowed for a transition to labeling and predicting individuals athletes. Below you find more information about those experiments.
-
-\subsection{Mask-RCNN}
-Failed experiment, C error, no results.
 
 \subsection{YOLO}
 
@@ -88,7 +84,7 @@ Using these predictions, a crop around the three jumpers can be created using th
     \centering
     \includegraphics[width=0.45\linewidth]{img/1315_2935}
     \includegraphics[width=0.45\linewidth]{img/2297_134}
-    \caption[Valid crops of a DD3 routine on competition.]{Valid crops of a DD3 routine on competition.}
+    \caption[Valid crops of a DD3 routine on competition.]{Valid crops of a DD3 routine on competition. (224x244 pixels)}
     \label{fig:dd3-crop}
 \end{figure}
 
@@ -96,17 +92,17 @@ Using these predictions, a crop around the three jumpers can be created using th
     \centering
     \includegraphics[width=0.45\linewidth]{img/1267_292_cropped}
     \includegraphics[width=0.45\linewidth]{img/1405_1061_cropped}
-    \caption[dd3-crop-error]{Two crops were a spectator alongside the athletes.}
+    \caption[dd3-crop-error]{Two crops including a spectator alongside the athletes.}
     \label{fig:dd3-crop-error}
 \end{figure}
 
 Annotating only athletes on 732 images \& fine-tuning the pre-trained nano yolo model, the first predictions of spectators are reduced considerately.
 This way crops can be created by taking the minimum and maximum \(x\) \& \(y\)-coordinates. Reviewing cropped videos show indicate occasional frames predicting spectators, coaches or judges and moments of instability, as if you are watching camera footage of an earthquake.
 
-In order to avoid a sudden zoom out, because of spectators, an IoU comparison of the previous predicted box with the new box is made. If the IoU value is larger than the average IoU of the last \(N\) seconds, powered to the fourth, than crop coordinates will be updated. Using the IoU comparison, reduces video crops including spectators, maintaining the earthquake effect.
+In order to avoid a sudden zoom out, because of spectators, an IoU comparison of the previous predicted box with the new box is made. If the IoU value is larger than the average IoU of the last \(N\) seconds, powered to the fourth, than crop coordinates will be updated. Using this IoU comparison, reduces video crops including spectators, maintaining the earthquake effect.
 
 
-To reduce shakiness and maintain a nice to watch cropped video, box-coordinates are smoothed out adapting box predictions of previous frames with the current one. This way, drastic changes in a predicted location, e.g. model ererrorror, arm or field movements aren't that drastic. Adaptation is done by incorporating two smooth values, indicating how much weight you give to the smoothed prediction of the previous frame. \footnote{Smoothed values are obtained by playing around with values, choosing those leading to the best, subjective, smoothed review}
+To reduce shakiness and maintain a nice to watch cropped video, box-coordinates are smoothed out adapting box predictions of previous frames with the current one. This way, drastic changes in a predicted location, e.g. model error, arm or field movements aren't that drastic. Adaptation is done by incorporating two smooth values, indicating how much weight you give to the smoothed prediction of the previous frame. \footnote{Smoothed values are obtained by playing around with values, choosing those leading to the best, subjective, smoothed review}
 
 $$ smth = smootval = 0.86  \quad \& \quad smths = smootval\_shrink = 0.94 $$
 
@@ -198,7 +194,7 @@ Full code is visible in code snippet \ref{code:localization}. The results are br
         Nr of videos not ok &	21	& 15.6\% \\ \hline
         Total checked videos &	135	& (includes train videos) \\ \hline
     \end{tabular}
-    \caption{Crop results manually checked. \\
+    \caption{Crop results manually checked on the amount of seconds a crop is disturbing. \\
     Yellow indicated videos are not disturbing for recognition, even though the crops aren't perfect. Orange videos require more attention and shouldn't be used for recognition. \\
     The \(avg_{if}\) indicates the average time in case a video has crops which aren't good.}
     \label{tbl:crop-results}
@@ -459,7 +455,7 @@ Even up-sampling less occurring combination didn't help. The models stagnated on
 \begin{figure}
     \centering
     \includegraphics[width=0.7\linewidth]{img/skill-upsampling-distribution}
-    \caption[upsampling distribution of skills]{Occurance of upsampeled segmented skills. Unqiue combinations, e.g. a mistake, where the turners turned a triple under with an EB and a front-flip could occure multiple times (e.g. 20 times), as compared to a normal jump, normally turned, re-appearing twice in a training round as normal jumps already has many more labels in the dataset.}
+    \caption[upsampling distribution of skills]{Occurance of each labeled skill (e.g. videoId 123, frameStart 480, frameEnd 504, Double Dutch, 1 rotation, split, EB, crouger...) in the upsampeled dataset. Values get duplicated based on the uniqueness of each property. E.g. because it is an EB and a split, it will be duplicated four times, but no/less duplication because Double Dutch and 1 rotation is more common.}
     \label{fig:skill-upsampling-distribution}
 \end{figure}
 
