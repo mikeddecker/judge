@@ -7,7 +7,29 @@
 
 % Pas na deze inleidende paragraaf komt de eerste sectiehoofding.
 
-The research towards skill-recognition will be done by steps. First will be additional information about challenges of judging and how it has been improved until now. The following will be a short description of DD3-skills, after which computer vision will be explored along with NextJumps speed-counter. Having a general proposed flow in mind, this enables an improved research towards specific models and fine-tuning of the expected approach and potential challenges to recognize skills.
+The research towards skill-recognition will be done in several steps.
+The first step involves examining challenges of judging and recent adaptations for judging routines.
+Next follows a brief overview of DD3-skills, to further specify and clarify the DD3 components.
+Skills, combinations and transitions will than be mapped in a skill-matrix, nearing close to binary computer output.
+Upon specifying these components, it is revealed that their are certain challenges for AI models in order to recognize these skills.
+Something is needed that can use video information to localize the jumper, sequence the video, and recognize the performed skill.
+These three main requirements are elaborated in computer vision literature. % TODO : ask alongside previous insights, is that NextJump?
+Finally some challenges remain such as group activity or unknown/unusual skills.
+
+% I think it would be good to slightly restructure your literature review for
+%  reasons of clarity and to provide more detail on certain topics.
+
+% Perhaps something like: challenges of judging + recent adaptations to
+%  address these > detailed description of skills and skill combinations
+%   (skills matrix) > summarizing paragraph highlighting
+%    the particular challenges for AI models: you need something
+%     that can use video information to localize the jumper,
+%      sequence the video, and recognise the performed skill
+%      > investigation into existing technologies that seem
+%       promising for your use case (computer vision, HAR,
+%        jumper localization, video segmentation,
+%        then insights from previous use of tech to recognize skills)
+% > remaining challenges (group activity + unknown/unusual skills)
 
 \section{Challenges of judging}
 \label{subsubsec:bp-literature-judge-challenges}

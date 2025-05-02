@@ -47,7 +47,7 @@ Individual freestyles from 2024 own recordings only will amount to a minimum of 
 
 Only one discipline for this thesis will be chosen.
 There are two main disciplines to choice from. Either single freestyles (Single Rope, SR) or Double Dutch Single Freestyles (DD3)
-Given the previous calculation and availability of data, it seems individual freestyles seem easier to get and the most likely path, however, in first thought, the variety and possible skills also increases, resulting in a more complex labeling (see skillmatrix later). One possibility for both DD3 & SR is to omit certain special cases simplifying the entire problem in a minimum viable product (MVP).
+Given the previous calculation and availability of data, it seems individual freestyles seem easier to get and the most likely path, however, in first thought, the variety and possible skills also increases, resulting in a more complex labeling (see skill-matrix later). One possibility for both DD3 & SR is to omit certain special cases simplifying the entire problem in a minimum viable product (MVP).
 Skill label example DD3 & Single freestyle
 
 Pro's & con's
@@ -61,7 +61,7 @@ Pro's & con's
 | Levelguessing | 0 to 8 | 0 to 6-8 |
 | Theoretical level limit | 8+ levels possible | 8+ levels possible |
 | Variation elements | 6 | 4 |
-| skillmatrix | more complex | simpeler compared to SR |
+| skill-matrix | more complex | simpeler compared to SR |
 | longer sequences | / | / |
 | individuals      | 1 | 3 |
 | competitions     | Okt-Nov | March-Apr |
@@ -72,7 +72,7 @@ Both datasets are skewed, there are common skills which can be found in 30-70% o
 
 The MVP would be a model recognizing the most common skills.
 This means omitting or just marking special combinations, longer double dutch switches or longer time sequences of emptiness in general.
-By starting with a simplified notation, hereafter called pointified notation, dotted notation or skillmatrix/table representation, all (sub)skills can be mapped to this general skillrecognition notation/table.
+By starting with a simplified notation, hereafter called pointified notation, dotted notation or skill-matrix/table representation, all (sub)skills can be mapped to this general skillrecognition notation/table.
 Afterwards, levels can be given to each (sub)skill in the matrix.
 Based on my own experiences, a quick guess would be, at least, 90-95% or more skills on competitions could be labeled using the simplified notation, not including special cases.
 
@@ -95,7 +95,7 @@ Small overview
 - Jump rope intro: Explaining some disciplines, SR, DD, CW, and mention other variants. (SR2, SR4, DD3, DD4, speed, DU, TU, box...).
 - Skills intro: define (sub)skills we want to label
 - Computervision, techniques & available models.
-- Skillmatrix
+- skill-matrix
 
 ### Jump rope intro
 
@@ -178,8 +178,8 @@ TODO : add more understanding of transformers (using self attention?)
 Now that we better now a part of the information, let's talk more about skills.
 Translate 2.7
 split in general info
-2.7.1 single rope & single rope skillmatrix (translate)
-2.7.2 double dutch singles & skillmatrix (TODO)
+2.7.1 single rope & single rope skill-matrix (translate)
+2.7.2 double dutch singles & skill-matrix (TODO)
 
 maybe 2.7.1 - 2.7.4
 
@@ -192,7 +192,7 @@ TODO : research stagNet
 
 ### Unknown activities (wrong order)
 
-Skillmatrix should cover it, but ... zero-shot
+skill-matrix should cover it, but ... zero-shot
 
 TODO : Research zero-shot learning (unknown activities)
 [zeroshot](https://www.researchgate.net/publication/339028828_Zero-Shot_Human_Activity_Recognition_Using_Non-Visual_Sensors)

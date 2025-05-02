@@ -32,7 +32,7 @@ However, individual freestyles are more abundant. Calculating only my own record
 
 Only one discipline for this thesis will be chosen.
 There are two main disciplines to choice from. Either single freestyles (Single Rope, SR) or Double Dutch Single Freestyles (DD3)
-Given the previous calculation and availability of data, it seems individual freestyles seem easier to get and the most likely path, however, in first thought, the variety and possible skills also increases, resulting in a more complex labeling (see skillmatrix later). One possibility for both DD3 \& SR is to omit certain special cases simplifying the entire problem in a minimum viable product (MVP). My educated guess based on experience would be more omitting for SR compared to DD3. See tabel \ref{tbl:data-comparison}
+Given the previous calculation and availability of data, it seems individual freestyles seem easier to get and the most likely path, however, in first thought, the variety and possible skills also increases, resulting in a more complex labeling (see skill-matrix later). One possibility for both DD3 \& SR is to omit certain special cases simplifying the entire problem in a minimum viable product (MVP). My educated guess based on experience would be more omitting for SR compared to DD3. See tabel \ref{tbl:data-comparison}
 
 \begin{table*}[t]
     \centering
@@ -46,7 +46,7 @@ Given the previous calculation and availability of data, it seems individual fre
         Level-guessing & 0 to 8 & 0 to 8 \\ \hline
         Theoretical level limit & 8+ levels possible & 8+ levels possible \\ \hline
         Variation elements & 6 & 4 \\ \hline
-        skillmatrix & more complex & simpeler compared to SR \\ \hline
+        skill-matrix & more complex & simpeler compared to SR \\ \hline
         longer sequences & / & / \\ \hline
         individuals & 1 & 3 \\ \hline
         competitions & Oct-Nov & March-Apr \\ \hline
@@ -63,7 +63,7 @@ This can be an isolated skill, the base, a transition or usage in a other skills
 
 ### MVP / POC
 
-By starting with a simplified notation, hereafter called pointified notation, dotted notation or skillmatrix/table representation, all (sub)skills can be mapped to this general skillrecognition notation/table.
+By starting with a simplified notation, hereafter called pointified notation, dotted notation or skill-matrix/table representation, all (sub)skills can be mapped to this general skillrecognition notation/table.
 Afterwards, levels can be given to each (sub)skill in the matrix.
 An educated, quick guess based on my own experiences would be that, at least, 85-95\% or more skills on competitions could be labeled using the simplified notation, not including special cases.
 
@@ -143,11 +143,11 @@ Multiples are built from unique rotation combinations. Some quads as example:
 \begin{figure}
     \centering
     \includegraphics[width=0.7\linewidth]{img/doubledutch-matrix}
-    \caption[skillmatrix-DD]{Representation of a skillmatrix used for Doube Dutch}
-    \label{fig:doubledutch-skillmatrix}
+    \caption[skill-matrix-DD]{Representation of a skill-matrix used for Doube Dutch}
+    \label{fig:doubledutch-skill-matrix}
 \end{figure}
 
 In addition, these skills can be combined with powers, releases\dots, and there are a number of special cases or exceptions that earn fewer or extra points. (Omitted in the MVP)
-Put it all together, to create a skill matrix (work in progress), see double-dutch-matrix fig\ref{fig:doubledutch-skillmatrix}.
+Put it all together, to create a skill matrix (work in progress), see double-dutch-matrix fig\ref{fig:doubledutch-skill-matrix}.
 
-The skillmatrix for SR is still a little in progress since last year, knowing that some special cases can be omitted.
+The skill-matrix for SR is still a little in progress since last year, knowing that some special cases can be omitted.
