@@ -112,14 +112,14 @@ $$ smth = smootval = 0.86  \quad \& \quad smths = smootval\_shrink = 0.94 $$
 
 Which makes the new coordinates:
 
-\begin{equation}
+\begin{math}
    smooted_{x1_{min}} =
    \begin{cases}
        smooted_{x1_{min}} & \text{if} \quad iou < iou_{threshold} \\
        smth * smooted_{x1_{min}} + (1-smth) * x1_{min} & \text{else if} \quad x1_{min} < smooted_{x1_{min}} \\
        smths^ * smooted_{x1_{min}} + (1-smths) * x1_{min} & \text{otherwise}
    \end{cases}
-\end{equation}
+\end{math}
 
 The same is done for \( y1_{min}, x2_{max}, y2_{max} \).
 
@@ -127,22 +127,82 @@ Utilizing these steps allows for videos where a team is always on display (\ref{
 
 % TODO : add movement corrector
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.45\linewidth]{img/1241_1093_cropped}
+    \caption[dd3-crop-error]{Athletes running out of view.}
+    \label{fig:dd3-crop-error-out-of-view}
+\end{figure}
 
+One way to solve jumpers running out of view, is by adding a default movement corrector, like the smooth value, which follows the new coordinates every frame. The movement corrector is based on the \(iou\)-value powered to the \(1/8\). It makes the crop following predictions by default, when IoU is getting low.
+
+
+\begin{math}
+    SQRT = 8 \\
+    movementCorrector = iou^{1/SQRT} \\
+    smooted_{x1_{min}} = smooted_{x1_{min}} * movementCorrector + (1 - movementCorrector) * {x1_{min}}
+\end{math}
 
 
 
 A possible improvement could be matching individual boxes with the new predictions, eliminating the spectator. Which raises concerns about jumpers entering the competition field. There are no earlier predicted boxes to match.
 The total algorithm isn't perfect yet, but the results indicate sufficient valid video crops to use and experiment on segmentation and recognition.
 
-Full code:
-
 \begin{listing}
-   \begin{minted}{python}
-       print('TODO : cleanup code')
-   \end{minted}
-   \caption[Example codefragment]{Example of adding cropping code.}
+    \begin{minted}{python}
+        print('TODO : cleanup code')
+    \end{minted}
+    \caption[Example codefragment]{Example of adding cropping code.}
+    \label{code:localization}
 \end{listing}
 
+Full code is visible in code snippet \ref{code:localization}. The results are broken down in table \ref{tbl:crop-results}.
+
+% TODO: pairwise distances?
+
+\begin{table}[h!]
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{videoId} & \textbf{seconds} & \textbf{reason} \\
+        \hline
+        \dots & \cellcolor{green!25} \dots & (other videos) \\ \hline
+        1435 &	\cellcolor{green!25} 0 &	 \\ \hline
+        1445 &	\cellcolor{green!25} 0 &	 \\ \hline
+        2285 &	\cellcolor{green!25} 0 &	 \\ \hline
+        2295 &	\cellcolor{green!25} 0 &	 \\ \hline
+        2305 &	\cellcolor{green!25} 0 &	 \\ \hline
+        2315 &	\cellcolor{green!25} 0 &	 \\ \hline
+        995  &	\cellcolor{yellow!25} 5 &	Schocks \& turner out-of-view \\ \hline
+        1275 &	\cellcolor{yellow!25} 1 &	aerial half \\ \hline
+        1405 &	\cellcolor{orange!25} 30 &	spectator \\ \hline
+        651  &	\cellcolor{yellow!25} 1    &	turner out of view \\ \hline
+        664  &	\cellcolor{yellow!25} 1.5  &	turner out of view \\ \hline
+        1202 &	\cellcolor{yellow!25} 5    &	turner out of view, recording itself \\ \hline
+        1178 &	\cellcolor{yellow!25} 2    &	turner out of view \\ \hline
+        1238 &	\cellcolor{yellow!25} 2    &	spectator before start routine \\ \hline
+        1244 &	\cellcolor{yellow!25} 0    &	stopped following, remained in view \\ \hline
+        1257 &	\cellcolor{yellow!25} 0    &	stopped following, remained in view \\ \hline
+        1275 &	\cellcolor{yellow!25} 1.5  &	half out of view \\ \hline
+        1339 &	\cellcolor{yellow!25} 8    &  spectator \\ \hline
+        1444 &	\cellcolor{yellow!25} 1.5  &	half out of view \\ \hline
+        2282 &	\cellcolor{yellow!25} 1    &	1 turner out of view, actual 3 sec no follow \\ \hline
+        2317 &	\cellcolor{yellow!25} 2    &	minor shocks \\ \hline
+        663  &	\cellcolor{orange!25} 25   &	Out-of-view \& shocks \\ \hline
+        1241 &	\cellcolor{orange!25} 8    &	Out-of-view \\ \hline
+        1267 &	\cellcolor{orange!25} 46   &	spectator \\ \hline
+        1271 &	\cellcolor{orange!25} 24   &	Out-of-view \\ \hline
+        1273 &	\cellcolor{orange!25} 8    &	Out-of-view \\ \hline
+        1326 &	\cellcolor{orange!25} 6.5  &	spectator \\ \hline
+        \(avg\) &	1.33 &	(seconds / 1m15) \\ \hline
+        \(avg_{if}\) &	8.55 &	(seconds / 1m15) \\ \hline
+        Nr of videos not ok &	21	& 15.6\% \\ \hline
+        Total checked videos &	135	& (includes train videos) \\ \hline
+    \end{tabular}
+    \caption{Crop results manually checked. \\
+    Yellow indicated videos are not disturbing for recognition, even though the crops aren't perfect. Orange videos require more attention and shouldn't be used for recognition. \\
+    The \(avg_{if}\) indicates the average time in case a video has crops which aren't good.}
+    \label{tbl:crop-results}
+\end{table}
 
 \section{Action segmentation}
 
@@ -219,3 +279,5 @@ For the first training round a double upgrade has been performed. The first adap
 
 
 \section{Model verification}
+
+Comming soon... (Mapping predicted skills, turners, rotations... to its perspective level which will be compared with the score assigned by judges on competition.)
