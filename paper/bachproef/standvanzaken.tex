@@ -181,10 +181,10 @@ Applying these transitions, characteristics allows for even more variation, whic
 
 \medskip
 
-The skill-matrix is subject to change over time, initial skills not fitting the matrix will be left out for the PoC. Other than skills, jumpers and turners can switch with each other, most of these are also omitted in the PoC.
-Each column in the skill-matrix-example 5 can only contain one answer, for which softmax can be used, while between multiple columns, no relation is required and can be predicted separately. This can be solved using a multi-branch output as described in by \autocite{Coulibaly_2022}). This can result in a guessed skill being partially correct, e.g. turner correct, but wrong rotational amount.
+The skill-matrix is subject to change over time. For the initial research and PoC, skills may be simplified or left out of the matrix will be left out for the PoC. Other than skills, jumpers and turners can switch positions, which is called a transition. These transitions do not fit in the matrix discussed below and are also omitted in the PoC.
+Each column in the first skill-matrix-example \ref{fig:doubledutch-skill-matrix} can only contain one property, for which softmax can be used, while between multiple columns, no relation is required and meaning the skills can be predicted separately. This can be solved using a multi-branch output as described in by \textcite{Coulibaly_2022}. This can result in a guessed skill being partially correct, e.g. turner correct, but wrong rotational amount.
 
-On another note, \textcite{Guo_2017} explain that softmax isn't always a good indicator of confidence. They mention that when a model has good calibration, the accuracy should align with the confidence of the prediction. E.g. when you predict a skill has 80\% chance being a push-up, then this prediction or 80\% of the predicted push-ups should be correct. Predictions using softmax tend to be overconfident.
+On another note, \textcite{Guo_2017} explain that softmax isn't always a good indicator of confidence. They mention that when a model has good calibration, the accuracy should align with the confidence of the prediction. E.g. when you predict a skill has an 80\% chance being of being a push-up, then this prediction or 80\% of the predicted push-ups should be correct. Predictions using softmax tend to be overconfident.
 
 
 
@@ -324,8 +324,9 @@ As DD3 is a group activity, problems could arise while trying to detect skills. 
 \section{Unknown/Unusual skills}
 \label{subsec:bp-literature-unknown-unusual-skills}
 
-Unknown skills or special cases pose a problem. That’s why the skill-matrix needs to defined
-in such a way that new combinations can fit the matrix as much as possible and/or in combination with zero-shot learning. (Sort of marking unique skills as ’I don’t know’ so that others new/unique ones will also be marked as ’I don’t know’) Unusual skills on the other hand should be incorporated into the implementation.
+% TODO revise
+Unknown skills or special cases pose a particular challenge. That’s why the skill-matrix needs to defined in such a way, to accommodate for new combinations or skills.
+as possible and/or in combination with zero-shot learning. (Sort of marking unique skills as ’I don’t know’ so that others new/unique ones will also be marked as "I don't know") Unusual skills on the other hand should be incorporated into the implementation.
 Earlier an example was given about knocking 3 times on the door. A more concrete example would be turntables, which are mainly performed using a crab or push-up, but also seen with a frog or a split.
 Turntables even have the potential to be combined with a swift. Omitting turntable frogs or splits in the train dataset can test this the ability to perform on unusual skills.
 
