@@ -104,9 +104,12 @@ class TrainerSkills:
             print(cm_df)
             print(f"="*80)
 
+        f1_scores_epoch = { k: class_report['f1-score'] for k, class_report in classification_reports.items() }
+        f1_scores_epoch["Total"] = sum(f1_scores_epoch.values()) / len(f1_scores_epoch)
+
         print(f"Total (macro avg) accuracy", classification_reports['Skill']['macro avg'])
 
-        return val_loss / len(dataloader), classification_reports['Skill']['macro avg'], classification_reports, cm
+        return val_loss / len(dataloader), f1_scores_epoch, classification_reports, cm
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         try:
@@ -124,7 +127,7 @@ class TrainerSkills:
             optimizer = optim.Adam(model.parameters(), lr=learning_rate)
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=1)
             epoch_start = 0
-            accuracies = {}
+            f1_scores = {}
             losses = []
             if not from_scratch and os.path.exists(checkpointPath):
                 checkpoint = torch.load(checkpointPath, weights_only=False)
@@ -133,7 +136,7 @@ class TrainerSkills:
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
                 epoch_start = checkpoint['epoch'] + 1
                 losses = checkpoint['losses']
-                accuracies = {} if 'accuracies' not in checkpoint.keys() else checkpoint['accuracies']
+                f1_scores = {} if 'f1_scores' not in checkpoint.keys() else checkpoint['f1_scores']
 
             if unfreeze_all_layers:
                 for param in model.parameters():
@@ -187,10 +190,10 @@ class TrainerSkills:
 
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
-                val_loss, macro_avg_accuracy, class_reports, conf_matrix = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
+                val_loss, f1_scores_epoch, class_reports, conf_matrix = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
                 losses.append(val_loss)
                 scheduler.step(val_loss)
-                accuracies[epoch] = macro_avg_accuracy
+                f1_scores[epoch] = f1_scores_epoch
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
                 
                 minIndex = losses.index(min(losses))
@@ -208,13 +211,13 @@ class TrainerSkills:
                         'optimizer_state_dict': optimizer.state_dict(),
                         'scheduler_state_dict': scheduler.state_dict(),
                         'losses': losses,
-                        'accuracies': accuracies,
+                        'f1_scores': f1_scores,
                         'class_reports' : class_reports,
                         'confusion_matrix': conf_matrix,
                     }, checkpointPath)
             
                     torch.save(model.state_dict(), path)
-            print(accuracies)
+            print(f1_scores)
 
         except Exception as e:
             raise e
