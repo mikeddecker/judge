@@ -22,6 +22,7 @@ import HelloWorld from './components/HelloWorld.vue'
       <RouterLink to="/browse">Browse</RouterLink>
       <RouterLink to="/download">Download</RouterLink>
       <RouterLink to="/test">Test</RouterLink>
+      <RouterLink to="/stats">Stats</RouterLink>
       <RouterLink to="/about">About</RouterLink>
     </nav>
   </header>
