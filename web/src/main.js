@@ -4,9 +4,11 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import PrimeVue from 'primevue/config';
+import Aura from '@primevue/themes/aura'
 
 // PrimeVue components
 import Button from "primevue/button"
+import Card from 'primevue/card';
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
@@ -17,9 +19,16 @@ import TabPanel from 'primevue/tabpanel';
 const app = createApp(App)
 
 app.use(router)
-app.use(PrimeVue)
+app.use(PrimeVue,
+    {
+        theme: {
+            preset: Aura
+        }
+    }
+)
 
 app.component('Button', Button);
+app.component('Card', Card);
 app.component('Tabs', Tabs);
 app.component('TabList', TabList);
 app.component('Tab', Tab);

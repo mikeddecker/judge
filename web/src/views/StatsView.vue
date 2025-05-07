@@ -1,25 +1,25 @@
 <template>
   <div>
     <h1>Statistics</h1>
-    <div v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
-
-  
-    <Tabs value="0">
+    
+    
+    <div v-if="loading">Loading...</div>
+    <Tabs v-else value="recognition">
       <TabList>
-        <Tab value="0">Header I</Tab>
-        <Tab value="1">Header II</Tab>
-        <Tab value="2">Header III</Tab>
+        <Tab value="recognition">Recognition</Tab>
+        <Tab value="segmentation">Segmentation</Tab>
+        <Tab value="localization">Localization</Tab>
       </TabList>
       <TabPanels>
-        <TabPanel value="0">
-          <ResultsRecognitionView></ResultsRecognitionView>
+        <TabPanel value="recognition">
+          <ResultsRecognitionView :results="data['recognition']"></ResultsRecognitionView>
         </TabPanel>
-        <TabPanel value="1">
-          <ResultsSegmentationView></ResultsSegmentationView>
+        <TabPanel value="segmentation">
+          <ResultsSegmentationView :results="data['segmentation']"></ResultsSegmentationView>
         </TabPanel>
-        <TabPanel value="2">
-          <ResultsLocalizationView></ResultsLocalizationView>
+        <TabPanel value="localization">
+          <ResultsLocalizationView :results="data['localization']"></ResultsLocalizationView>
         </TabPanel>
       </TabPanels>
     </Tabs>
@@ -31,7 +31,7 @@
 
 <script setup>
 import { getFolder } from '../services/videoService';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import ResultsSegmentationView from './ResultsSegmentationView.vue';
 import ResultsRecognitionView from './ResultsRecognitionView.vue';
 import ResultsLocalizationView from '@/views/ResultsLocalizationView.vue';
@@ -43,11 +43,12 @@ const error = ref('')
 const videoId = ref(0)
 const frameNr = ref(0)
 const antwoord = ref('')
+const recognitionResults = computed(() => data.value ? data.value['recognition'] : {})
 
 onMounted(async () => {
   loading.value = true;
   try {
-    data.value = await getFolder(1);
+    data.value = await getStatistics();
   } catch {
     error.value = 'Failed To load';
   } finally {

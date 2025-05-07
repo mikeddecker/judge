@@ -1,5 +1,9 @@
 @import './base.css';
-@import "tailwindcss";
+@import 'tailwindcss';
+
+:root {
+  --p-card-body-padding: 0.25rem, 1.25rem
+}
 
 #app {
   font-weight: normal;
@@ -18,9 +22,25 @@ a,
 }
 
 h1 {
-  font-size: 2em;
+  font-size: 2rem;
   font-weight: bold;
 }
+
+h2 {
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+
+.p-card {
+  width: fit-content;
+}
+
+.p-card-header {
+  font-weight: 500;
+  margin: 1rem 1rem 0 1rem;
+  border-bottom: 1px solid black;
+}
+
 
 @media (hover: hover) {
   a:hover {
