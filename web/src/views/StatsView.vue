@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="w-full">
     <h1>Statistics</h1>
     <div v-if="error" class="error">{{ error }}</div>
     

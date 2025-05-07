@@ -41,7 +41,6 @@ header {
 
 .logo {
   display: block;
-  margin: 0 1rem;
 }
 
 .wrapper {
@@ -85,16 +84,12 @@ nav a:first-of-type {
     height:100vw;
   }
 
-  .logo {
-    padding: 0.5rem 0 1rem 0;
-  }
 
   header .wrapper {
     display: flex;
     place-items: center;
     flex-direction: column;
     flex-wrap: wrap;
-    width: max-content;
   }
 
   nav {
