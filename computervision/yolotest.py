@@ -18,12 +18,11 @@ from ultralytics.models.yolo.detect import DetectionTrainer
 
 load_dotenv()
 STORAGE_DIR = os.getenv("STORAGE_DIR")
-LABELED_FRAMES_FOLDER = "labeled-frames"
+LABELED_FRAMES_FOLDER = "ultralytics-yolo"
 IMAGES_FOLDER = "images"
 LABELS_FOLDER = "labels"
 SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS")
 SUPPORTED_IMAGE_FORMATS = os.getenv("SUPPORTED_IMAGE_FORMATS")
-VIDEO_IMAGE_PREVIEW_FOLDER = os.getenv("VIDEO_IMAGE_PREVIEW_FOLDER")
 
 
 os.makedirs(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, IMAGES_FOLDER), exist_ok=True)

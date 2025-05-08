@@ -26,7 +26,7 @@ load_dotenv()
 STORAGE_DIR = os.getenv("STORAGE_DIR")
 SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS")
 SUPPORTED_IMAGE_FORMATS = os.getenv("SUPPORTED_IMAGE_FORMATS")
-VIDEO_IMAGE_PREVIEW_FOLDER = os.getenv("VIDEO_IMAGE_PREVIEW_FOLDER")
+FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 
 # pseudo cache
 cache = {
@@ -72,7 +72,7 @@ class StorageService:
     def __discover_drive(self, deleteOrphans: bool = False) -> dict:
         try:
             # Make sure image folder exists
-            previewfolder = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER)
+            previewfolder = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS)
             os.makedirs(previewfolder, exist_ok=True)
 
             print(f"{Fore.YELLOW}Discovering folder:{Style.RESET_ALL}", f"{STORAGE_DIR} (root)")
@@ -125,24 +125,40 @@ class StorageService:
                 if isRoot:
                     print(f"{Fore.YELLOW}Skipping file in root:{Style.RESET_ALL} {content}")
                 elif content.split(".")[-1] in SUPPORTED_VIDEO_FORMATS:
+                    info = self.__enrich_video_data(name=content, folder=parent)
+                    frameNr_for_image = math.floor(info["frameLength"] * 0.2)
+
                     if self.VideoService.exists_in_database(name=content, folder=parent):
                         del videos_in_folder_according_to_database[content]
-                        print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content}")
                     else:
                         print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content} {Fore.GREEN}NEW{Style.RESET_ALL}")
-                        info = self.__enrich_video_data(name=content, folder=parent)
-                        created_video_info = self.VideoService.add(name=content, folder=parent, 
-                                              frameLength=info["frameLength"],
-                                              width=info["width"],
-                                              height=info["height"],
-                                              fps=info["fps"])
-                        frameNr_for_image = math.floor(info["frameLength"] * 0.2)
-                        self.__create_video_image(videoId=created_video_info.Id, name=content, folder=parent, frameNr=frameNr_for_image)
+                        self.VideoService.add(name=content, folder=parent, 
+                            frameLength=info["frameLength"],
+                            width=info["width"],
+                            height=info["height"],
+                            fps=info["fps"]
+                        )
+                        
                         # Bookkeeping
                         if parent.Id in new_videos.keys():
                             new_videos[parent.Id].append(content)
                         else:
                             new_videos[parent.Id] = [content]
+
+                    # Post checking video existence in DB
+                    db_videoId = self.VideoService.get_videoId(name=content, folder=parent)
+
+                    # Check of resultsfolder exists
+                    videoresultPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{db_videoId}")
+                    os.makedirs(videoresultPath, exist_ok=True)
+
+                    # Create video image
+                    imagepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{db_videoId}", f"{db_videoId}.jpg")
+                    if not os.path.exists(imagepath):
+                        self.__create_video_image(videoId=db_videoId, name=content, folder=parent, frameNr=frameNr_for_image)
+                        print(f"{Fore.LIGHTMAGENTA_EX}Created image:{Style.RESET_ALL} {content}")
+
+
                 elif content.split(".")[-1] in SUPPORTED_IMAGE_FORMATS:
                     print(f"{Fore.LIGHTMAGENTA_EX}Detected image:{Style.RESET_ALL} {content} (currently skipped)")
                 else:
@@ -158,12 +174,12 @@ class StorageService:
                 orphans[parent.Id] = { videoinfo.Id : orpan_name }
 
         # Now loop al children
-        reserved_names = [VIDEO_IMAGE_PREVIEW_FOLDER, new_videos_name_key, "cropped-videos", "labeled-frames", "cropped-skills", "annotated-videos"]
+        reserved_names = [FOLDER_VIDEORESULTS, new_videos_name_key, "cropped-videos", "ultralytics-yolo", "cropped-skills"]
         for child in children:
             if isRoot and child["name"] in reserved_names:
-                    print(f"{Fore.YELLOW}Skipping folder {reserved_names}, is VIDEO_IMAGE_PREVIEW_FOLDER{Style.RESET_ALL}")
+                    print(f"{Fore.YELLOW}Skipping folder >{child["name"]}< because in {reserved_names}{Style.RESET_ALL}")
             else:
-                print(f"{Fore.LIGHTCYAN_EX}Detected folder:{Style.RESET_ALL} {child["name"]}", end="")
+                print(f"{Fore.LIGHTCYAN_EX}Exploring folder:{Style.RESET_ALL} {child["name"]}", end="")
                 if self.FolderService.exists_in_database(name=child["name"], parent=child["parent"]):
                     folder = self.FolderService.get_by_name(name=child["name"], parent=child["parent"])
                     print()
@@ -208,7 +224,7 @@ class StorageService:
         # Create preview image
         cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
         res, frame = cap.read()
-        filename = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER, f"{videoId}.jpg")
+        filename = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}.jpg")
         cv2.imwrite(filename, frame)
 
     def __clear_data(session):

@@ -41,6 +41,7 @@ LABELS_FOLDER = "labels"
 SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS")
 CROPPED_VIDEOS_FOLDER = os.getenv("CROPPED_VIDEOS_FOLDER")
 MODELWEIGHT_PATH = "weights"
+FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 
 
 class Predictor:
@@ -192,8 +193,7 @@ class Predictor:
         skill = highfrog = hands = fault = turntable = rotations = turners = type = hard2see = sloppy = bodyRotations = ""
         endFrame = cap.get(cv2.CAP_PROP_FRAME_COUNT) - 1
         currentLabel = None
-        videoOutputPath = os.path.join(STORAGE_DIR, "annotated-videos", f"{videoId}.mp4")
-        os.makedirs(os.path.join(STORAGE_DIR, "annotated-videos"), exist_ok=True)
+        videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_annotated.mp4")
         
         # tmp_mp4 = f"{videoId}_tmp.mp4"
         # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -413,7 +413,7 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    for videoId in [1315]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
+    for videoId in [1315, 2289]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
         predictor.predict(
             type="FULL",
             videoId=videoId,

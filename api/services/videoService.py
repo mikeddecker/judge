@@ -467,6 +467,13 @@ class VideoService:
         for skill in self.VideoRepo.get_skills(videoId=id):
             video.add_skill(skill)
         return video
+    
+    def get_videoId(self, name: str = None, folder: Folder = None) -> int:
+        """Get videoId based on name"""
+        ValueHelper.check_raise_string_only_abc123_extentions(name)
+        if folder is None or not isinstance(folder, Folder):
+            raise ValueError(f"When no id, but name is given, folder also needs to be given; got {folder}")
+        return self.VideoRepo.get_videoId(name=name, folder=folder)
 
     def is_already_downloaded(self, sourceinfo:str):
         """Sourceinfo = yt_id"""

@@ -95,6 +95,12 @@ class VideoRepository:
     def get(self, id: int) -> VideoInfo:
         return MapToDomain.map_video(self.db.session.get(VideoInfoDB, ident=id))
     
+    def get_videoId(self, name: str, folder: Folder) -> int:
+        ValueHelper.check_raise_string_only_abc123_extentions(name)
+        if folder is None or not isinstance(folder, Folder):
+            raise ValueError(f"folder must be provided")
+        return self.db.session.query(VideoInfoDB).filter_by(name=name, folderId=folder.Id).one().id
+    
     def get_videos(self, folderId: int) -> List[VideoInfo]:
         """Return videos in the given folder"""
         ValueHelper.check_raise_id(folderId)

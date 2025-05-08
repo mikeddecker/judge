@@ -9,7 +9,7 @@ import cv2
 
 load_dotenv()
 STORAGE_DIR = os.getenv("STORAGE_DIR")
-VIDEO_IMAGE_PREVIEW_FOLDER = os.getenv("VIDEO_IMAGE_PREVIEW_FOLDER")
+FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 CROPPED_VIDEOS_FOLDER = "cropped-videos"
 CROPPED_VIDEOS_STATUSES = ["OK", "OK_NET_NIET_PERFECT", "SLECHT"]
 
@@ -101,7 +101,7 @@ class VideoImageRouter(Resource):
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
-        image_path = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER, f"{videoId}.jpg")
+        image_path = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}.jpg")
         if not os.path.exists(image_path):
             image_path = f"/home/miked/Videos/images/0.png"
         with open(image_path, 'rb') as f:
@@ -128,6 +128,6 @@ class VideoImageRouter(Resource):
         
         cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
         res, frame = cap.read()
-        filename = os.path.join(STORAGE_DIR, VIDEO_IMAGE_PREVIEW_FOLDER, f"{videoId}_{frameNr}{croptext}.jpg")
+        filename = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_{frameNr}{croptext}.jpg")
         cv2.imwrite(filename, frame)
         return 'ok', 200
