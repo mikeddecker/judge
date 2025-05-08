@@ -39,8 +39,9 @@ const chartOptions = {
         text: 'f1-score'
       },
       suggestedMin: 0,
-      suggestedMax: 1
-    }
+      suggestedMax: 1,
+      position: 'right'
+    },
   }
 }
 
@@ -60,7 +61,7 @@ function getColor(skillprop) {
       return `rgb(0, 20, 20)`
     default:
       let greencolor = 80 + getRandomInt(175)
-      return `rgb(${greencolor * Math.random()}, ${200 + getRandomInt(55)}, ${greencolor})`
+      return `rgb(${greencolor * Math.random()}, ${190 + getRandomInt(65)}, ${greencolor})`
       return `rgb(${getRandomInt(255)}, ${getRandomInt(255)}, ${getRandomInt(255)})`
   }
 }
