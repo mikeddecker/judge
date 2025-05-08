@@ -186,6 +186,13 @@ class Prediction_Frames(db.Model):
     
     predictionDate = db.Column(db.DateTime, default=date.today())
 
+class ML_Models(db.Model):
+    __tablename__ = 'ML_Models'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    type = db.Column(db.String(30), nullable=False)
+    name = db.Column(db.String(127), nullable=False)
+
+
 # class Skillinfo_DoubleDutch(db.Model):
 #     __tablename__ = 'Predictions_SkillSegment'
 #     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

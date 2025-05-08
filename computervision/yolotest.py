@@ -82,9 +82,10 @@ for train_test in ["train", "val"]:
 
 
 
-model = YOLO("yolo11n.pt")
+variant = 'yolo11n.pt'
+model = YOLO(variant)
 
-args = dict(model="yolo11s.pt", data="jumpers.yml", epochs=300, batch=16, patience=15, lr0=0.001)
+args = dict(model=variant, data="jumpers.yml", epochs=300, batch=16, patience=15, lr0=0.001)
 trainer = DetectionTrainer(overrides=args)
 trainer.train()
 print("all done")
