@@ -212,6 +212,12 @@ class DataRepository:
         
         return categoryNames
     
+    def get_next_job(self):
+        qry = sqlal.text(f"""SELECT * FROM Jobs""")
+
+        df_jobs = pd.read_sql(qry, con=self.con)
+        return None if len(df_jobs) == 0 else df_jobs.iloc[0]
+    
     def upsert_skillsegmented_predictions(self, videoId:int, df_predictions):
         """Columns: Like Skillinfo_DoubleDutch"""
         if not self.check_connection():

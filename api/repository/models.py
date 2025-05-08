@@ -192,6 +192,17 @@ class ML_Models(db.Model):
     type = db.Column(db.String(30), nullable=False)
     name = db.Column(db.String(127), nullable=False)
 
+class Jobs(db.Model):
+    __tablename__ = 'Jobs'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    type = db.Column(db.String(30), nullable=False)
+    step = db.Column(db.String(127), nullable=False)
+
+    job_arguments = db.Column(MutableDict.as_mutable(JSON), nullable=False)
+    request_time = db.Column(db.DateTime, default=datetime.now)
+    status = db.Column(db.String(30), nullable=False)
+    status_details = db.Column(db.String(127))
+
 
 # class Skillinfo_DoubleDutch(db.Model):
 #     __tablename__ = 'Predictions_SkillSegment'

@@ -1,7 +1,7 @@
 # Imports
 
 import time
-from DataRepository import DataRepository
+from managers.DataRepository import DataRepository
 
 # Managers
 
@@ -15,8 +15,15 @@ no_shutdown_job = True
 while no_shutdown_job:
     job = REPO.get_next_job()
 
-    time.sleep(seconds=3)
+    print("job is,", job)
 
+    if job is None:
+        time.sleep(3)
+        continue
+
+    print("exec")
+
+    # Update, remove job
     
 
 
