@@ -167,3 +167,12 @@ export const updateVideoSkillsCompleted = async (videoId, completed) => {
     throw error;
   }
 }
+
+export const getStats = async (selectedHar) => {
+  try {
+    return await api.get(`/stats`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};

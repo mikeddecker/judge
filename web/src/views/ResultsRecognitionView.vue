@@ -9,8 +9,8 @@ const props = defineProps({
 })
 
 const selected = props.results['selected-model']
-const totalAccuracy = props.results["modelcomparison"][selected]['accuracy']
-const skillAccuracy = props.results["modelcomparison"][selected]['acc-skills']
+const totalAccuracy = round2decimals(props.results["modelcomparison"][selected]['accuracy'] * 100)
+const skillAccuracy = round2decimals(props.results["modelcomparison"][selected]['acc-skills'] * 100)
 const chartDataVal = computed(() => transformF1ToChart(props.results['f1-scores-val']))
 
 const chartOptions = {
@@ -48,24 +48,34 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
-const transformF1ToChart = (fscores) => {
-  let DATA_COUNT = 12;
-  let labels = [];
-  for (let i = 0; i < DATA_COUNT; ++i) {
-    labels.push(i.toString());
+function round2decimals(i) {
+  return Math.round(i * 100) / 100
+}
+
+function getColor(skillprop) {
+  switch (skillprop) {
+    case 'Total':
+      return `rgb(150, 50, 0)`
+    case 'Skill':
+      return `rgb(0, 20, 20)`
+    default:
+      let greencolor = 80 + getRandomInt(175)
+      return `rgb(${greencolor * Math.random()}, ${200 + getRandomInt(55)}, ${greencolor})`
+      return `rgb(${getRandomInt(255)}, ${getRandomInt(255)}, ${getRandomInt(255)})`
   }
+}
+
+const transformF1ToChart = (fscores) => {
+  let labels = Object.keys(fscores);
+  console.log("f1-scores", )
+  console.log("labels", labels)
   let key = 'Skill'
-  let datapoints = {}
   
-  console.log('val', Object.values(fscores))
+  let datapoints = {}
   Object.values(fscores).forEach(
     (f, e) => {
-      console.log('epoch', e)
-      console.log('f', f)
       Object.entries(f).forEach(
         ( [skillprop, accuracy_value]) => {
-          console.log(e, skillprop, accuracy_value)
-          console.log('obj keys', skillprop, skillprop in datapoints, Object.keys(datapoints))
           if (skillprop in datapoints) {
             datapoints[skillprop].push(accuracy_value)
           } else {
@@ -75,20 +85,16 @@ const transformF1ToChart = (fscores) => {
       )
     }
   )
-  console.log(datapoints)
   let ds = Object.entries(datapoints).map(([k, v]) => {
-    console.log(k, v)
     return {
       label: k,
       data: v,
-      borderColor: `rgb(${getRandomInt(255)},${getRandomInt(255)},${getRandomInt(255)})`,
+      borderColor: getColor(k),
       fill: false,
       cubicInterpolationMode: 'monotone',
       tension: 0.4
     }
   })
-  console.log(ds)
-  // datapoints = [0.1, 0.20, 0.20, 0.60, 0.60, 0.120, NaN, 180, 120, 125, 105, 110, 170];
   return {
     labels: labels,
     datasets: ds

@@ -13,6 +13,7 @@ from routers.frameRouter import FrameRouter
 from routers.storageRouter import StorageRouter, OrphanDeleterRouter
 from routers.skillRouter import SkillRouter, OptionRouter, SkillLevel, SkillLabelingCompletedRouter
 from routers.downloadRouter import DownloadRouter
+from routers.statsRouter import StatsRouter
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -51,6 +52,8 @@ api.add_resource(SkillLabelingCompletedRouter, '/skillcompleted/<int:videoId>')
 api.add_resource(StorageRouter, '/discover')
 api.add_resource(OrphanDeleterRouter, '/discover/deleteOrphans')
 api.add_resource(DownloadRouter, '/download')
+
+api.add_resource(StatsRouter, '/stats')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

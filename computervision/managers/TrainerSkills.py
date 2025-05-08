@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
+from pprint import pprint
 from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
@@ -217,7 +218,7 @@ class TrainerSkills:
                     }, checkpointPath)
             
                     torch.save(model.state_dict(), path)
-            print(f1_scores)
+            pprint(f1_scores)
 
         except Exception as e:
             raise e
