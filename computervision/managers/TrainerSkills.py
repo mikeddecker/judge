@@ -104,16 +104,16 @@ class TrainerSkills:
             print(cm_df)
             print(f"="*80)
 
-        f1_scores_epoch = { k: class_report['f1-score'] for k, class_report in classification_reports.items() }
+        f1_scores_epoch = { k: class_report['macro avg']['f1-score'] for k, class_report in classification_reports.items() }
         f1_scores_epoch["Total"] = sum(f1_scores_epoch.values()) / len(f1_scores_epoch)
 
-        print(f"Total (macro avg) accuracy", classification_reports['Skill']['macro avg'])
+        print(f"Total skill (macro avg) accuracy", classification_reports['Skill']['macro avg'])
 
         return val_loss / len(dataloader), f1_scores_epoch, classification_reports, cm
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         try:
-            testrun = False
+            testrun = True
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
