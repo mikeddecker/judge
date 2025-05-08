@@ -10,9 +10,12 @@
 }
 
 main {
-  margin: 0.8rem;
+  padding: 0.8rem;
 }
 
+body {
+  overflow-x: hidden;
+}
 
 a,
 .green {
@@ -50,18 +53,5 @@ h2 {
 }
 
 @media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
 
-  #app {
-    width: 100%;
-    display: flex;
-    /* grid-template-columns: 1fr 3fr; */
-  }
-
-  main {
-    margin: 0rem 1.5rem;
-  }
 }

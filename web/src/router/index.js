@@ -6,6 +6,7 @@ import AboutView from '@/views/AboutView.vue'
 import BrowseView from '@/views/BrowseView.vue'
 import DownloadView from '@/views/DownloadView.vue'
 import StatsView from '@/views/StatsView.vue'
+import QuickLabelLocalize from '@/views/QuickLabelLocalize.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +18,7 @@ const router = createRouter({
     { path: '/stats', name: 'stats', component: StatsView },
     { path: '/video/:id', name: 'video', component: VideoView },
     { path: '/download', name: 'download', component: DownloadView },
+    { path: '/quick-localize', name: 'quick-localize', component: QuickLabelLocalize },
   ],
 })
 
