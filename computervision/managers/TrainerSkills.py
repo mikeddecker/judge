@@ -129,6 +129,7 @@ class TrainerSkills:
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=1)
             epoch_start = 0
             f1_scores = {}
+            classification_reports = {}
             losses = []
             if not from_scratch and os.path.exists(checkpointPath):
                 checkpoint = torch.load(checkpointPath, weights_only=False)
