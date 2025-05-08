@@ -138,6 +138,7 @@ class TrainerSkills:
                 epoch_start = checkpoint['epoch'] + 1
                 losses = checkpoint['losses']
                 f1_scores = {} if 'f1_scores' not in checkpoint.keys() else checkpoint['f1_scores']
+                classification_reports = {} if 'classification_reports' not in checkpoint.keys() else checkpoint['classification_reports']
 
             if unfreeze_all_layers:
                 for param in model.parameters():
@@ -195,6 +196,7 @@ class TrainerSkills:
                 losses.append(val_loss)
                 scheduler.step(val_loss)
                 f1_scores[epoch] = f1_scores_epoch
+                classification_reports[epoch] = class_reports
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
                 
                 minIndex = losses.index(min(losses))
@@ -213,7 +215,8 @@ class TrainerSkills:
                         'scheduler_state_dict': scheduler.state_dict(),
                         'losses': losses,
                         'f1_scores': f1_scores,
-                        'class_reports' : class_reports,
+                        'classification_reports' : classification_reports,
+                        'final_classification_reports' : class_reports,
                         'confusion_matrix': conf_matrix,
                     }, checkpointPath)
             
