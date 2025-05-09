@@ -56,8 +56,6 @@ function handleClick(skillId) {
   
 <style scoped>
   .skillbalk {
-    margin-top: 0.5rem;
-    width: 90%;
     height: 30px;
     position: relative;
     background-color: darkkhaki;

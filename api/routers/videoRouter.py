@@ -75,9 +75,11 @@ class VideoRouterCropped(Resource):
                     return Response(f.read())
         
         video_path = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f"{DIM}_{videoId}.mp4")
-        print("bestaat het?", video_path, "@"*50,os.path.exists(video_path))
-        with open(video_path, 'rb') as f:
-            return Response(f.read())
+        if os.path.exists(video_path):
+            with open(video_path, 'rb') as f:
+                return Response(f.read())
+        else:
+            return '', 200
 
 class VideoInfoRouter(Resource):
     def __init__(self, **kwargs):

@@ -42,7 +42,7 @@ header {
   line-height: 1;
   max-height: 100vh;
   background-color: var(--color-nav);
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .logo {
