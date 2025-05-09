@@ -15,7 +15,7 @@ const totalTeamBoxes = computed(() => props.videoinfo.LabeledFrameCount)
     <li>Individual boxes: {{ totalIndiviualBoxes }}</li>
     <li>Individual frames: {{ framesLabeledIndividual }}</li>
   </ul>
-  </template>
+</template>
 
 <style scoped>
 

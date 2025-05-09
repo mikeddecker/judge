@@ -25,7 +25,7 @@ class FrameInfo:
             self.setY(value)
         if name == "Width":
             self.setWidth(value)
-        if name == "Heigth":
+        if name == "Height":
             self.setHeight(value)
         if name == "JumerVisible":
             self.setJumperVisible(value)

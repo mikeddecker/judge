@@ -1,6 +1,8 @@
 @import './base.css';
 @import 'tailwindcss';
 @import "tailwindcss-primeui";
+@import 'primeicons/primeicons.css';
+
 
 :root {
   --p-card-body-padding: 0.25rem, 1.25rem

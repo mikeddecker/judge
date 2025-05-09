@@ -1,15 +1,15 @@
 <script setup>
 import { computed } from 'vue';
 
-const props = defineProps(['frameinfo'])
+const props = defineProps(['frameinfo', 'bgColor'])
 const emit = defineEmits(["deleteBox"])
-
-const color = computed(() => props.frameinfo.color)
 
 </script>
 
 <template>
-    <button :class="color" @click="emit('deleteBox', frameinfo)"><img src="@/assets/delete.png" alt="buttonpng" class="icon"/></button>
+    <Button :class="bgColor" @click="emit('deleteBox', frameinfo)">
+      <img src="@/assets/delete.png" alt="buttonpng" class="icon"/>
+    </Button>
     <!-- <p>{{ frameinfo.LabelType }}</p> -->
 </template>
 
@@ -20,7 +20,7 @@ button {
   margin: 0.1rem;
   border-radius: 10%;
 }
-.blue { background-color: blue; }
+.p-button .blue { background-color: blue; }
 .white { background-color: white; }
 .pink { background-color: pink; }
 .yellow { background-color: yellow; }

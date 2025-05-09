@@ -16,12 +16,14 @@ class VideoInfo:
         "FrameLength",
         "Skills",
         "Completed_Skill_Labels",
+        "Width",
+        "Height",
     ]
     # Frame does not 
     Frames: List[FrameInfo] # Key = frameId, value is Frame
     Skills: Set[Skill] = set()
 
-    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float, completed_skill_labels: bool = False):
+    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float, width:int, height:int, completed_skill_labels: bool = False):
         self.Frames = []  # Initialize frames as an empty dictionary
         self.Skills = set()  # Initialize skills as an empty set
 
@@ -31,6 +33,8 @@ class VideoInfo:
         self.__setFrameLength(frameLength)
         self.__setFPS(fps)
         self.__setCompletedSkillLabels(completed_skill_labels)
+        self.Width = width # TODO : checks and tests
+        self.Height = height
 
     def __setattr__(self, name, value):
         if hasattr(self, name):
@@ -213,6 +217,8 @@ class VideoInfo:
             "LabeledFrameCount2": len(framecountT2),
             "RelativePath" : self.get_relative_video_path(),
             "Completed_Skill_Labels" : self.Completed_Skill_Labels,
+            "Width" : self.Width,
+            "Height" : self.Height,
         }
 
     

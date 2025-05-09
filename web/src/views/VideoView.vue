@@ -9,7 +9,7 @@
       <div id="column-1" class="w-[75vw]">
 
         <VideoPlayer class=" relative" 
-        v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode"
+        v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
         :current-frame-nr="currentFrame" :videoinfo="videoinfo"
         @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate">
         </VideoPlayer>
@@ -23,10 +23,28 @@
           <Button :class="modeIsSegment ? 'p-button-highlight' : ''" @click="() => mode = 'SEGMENT'">Segment</Button>
           <Button :class="modeIsSkills ? 'p-button-highlight' : ''" @click="() => mode = 'SKILLS'">Skills</Button>
         </div>
-        <div>currentFrame: {{ Math.round(currentFrame) }}</div>
+        <div class="my-2 flex gap-2">
+          currentFrame: {{ currentFrame }}
+          <div id="localize-frame-navigation-buttons" class="flex gap-2">
+            <Button v-if="modeIsLocalize" @click="setToPreviousFrame"><i class="pi pi-arrow-left"></i></Button>
+            <Button v-if="modeIsLocalize" @click="setToRandomFrame"><i class="pi pi-arrow-right-arrow-left"></i></Button>
+            <Button v-if="modeIsLocalize" @click="setToNextFrame"><i class="pi pi-arrow-right"></i></Button>
+          </div>
+        </div>
         <LocalizeInfo v-if="modeIsLocalize" :videoinfo="videoinfo"></LocalizeInfo>
+        <div id="localize-controls" v-if="modeIsLocalize" class="my-2">
+          <div>
+            <span class="mr-2">Canvas modus</span>
+            <Select v-model="canvasMode" :options="canvasModes"></Select>
+          </div>
+          <div class="mt-2">
+            <span class="mr-2">Use</span>
+            <Select v-model="selectedModel" :options="modelOptions"></Select>
+          </div>
+        </div>
       </div>
-        
+      
+      
         
     </div>
       <pre>{{ videoinfo }}</pre>
@@ -44,6 +62,7 @@ import { getVideoInfo, getVideoPath, getCroppedVideoPath } from '../services/vid
 import { onMounted, ref, watch, computed } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
+import LocalizeControls from '@/components/LocalizeControls.vue';
 
 const route = useRoute()
 
@@ -62,6 +81,11 @@ const modeIsWatch = computed(() => mode.value == 'WATCH')
 const modeIsLocalize = computed(() => mode.value == 'LOCALIZE')
 const modeIsSegment = computed(() => mode.value == 'SEGMENT')
 const modeIsSkills = computed(() => mode.value == 'SKILLS')
+
+const canvasModes = ['draw', 'edit', 'delete']
+const canvasMode = ref('draw')
+const modelOptions = ['boxes', 'yolov11n_ultralytics', 'yolov11n_run7']
+const selectedModel = ref('boxes')
 
 const currentFrame = ref(0)
 const frameStart = ref(currentFrame.value)
@@ -127,9 +151,40 @@ function onSeeked(event) {
   console.log("onSeeked", event)
 }
 function ontimeupdate(seconds) {
-  console.log("upontimeupdate", seconds)
   currentFrame.value = videoinfo.value.FPS * seconds
 }
+
+// Mode is localization
+const setToNextFrame = () => {
+  let minFrameNr = videoinfo.value.Frames.reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
+  let biggerFrameNr = videoinfo.value.Frames
+    .filter((frameinfo) => frameinfo.FrameNr > currentFrame.value)
+    .reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
+  currentFrame.value = biggerFrameNr == Infinity ? minFrameNr : biggerFrameNr
+
+}
+
+const setToPreviousFrame = () => {
+  let maxFrameNr = videoinfo.value.Frames.reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
+  let smallerFrameNr = videoinfo.value.Frames
+    .filter((frameinfo) => frameinfo.FrameNr < currentFrame.value)
+    .reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
+  currentFrame.value = smallerFrameNr == -Infinity ? maxFrameNr : smallerFrameNr
+}
+
+const setToRandomFrame = () => {
+  let rndTime = 0
+  let rndFrameNr = 0
+  let frameNrAlreadyLabeled = true
+  while (frameNrAlreadyLabeled) {
+    rndTime = Math.random() * videoinfo.value.Duration
+    rndFrameNr = Math.floor(rndTime * videoinfo.value.FPS)
+    frameNrAlreadyLabeled = videoinfo.value.Frames.map(frameinfo => frameinfo.FrameNr).includes(rndFrameNr)
+  }
+  console.log("chae", rndFrameNr)
+  currentFrame.value = rndFrameNr
+}
+
 
 const onSkillClicked = (skillId) => {
   console.log('onSkillClicked', skillId)
