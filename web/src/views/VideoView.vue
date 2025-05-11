@@ -11,7 +11,8 @@
         <VideoPlayer class=" relative" 
         v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
         :current-frame-nr="currentFrame" :videoinfo="videoinfo"
-        @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate">
+        @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
+        @add-box="onAddBox" @delete-box="onDeleteBox">
         </VideoPlayer>
         <SkillBalk :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
       </div>
@@ -58,7 +59,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame } from '../services/videoService';
 import { onMounted, ref, watch, computed } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -183,6 +184,14 @@ const setToRandomFrame = () => {
   }
   console.log("chae", rndFrameNr)
   currentFrame.value = rndFrameNr
+}
+
+const onAddBox = async (box) => {
+  await postVideoFrame(videoinfo.value.Id, Math.round(currentFrame.value), box).then(vi => videoinfo.value = vi).catch(e => error.value = e)
+}
+
+const onDeleteBox = async (box) => {
+  await removeVideoFrame(videoinfo.value.Id, Math.round(currentFrame.value), box).then(vi => videoinfo.value = vi).catch(err => error.value = err)
 }
 
 

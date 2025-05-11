@@ -72,7 +72,7 @@ export const getCroppedVideoPath = async (videoId) => {
 export const postVideoFrame = async (videoId, frameNr, frameinfo) => {
   return await api.post(`/video/${videoId}/frameNr/${frameNr}`, frameinfo, { headers: { 'Content-Type': 'application/json' }})
     .then(function (response) {
-      return response;
+      return response.data;
     })
     .catch(function (error) {
       console.error(error);

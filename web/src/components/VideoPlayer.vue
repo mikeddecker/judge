@@ -28,8 +28,9 @@
 <script setup>
 import { onMounted, ref, computed, watch } from 'vue'
 
+// Watch out, frame numbers can get floated: e.g. 112.000000000000001
 const props = defineProps(['title', 'videoId', 'videoSrc', 'mode', 'canvasMode', 'currentFrameNr', 'videoinfo'])
-const emit = defineEmits(['play', 'pause', 'seeked', 'timeupdate', 'loadeddata'])
+const emit = defineEmits(['play', 'pause', 'seeked', 'timeupdate', 'loadeddata', 'deleteBox', 'addBox'])
 const videoElement = ref(null)
 const videoWidth = ref(0)
 const videoHeight = ref(0)
@@ -45,6 +46,7 @@ const canvasmodeIsEdit = computed(() => props.canvasMode == 'edit')
 const canvasmodeIsDelete = computed(() => props.canvasMode == 'delete')
 const boxes = computed(() => props.videoinfo.Frames)
 const boxesHovering = ref([])
+const selectedBox = ref(null)
 
 const boxColors = [
   '#bfdbfe',
@@ -63,12 +65,12 @@ const mouseX = ref(0)
 const mouseY = ref(0)
 const mouseXstart = ref(0)
 const mouseYstart = ref(0)
+const isDrawing = ref(false)
 
 
 onMounted(async () => {
   videoElement.value = document.getElementById("vid")
   canvas.value = document.getElementById("canvas") 
-  console.log(props.mode == 'LOCALIZE')
 })
 
 watch(() => props.mode, (newMode, oldMode) => {
@@ -78,7 +80,6 @@ watch(() => props.mode, (newMode, oldMode) => {
   // On Localize, set currentFrame to first boxes if available
 })
 watch(() => props.currentFrameNr, (newFrameNr, oldFrameNr) => {
-  console.log(videoElement.value.paused, newFrameNr == Math.absoldFrameNr, newFrameNr, oldFrameNr)
   if (modeIsLocalization.value) {
     videoElement.value.currentTime = newFrameNr / props.videoinfo.FPS
     resetCanvasAndDrawBoxes()
@@ -125,7 +126,6 @@ const resetCanvasAndDrawBoxes = () => {
   let boxes = filterBoxes(props.currentFrameNr)
   Object.entries(boxes).forEach(([idx, box]) => {
 
-    console.log(idx, box)
     ctx.strokeStyle = boxColors[Number(idx) + 1]
     const xleft = (box.X - box.Width / 2) * videoWidth.value
     const yleft = (box.Y - box.Height / 2) * videoHeight.value
@@ -135,25 +135,22 @@ const resetCanvasAndDrawBoxes = () => {
   })
   
   // Draw current drawing box
-  console.log(mouseXstart.value, mouseYstart.value, mouseX.value - mouseXstart.value, mouseY.value - mouseYstart.value)
-  ctx.strokeStyle = boxColors[0]
-  ctx.strokeRect(mouseXstart.value * videoWidth.value, mouseYstart.value * videoHeight.value, (mouseX.value - mouseXstart.value) * videoWidth.value, (mouseY.value - mouseYstart.value) * videoHeight.value);
-
-  console.log("drawing boxes are", boxes)
+  if (!canvasmodeIsDelete.value) {
+    ctx.strokeStyle = boxColors[0]
+    ctx.strokeRect(mouseXstart.value * videoWidth.value, mouseYstart.value * videoHeight.value, (mouseX.value - mouseXstart.value) * videoWidth.value, (mouseY.value - mouseYstart.value) * videoHeight.value);
+  }
 }
 
 
 const canvasMouseDown = (event) => {
-  if (canvasmodeIsDraw.value) {
-    console.log("start drawing")
+  if (canvasmodeIsDraw.value) { 
+    isDrawing.value = true 
+    mouseXstart.value = event.offsetX / videoWidth.value;
+    mouseYstart.value = event.offsetY / videoHeight.value;
   }
-
-  mouseXstart.value = event.offsetX / videoWidth.value;
-  mouseYstart.value = event.offsetY / videoHeight.value;
-  
 }
+
 const canvasMouseMoves = (event) => {
-  console.log("mouse move", event)
   mouseX.value = event.offsetX / videoWidth.value;
   mouseY.value = event.offsetY / videoHeight.value;
   if (!canvasmodeIsDraw.value) {
@@ -175,6 +172,32 @@ const canvasMouseMoves = (event) => {
 }
 const canvasMouseEndDrawing = (event) => {
   mouse.value = ''
+  mouseX.value = event.offsetX / videoWidth.value;
+  mouseY.value = event.offsetY / videoHeight.value;
+
+  if (canvasmodeIsDelete.value) {
+    boxesHovering.value.forEach(box => emit("deleteBox", box))
+  }
+
+  if (canvasmodeIsDraw.value && isDrawing.value) {
+    isDrawing.value = false
+    let box = {
+      "frameNr" : Math.round(props.currentFrameNr),
+      "x" : (mouseXstart.value + mouseX.value) / 2,
+      "y" : (mouseYstart.value + mouseY.value) / 2,
+      "width" : Math.abs(mouseXstart.value - mouseX.value),
+      "height" : Math.abs(mouseYstart.value - mouseY.value),
+      "jumperVisible" : true,
+      "labeltype" : 2
+    }
+
+    if (box['height'] > 0.03) {
+      emit('addBox', box)
+    }
+
+    mouseXstart.value = 0
+    mouseYstart.value = 0
+  }
 }
 
 const filterBoxes = (frameNr) => {
