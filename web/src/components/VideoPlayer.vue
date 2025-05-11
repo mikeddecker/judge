@@ -44,7 +44,7 @@ const modeIsLocalization = computed(() => props.mode == 'LOCALIZE')
 const canvasmodeIsDraw = computed(() => props.canvasMode == 'draw')
 const canvasmodeIsEdit = computed(() => props.canvasMode == 'edit')
 const canvasmodeIsDelete = computed(() => props.canvasMode == 'delete')
-const boxes = computed(() => props.videoinfo.Frames)
+const boxes = computed(() => props.videoinfo.Frames.filter(b => b.LabelType == 2))
 const boxesHovering = ref([])
 const selectedBox = ref(null)
 
@@ -201,7 +201,7 @@ const canvasMouseEndDrawing = (event) => {
 }
 
 const filterBoxes = (frameNr) => {
-  return props.videoinfo.Frames.filter((box) => box.FrameNr == Math.round(frameNr))
+  return boxes.value.filter((box) => box.FrameNr == Math.round(frameNr))
 }
 </script>
 

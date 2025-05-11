@@ -152,13 +152,17 @@ function onSeeked(event) {
   console.log("onSeeked", event)
 }
 function ontimeupdate(seconds) {
-  currentFrame.value = videoinfo.value.FPS * seconds
+  currentFrame.value = Math.round(videoinfo.value.FPS * seconds)
 }
 
 // Mode is localization
 const setToNextFrame = () => {
-  let minFrameNr = videoinfo.value.Frames.reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
+  console.log(currentFrame.value)
+  let minFrameNr = videoinfo.value.Frames
+    .filter(b => b.LabelType == 2)
+    .reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
   let biggerFrameNr = videoinfo.value.Frames
+    .filter(b => b.LabelType == 2)
     .filter((frameinfo) => frameinfo.FrameNr > currentFrame.value)
     .reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
   currentFrame.value = biggerFrameNr == Infinity ? minFrameNr : biggerFrameNr
@@ -166,9 +170,12 @@ const setToNextFrame = () => {
 }
 
 const setToPreviousFrame = () => {
-  let maxFrameNr = videoinfo.value.Frames.reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
+  let maxFrameNr = videoinfo.value.Frames
+    .filter(b => b.LabelType == 2)
+    .reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
   let smallerFrameNr = videoinfo.value.Frames
     .filter((frameinfo) => frameinfo.FrameNr < currentFrame.value)
+    .filter(b => b.LabelType == 2)
     .reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
   currentFrame.value = smallerFrameNr == -Infinity ? maxFrameNr : smallerFrameNr
 }
