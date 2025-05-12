@@ -43,10 +43,16 @@
             <Select v-model="selectedModel" :options="modelOptions"></Select>
           </div>
         </div>
+
+        <!--Skills -->
+        <div v-if="modeIsSkills" class="mx-2">
+          <div v-for="(skillPropOptions, skillProp) in reversedSkillOptions" class="my-1">
+            {{ skillProp }} <Select v-model="selectedSkillinfo[skillProp]" :options="Object.keys(skillPropOptions)"></Select>
+          </div>
+          {{ selectedSkillinfo }}
+        </div>
       </div>
       
-      
-        
     </div>
       <pre>{{ videoinfo }}</pre>
       
@@ -59,7 +65,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions } from '../services/videoService';
 import { onMounted, ref, watch, computed } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -109,6 +115,25 @@ const skills = computed(() => {
   return s
 })
 
+const skillOptions = ref({})
+const reversedSkillOptions = ref({})
+const selectedSkillinfo = ref({})
+const defaultOptions = ref({
+  "Type" : "Double Dutch",
+  "Rotations" : "1 rotation",
+  "Turner1":  "normal",
+  "Turner2":  "normal",
+  "Skill" : "jump",
+  "Hands" : "0",
+  "Feet" : "2",
+  "Turntable" : "0 roations",
+  "BodyRotations" : "0 roations",
+  "Backwards" : "False",
+  "Sloppy" : "False",
+  "Hard2see" : "False",
+  "Fault" : "False",
+})
+
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 watch(
@@ -118,6 +143,18 @@ watch(
   )
 )
 
+const reverseDict = (d) => {
+  return Object.fromEntries(Object.entries(d).map(([key, value]) => [value, key]))
+}
+
+const reverse2Normal = (rs) => {
+  return Object.fromEntries(Object.entries(rs).map(([skillProp, reversedValue]) => [skillProp, skillOptions.value[skillProp][reversedValue]]))
+}
+
+const normal2Reverse = (ns) => {
+  return Object.fromEntries(Object.entries(ns).map(([skillProp, reversedValue]) => [skillProp, reversedSkillOptions.value[skillProp][reversedValue]]))
+}
+
 onMounted(async () => {
   await loadVideo(videoId.value)
 })
@@ -126,7 +163,86 @@ async function loadVideo(id) {
   try {
     videoPath.value = await getVideoPath(id)
     videoinfo.value = await getVideoInfo(id)
-  } catch {
+    let optionsLimbs = {"0": 0, "1": 1, "2": 2}
+    let optionsBoolean = {"True": true, "False": false}
+    reversedSkillOptions.value = {
+      "Type" : await getSkilloptions("DoubleDutch", "Type").then(options => reverseDict(options)),
+      "Rotations" : {
+        "0 roations" : 0,
+        "1 rotation" : 1,
+        "2 rotation" : 2,
+        "3 rotations" : 3,
+        "4 rotations" : 4,
+        "5 rotations" : 5,
+        "6 rotations" : 6,
+        "7 rotations" : 7,
+        "8 rotations" : 8,
+      }, 
+      "Turner1":  await getSkilloptions("DoubleDutch", "Turner").then(options => reverseDict(options)),
+      "Turner2":  await getSkilloptions("DoubleDutch", "Turner").then(options => reverseDict(options)),
+      "Skill" : await getSkilloptions("DoubleDutch", "Skill").then(options => reverseDict(options)), 
+      "Hands" : optionsLimbs,
+      "Feet" : optionsLimbs, 
+      "Turntable" : {
+        "0 roations"     : 0,
+        "0.25 rotations" : 1,
+        "0.50 rotations" : 2,
+        "0.75 rotations" : 3,
+        "1 rotations"    : 4,
+      }, 
+      "BodyRotations" : {
+        "0 roations" : 0,
+        "0.5 rotations" : 1,
+        "1 rotation" : 2,
+      }, 
+      "Backwards" : optionsBoolean, 
+      "Sloppy" : optionsBoolean, 
+      "Hard2see" : optionsBoolean, 
+      "Fault" : optionsBoolean, 
+    }
+
+    optionsLimbs = {0: "0", 1: "1", 2: "2"}
+    optionsBoolean = { true: "True", false: "False"}
+    skillOptions.value = {
+      "Type" : await getSkilloptions("DoubleDutch", "Type"),
+      "Rotations" : {
+        0: "0 roations",
+        1: "1 rotation",
+        2: "2 rotation",
+        3: "3 rotations",
+        4: "4 rotations",
+        5: "5 rotations",
+        6: "6 rotations",
+        7: "7 rotations",
+        8: "8 rotations",
+      }, 
+      "Turner2":  await getSkilloptions("DoubleDutch", "Turner"),
+      "Turner1":  await getSkilloptions("DoubleDutch", "Turner"),
+      "Skill" : await getSkilloptions("DoubleDutch", "Skill"), 
+      "Hands" : optionsLimbs,
+      "Feet" : optionsLimbs, 
+      "Turntable" : {
+        0: "0 roations"    ,
+        1: "0.25 rotations",
+        2: "0.50 rotations",
+        3: "0.75 rotations",
+        4: "1 rotations"   ,
+      }, 
+      "BodyRotations" : {
+        0 : "0 roations",
+        1 : "0.5 rotations",
+        2 : "1 rotation",
+      }, 
+      "Backwards" : optionsBoolean, 
+      "Sloppy" : optionsBoolean, 
+      "Hard2see" : optionsBoolean, 
+      "Fault" : optionsBoolean, 
+    }
+    
+    selectedSkillinfo.value = Object.fromEntries(Object.entries(reversedSkillOptions.value).map(([skillprop, options]) => [skillprop, defaultOptions.value[skillprop]]))
+    console.log(defaultOptions.value)
+  } catch (e) {
+    console.error(e)
     error.value = 'Failed To load';
   } finally {
     loading.value = false;
@@ -203,7 +319,11 @@ const onDeleteBox = async (box) => {
 
 
 const onSkillClicked = (skillId) => {
-  console.log('onSkillClicked', skillId)
+  let skill = skills.value.filter(s => s.Id == skillId)[0]
+  let skillinfo = skill['Skillinfo']
+  console.log('onSkillClicked', skillinfo)
+  console.log('re-reversed', reverse2Normal(skillinfo))
+  console.log('normal', normal2Reverse(reverse2Normal(skillinfo)))
 }
 </script>
 
