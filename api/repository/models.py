@@ -31,7 +31,11 @@ class Source(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(127), nullable=False)
 
-
+class CompetitionInfo(db.Model):
+    __tablename__ = 'CompetitionInfo'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    info = db.Column(db.String(255), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
     
 class Video(db.Model):
     __tablename__ = 'Videos'
@@ -49,6 +53,7 @@ class Video(db.Model):
     source = db.Column(db.Integer, nullable=True)
     sourceInfo = db.Column(db.String(255), nullable=True)
     completed_skill_labels = db.Column(db.Boolean, nullable=False, default=False)
+    competition = db.Column(db.Integer, db.ForeignKey('CompetitionInfo.id'))
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
 
