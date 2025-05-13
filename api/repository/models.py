@@ -167,7 +167,7 @@ class Skillinfo_DoubleDutch(db.Model):
     sloppy = db.Column(db.Boolean, nullable=False)
     hard2see = db.Column(db.Boolean, nullable=False, default=False)
     fault = db.Column(db.Boolean, nullable=False, default=False)
-    labeldate = db.Column(db.DateTime, default=date.today())
+    labeldate = db.Column(db.DateTime, default=datetime.now)
 
 class Prediction_Frames(db.Model):
     __tablename__ = 'Predictions_Localization'
