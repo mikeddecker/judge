@@ -15,6 +15,26 @@
         @add-box="onAddBox" @delete-box="onDeleteBox">
         </VideoPlayer>
         <SkillBalk :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
+        <div id="skill-controls" class="flex gap-2 my-2 wrap" v-show="modeIsSkills">
+          <Button v-show="paused" @click="setFrameStart()">set frame Start</Button>
+          <Button v-show="paused" @click="setFrameEnd()">set frame End</Button>
+          <Button @click="playJustALittleFurther(-25)" class="bg-teal-600">-25</Button>
+          <Button @click="playJustALittleFurther(-15)" class="bg-teal-600">-15</Button>
+          <Button @click="playJustALittleFurther(-10)" class="bg-teal-600">-10</Button>
+          <Button @click="playJustALittleFurther(-5)" class="bg-teal-600">-5</Button>
+          <Button @click="playJustALittleFurther(-2)" class="bg-teal-600">-2</Button>
+          <Button @click="playJustALittleFurther(-1)" class="bg-teal-600">-1</Button>
+          <Button @click="playJustALittleFurther(+1)" class="bg-teal-600">+1</Button>
+          <Button @click="playJustALittleFurther(+2)" class="bg-teal-600">+2</Button>
+          <Button @click="playJustALittleFurther(+5)" class="bg-teal-600">+5</Button>
+          <Button @click="playJustALittleFurther(+10)" class="bg-teal-600" ref="focusBtn">+10</Button>
+          <Button @click="playJustALittleFurther(+15)" class="bg-teal-600">+15</Button>
+          <Button @click="playJustALittleFurther(+25)" class="bg-teal-600">+25</Button>
+          <Button v-show="selectedSkill" @click="deselectSkill">Deselect skill</Button>
+          <Button v-show="selectedSkill" @click="frameToEndOfSkill">Frame to end of selected skill</Button>
+          <Button v-show="frameStart && frameEnd" @click="replaySection">Replay section</Button>
+          <Button v-show="selectedSkill" @click="playNextSection">Play next section</Button>
+        </div>
       </div>
 
       <div id="column-2" class="w-[25vw]">
@@ -43,13 +63,18 @@
             <Select v-model="selectedModel" :options="modelOptions"></Select>
           </div>
         </div>
-
+        
         <!--Skills -->
+        <div id="skillinfo" v-if="modeIsSkills">
+          <span>Start = {{ frameStart }}<br></span>
+          <span>End = {{ frameEnd }}</span>
+        </div>
         <div v-if="modeIsSkills" class="mx-2">
           <div v-for="(skillPropOptions, skillProp) in reversedSkillOptions" class="my-1">
-            {{ skillProp }} <Select v-model="selectedSkillinfo[skillProp]" :options="Object.keys(skillPropOptions)"></Select>
+            {{ skillProp }} <Select v-model="selectedSkill.ReversedSkillinfo[skillProp]" :options="Object.keys(skillPropOptions)"></Select>
           </div>
-          {{ selectedSkillinfo }}
+          <Button v-show="frameStart && frameEnd && !selectedSkill.Id" @click="addSkill">Submit</Button>
+          <Button v-show="selectedSkill.Id" @click="updateSkill">Update</Button>
         </div>
       </div>
       
@@ -65,11 +90,10 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions } from '../services/videoService';
-import { onMounted, ref, watch, computed } from 'vue'
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill } from '../services/videoService';
+import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
-import LocalizeControls from '@/components/LocalizeControls.vue';
 
 const route = useRoute()
 
@@ -82,6 +106,8 @@ const videoId = ref(route.params.id)
 const videoinfo = ref({})
 const videoPath = ref('')
 const croppedVideoSrc = ref('')
+const paused = ref(true)
+const videoElement = ref(null)
 
 const mode = ref('WATCH')
 const modeIsWatch = computed(() => mode.value == 'WATCH')
@@ -101,7 +127,6 @@ const frameEnd = ref(undefined)
 const skills = computed(() => {
   if (!videoinfo.value) { return [] }
   if (!videoinfo.value.Skills) { return [] }
-  console.log(videoinfo.value.Skills)
   let s = videoinfo.value ? [...videoinfo.value.Skills] : []
   if (frameStart.value && currentFrame.value >= frameStart.value) {
     let skillInCreation = {
@@ -117,7 +142,8 @@ const skills = computed(() => {
 
 const skillOptions = ref({})
 const reversedSkillOptions = ref({})
-const selectedSkillinfo = ref({})
+const selectedSkill = ref({})
+const selectedSkillinfo = computed(() => selectedSkill.value?.Skillinfo)
 const defaultOptions = ref({
   "Type" : "Double Dutch",
   "Rotations" : "1 rotation",
@@ -155,9 +181,15 @@ const normal2Reverse = (ns) => {
   return Object.fromEntries(Object.entries(ns).map(([skillProp, reversedValue]) => [skillProp, reversedSkillOptions.value[skillProp][reversedValue]]))
 }
 
+const dictValueStringToInt = (d) => {
+  return Object.fromEntries(Object.entries(d).map(([key, value]) => [key, Number(value)]))
+}
+
 onMounted(async () => {
   await loadVideo(videoId.value)
+  videoElement.value = document.getElementById("vid")
 })
+
 async function loadVideo(id) {
   loading.value = true;
   try {
@@ -166,7 +198,7 @@ async function loadVideo(id) {
     let optionsLimbs = {"0": 0, "1": 1, "2": 2}
     let optionsBoolean = {"True": true, "False": false}
     reversedSkillOptions.value = {
-      "Type" : await getSkilloptions("DoubleDutch", "Type").then(options => reverseDict(options)),
+      "Type" : await getSkilloptions("DoubleDutch", "Type").then(options => dictValueStringToInt(reverseDict(options))),
       "Rotations" : {
         "0 roations" : 0,
         "1 rotation" : 1,
@@ -178,9 +210,9 @@ async function loadVideo(id) {
         "7 rotations" : 7,
         "8 rotations" : 8,
       }, 
-      "Turner1":  await getSkilloptions("DoubleDutch", "Turner").then(options => reverseDict(options)),
-      "Turner2":  await getSkilloptions("DoubleDutch", "Turner").then(options => reverseDict(options)),
-      "Skill" : await getSkilloptions("DoubleDutch", "Skill").then(options => reverseDict(options)), 
+      "Turner1":  await getSkilloptions("DoubleDutch", "Turner").then(options => dictValueStringToInt(reverseDict(options))),
+      "Turner2":  await getSkilloptions("DoubleDutch", "Turner").then(options => dictValueStringToInt(reverseDict(options))),
+      "Skill" : await getSkilloptions("DoubleDutch", "Skill").then(options => dictValueStringToInt(reverseDict(options))), 
       "Hands" : optionsLimbs,
       "Feet" : optionsLimbs, 
       "Turntable" : {
@@ -238,9 +270,12 @@ async function loadVideo(id) {
       "Hard2see" : optionsBoolean, 
       "Fault" : optionsBoolean, 
     }
+
+    videoinfo.value.Skills.forEach(s => {
+      s["ReversedSkillinfo"] = reverse2Normal(s.Skillinfo)
+    })
     
-    selectedSkillinfo.value = Object.fromEntries(Object.entries(reversedSkillOptions.value).map(([skillprop, options]) => [skillprop, defaultOptions.value[skillprop]]))
-    console.log(defaultOptions.value)
+    selectedSkill.value["ReversedSkillinfo"] = Object.fromEntries(Object.entries(reversedSkillOptions.value).map(([skillprop, options]) => [skillprop, defaultOptions.value[skillprop]]))
   } catch (e) {
     console.error(e)
     error.value = 'Failed To load';
@@ -256,16 +291,15 @@ async function loadVideo(id) {
 }
 
 function updatePlaying(event) {
-  console.log("updatePlaying", event)
+  paused.value = false
 }
 function updatePaused(seconds) {
-  console.log("updatePaused", seconds)
   currentFrame.value = Math.round(videoinfo.value.FPS * seconds)
-  //   croppedVideoElement.value.currentTime = videoElement.value.currentTime
+  paused.value = true
 
 }
 function onSeeked(event) {
-  console.log("onSeeked", event)
+  frameStart.value = Math.round(event.target.off)
 }
 function ontimeupdate(seconds) {
   currentFrame.value = Math.round(videoinfo.value.FPS * seconds)
@@ -273,7 +307,6 @@ function ontimeupdate(seconds) {
 
 // Mode is localization
 const setToNextFrame = () => {
-  console.log(currentFrame.value)
   let minFrameNr = videoinfo.value.Frames
     .filter(b => b.LabelType == 2)
     .reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
@@ -305,7 +338,6 @@ const setToRandomFrame = () => {
     rndFrameNr = Math.floor(rndTime * videoinfo.value.FPS)
     frameNrAlreadyLabeled = videoinfo.value.Frames.map(frameinfo => frameinfo.FrameNr).includes(rndFrameNr)
   }
-  console.log("chae", rndFrameNr)
   currentFrame.value = rndFrameNr
 }
 
@@ -317,14 +349,107 @@ const onDeleteBox = async (box) => {
   await removeVideoFrame(videoinfo.value.Id, Math.round(currentFrame.value), box).then(vi => videoinfo.value = vi).catch(err => error.value = err)
 }
 
+const setFrameStart = () => { frameStart.value = currentFrame.value }
+const setFrameEnd = () => { frameEnd.value = currentFrame.value }
+
+const play = () => {
+  paused.value = false
+  videoElement.value.play()
+}
 
 const onSkillClicked = (skillId) => {
   let skill = skills.value.filter(s => s.Id == skillId)[0]
   let skillinfo = skill['Skillinfo']
-  console.log('onSkillClicked', skillinfo)
-  console.log('re-reversed', reverse2Normal(skillinfo))
-  console.log('normal', normal2Reverse(reverse2Normal(skillinfo)))
+  skill['ReversedSkillinfo'] = reverse2Normal(skillinfo)
+  
+  selectedSkill.value = skill
+  if (!paused.value) {
+    videoElement.value.pause()
+  }
+  currentFrame.value = skill.FrameStart
+  frameStart.value = skill.FrameStart
+  frameEnd.value = skill.FrameEnd
 }
+
+async function playJustALittleFurther(framesToSkip) {
+  if (!modeIsSkills.value) { return }
+  if (framesToSkip < 0) {
+    videoElement.value.currentTime += framesToSkip / videoinfo.value.FPS
+  } else {
+    let endTime = (currentFrame.value + framesToSkip) / videoinfo.value.FPS
+    play()
+    while (videoElement.value.currentTime < endTime) {
+      await sleep(20)
+    }
+    videoElement.value.pause()
+  }
+  await sleep(150)
+  if (frameStart.value && currentFrame.value != frameStart.value) {
+    frameEnd.value = currentFrame.value
+  }
+}
+
+function deselectSkill() {
+  frameStart.value = frameEnd.value
+  frameEnd.value = undefined
+  if (!paused.value) {
+    videoElement.value.pause()
+  }
+  currentFrame.value = frameStart.value
+  selectedSkill.value = { "FrameStart": frameStart, "Skillinfo": normal2Reverse(defaultOptions.value), "ReversedSkillinfo": defaultOptions.value }
+  videoElement.value.currentTime = frameStart.value / videoinfo.value.FPS
+}
+
+function frameToEndOfSkill() {
+  currentFrame.value = selectedSkill.value.FrameEnd
+}
+async function replaySection() {
+  currentFrame.value = frameStart.value
+  await sleep(100)
+
+  let endTime = frameEnd.value / videoinfo.value.FPS
+  videoElement.value.play()
+  while (videoElement.value.currentTime < endTime) {
+    await sleep(10)
+  }
+  videoElement.value.pause()
+  currentFrame.value = frameEnd.value
+}
+async function playNextSection() {
+  let nextSkill = videoinfo.value.Skills
+    .filter(skill => skill.FrameStart >= selectedSkill.value.FrameEnd)
+    .sort((a,b) => a.FrameEnd - b.FrameEnd)[0]
+  if (nextSkill) {
+    onSkillClicked(nextSkill.Id)
+    replaySection()
+  }
+}
+
+async function addSkill() {
+  let newSkill = {
+    "frameStart": frameStart.value,
+    "frameEnd" : frameEnd.value,
+    "skillinfo" : normal2Reverse(selectedSkill.value.ReversedSkillinfo)
+  }
+  videoinfo.value = await postSkill(videoinfo.value.Id, newSkill)
+  prepareNextLabel(frameEnd.value)
+}
+
+function prepareNextLabel(fs) {
+  frameStart.value = fs
+  frameEnd.value = undefined
+  for (let skillIdx in skills.value) {
+    skills.value[skillIdx].inCreation = false
+  }
+}
+
+async function updateSkill() {
+  let copy = structuredClone(toRaw(selectedSkill.value))
+  copy.Skillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
+  videoinfo.value = await putSkill(videoinfo.value.Id, copy)
+  prepareNextLabel(copy.FrameEnd)
+}
+
 </script>
 
 <style scoped>

@@ -21,7 +21,6 @@
       >
         Your browser does not support the HTML canvas tag.
     </canvas>
-    {{ boxesHovering }}
   </div>
 </template>
 
@@ -40,6 +39,7 @@ const canvas = ref(null)
 const mouse = ref('')
 
 const modeIsLocalization = computed(() => props.mode == 'LOCALIZE')
+const modeIsSkills = computed(() => props.mode == 'SKILLS')
 
 const canvasmodeIsDraw = computed(() => props.canvasMode == 'draw')
 const canvasmodeIsEdit = computed(() => props.canvasMode == 'edit')
@@ -47,6 +47,7 @@ const canvasmodeIsDelete = computed(() => props.canvasMode == 'delete')
 const boxes = computed(() => props.videoinfo.Frames.filter(b => b.LabelType == 2))
 const boxesHovering = ref([])
 const selectedBox = ref(null)
+const paused = computed(() => videoElement.value?.paused)
 
 const boxColors = [
   '#bfdbfe',
@@ -84,6 +85,9 @@ watch(() => props.currentFrameNr, (newFrameNr, oldFrameNr) => {
     videoElement.value.currentTime = newFrameNr / props.videoinfo.FPS
     resetCanvasAndDrawBoxes()
   }
+  if (modeIsSkills.value && videoElement.value.paused) {
+    videoElement.value.currentTime = newFrameNr / props.videoinfo.FPS
+  }
 })
 
 onMounted(async () => {
@@ -100,13 +104,12 @@ function updatePaused(event) {
   emit('pause', event.target.currentTime)
 }
 function onSeeked(event) {
-  console.log("onSeeked", event)
+  // videoElement.value.pause()
 }
 function ontimeupdate(event) {
   emit('timeupdate', event.target.currentTime)  
 }
 function onLoadedData(event) {
-  console.log("loadeddata", event)
   videoWidth.value = videoElement.value.clientWidth
   videoHeight.value = videoElement.value.clientHeight
 }
