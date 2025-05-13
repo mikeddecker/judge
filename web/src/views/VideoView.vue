@@ -30,10 +30,10 @@
           <Button @click="playJustALittleFurther(+10)" class="bg-teal-600" ref="focusBtn">+10</Button>
           <Button @click="playJustALittleFurther(+15)" class="bg-teal-600">+15</Button>
           <Button @click="playJustALittleFurther(+25)" class="bg-teal-600">+25</Button>
-          <Button v-show="selectedSkill" @click="deselectSkill">Deselect skill</Button>
-          <Button v-show="selectedSkill" @click="frameToEndOfSkill">Frame to end of selected skill</Button>
+          <Button v-show="selectedSkill.Id" @click="deselectSkill">Deselect skill</Button>
+          <Button v-show="selectedSkill.Id" @click="frameToEndOfSkill">Frame to end of selected skill</Button>
           <Button v-show="frameStart && frameEnd" @click="replaySection">Replay section</Button>
-          <Button v-show="selectedSkill" @click="playNextSection">Play next section</Button>
+          <Button v-show="selectedSkill.Id" @click="playNextSection">Play next section</Button>
         </div>
       </div>
 
@@ -80,7 +80,8 @@
       </div>
       
     </div>
-      <pre>{{ videoinfo }}</pre>
+    <pre>{{ videoinfo }}</pre>
+    <Button v-if="modeIsSkills" class="mb-8" @click="() => updateVideoSkillsCompleted(videoinfo.Id, !videoinfo.Completed_Skill_Labels)">Toggle skills completed, now = {{ videoinfo.Completed_Skill_Labels }}</button>
       
   </div>
   <div v-else>
@@ -91,7 +92,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted } from '../services/videoService';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -455,7 +456,9 @@ async function updateSkill() {
   let copy = structuredClone(toRaw(selectedSkill.value))
   copy.Skillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
   videoinfo.value = await putSkill(videoinfo.value.Id, copy)
+  deselectSkill()
   prepareNextLabel(copy.FrameEnd)
+
 }
 
 </script>
