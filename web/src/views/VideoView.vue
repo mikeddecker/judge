@@ -71,10 +71,11 @@
         </div>
         <div v-if="modeIsSkills" class="mx-2">
           <div v-for="(skillPropOptions, skillProp) in reversedSkillOptions" class="my-1">
-            {{ skillProp }} <Select v-model="selectedSkill.ReversedSkillinfo[skillProp]" :options="Object.keys(skillPropOptions)"></Select>
+            {{ skillProp }} <Select v-model="selectedSkill.ReversedSkillinfo[skillProp]" :options="Object.keys(skillPropOptions)" @update:model-value="updateLevel"></Select>
           </div>
           <Button v-show="frameStart && frameEnd && !selectedSkill.Id" @click="addSkill">Submit</Button>
           <Button v-show="selectedSkill.Id" @click="updateSkill">Update</Button>
+          Level - {{ selectedSkillLevel }}
         </div>
       </div>
       
@@ -90,7 +91,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel } from '../services/videoService';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -143,7 +144,7 @@ const skills = computed(() => {
 const skillOptions = ref({})
 const reversedSkillOptions = ref({})
 const selectedSkill = ref({})
-const selectedSkillinfo = computed(() => selectedSkill.value?.Skillinfo)
+const selectedSkillLevel = ref(0)
 const defaultOptions = ref({
   "Type" : "Double Dutch",
   "Rotations" : "1 rotation",
@@ -168,6 +169,12 @@ watch(
     loadVideo(newId)
   )
 )
+
+const updateLevel = async () => {
+  if (frameStart.value) {
+    selectedSkillLevel.value = await getSkillLevel(normal2Reverse(selectedSkill.value.ReversedSkillinfo), frameStart.value, videoinfo.value.Id) //getSkillLevel()
+  }
+}
 
 const reverseDict = (d) => {
   return Object.fromEntries(Object.entries(d).map(([key, value]) => [value, key]))
@@ -369,6 +376,7 @@ const onSkillClicked = (skillId) => {
   currentFrame.value = skill.FrameStart
   frameStart.value = skill.FrameStart
   frameEnd.value = skill.FrameEnd
+  updateLevel()
 }
 
 async function playJustALittleFurther(framesToSkip) {
@@ -383,7 +391,7 @@ async function playJustALittleFurther(framesToSkip) {
     }
     videoElement.value.pause()
   }
-  await sleep(150)
+  await sleep(270)
   if (frameStart.value && currentFrame.value != frameStart.value) {
     frameEnd.value = currentFrame.value
   }
@@ -459,5 +467,10 @@ async function updateSkill() {
 
 .error {
   color: red;
+}
+
+button:focus {
+  border-color: blue;
+  outline: none;
 }
 </style>
