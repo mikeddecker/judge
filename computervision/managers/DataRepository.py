@@ -225,3 +225,6 @@ class DataRepository:
         df_predictions["videoId"] = videoId
         df_predictions.to_sql(name="Predictions_SkillSegment", if_exists='append', con=self.con, chunksize=500, index=False)
         self.con.commit()
+
+    def get_video_path(self, videoId):
+        return os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"])

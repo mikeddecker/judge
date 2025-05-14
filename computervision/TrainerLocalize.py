@@ -15,6 +15,7 @@ from managers.DataRepository import DataRepository
 from ultralytics import YOLO
 from ultralytics.models.yolo.detect import DetectionTrainer
 from datetime import datetime 
+from localizor_with_strats import validate_localize
 
 
 load_dotenv()
@@ -25,26 +26,11 @@ LABELS_FOLDER = "labels"
 SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS")
 SUPPORTED_IMAGE_FORMATS = os.getenv("SUPPORTED_IMAGE_FORMATS")
 
-def train_yolo_model(variant: str):
-    os.makedirs(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, IMAGES_FOLDER), exist_ok=True)
-    os.makedirs(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, IMAGES_FOLDER, "train"), exist_ok=True)
-    os.makedirs(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, IMAGES_FOLDER, "test"), exist_ok=True)
-    os.makedirs(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, IMAGES_FOLDER, "val"), exist_ok=True)
-    if os.path.exists(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, LABELS_FOLDER)):
-        shutil.rmtree(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, LABELS_FOLDER)) # Always fresh start for labels
-    os.makedirs(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, LABELS_FOLDER), exist_ok=True)
-    os.makedirs(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, LABELS_FOLDER, "train"), exist_ok=True)
-    os.makedirs(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, LABELS_FOLDER, "test"), exist_ok=True)
-    os.makedirs(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, LABELS_FOLDER, "val"), exist_ok=True)
-
-
+def train_yolo_model(variant: str, repo: DataRepository):
+    """modeldir: e.g. runs/detect/train5"""
     def get_video_path(repo, videoId):
         return os.path.join(STORAGE_DIR, repo.VideoNames.loc[videoId, "name"])
 
-
-    repo = DataRepository()
-
-    previous_videoId = 0
     previous_frameNr = 0
     cap = None
     for train_test in ["train", "val"]:
@@ -76,7 +62,6 @@ def train_yolo_model(variant: str):
             with open(label_name, 'a') as f:
                 f.write(f"{0} {x} {y} {w} {h}\n")
 
-            previous_videoId = videoId
             previous_frameNr = frameNr
 
 
@@ -114,5 +99,9 @@ def train_yolo_model(variant: str):
 
     return save_dir
 
+repo = DataRepository()
 variant = 'yolo11n.pt'
-save_dir = train_yolo_model(variant)
+save_dir = '../runs/detect/train9'
+# save_dir = train_yolo_model(variant=variant, repo=repo)
+validate_localize(modeldir=save_dir, repo=repo, modelname='yolov11n_train9')
+

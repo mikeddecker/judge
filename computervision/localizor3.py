@@ -113,8 +113,8 @@ os.makedirs(os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, rawfolder), exist_o
 
 # %%
 DIM = 256
-videoIds = repo.get_dd3_videoIds()["id"].to_list()
-# videoIds = [1271]
+# videoIds = repo.get_dd3_videoIds()["id"].to_list()
+videoIds = [1271]
 
 for videoId in videoIds:
     start = time.time()
@@ -237,6 +237,7 @@ for videoId in videoIds:
                 )
 
             avgGradenLastKseconds = ((K * fps - 1) * avgGradenLastKseconds + cos_similarity) / K / fps 
+            # print(f"{iou_with_previous:.3f} - {cos_similarity:.3f} - {avgGradenLastKseconds:.3f}")
             # avgGradenVerschilLastKseconds = ((K * fps - 1) * avgGradenVerschilLastKseconds + abs(cos_similarity- previous_cos_similarity)) / K / fps 
 
             # print(i, iou, iou_threshold)
