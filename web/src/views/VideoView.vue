@@ -43,6 +43,9 @@
           <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
           <Button :class="modeIsSegment ? 'p-button-highlight' : ''" @click="() => mode = 'SEGMENT'">Segment</Button>
           <Button :class="modeIsSkills ? 'p-button-highlight' : ''" @click="() => mode = 'SKILLS'">Skills</Button>
+          <Button v-show="modeIsAnnotate" :class="modeIsAnnotate ? 'p-button-highlight' : ''" @click="() => predictMode = 'predict'">Annotate</Button>
+          <Button v-show="modeIsPredict" :class="modeIsPredict ? 'p-button-highlight' : ''" @click="() => predictMode = 'annotate'">Predict</Button>
+
         </div>
         <div class="my-2 flex gap-2">
           currentFrame: {{ currentFrame }}
@@ -63,6 +66,7 @@
             <Select v-model="selectedModel" :options="modelOptions"></Select>
           </div>
         </div>
+        <Button v-if="modeIsPredict">Launch job</Button>
         
         <!--Skills -->
         <div id="skillinfo" v-if="modeIsSkills">
@@ -116,10 +120,13 @@ const modeIsWatch = computed(() => mode.value == 'WATCH')
 const modeIsLocalize = computed(() => mode.value == 'LOCALIZE')
 const modeIsSegment = computed(() => mode.value == 'SEGMENT')
 const modeIsSkills = computed(() => mode.value == 'SKILLS')
+const predictMode = ref('annotate')
+const modeIsAnnotate = computed(() => predictMode.value == 'annotate')
+const modeIsPredict = computed(() => predictMode.value == 'predict')
 
-const canvasModes = ['draw', 'edit', 'delete']
+const canvasModes = ['draw', 'edit', 'delete', 'predict']
 const canvasMode = ref('draw')
-const modelOptions = ['boxes', 'yolov11n_ultralytics', 'yolov11n_run7']
+const modelOptions = computed(() => ['yolov11n_ultralytics', 'yolov11n_run7'])
 const selectedModel = ref('boxes')
 
 const currentFrame = ref(0)
@@ -290,9 +297,10 @@ async function loadVideo(id) {
   } finally {
     loading.value = false;
   }
-
+  console.log("hi")
   try {
     croppedVideoSrc.value = await getCroppedVideoPath(id)
+    console.log(croppedVideoSrc.value)
   } catch {
     croperror.value = 'No cropped video available'
   }

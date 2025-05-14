@@ -44,6 +44,7 @@ const modeIsSkills = computed(() => props.mode == 'SKILLS')
 const canvasmodeIsDraw = computed(() => props.canvasMode == 'draw')
 const canvasmodeIsEdit = computed(() => props.canvasMode == 'edit')
 const canvasmodeIsDelete = computed(() => props.canvasMode == 'delete')
+const canvasmodeIsPredict = computed(() => props.canvasMode == 'predict')
 const boxes = computed(() => props.videoinfo.Frames.filter(b => b.LabelType == 2))
 const boxesHovering = ref([])
 const selectedBox = ref(null)
@@ -138,7 +139,7 @@ const resetCanvasAndDrawBoxes = () => {
   })
   
   // Draw current drawing box
-  if (!canvasmodeIsDelete.value) {
+  if (!canvasmodeIsDelete.value && !canvasmodeIsPredict.value) {
     ctx.strokeStyle = boxColors[0]
     ctx.strokeRect(mouseXstart.value * videoWidth.value, mouseYstart.value * videoHeight.value, (mouseX.value - mouseXstart.value) * videoWidth.value, (mouseY.value - mouseYstart.value) * videoHeight.value);
   }
