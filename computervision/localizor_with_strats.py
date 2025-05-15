@@ -152,52 +152,6 @@ def calculate_smoothed_values(strat:str, params: dict, previous_values:dict, i:i
         case _:
             raise NotImplementedError(f"Unrecognized strat ({strat})")
     
-            raise NotImplementedError()
-            avgIOUlastNseconds = ((N * fps - 1) * avgIOUlastNseconds + iou) / N / fps 
-            iou_threshold = avgIOUlastNseconds ** 4
-
-            iou_with_previous = calculate_iou(
-                new_x_min=x1_min, old_x_min=previous_x_min,
-                new_x_max=x2_max, old_x_max=previous_x_max,
-                new_y_min=y1_min, old_y_min=previous_y_min,
-                new_y_max=y2_max, old_y_max=previous_y_max,
-            )
-
-            if i % 2 == 0:
-                previous_cos_similarity = cos_similarity
-                cos_similarity = calculate_cosine_similarity(
-                    new_x_min=x1_min, old_x_min=previous_x_min,
-                    new_x_max=x2_max, old_x_max=previous_x_max,
-                    new_y_min=y1_min, old_y_min=previous_y_min,
-                    new_y_max=y2_max, old_y_max=previous_y_max,
-                )
-
-            avgGradenLastKseconds = ((K * fps - 1) * avgGradenLastKseconds + cos_similarity) / K / fps 
-            # avgGradenVerschilLastKseconds = ((K * fps - 1) * avgGradenVerschilLastKseconds + abs(cos_similarity- previous_cos_similarity)) / K / fps 
-
-            # print(i, iou, iou_threshold)
-            if iou > iou_threshold:
-                smootval = smootval_stationary * (1 - abs(avgGradenLastKseconds)) + smootval_follow * abs(avgGradenLastKseconds)
-                smootval_shrink = smootval_shrink_stationary * (1 - abs(avgGradenLastKseconds)) + smootval_shrink_follow * abs(avgGradenLastKseconds)
-                # print(f"{i/fps:.2f} - {smootval:.3f} - {smootval_shrink:.3f} --- {iou > iou_threshold} : {iou:.3f} - 2nd = {iou_with_previous:.3f} - {1 - avgGradenLastKseconds ** 4:.3f} - {1 - avgGradenLastKseconds ** 2:.3f}     {cos_similarity:3.2f} - {avgGradenLastKseconds:.2f} - ")
-                smooted_x1_min = int(smootval * smooted_x1_min + (1-smootval) * x1_min) if x1_min < smooted_x1_min else int(smootval_shrink * smooted_x1_min + (1-smootval_shrink) * x1_min)
-                smooted_y1_min = int(smootval * smooted_y1_min + (1-smootval) * y1_min) if y1_min < smooted_x1_min else int(smootval_shrink * smooted_y1_min + (1-smootval_shrink) * y1_min)
-                smooted_x2_max = int(smootval * smooted_x2_max + (1-smootval) * x2_max) if x2_max > smooted_x2_max else int(smootval_shrink * smooted_x2_max + (1-smootval_shrink) * x2_max)
-                smooted_y2_max = int(smootval * smooted_y2_max + (1-smootval) * y2_max) if y2_max > smooted_y2_max else int(smootval_shrink * smooted_y2_max + (1-smootval_shrink) * y2_max)
-            
-            if i % 2 == 0:
-                previous_x_min = x1_min
-                previous_x_max = x2_max
-                previous_y_min = y1_min
-                previous_y_max = y2_max
-                
-            secondary_smooted_x1_min = int(smootval * secondary_smooted_x1_min + (1-smootval) * x1_min) if x1_min < secondary_smooted_x1_min else int(smootval_shrink * smooted_x1_min + (1-smootval_shrink) * x1_min)
-            secondary_smooted_y1_min = int(smootval * secondary_smooted_y1_min + (1-smootval) * y1_min) if y1_min < secondary_smooted_x1_min else int(smootval_shrink * smooted_y1_min + (1-smootval_shrink) * y1_min)
-            secondary_smooted_x2_max = int(smootval * secondary_smooted_x2_max + (1-smootval) * x2_max) if x2_max > secondary_smooted_x2_max else int(smootval_shrink * smooted_x2_max + (1-smootval_shrink) * x2_max)
-            secondary_smooted_y2_max = int(smootval * secondary_smooted_y2_max + (1-smootval) * y2_max) if y2_max > secondary_smooted_y2_max else int(smootval_shrink * smooted_y2_max + (1-smootval_shrink) * y2_max)
-
-
-
 
 def localize_jumpers(
         model: YOLO, repo: DataRepository, modelname: str,
