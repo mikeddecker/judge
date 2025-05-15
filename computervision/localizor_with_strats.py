@@ -392,7 +392,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
         }
     }
     DIM = 256
-    videoIds = repo.get_dd3_videoIds()["id"].to_list()
+    videoIds = repo.get_dd3_videoIds()["id"].sample(frac=1.0).to_list()
     model = YOLO(os.path.join(modeldir, "weights", "best.pt"))
     saveAsMp4 = False
     saveAsJSON = True
@@ -403,15 +403,18 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
     }
 
     ious_all = {s: { tv: { 'sum': 0, 'min': 1, 'max': 0, 'avg': 0, 'total': 0 } for tv in ['train', 'val'] } for s in strategies}
+    invalid_frames = []
+    errors = []
 
     valstart = time.time()
-    for train_or_val in ['train', 'val']:
+    for videoId in videoIds:
+        train_or_val = 'val' if videoId % 10 == 5 else 'train'
         full_team_relative_boxes = full_team_relative_boxes_both[train_or_val]
+        full_team_relative_boxes_of_videoId = full_team_relative_boxes[full_team_relative_boxes['videoId'] == videoId]
+        if len(full_team_relative_boxes_of_videoId) == 0:
+            continue
 
-        for videoId in videoIds:
-            full_team_relative_boxes_of_videoId = full_team_relative_boxes[full_team_relative_boxes['videoId'] == videoId]
-            if len(full_team_relative_boxes_of_videoId) == 0:
-                continue
+        try:
 
             df_coordinates = localize_jumpers(
                 model=model,
@@ -428,6 +431,16 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
 
             # Dict with relative boxes
             frameNrs = full_team_relative_boxes_of_videoId['frameNr']
+            print(max(frameNrs))
+            if max(frameNrs) >= len(df_coordinates['raw']):
+                print("Invalid framecounts... skipping videoId, maxFrameNr, count", videoId, max(frameNrs), len(df_coordinates['raw']))
+                invalid_frames.append({
+                    'videoId' : videoId,
+                    'num_boxes' : len(df_coordinates['raw']),
+                    'maxFrameNr': max(frameNrs),
+                })
+                # TODO : fix or delete videos
+                continue
 
             for s in strategies:
                 predicted_relative_boxes = df_coordinates[s].iloc[frameNrs]
@@ -445,13 +458,25 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
                 ious_all[s][train_or_val]['min'] = min(ious_all[s][train_or_val]['min'], ious_video.min())
                 ious_all[s][train_or_val]['max'] = max(ious_all[s][train_or_val]['max'], ious_video.max())
                 ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
-                pprint(ious_all)
+            pprint(ious_all)
+        except Exception as e:
+            raise e
+        finally:
+            print(f"Error count", len(invalid_frames))
 
-
-            ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
-            expected_end = (time.time()-valstart) / ious_all[s][train_or_val]['total'] * (len(full_team_relative_boxes_both['train']) + full_team_relative_boxes_both['val'])
-            print(f"Currently {time.time()-valstart:.2f}s ---> expected = {expected_end}s")
+        ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
+        expected_end = (time.time() - valstart) / ious_all[s][train_or_val]['total'] * (len(full_team_relative_boxes_both['train']) + len(full_team_relative_boxes_both['val']) - ious_all[s][train_or_val]['total'])
+        print(f"Currently {time.time()-valstart:.2f}s ---> expected = {expected_end:.0f}s")
+    
+    for e in errors:
+        print(e)
+    
+    print(f"Invalid frames")
+    print(pd.DataFrame(invalid_frames))
+    
     print(f"Took {time.time()-valstart:.2f}s")
+    
+    
 
 
     # Save validation
