@@ -53,6 +53,12 @@ class DataRepository:
 
         return pd.read_sql(qry, con=self.con)
 
+    def get_videos_having_boxes_of_type(self, type=1):
+        # TODO : update with validation & 'random' sampling
+        qry = sqlal.text(f"""SELECT * FROM Videos WHERE id IN (SELECT DISTINCT videoId FROM FrameLabels WHERE labeltype = {type})""")
+
+        return pd.read_sql(qry, con=self.con)
+
     def get_framelabels(self, train_test_val, type=1):
         # TODO : update with validation & 'random' sampling
         if train_test_val == "train":

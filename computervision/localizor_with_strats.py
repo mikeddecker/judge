@@ -391,8 +391,13 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
             'smoothval_shrink': 0.92,
         }
     }
+
     DIM = 256
-    videoIds = repo.get_dd3_videoIds()["id"].sample(frac=1.0).to_list()
+    df_videos_with_boxes = repo.get_videos_having_boxes_of_type(type=1).sample(frac=1.0)
+    total_frames = df_videos_with_boxes['frameLength'].sum()
+    videoIds = df_videos_with_boxes['id'].tolist()
+    print("Total frames", total_frames)
+
     model = YOLO(os.path.join(modeldir, "weights", "best.pt"))
     saveAsMp4 = False
     saveAsJSON = True
@@ -407,6 +412,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
     errors = []
 
     valstart = time.time()
+    completed_videoIds = []
     for videoId in videoIds:
         train_or_val = 'val' if videoId % 10 == 5 else 'train'
         full_team_relative_boxes = full_team_relative_boxes_both[train_or_val]
@@ -464,9 +470,13 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
         finally:
             print(f"Error count", len(invalid_frames))
 
+        completed_videoIds.append(videoId)
         ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
-        expected_end = (time.time() - valstart) / ious_all[s][train_or_val]['total'] * (len(full_team_relative_boxes_both['train']) + len(full_team_relative_boxes_both['val']) - ious_all[s][train_or_val]['total'])
-        print(f"Currently {time.time()-valstart:.2f}s ---> expected = {expected_end:.0f}s")
+        frames_predicted = df_videos_with_boxes[df_videos_with_boxes['id'].isin(completed_videoIds)]['frameLength'].sum()
+        expected_end = (time.time() - valstart) / frames_predicted * total_frames
+        seconds_left = (time.time() - valstart) / frames_predicted * (total_frames- frames_predicted)
+        print(f"Currently {time.time()-valstart:.2f}s / {expected_end:.0f}s ---> seconds left: {seconds_left:.0f}s")
+        print(f"Currently {frames_predicted} / {total_frames} frames ({frames_predicted/total_frames*100:.1f}%)")
     
     for e in errors:
         print(e)
