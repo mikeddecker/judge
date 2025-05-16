@@ -154,7 +154,7 @@ While these summations may seem simple, the combination of not knowing what is p
 \begin{figure}
     \centering
     \includegraphics[width=0.95\linewidth]{img/doubledutch-matrix}
-    \caption[skill-matrix-DD]{Representation of a skill-matrix used for Doube Dutch}
+    \caption[skill-matrix-DD]{First draft representing a skill-matrix used for Doube Dutch.}
     \label{fig:doubledutch-skill-matrix}
 \end{figure}
 
@@ -184,6 +184,9 @@ Applying these transitions, characteristics allows for even more variation, whic
 The skill-matrix is subject to change over time. For the initial research and PoC, skills may be simplified or left out of the matrix will be left out for the PoC. Other than skills, jumpers and turners can switch positions, which is called a transition. These transitions do not fit in the matrix discussed below and are also omitted in the PoC.
 Each column in the first skill-matrix-example \ref{fig:doubledutch-skill-matrix} can only contain one property, for which softmax can be used, while between multiple columns, no relation is required and meaning the skills can be predicted separately. This can be solved using a multi-branch output as described in by \textcite{Coulibaly_2022}. This can result in a guessed skill being partially correct, e.g. turner correct, but wrong rotational amount.
 
+
+
+
 On another note, \textcite{Guo_2017} explain that softmax isn't always a good indicator of confidence. They mention that when a model has good calibration, the accuracy should align with the confidence of the prediction. E.g. when you predict a skill has an 80\% chance being of being a push-up, then this prediction or 80\% of the predicted push-ups should be correct. Predictions using softmax tend to be overconfident.
 
 
@@ -198,103 +201,118 @@ On another note, \textcite{Guo_2017} explain that softmax isn't always a good in
         & SR & DD3 \\ \hline
         \#Freestyles & 500-1000+ & 286-352 \\ \hline
         Hours & 8h-16h+ & 5-6h \\ \hline
-        Years & 500 from 2024 & mainly 2020-2024 \\ \hline
-        MVP & basic variation elements & basic powers, gyms, turnerskills \\ \hline
-        Level-guessing & 0 to 8 & 0 to 8 \\ \hline
+        MVP & basic skill recognition & basic powers, gyms, turnerskills \\ \hline
+        Level-guessing & 0 to 8 & 0 to 6/8 \\ \hline
         Theoretical level limit & 8+ levels possible & 8+ levels possible \\ \hline
-        Variation elements & 6 & 4 \\ \hline
-        skill-matrix & more complex & simpeler compared to SR \\ \hline
-        longer sequences & / & / \\ \hline
+        skill-matrix & finer hand movements & larger actions compared to SR \\ \hline
         individuals & 1 & 3 \\ \hline
-        competitions & Oct-Nov & March-Apr \\ \hline
     \end{tabular}
-    \caption{Data comparison}
+    \caption{Data comparison between singel rope freestyles and double dutch single freestyles. The number of freestyles is an estimation of the available and potential extra recordings possible on competitions during the research process.}
     \label{tbl:data-comparison-sr-dd}
 \end{table*}
 
 % TODO : footnote refer to table above for numeric data
 To automatically recognize skills, input data is needed. There are quite some videos on socials, as well as in-house recordings, see table \ref{tbl:data-comparison-sr-dd}, so the choice to learn from videos was made quickly. This is also the choice for NextJump, a speed counter, counting how many speed-steps there are within a given time span.
-Computer vision is the field of study in which computers recognize features, people or other objects in digital imagery. More specifically, the focus is recognizing human actions in these recordings, called human activity recognition or HAR \autocite{Pareek_2020}.
+Computer vision is the field of study in which computers recognize features, people or other objects in digital imagery. More specifically, the focus is recognizing human actions in these recordings, called Human Activity Recognition or HAR \autocite{Pareek_2020}.
 
-Other adaptations like Human Gait Recognition, HGR, or Human Pose Estimation, HPE, are also used to recognize human activities. Although the three techniques are closely related, each of them has a different nuance. Gait recognition looks at a person's typical movements, gestures or behavioral patterns \autocite{Alharthi_2019}, while pose estimation looks specifically at poses or special expressions \autocite{Song_2021}. They also talk about how pose recognition, e.g. skeleton-based, can be used as a tool are to improve activity labeling.
+
+Other papers mention slight adaptations to human action recognition, namely Human Gait Recognition, HGR, or Human Pose Estimation, HPE. Although the three techniques are closely related, each of them has a different nuance. Gait recognition looks at a person's typical movements, gestures or behavioral patterns \autocite{Alharthi_2019}, while pose estimation looks specifically at poses or special expressions \autocite{Song_2021}. They also talk about how pose recognition, e.g. skeleton-based, can be used as a tool to improve activity labeling.
+While these are interesting techniques, more effort is put into action recognition.
+
+
+
+
 
 \subsection{Computer vision in other sports}
 \label{subsubsec:bp-literature-computer-vision-sports}
 
-\textcite{Soomro_2014} published a book about the first advancements in computer vision since it was applied to sports. On the other hand, \textcite{Yin_2024} focuses more on the latest advancements of computer vision in sports in teams competitions. Although relatively popular, neither of them really talks about gymnastics, which is closer related to jump rope in comparison with sports like tennis, basketball or cricket.
-Given examples by those two sources of performed computer vision tasks are player tracking, following the ball trajectory (e.g. in cricket, football, tennis), human to human interaction (e.g basket) or detecting action types (e.g. running, walking, hitting the ball) or predicting the sport itself. (e.g. Olympics dataset)
+\textcite{Soomro_2014} published a book about the first advancements in computer vision since it was applied to sports. In addition, \textcite{Yin_2024} published a paper on the latest advancements of computer vision in teams competitions. Although relatively popular, neither of them really talks about gymnastics, which is closer related to jump rope than sports like tennis, basketball or cricket.
+Given examples by those two sources of performed computer vision tasks are: player tracking, following the ball trajectory (e.g. in cricket, football, tennis), human to human interaction (e.g basket) or detecting action types (e.g. running, walking, hitting the ball) or predicting the sport itself. (e.g. Olympics dataset).
+% ------------------------
+% Jump rope related sports
+% ------------------------
 
-To near closer towards jump rope, \textcite{Abdullah_2023} provided an example of static image recognition in which gymnast poses on the rings where predicted, although in a balanced dataset and limited amount of classes. More intensively, score prediction was performed by \textcite{Zahan_2023}. This is already close to what is wanted, however, he modified the Long Short Term Memory model (LSTM-model) to incorporate longer time sequences, to predict a full score of a routine which is static and not future proof. Changes in rules would make older scores useless and request for mistakes.
-Meanwhile, the International Gymnastic Federation (\href{https://www.gymnastics.sport/site/}{FIG}) has been working with Fujitsu sinds 2017 in order to create a \href{https://www.fujitsu.com/global/themes/data-driven/judging-support-system/}{Judging Support System}
-Combining these and earlier papers, detecting which action is performed, with a level/score mapping afterwards will be better future proof.
+A successful example recognizing static images on gymnastics rings, \textcite{Abdullah_2023}, illustrates the possibility of recognizing the main body positions in double dutch freestyles. Although the dataset is fully balanced and with a limited amount of classes, extending it shouldn't pose an issue. Preferably, identifying skills should incorporate the time aspect.
+\textcite{Zahan_2023} modified the Long Short Term Memory model (LSTM-model) to incorporate longer time sequences, to predict a full score of a routine which is static and not future proof. Changes in rules would make older scores useless and request for mistakes.
+
+Meanwhile, the International Gymnastic Federation (\href{https://www.gymnastics.sport/site/}{FIG}) has been working with Fujitsu sinds 2017 in order to create a \href{https://www.fujitsu.com/global/themes/data-driven/judging-support-system/}{Judging Support System}. Initially, sensor data was used in order to predict skills, however in their official launch, \autocite{Fujitsu2023launch}, they mentioned a transition towards camera based image analysis, reaching higher performance. Which model they use is unknown.
+Combining these examples and earlier research, a robust action recognition model can be developed detecting key aspects of a a video. These aspects, such as the number of hands, feet, body rotations and the main pose/action, can then be mapped with a level/score resulting in the full difficulty score of a routine.
 
 \subsection{NextJump Speedcounter}
 \label{subsubsec:bp-literature-nextjump-speedcounter}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.95\linewidth]{img/nextjump-off-by-feet}
-    \caption[nextjump-results]{Comparison of avg scores given to a jumper, compared to the effective score. Results are from 2024 AMJRF nationals.}
-    \label{fig:nextjump-results-off-by-feet}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.95\linewidth]{img/nextjump-off-by-feet}
+%     \caption[nextjump-results]{Comparison of avg scores given to a jumper, compared to the effective score. Results are from 2024 AMJRF nationals.}
+%     \label{fig:nextjump-results-off-by-feet}
+% \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width=0.95\linewidth]{img/nextjump-off-by-feet-judges}
-    \caption[nextjump-results-multi]{Comparison of avg scores given to a jumper, compared to the effective score. Results are from 2024 AMJRF nationals.}
+    \caption[nextjump-results-multi]{Comparison of avg scores given to a jumper, compared to the effective score. Results are from 2024 AMJRF nationals. Provided by NextJump}
     \label{fig:nextjump-results-off-by-feet-judges-amjrf-2024}
 \end{figure}
 
-As of august 2023, \href{https://nextjump.app/}{NextJump} tested their AI-speed-counter on the world competition acquiring, really accurate results, see fig \ref{fig:nextjump-results-off-by-feet} \& \ref{fig:nextjump-results-off-by-feet-judges-amjrf-2024}. They found that 10 hours was sufficient for a single event (e.g. just single rope speed) but to count all kinds of events more (diverse) data is needed\footnote{The current dataset entails 36h video material}. Using this as a base/guidance, the likelihood to succeed implementing skill-recognition in freestyles grows.
-When skills are recognized, they can be mapped to their corresponding level and summed up to achieve the total score of a freestyle.
+As of august 2023, \href{https://nextjump.app/}{NextJump} tested their AI-speed-counter, counting speed steps, on the world competition acquiring really accurate results, see fig \ref{fig:nextjump-results-off-by-feet-judges-amjrf-2024}.
+The speed counter, counts how many (right-footed) times the speed step is performed. A speed step is the alternation between jumping left or right footed, like running but stationary. Between each alternation, a rope goes under your feet.
+% TODO : add more information
+They found that 10 hours was sufficient for a single event (e.g. just single rope speed) but to count all kinds of events more (diverse) data is needed. The current dataset entails 36h video material, including other events such as triples unders or double unders. Using this as a base/guidance, the likelihood to succeed implementing skill-recognition in freestyles grows.
 
 
-\section{HAR general progress}
+\section{Human Action Recognition - general progress}
 
 % TODO : find paper, reference to come to steps or use pareek again?
-\textcite{Pareek_2020} did some research about the recent updates in human activity recognition, which mainly gave form to the following general approach.
+\textcite{Pareek_2020} summarized recent updates in human activity recognition. Based on their paper, a general approach is created in order to recognize the skills of jumpers.
 
-As jumpers can stand everywhere in a field \footnote{A field is generally 12x12 or 15x15 meters}, locating and cropping athletes can improve the segmentation model \footnote{If time allows it, the final model can be compared with or without localization}. When the skippers are centered, action segmentation can be performed. This allows predicting skills on newly recorded videos, without needing to cut out the different skills. Finally predicting the skill, which can be broken down into multiple, parallel runnable sections.
+As jumpers can stand everywhere in a field \footnote{A field is generally 12x12 or 15x15 meters}, locating and cropping athletes can improve the segmentation model \footnote{If time allows it, the final model can be compared with or without localization}. When the skippers are centered, action segmentation can be performed. This allows for the predicting of skills on newly recorded videos, without the need to cut out the different skills. Finally, a level can be mapped on each predicted skill \footnote{Note that in skillrecognition can infer turner involvements, number of rotations, hands, feet, ...}. Below you can find a summary of each step.
 
 \begin{enumerate}
     \item Jumper localization
     \item Action segmentation, start/end of skill
-    \item Predict the effective skill
+    \item Skill prediction
     \begin{enumerate}
-        \item Predicting the level
-        \item Predict skill (power/gymnestic - pushup, split, cartwheel)
+        \item Predict skill (power/gymnestic - pushup, split, cartwheel, ...)
         \item Predict turner involvement (cross, EB, TS)
-        \item Predict multiple (single, double, triple)
+        \item Predict number of rotations (single, double, triple, ...)
+        \item Predict modifiers (1 hand, 2 feet, body rotations, ...)
     \end{enumerate}
+    \item Level \& Score mapping
 \end{enumerate}
+
+In what follows, a study of past and recent advancements are listed for each of the three steps, localization, segmentation and prediction. This allows for a selection of machine learning models, best suited for the task at hand. After selecting potential models, some potential hurdles are listed which can withold progression on skill recognition.
 
 \section{Jumper localization}
 \label{subsec:jumper localization}
 
-Many research towards image recognition has been done \autocite{Zou_2023}. The best models mostly utilize Convolutional Neural Networks pertaining spacial information in the image \autocite{Zaidi_2021}. In their paper, they compare some recent models for object detection such as YOLO(v4), CenterNet, SSD, EfficientDet-D2, each using some backbone architecture like VGG-16, AlexNet, GoogleNet or lightweight models such as ShuffleNet or MobileNet (all using CNN's). Some of them being real-time models (fps > 30).
-The goal of localizing the jumper is to center the athletes in the middle of the screen/video. \textcite{Bharadiya_2023} elaborates that the position of objects in images doesn't really matter, but their are no clear statements about the size of objects. It could be that a jumper takes up 80 percent of the screen, while moments later he moved backwards and only takes up 30 percent of the video. Instincts tell us that centered and scaled data will work better later.
+Image recognition has been at the centre of many recent studies. The best models mostly utilize Convolutional Neural Networks processing spacial information in the image \autocite{Zaidi_2021}. \textcite{Zaidi_2021} further compare recent models for object detection such as YOLO(v4), CenterNet, SSD, EfficientDet-D2, each using some backbone architecture like VGG-16, AlexNet, GoogleNet or lightweight models such as ShuffleNet or MobileNet (all using CNN's). A subset of these models being real-time models (fps > 30).
+The goal of localizing the jumper is to center the athletes in the middle of the screen/video. \textcite{Bharadiya_2023} states that the position of objects in images doesn't really matter, but there are no clear statements about the size of objects. It could be that a jumper takes up 80 percent of the screen, while moments later he moved backwards and only takes up 30 percent of the video. The assumption is that centered and scaled data will work better later.
 
-One of these models can be taken as a base, using transfer learning\footnote{Concept transfer learning explained in \autocite{Bharadiya_2023}} to fine-tune the results to localize the jumper.
+For the purposes of this study, it is possible to use one of the recent models of image recognition as a starting point, using transfer learning\footnote{Concept transfer learning explained in \autocite{Bharadiya_2023}} to fine-tune the results to localize the jumper.
 
-To improve localization, video object segmentation or video instance segmentation can be used. \textcite{Gao_2022} lists some object segmentation models, like SwiftNet \textcite{Wang_2021} using ResNet18 as good and quick model.
-Other possibilities would be Cutie \autocite{Cheng_2023}, DensePose (see fig [\ref{fig:srwrap}, \ref{fig:srwrapdense}]) \autocite{Guler_2018}
+To improve localization, video object segmentation or video instance segmentation can be used. VOS detects objects in videos, as compared to individual frames. \textcite{Gao_2022} lists some object segmentation models, like SwiftNet \autocite{Wang_2021} which uses ResNet18 as good and quick model.
+Other possibilities would be Cutie \autocite{Cheng_2023}, DensePose (see fig \ref{fig:srwrap-bp}) \autocite{Guler_2018}
 
 \begin{figure}
     \centering
     \includegraphics[width=0.3\linewidth]{../graphics/sr-denseposed}
     \caption{Jumper in a routine wrapping the rope around her arm in a single rope routine. Image on the left is the original image, on the right is the simplified information after using detectron2 densepose \autocite{wu2019detectron2}}
-    \label{fig:srwrap}
+    \label{fig:srwrap-bp}
 \end{figure}
 
 Densepose seems to be able to give the bounding boxes of the main poses detected. Perhaps just a convex hull and some padding will be enough for smart cropping and training a network from scratch is not needed.
-However, a local tryout (without boxes) was rather slow, 1.2 fps on GPU within a Docker container, on a laptop.
-As jumpers don’t move that much most of the time, skipping some frames and smoothing out the prediction over the rest of the sequence or decreasing the amount of skipped frames when movement is detected, can speed up the localization.
+However, a local tryout (without boxes) was rather slow, 1.2 fps on GPU within a Docker container.
+As jumpers don't move that much most of the time, skipping some frames and smoothing out the prediction over the rest of the sequence or decreasing the amount of skipped frames when movement is detected can speed up the localization.
 
-Even when Densepose isn’t used, smoothing can still be applied to the guessed box as a video is basically a sequence of images.
+Even when Densepose isn't used, smoothing can still be applied to the guessed box as a video is basically a sequence of images.
+
+
+
 
 \section{Video action segmentation}
 
-When the athletes are cropped, videos need to be split \footnote{Not real/physical splits, but rather labels/annotations for where to split} in (sub)skills, because splitting new videos manually takes to much time and is impractical on competitions. A more specialized model like LTContext \autocite{Jiaming_2023} or a video vision model explored in section~\ref{subsec:bp-skill-recognition} could suffice.
+When the athletes are cropped, videos need to be split \footnote{Not real/physical splits, but rather labels/annotations for where to split} in (sub)skills, because splitting new videos manually takes too much time and is impractical on competitions. A more specialized model like LTContext \autocite{Jiaming_2023} or a video vision model explored in section~\ref{subsec:bp-skill-recognition} could suffice.
 
 Just like in localization, extracting poses, filtering foreground from background etc. could improve the segmentation.
 
@@ -305,30 +323,45 @@ just sequentially go through each trick one at a
 time to assign, annotate or validate the predicted
 skill.
 
+
+
+
 \section{Skill recognition}
 \label{subsec:bp-skill-recognition}
 
 The final step would be to recognize the total skill in a freestyle video.
-\textcite{Yin_2024} did a general HAR survey, mainly focused on team sports, in which they describe the evolution from normal CNN architectures, to recurrent neural networks for time sequences, remembering context, like the Long Short Term Memory model (LSTM). Then combining CNN output into LSTM or even implementing a convolutional filter in the memory cell \autocite{Shi_2015}.
+\textcite{Yin_2024} did a general HAR survey, mainly focused on team sports, in which they describe the evolution from normal CNN architectures, to recurrent neural networks for time sequences, remembering context, like the Long Short Term Memory model (LSTM), after which models were developed feeding the CNN output into LSTM or even implementing a convolutional filter in the memory cell \autocite{Shi_2015}.
 
 \textcite{Wang_2019} investigated an improvement for current convolutional or recurrent models. They found that LSTM memory cells were too simple to contain higher-order complexities. As a result, they designed a memory in memory component, to replace the previous cell, which could predict actions on complexer data sets. This quickly formed the name Memory in Memory, MIM. Later, \textcite{Lin_2020} used a self-attention memory cell inside the convLSTM that can memorize global aspects in space and time. With about 35\% the number of parameters compared to Wang's MIM-model, SAM achieved a similar score as on the moving MNIST dataset, but faster. Although the focus of these papers was predicting future actions, the output can be transformed into a classification model, rather than a prediction model.
 
-Another approach would be using transformers as a described possibility in \textcite{Yin_2024}. Options are the video vision transformer \autocite{Arnab2021} or adaptions like the ViT-TAD model by \textcite{Yang_2023}, Swin transformer \textcite{Liu_2021} or VideoMAE v2 by \textcite{Wang_2023}. Further research/try-outs will be required to ensure the transfer models can predict actions.
+Another approach would be using transformers as a described  in \textcite{Yin_2024}. Options are the video vision transformer \autocite{Arnab2021} or adaptions like the ViT-TAD model by \textcite{Yang_2023}, Swin transformer \textcite{Liu_2021} or VideoMAE v2 by \textcite{Wang_2023}. Further research/try-outs will be required to ensure the transfer models can predict actions.
 
 For reference, NextJump uses a CNN - MobileNetv4, \autocite{MobileNetv4_2024} and a transformer to analyze the full sequence and count. So using the convLSTM, SAM, MobileNet, or a transformer brings us to a better definition or example of what exactly we want to predict.
 
+% TODO : SA_ConvLSTM?
+% TODO : MViT
+
+Even with a broad range of options, it isn't bad to think about potential hurdles. One of them are unknown of unusual skills. While a judge may refer to a head judge or think for itself, the AI model wouldn't be trained for that. The other hurdle could be that DD3 freestyles are a group activity, making it hard for models to recognize the required aspects. 
+
 \section{Group activity}
 
-As DD3 is a group activity, problems could arise while trying to detect skills. However, the hypothesis is that a DD3 freestyle always acts as one unit, thus not really requiring much special attention. This could pose a problem when adapting SR to SR2 where two individuals are not exactly one unit. Some further research can be done in models like stagNet \autocite{Qi_2020} to improve, incorporate this idea.
+As DD3 is a group activity, problems could arise while trying to detect skills. However, the hypothesis is that a DD3 freestyle always acts as one unit, thus not really requiring much special attention. One potential problem could be not know left from right, as there are two turners. Other problems might arise when adapting SR to SR2 where two individuals are not exactly one unit. Some further research can be done in models like stagNet \autocite{Qi_2020} to account for this idea. Another idea would be to apply the same method as YOLO, predicting multiple locations at the same time.
+
+
+
 
 \section{Unknown/Unusual skills}
-\label{subsec:bp-literature-unknown-unusual-skills}
+\label{subsec:bp-literature-unknowmultin-unusual-skills}
 
 % TODO revise
-Unknown skills or special cases pose a particular challenge. That’s why the skill-matrix needs to defined in such a way, to accommodate for new combinations or skills.
-as possible and/or in combination with zero-shot learning. (Sort of marking unique skills as ’I don’t know’ so that others new/unique ones will also be marked as "I don't know") Unusual skills on the other hand should be incorporated into the implementation.
-Earlier an example was given about knocking 3 times on the door. A more concrete example would be turntables, which are mainly performed using a crab or push-up, but also seen with a frog or a split.
+Unknown skills or special cases pose another challenge. That's why the skill-matrix needs to defined in such a way, to accommodate for new combinations or skills. This is called zero-shot learning, \autocite{Pourpanah_2022}, where actions or combinations get recognized without any labels.
+
+(Sort of marking unique skills as "I don't know" so that others new/unique ones will also be marked as "I don't know") Unusual skills on the other hand should be incorporated into the implementation.
+A more concrete example would be turntables, which are mainly performed using a crab or push-up, but also seen with a frog or a split.
 Turntables even have the potential to be combined with a swift. Omitting turntable frogs or splits in the train dataset can test this the ability to perform on unusual skills.
+
+
+
 
 \section{Summary literature}
 \label{subsec:bp-summary literature}
