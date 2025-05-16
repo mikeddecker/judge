@@ -304,7 +304,6 @@ async function loadVideo(id) {
   } finally {
     loading.value = false;
   }
-  console.log("hi")
   try {
     croppedVideoSrc.value = await getCroppedVideoPath(id)
     console.log(croppedVideoSrc.value)
