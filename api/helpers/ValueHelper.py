@@ -84,7 +84,6 @@ class ValueHelper:
                 assert skillinfo[key] >= min and skillinfo[key] <= max, f"Skillinfo {key} must be between {min} and {max}, got {skillinfo[key]}"
             elif value[0] == "Categorical":
                 assert isinstance(skillinfo[key], int), f"Skillspecification of {key} must be in integer, got {skillinfo[key]}"
-                print("table name part", config[key][1], "uc", skillinfo[key])
                 repo.exists_skillinfo(discipline=config["Tablename"], table_name_part=config[key][1], uc=skillinfo[key])
             elif value[0] == "Boolean":
                 assert isinstance(skillinfo[key], bool), f"Boolean value {key} must be a boolean, got {skillinfo[key]}"

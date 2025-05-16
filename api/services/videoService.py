@@ -21,6 +21,18 @@ SUPPORTED_VIDEO_FORMATS = [
     'png',
 ] # Temporarily media formats
 
+LEVEL_TO_SCORE_MAP = {
+    0 : 0,
+    1 : 1.5,
+    2 : 2.2,
+    3 : 3.3,
+    4 : 4.9,
+    5 : 7.3,
+    6 : 11,
+    7 : 11,
+    8 : 11,
+}
+
 class VideoService:
     """Provides the video information of videos"""
     PROPERTIES = [
@@ -584,31 +596,47 @@ class VideoService:
         ]
         levels = [lvl if not isinstance(lvl, list) else lvl[0] for lvl in levels]
         
+        score = 0
         for lvl in levels:
             freq_table[lvl] += 1
+            score += LEVEL_TO_SCORE_MAP[lvl]
 
-        return freq_table, None
+        return freq_table, score
 
     def get_score_comparison(self, videoIds: List[int]):
         allowed_models = ['HAR_MViT']
         print("@"*80)
         print(videoIds)
-        scores = {}
-        for videoId in videoIds:
-            for model in allowed_models:
+        scores = {
+            "total" : { "judges": 0, "HAR_MViT": 0}
+        }
+        
+
+        for model in allowed_models:
+            for videoId in videoIds:
                 if model not in allowed_models:
                     return f"Model {model} not allowed", 404
                 
                 scores[videoId] = {}
+                scores[videoId]["videoId"] = videoId
                 scores[videoId]["judges"] = self.get(id=videoId).JudgeDiffScore
                 if self.video_has_predictions(videoId=videoId, model=model):
                     # TODO : add re-calculate after x days or when a new model has been trained
                     freq, score = self.__calculate_diff_score(videoId=videoId, model=model)
-                    scores[videoId][model] = score
+                    scores[videoId][model] = round(score, 2)
                     scores[videoId][f"{model}_freq"] = freq
+                    
+                    if scores[videoId]["judges"]:
+                        scores[videoId][f"{model}_difference"] = round(100 * (scores[videoId][model] - scores[videoId]["judges"]) / scores[videoId]["judges"], 2)
+                        scores["total"]["judges"] += scores[videoId]["judges"]
+                        scores["total"][f"{model}"] += round(score, 2)
+
                 elif not self.jobService.video_has_pending_job(videoId=videoId, model=model):
                     self.jobService.launch_job_predict_skills(step='FULL', model=model, videoId=videoId)
                     scores[videoId][model] = "Created"
                 else:
                     scores[videoId][model] = "Waiting"
+            scores["total"]["judges"] = round(scores["total"]["judges"], 2)
+            scores["total"][f"{model}_difference"] = round(100 * (scores["total"][model] - scores["total"]["judges"]) / scores["total"]["judges"], 2)
+
         return scores

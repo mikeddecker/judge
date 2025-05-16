@@ -32,6 +32,7 @@ while no_shutdown_job:
             modelparams=modelparams[job_arguments["model"]],
             saveAsVideo=False,
         )
+        REPO.delete_job(job["id"])
     else:
         time.sleep(5)
     # Update, remove job

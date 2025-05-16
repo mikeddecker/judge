@@ -10,6 +10,8 @@ import Aura from '@primevue/themes/aura'
 import Button from "primevue/button"
 import Card from 'primevue/card';
 import Chart from 'primevue/chart';
+import Column from 'primevue/column';
+import DataTable from 'primevue/datatable';
 import InputNumber from 'primevue/inputnumber';
 import Select from 'primevue/select';
 import Tabs from 'primevue/tabs';
@@ -39,6 +41,8 @@ app.use(PrimeVue,
 app.component('Button', Button);
 app.component('Card', Card);
 app.component('Chart', Chart);
+app.component('Column', Column);
+app.component('DataTable', DataTable);
 app.component('InputNumber', InputNumber)
 app.component('Select', Select);
 app.component('Tabs', Tabs);
