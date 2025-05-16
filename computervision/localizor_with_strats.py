@@ -191,7 +191,7 @@ def localize_jumpers(
     start = time.time()
 
     videoPath = repo.get_video_path(videoId=videoId)
-    rawPredictedBoxesPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"raw_boxes_{modelname}.json")
+    rawPredictedBoxesPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_raw_boxes_{modelname}.json")
     strat_model_name = f"{videoId}_crop_d{dim}_{modelname}" # TODO : include strat
     videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.mp4")
 

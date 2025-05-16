@@ -169,7 +169,7 @@ class Predictor:
             # pprint(predictions, sort_dicts=False)
 
             # Save predictions as JSON
-            with open(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f'skills_{modelname}.json'), 'w') as f:
+            with open(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f'{videoId}_skills_{modelname}.json'), 'w') as f:
                 json.dump(predictions, f, sort_keys=True, default=str, indent=4)
 
             if saveAsVideo:
@@ -446,7 +446,7 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    for videoId in [1320, 2288, 2289, 1315, 2582]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
+    for videoId in [2582, 1320, 2288, 2289, 1315]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
         predictor.predict(
             type="FULL",
             videoId=videoId,

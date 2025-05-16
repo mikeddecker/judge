@@ -16,6 +16,7 @@ class StatsService:
         "FolderRepo",
         "VideoRepo",
         "StorageFolder",
+        "videoService",
     ]
     def __init__(self, storage_folder: str):
         ValueHelper.check_raise_string(storage_folder)
@@ -95,7 +96,6 @@ class StatsService:
             }
         }
         
-
         # Best model
         results['best-model'] = selectedModel        
 

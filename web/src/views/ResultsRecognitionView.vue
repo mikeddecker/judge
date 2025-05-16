@@ -124,7 +124,7 @@ const transformF1ToChart = (fscores) => {
   </div>
 
   <Chart type="line" :data="chartDataVal" :options="chartOptions" class="w-full" />
-  <pre>{{ results }}</pre>
+  <!-- <pre>{{ results }}</pre> -->
 </template>
 
 <style scoped>

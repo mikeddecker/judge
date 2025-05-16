@@ -158,9 +158,13 @@ export const getSkillLevel = async (skillinfo, frameStart, videoId) => {
 
 export const updateVideoSkillsCompleted = async (videoId, completed) => {
   try {
-    const response = await api.post(`/skillcompleted/${videoId}`, { 
+    const response = await api.post(
+      `/skillcompleted/${videoId}`, 
+      { 
         "completed" : completed,
-      }, { headers: { 'Content-Type': 'application/json' }})
+      }, 
+      { headers: { 'Content-Type': 'application/json' }}
+    )
     return response.data
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -168,9 +172,13 @@ export const updateVideoSkillsCompleted = async (videoId, completed) => {
   }
 }
 
-export const getStats = async (selectedHar) => {
+export const getStats = async (selectedHar, videoIds) => {
   try {
-    return await api.get(`/stats`).then(response => response.data)
+    return await api.get(
+      `/stats`, {
+        params: { 'videoIds' : videoIds },
+        headers: { 'Content-Type': 'application/json' }
+      }).then(response => response.data)
   } catch (error) {
     console.error('Error fetching data:', error);
     throw error;

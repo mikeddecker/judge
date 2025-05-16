@@ -2,7 +2,7 @@ import os
 import time
 import torch
 from dotenv import load_dotenv
-from flask import send_file
+from flask import send_file, request
 from flask_restful import Resource
 from services.folderService import FolderService
 from services.videoService import VideoService
@@ -21,9 +21,11 @@ STORAGE_DIR = os.getenv("STORAGE_DIR")
 class StatsRouter(Resource):
     def __init__(self, **kwargs):
         self.statsService = StatsService(STORAGE_DIR)
+        self.videoService = VideoService(STORAGE_DIR)
         super().__init__(**kwargs)
     
     def get(self):
+        videoIds = [int(i) for i in request.args.getlist('videoIds[]')]
         return {
             'localization': self.statsService.getLocalizeResults(selectedModel='TODO'),
             'segmentation' : {
@@ -46,6 +48,7 @@ class StatsRouter(Resource):
                 'best-model' : 'MViT',
                 'train-time' : 6852.3
             },
-            'recognition' : self.statsService.getRecognitionResults(selectedModel='HAR_MViT')
+            'recognition' : self.statsService.getRecognitionResults(selectedModel='HAR_MViT'),
+            'scores' : self.videoService.get_score_comparison(videoIds=videoIds)
         }, 200
 

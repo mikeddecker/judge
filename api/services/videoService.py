@@ -1,4 +1,5 @@
 import os
+import json
 from domain.folder import Folder
 from domain.videoinfo import VideoInfo
 from domain.frameinfo import FrameInfo
@@ -8,8 +9,11 @@ from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
+from services.jobService import JobService
 from typing import List
 
+STORAGE_DIR = os.getenv("STORAGE_DIR")
+FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 SUPPORTED_VIDEO_FORMATS = [
     'webm',
     'mp4'
@@ -23,11 +27,13 @@ class VideoService:
         "VideoRepo",
         "FolderRepo",
         "StorageFolder",
+        "jobService",
     ]
     def __init__(self, storage_folder: str):
         ValueHelper.check_raise_string(storage_folder)
         self.VideoRepo = VideoRepository(db=db)
         self.FolderRepo = FolderRepository(db=db)
+        self.jobService = JobService(STORAGE_DIR)
 
         if not os.path.exists(storage_folder):
             raise NotADirectoryError(f"StorageFolder {storage_folder} does not exist")
@@ -145,7 +151,8 @@ class VideoService:
         options_turner = self.get_skilloptions(skilltype=disciplineconfig["Tablename"], tablepart="Turner", include_levels=True)
 
         if skillinfo["Fault"]:
-            return "F"
+            skillinfo["Fault"] = False
+            return f"F {self.calculate_skill_level(disciplineconfig=disciplineconfig, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId)}"
         if skillinfo["Sloppy"]:
             skillinfo["Sloppy"] = False
             return f"Onafgewerkte L{self.calculate_skill_level(disciplineconfig=disciplineconfig, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId)}"
@@ -552,3 +559,56 @@ class VideoService:
     # TODO : nice to have
     def upload(self):
         raise NotImplementedError("Nice to have, end of journey")
+
+    def video_has_predictions(self, videoId: int, model: str):
+        return os.path.exists(
+            os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
+        )
+
+    def __calculate_diff_score(self, videoId: int, model: str):
+        freq_table = {l: 0 for l in range(9)}
+        
+        filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
+        with open(filepath, 'r') as f:
+            predicted_skills = json.load(f)
+        
+        config = get_discipline_DoubleDutch_config()
+        levels = [ 
+            self.calculate_skill_level(
+                disciplineconfig=config,
+                skillinfo= {k: v['y_pred'] + 1 if config[k][0] == 'Categorical' else v['y_pred'] for k, v in predicted_skills[frameStart].items()},
+                frameStart=int(frameStart),
+                videoId=videoId
+            ) for frameStart in
+            predicted_skills.keys()
+        ]
+        levels = [lvl if not isinstance(lvl, list) else lvl[0] for lvl in levels]
+        
+        for lvl in levels:
+            freq_table[lvl] += 1
+
+        return freq_table, None
+
+    def get_score_comparison(self, videoIds: List[int]):
+        allowed_models = ['HAR_MViT']
+        print("@"*80)
+        print(videoIds)
+        scores = {}
+        for videoId in videoIds:
+            for model in allowed_models:
+                if model not in allowed_models:
+                    return f"Model {model} not allowed", 404
+                
+                scores[videoId] = {}
+                scores[videoId]["judges"] = self.get(id=videoId).JudgeDiffScore
+                if self.video_has_predictions(videoId=videoId, model=model):
+                    # TODO : add re-calculate after x days or when a new model has been trained
+                    freq, score = self.__calculate_diff_score(videoId=videoId, model=model)
+                    scores[videoId][model] = score
+                    scores[videoId][f"{model}_freq"] = freq
+                elif not self.jobService.video_has_pending_job(videoId=videoId, model=model):
+                    self.jobService.launch_job_predict_skills(step='FULL', model=model, videoId=videoId)
+                    scores[videoId][model] = "Created"
+                else:
+                    scores[videoId][model] = "Waiting"
+        return scores

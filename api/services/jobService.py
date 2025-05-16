@@ -1,0 +1,78 @@
+import os
+from domain.folder import Folder
+from domain.videoinfo import VideoInfo
+from domain.frameinfo import FrameInfo
+from domain.skill import Skill
+from domain.job import Job
+from helpers.ValueHelper import ValueHelper
+from helpers.ConfigHelper import get_discipline_DoubleDutch_config
+from repository.db import db
+from repository.folderRepo import FolderRepository
+from repository.videoRepo import VideoRepository
+from repository.jobRepo import JobRepository
+from typing import List
+
+
+class JobService:
+    """Provides the video information of videos"""
+    PROPERTIES = [
+        "VideoRepo",
+        "FolderRepo",
+        "JobRepo",
+        "StorageFolder",
+    ]
+    def __init__(self, storage_folder: str):
+        ValueHelper.check_raise_string(storage_folder)
+        self.VideoRepo = VideoRepository(db=db)
+        self.FolderRepo = FolderRepository(db=db)
+        self.JobRepo = JobRepository(db=db)
+
+
+        if not os.path.exists(storage_folder):
+            raise NotADirectoryError(f"StorageFolder {storage_folder} does not exist")
+        self.StorageFolder = storage_folder
+        
+    def __setattr__(self, name, value):
+        if hasattr(self, name):
+            # Prevent setting immutable attributes after it is set in __init__
+            if name in self.PROPERTIES:
+                raise AttributeError(f"Cannot modify {name} once it's set")
+        elif name not in self.PROPERTIES:
+            raise NameError(f"Property {name} does not exist")
+        super().__setattr__(name, value)
+
+    def __add(self, job: Job) -> None:
+        """Adds the given job in the database
+        TRAIN, PREDICT - L, S, R, FULL
+
+        """
+        assert isinstance(job, Job)
+        if self.JobRepo.exists(job):
+            raise ValueError("Job exists")
+        else:
+            self.JobRepo.add(job)
+    
+    def __exists(self, job: Job) -> bool:
+        return self.JobRepo.exists_by_job_content(job)
+    
+    def count(self) -> int:
+        return self.JobRepo.count()
+    
+    def get(self) -> List[Job]:
+        """Get video with the corresponding Id"""
+        return self.JobRepo.get_all()
+    
+    def video_has_pending_job(self, videoId: int, model: str, step: str = 'FULL'):
+        return self.JobRepo.exists_by_job_content(
+            Job(type='PREDICT', step=step, job_arguments={'model': model, 'videoId':videoId})
+        )
+    
+    def launch_job_predict_skills(self, step:str, model: str, videoId: int):
+        self.__add(
+            Job(
+                type = 'PREDICT',
+                step = step,
+                status = 'Created',
+                job_arguments = { "videoId": videoId, "model": model },
+            )
+        )

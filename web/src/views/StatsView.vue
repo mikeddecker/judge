@@ -14,6 +14,7 @@
       <TabPanels>
         <TabPanel value="recognition">
           <ResultsRecognitionView :results="data['recognition']"></ResultsRecognitionView>
+          <ResultsJudgeScores :results="data['scores']"></ResultsJudgeScores>
         </TabPanel>
         <TabPanel value="segmentation">
           <ResultsSegmentationView :results="data['segmentation']"></ResultsSegmentationView>
@@ -35,7 +36,7 @@ import { computed, onMounted, ref } from 'vue';
 import ResultsSegmentationView from './ResultsSegmentationView.vue';
 import ResultsRecognitionView from './ResultsRecognitionView.vue';
 import ResultsLocalizationView from '@/views/ResultsLocalizationView.vue';
-
+import ResultsJudgeScores from '@/views/ResultsJudgeScores.vue';
 
 const data = ref(null)
 const loading = ref(true)
@@ -44,20 +45,27 @@ const videoId = ref(0)
 const frameNr = ref(0)
 const antwoord = ref('')
 const recognitionResults = computed(() => data.value ? data.value['recognition'] : {})
+const bkVideoIds = ref([])
 
 onMounted(async () => {
   loading.value = true;
   try {
     data.value = await getStatistics();
-  } catch {
-    error.value = 'Failed To load';
+  } catch (e) {
+    console.log(e)
+    error.value = e;
   } finally {
     loading.value = false;
   }
 })
 
 async function getStatistics() {
-  let stats =  await getStats('HAR_MViT')
+  let videoIds = [2582, 2583]
+  let maxId = 2590
+  let minId = 2568
+  bkVideoIds.value = [...Array(maxId - minId).keys()].map(i => i + minId)
+  console.log(bkVideoIds.value)
+  let stats =  await getStats('HAR_MViT', bkVideoIds.value)
   console.log(stats)
   return stats
 }

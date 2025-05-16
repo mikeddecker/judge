@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 from flask import send_file, Response, request
 from flask_restful import Resource, current_app
@@ -6,12 +7,14 @@ from domain.frameinfo import FrameInfo
 from domain.skill import Skill
 from domain.videoinfo import VideoInfo
 from services.folderService import FolderService
+from services.jobService import JobService
 from services.videoService import VideoService
 from helpers.ValueHelper import ValueHelper
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 
 load_dotenv()
 STORAGE_DIR = os.getenv("STORAGE_DIR")
+FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 
 class OptionRouter(Resource):
     def __init__(self, **kwargs):
@@ -132,8 +135,31 @@ class SkillLevel(Resource):
     def post(self):
         data = request.get_json()
         skillinfo = data.get('skillinfo')
+        print("Skillinfo", skillinfo)
         frameStart = data.get('frameStart')
         videoId = data.get('videoId')
         ValueHelper.check_raise_frameNr(frameStart)
         config = get_discipline_DoubleDutch_config()
         return self.videoService.calculate_skill_level(config, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId)
+
+class DiffScoreComparison(Resource):
+    def __init__(self, **kwargs):
+        self.folderService = FolderService(STORAGE_DIR)
+        self.videoService = VideoService(STORAGE_DIR)
+        super().__init__(**kwargs)
+
+    def get(self):
+        data = request.get_json()
+        videoIds = data.get('videoIds')
+        # models = data.get('models')
+        print("VideoIds", videoIds)
+        # print("Models", models)
+
+        # TODO : validate models, linke somewhere else
+
+        # frameStart = data.get('frameStart')
+        # ValueHelper.check_raise_frameNr(frameStart)
+        # config = get_discipline_DoubleDutch_config()
+        # return self.videoService.calculate_skill_level(config, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId)
+
+        return [], 200

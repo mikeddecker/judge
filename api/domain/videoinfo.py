@@ -18,12 +18,13 @@ class VideoInfo:
         "Completed_Skill_Labels",
         "Width",
         "Height",
+        "JudgeDiffScore",
     ]
     # Frame does not 
     Frames: List[FrameInfo] # Key = frameId, value is Frame
     Skills: Set[Skill] = set()
 
-    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float, width:int, height:int, completed_skill_labels: bool = False):
+    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float, width:int, height:int, completed_skill_labels: bool = False, judgeDiffScore: int = None):
         self.Frames = []  # Initialize frames as an empty dictionary
         self.Skills = set()  # Initialize skills as an empty set
 
@@ -35,6 +36,7 @@ class VideoInfo:
         self.__setCompletedSkillLabels(completed_skill_labels)
         self.Width = width # TODO : checks and tests
         self.Height = height
+        self.JudgeDiffScore = judgeDiffScore
 
     def __setattr__(self, name, value):
         if hasattr(self, name):

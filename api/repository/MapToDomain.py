@@ -1,8 +1,9 @@
 from domain.folder import Folder
 from domain.frameinfo import FrameInfo
+from domain.job import Job
 from domain.videoinfo import VideoInfo
 from domain.skill import Skill
-from repository.models import Folder as FolderDB, Video as VideoDB, FrameLabel, Skillinfo_DoubleDutch
+from repository.models import Folder as FolderDB, Video as VideoDB, FrameLabel, Skillinfo_DoubleDutch, Jobs as JobDB
 from typing import List
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 
@@ -27,7 +28,8 @@ class MapToDomain:
             fps = videoDB.fps,
             completed_skill_labels = videoDB.completed_skill_labels,
             width=videoDB.width,
-            height=videoDB.height
+            height=videoDB.height,
+            judgeDiffScore=videoDB.judgeDiffScore
         )
         for f in videoDB.frameLabels:
             video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible, labeltype=f.labeltype))
@@ -59,3 +61,14 @@ class MapToDomain:
             for s
             in skillsDB
         ]
+    
+    def map_job(jobDB: JobDB) -> Job:
+        return Job(
+            id = jobDB.id,
+            type = jobDB.type,
+            step = jobDB.step,
+            job_arguments = jobDB.job_arguments,
+            request_time = jobDB.request_time,
+            status = jobDB.status,
+            status_details = jobDB.status_details,
+        )

@@ -54,6 +54,7 @@ class Video(db.Model):
     sourceInfo = db.Column(db.String(255), nullable=True)
     completed_skill_labels = db.Column(db.Boolean, nullable=False, default=False)
     competition = db.Column(db.Integer, db.ForeignKey('CompetitionInfo.id'))
+    judgeDiffScore = db.Column(db.Float, nullable=True)
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
 
@@ -202,7 +203,6 @@ class Jobs(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     type = db.Column(db.String(30), nullable=False)
     step = db.Column(db.String(127), nullable=False)
-
     job_arguments = db.Column(MutableDict.as_mutable(JSON), nullable=False)
     request_time = db.Column(db.DateTime, default=datetime.now)
     status = db.Column(db.String(30), nullable=False)
