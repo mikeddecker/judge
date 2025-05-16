@@ -95,7 +95,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
 
 repo = DataRepository()
 variant = 'yolo11n.pt'
-save_dir = '../runs/detect/train9'
-# save_dir = train_yolo_model(variant=variant, repo=repo)
+# save_dir = '../runs/detect/train9'
+save_dir = train_yolo_model(variant=variant, repo=repo)
 validate_localize(modeldir=save_dir, repo=repo, modelname='yolov11n_train9')
 

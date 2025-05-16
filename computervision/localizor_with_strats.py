@@ -306,7 +306,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
         'val' : repo.get_framelabels(train_test_val='val', type=1),
     }
 
-    min_ious = [0, 0.1, 0.3, 0.5, 0.7, 0.9]
+    min_ious = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     min_iou_text = "min_Iou_gt_"
     min_iou_dict = { f"{min_iou_text}{min_iou:.1f}" : 0 for min_iou in min_ious }
     ious_all = {
