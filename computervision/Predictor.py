@@ -11,10 +11,14 @@ from sklearn.metrics import classification_report
 from pprint import pprint
 import cv2
 
+from localizor_with_strats import predict_and_save_locations
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import time
+import json
+import yaml
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -29,6 +33,7 @@ from tqdm import tqdm
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
+from ultralytics import YOLO
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
@@ -45,6 +50,9 @@ FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 
 
 class Predictor:
+    def __init__(self):
+        self.repo = DataRepository()
+
     def predict(self, type, videoId, modelname, modelparams: dict = None, saveAsVideo:bool=False):
         start = time.time()
         match type:
@@ -67,6 +75,7 @@ class Predictor:
                 else:
                     raise NotImplementedError()
             case 'FULL':
+                self.__predict_location(videoId=videoId)
                 if modelname in PYTORCH_MODELS_SKILLS.keys():
                     self.__predict_skills_pytorch(videoId=videoId,
                                                        modelname=modelname,
@@ -90,7 +99,7 @@ class Predictor:
             modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
 
             DIM = 224
-            repo = DataRepository()
+            repo = self.repo
             model = PYTORCH_MODELS_SKILLS[modelname](modelinfo=modelparams, df_table_counts=repo.get_skill_category_counts(), skill_or_segment='skills').to(device)
             model.load_state_dict(torch.load(modelPath, weights_only=True))
             model.eval()
@@ -157,8 +166,11 @@ class Predictor:
                         'y_score': None if skillconfig[key][0] != "Categorical" else max_idx_class.item(),
                         'frameEnd' : frameEnd,
                     }
-            print()
             # pprint(predictions, sort_dicts=False)
+
+            # Save predictions as JSON
+            with open(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f'skills_{modelname}.json'), 'w') as f:
+                json.dump(predictions, f, sort_keys=True, default=str, indent=4)
 
             if saveAsVideo:
                 videoPath = repo.VideoNames.loc[videoId, "name"]
@@ -179,7 +191,7 @@ class Predictor:
             torch.cuda.empty_cache()
             gc.collect()
 
-#### Save video predictions #####################################################################################################
+    #### Save video predictions #####################################################################################################
     def __save_skill_predictions_as_video(self, videoId:int, predictions:dict, balancedType:str, vpath:str, targetNames:dict):
         cap = cv2.VideoCapture(vpath)
         pos = cap.get(cv2.CAP_PROP_POS_FRAMES)
@@ -396,29 +408,50 @@ class Predictor:
             torch.cuda.empty_cache()
             gc.collect()
 
+    def __localize_get_best_modelpath(self):
+        # TODO : make dynamic
+        return '/home/miked/code/judge/runs/detect/train11'
+        
+    
+    def __predict_location(self, videoId):
+        modelpath = self.__localize_get_best_modelpath()
+        argpath = os.path.join(modelpath, 'args.yaml')
+        modelname = 'pathDoesNotExist'
+        if os.path.exists(argpath):
+            with open(argpath, 'r') as file:
+                modelname = yaml.safe_load(file)['model'].split('.')[0]
+
+        predict_and_save_locations(
+            modeldir=self.__localize_get_best_modelpath(),
+            repo=self.repo,
+            modelname=modelname,
+            videoIds=[videoId]
+        )
 
 ##################################################################################################################################
 ##################################################################################################################################
 ##################################################################################################################################
 
-if __name__ == "__main__":
-    modelparams = {
-        # "balancedType" : "jump_return_push_frog_other",
-        "balancedType" : "limit_10procent",
+modelparams = {
+    "HAR_MViT" : {
+        "balancedType" : "limit_10procent", # jump_return_push_frog_other
         "dim" : 224,
         "timesteps" : 16,
         "batch_size" : 1,
     }
+}
+
+if __name__ == "__main__":
     modelname = "HAR_SA_Conv3D"
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    for videoId in [1315, 2289]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
+    for videoId in [1320, 2288, 2289, 1315, 2582]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
         predictor.predict(
             type="FULL",
             videoId=videoId,
             modelname=modelname,
-            modelparams=modelparams,
+            modelparams=modelparams["HAR_MViT"],
             saveAsVideo=True,
         )
 

@@ -94,8 +94,12 @@ def train_yolo_model(variant: str, repo: DataRepository):
     return save_dir
 
 repo = DataRepository()
-variant = 'yolo11n.pt'
-# save_dir = '../runs/detect/train9'
-save_dir = train_yolo_model(variant=variant, repo=repo)
+size = 'n'
+variant = f'yolo11{size}.pt'
+# variant = 'yolo11s.pt'
+save_dir = '/home/miked/code/judge/runs/detect/train11'
+modelname = f"yolov11{size}_{save_dir.split('/')[-1]}" # TODO : get os seperator
+print(modelname)
+# save_dir = train_yolo_model(variant=variant, repo=repo)
 validate_localize(modeldir=save_dir, repo=repo, modelname='yolov11n_train9')
 

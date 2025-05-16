@@ -9,6 +9,7 @@ import time
 from moviepy import ImageSequenceClip
 
 # from colorama import Fore, Style
+from helpers import get_localize_strategy_list
 from typing import List
 from dotenv import load_dotenv
 from managers.DataRepository import DataRepository
@@ -22,6 +23,26 @@ SUPPORTED_IMAGE_FORMATS = os.getenv("SUPPORTED_IMAGE_FORMATS")
 FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 
 COLUMNS = [ 'xmin', 'xmax', 'ymin', 'ymax' ]
+DIM = 224
+
+strategyparams = {
+    'raw' : {
+        'N' : 3
+    },
+    'cosine' : {
+        'N' : 3
+    },
+    'smoothing': {
+        'N' : 3,
+        'smoothval' : 0.86,
+        'smoothval_shrink': 0.92,
+    },
+    'smoothing_skip_small_iou': {
+        'N' : 3,
+        'smoothval' : 0.86,
+        'smoothval_shrink': 0.92,
+    }
+}
 
 
 def calculate_iou(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y_min, old_x_max, old_y_max):
@@ -170,8 +191,8 @@ def localize_jumpers(
     start = time.time()
 
     videoPath = repo.get_video_path(videoId=videoId)
-    strat_model_name = f"{videoId}_crop_d{dim}_{modelname}" # TODO : include strat
     rawPredictedBoxesPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"raw_boxes_{modelname}.json")
+    strat_model_name = f"{videoId}_crop_d{dim}_{modelname}" # TODO : include strat
     videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.mp4")
 
     # if os.path.exists(videoOutputPath):
@@ -189,6 +210,8 @@ def localize_jumpers(
     max_wh = max(width, height)
     percent_padding_x = 0.08 if padding else 0
     percent_padding_y = 0.06 if padding else 0
+    padding_x = percent_padding_x * dim
+    padding_y = percent_padding_y * dim
 
     for s in strategies:
         stratparams[s]['FPS'] = fps
@@ -204,6 +227,14 @@ def localize_jumpers(
     frames = []
     predicted_boxes = []
 
+    if save_as_mp4:
+        # Parameter initialisation for mp4
+        max_w = 0
+        max_h = 0
+        min_w = width
+        min_h = height
+        max_wh = max(width, height)
+
     i = 0
     ret, frame = cap.read()
     while ret:
@@ -215,10 +246,10 @@ def localize_jumpers(
             print(f"Predicting video {videoId} frame {i}")
         
         if xyxy_boxes.shape[0] > 0:
-            xmin = max(0, int(xyxy_boxes[:, 0].min().item()))
-            ymin = max(0, int(xyxy_boxes[:, 1].min().item()))
-            xmax = min(width, int(xyxy_boxes[:, 2].max().item()))
-            ymax = min(height, int(xyxy_boxes[:, 3].max().item()))
+            xmin = max(0, int(xyxy_boxes[:, 0].min().item()) - padding_x)
+            ymin = max(0, int(xyxy_boxes[:, 1].min().item()) - padding_y)
+            xmax = min(width, int(xyxy_boxes[:, 2].max().item()) + padding_x)
+            ymax = min(height, int(xyxy_boxes[:, 3].max().item()) + padding_y)
             times_with_no_jumper = 0
         else:
             xmin = 0
@@ -241,7 +272,56 @@ def localize_jumpers(
                 smoothed_values[s]['ymax'].append(smoothed_ymax)
 
         if save_as_mp4:
-            pass
+            if len(strategies) > 1:
+                raise ValueError(f"Strategies may only have 1 item if saving as mp4")
+
+            smoothed_xmin = int(smoothed_values[s]['xmin'][-1])
+            smoothed_xmax = int(smoothed_values[s]['xmax'][-1])
+            smoothed_ymin = int(smoothed_values[s]['ymin'][-1])
+            smoothed_ymax = int(smoothed_values[s]['ymax'][-1])
+            w_jumpers = smoothed_xmax - smoothed_xmin
+            h_jumpers = smoothed_ymax - smoothed_ymin
+            
+            # TODO : check, might not be needed
+            max_w = max(max_w, w_jumpers)
+            max_h = max(max_h, h_jumpers)
+            min_w = min(min_w, w_jumpers)
+            min_h = min(min_h, h_jumpers)
+
+
+            max_wh_jumpers = max(w_jumpers, h_jumpers)
+            offset_x = (max_wh_jumpers - w_jumpers) // 2
+            offset_y = (max_wh_jumpers - h_jumpers) // 2
+
+            leftover_pixels_x = smoothed_xmin - offset_x
+            if leftover_pixels_x < 0:
+                crop_x1 = 0
+                offset_x = abs(leftover_pixels_x)
+            else:
+                crop_x1 = leftover_pixels_x
+                offset_x = 0
+            
+            leftover_pixels_x_right = width - (smoothed_xmax + offset_x)
+            crop_x2 = width if leftover_pixels_x_right < 0 else min(smoothed_xmax + offset_x, width)
+
+            leftover_pixels_y = smoothed_ymin - offset_y
+            if leftover_pixels_y < 0:
+                crop_y1 = 0
+                offset_y = abs(leftover_pixels_y)
+            else:
+                crop_y1 = leftover_pixels_y
+                offset_y = 0
+            
+            leftover_pixels_y_right = width - (smoothed_ymax + offset_y)
+            crop_y2 = width if leftover_pixels_y_right < 0 else min(smoothed_ymax + offset_y, height)
+
+            cropped_frame = frame[crop_y1:crop_y2, crop_x1:crop_x2]
+            zeros = np.zeros((max_wh_jumpers, max_wh_jumpers, 3), dtype=np.uint8)
+            zeros[offset_y:offset_y+(crop_y2-crop_y1), offset_x:offset_x+(crop_x2 - crop_x1)] = cropped_frame
+            zeros = cv2.resize(zeros, (dim, dim))
+            zeros = cv2.cvtColor(zeros, cv2.COLOR_BGR2RGB)
+
+            frames.append(zeros)
             
         i += 1
         ret, frame = cap.read()
@@ -252,11 +332,13 @@ def localize_jumpers(
     cap.release()
     cv2.destroyAllWindows()
 
-    
-
     if save_as_mp4:
+        strat_model_name = f"{videoId}_crop_d{dim}_{modelname}_{s}" # TODO : include strat
+        videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.mp4")
+
         clip = ImageSequenceClip(frames, fps=fps)
         clip.write_videofile(videoOutputPath)
+
     print(f"Took {time.time()-start:.2f}s")
 
     for s in strategies:
@@ -266,35 +348,21 @@ def localize_jumpers(
         smoothed_values[s]['y'] = (smoothed_values[s]['ymin'] + smoothed_values[s]['ymax']) / 2 / height
         smoothed_values[s]['width'] = (smoothed_values[s]['xmax'] - smoothed_values[s]['xmin']) / width
         smoothed_values[s]['height'] = (smoothed_values[s]['ymax'] - smoothed_values[s]['ymin']) / height
+
+    if save_as_mp4 and save_as_JSON:
+        with open(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.json"), 'w') as f:
+            json.dump(smoothed_values, f, sort_keys=True, default=str, indent=4)    
+
     return smoothed_values 
 
 def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
     """Validates localize methods on a specific run"""
-    strategies = ['raw', 'smoothing', 'smoothing_skip_small_iou', 'cosine']
+    strategies = get_localize_strategy_list()
     strategies = ['raw', 'smoothing', 'smoothing_skip_small_iou']
-    strategyparams = {
-        'raw' : {
-            'N' : 3
-        },
-        'cosine' : {
-            'N' : 3
-        },
-        'smoothing': {
-            'N' : 3,
-            'smoothval' : 0.86,
-            'smoothval_shrink': 0.92,
-        },
-        'smoothing_skip_small_iou': {
-            'N' : 3,
-            'smoothval' : 0.86,
-            'smoothval_shrink': 0.92,
-        }
-    }
 
-    DIM = 256
     df_videos_with_boxes = repo.get_videos_having_boxes_of_type(type=1).sample(frac=1.0)
     total_frames = df_videos_with_boxes['frameLength'].sum()
-    videoIds = df_videos_with_boxes['id'].tolist()[:5] # TODO : remove testrun
+    videoIds = df_videos_with_boxes['id'].tolist()
     print("Total frames", total_frames)
 
     model = YOLO(os.path.join(modeldir, "weights", "best.pt"))
@@ -308,7 +376,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
 
     min_ious = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     min_iou_text = "min_Iou_gt_"
-    min_iou_dict = { f"{min_iou_text}{min_iou:.1f}" : 0 for min_iou in min_ious }
+    min_iou_dict = { f"{min_iou_text}{min_iou:.1f}" : set() for min_iou in min_ious }
     ious_all = {
         s: { 
             tv: {
@@ -347,6 +415,9 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
                 padding=False
             )
 
+            ##################################
+            # Validate localized coordinates #
+            ##################################
             # Dict with relative boxes
             frameNrs = full_team_relative_boxes_of_videoId['frameNr']
             print(max(frameNrs))
@@ -379,8 +450,10 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
                 ious_all[s][train_or_val]['videoIds'].add(videoId)
                 ious_all[s][train_or_val]['videos'] = len(ious_all[s][train_or_val]['videoIds'])
                 for min_iou in min_ious:
-                    ious_all[s][train_or_val][f"{min_iou_text}{min_iou:.1f}"] += 1 if ious_video.min() >= min_iou else 0
-            pprint(ious_all)
+                    ious_all[s][train_or_val][f"{min_iou_text}{min_iou:.1f}"].add(videoId)
+            
+            if ious_all[s][train_or_val]['videos'] % 10 == 0:
+                pprint(ious_all)
         except Exception as e:
             raise e
         finally:
@@ -407,5 +480,41 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
 
 
     # Save validation
-    with open(os.path.join(modeldir, 'localize_ious_test.json'), 'w') as f:
+    with open(os.path.join(modeldir, 'localize_ious.json'), 'w') as f:
         json.dump(ious_all, f, sort_keys=True, default=str)
+
+
+
+def predict_and_save_locations(modeldir: str, repo: DataRepository, modelname: str, videoIds: int):
+    """Validates localize methods on a specific run"""
+
+    strategies = ['smoothing']
+
+    model = YOLO(os.path.join(modeldir, "weights", "best.pt"))
+    valstart = time.time()
+    completed_videoIds = []
+    for videoId in videoIds:
+        try:
+            # df_coordinates contains both:
+            # Xmin Ymin Xmax Ymax
+            # and relative x y w h
+            df_coordinates = localize_jumpers(
+                model=model,
+                modelname=modelname,
+                repo=repo,
+                videoId=videoId,
+                dim=DIM,
+                strategies=strategies,
+                stratparams=strategyparams,
+                save_as_JSON=True,
+                save_as_mp4=True,
+                padding=True
+            )
+
+        except Exception as e:
+            raise e
+
+        completed_videoIds.append(videoId)
+        if len(videoIds) > 1:
+            print(f"Completed {len(completed_videoIds)}/{len(videoIds)} videos")    
+    

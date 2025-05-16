@@ -299,3 +299,6 @@ def draw_text(img, text,
     cv2.putText(img, text, (x, int(y + text_h + font_scale + box_margin // 2)), font, font_scale, text_color, font_thickness)
 
     return text_w, text_h
+
+def get_localize_strategy_list():
+    return ['raw', 'smoothing', 'smoothing_skip_small_iou', 'cosine']

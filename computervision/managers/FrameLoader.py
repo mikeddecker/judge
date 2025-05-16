@@ -10,19 +10,26 @@ from dotenv import load_dotenv
 load_dotenv()
 
 STORAGE_DIR = os.getenv("STORAGE_DIR")
+CROPPED_VIDEOS_FOLDER = 'cropped-videos'
+FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 
 class FrameLoader:
     def __init__(self, datarepo):
         self.VideoNames = datarepo.VideoNames
         self.VideoNames.index = self.VideoNames["id"]
 
-    def __get_cropped_video_path(self, videoId, dim:int = 224):
-        CROPPED_VIDEOS_FOLDER = 'cropped-videos'
+    def __get_cropped_video_path(self, videoId, dim:int = 224, strat: str = None):
         vpathUNK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f'{dim}_{videoId}.mp4')
         vpathOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK", f"{dim}_{videoId}.mp4")
         vpathNOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK_NET_NIET_PERFECT", f"{dim}_{videoId}.mp4")
         vpathAlmostOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "SLECHT", f"{dim}_{videoId}.mp4")
         
+        # TODO : update, select cropped with lowest min_iou which is not raw?
+        if not strat:
+            vpathVideoresults = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_crop_d{dim}_yolo11n_smoothing.mp4")
+            if os.path.exists(vpathVideoresults):
+                return vpathVideoresults
+
         vpath = ""
         if os.path.exists(vpathOK):
             vpath = vpathOK
