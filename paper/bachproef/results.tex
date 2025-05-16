@@ -203,9 +203,12 @@ Full code is visible in code snippet \ref{code:localization}. The results are br
 \end{table}
 
 
-\subsection{Full video crops - automated testing (Work in Progress)}
+\subsection{Full video crops - automated testing (Work in Progress - WIP)}
 
 As manual checking videos can be time consuming, automated tests are in progress of creation in order to check whether crop strategies work or not.
+Utilizing the 7k legacy labels of full team boxes, video crops are calculated for each strategy.
+Both train and validation will be added separately in the results as there are less trainings videos labeled with individual boxes (129) than there are full box annotations on the trainings videos (325).
+The code for localizing has been cleaned as well. % (TODO add)
 
 
 
