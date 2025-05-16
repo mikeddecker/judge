@@ -672,3 +672,63 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
     \caption[Fault class report]{mvit-class-report-fault}
     \label{tbl:mvit-class-report-fault}
 \end{table}
+
+
+\section{Skill recognition - First diff score mapping results}
+\label{results:score}
+
+Being able to recognize skills allows to assign respective levels on combinations. After assigning the proper levels, the respective scores can be assigned mapping based on the total levels jumped. Table \ref{tbl:Score mapping} illustrates how many points each level receives.
+
+The first results are shown using recordings of national finals. With an average score difference of -32.17\%, the first score mappings don't look that good.
+Inspecting these results further, some videos indicate more than -70\% score difference. This indicates invalid crops, potentially because of a different sport gymnasium and a lower camera perspective, compared to other videos.
+Another competition will be put next to these results, in order to gain more insights.
+
+\begin{table}
+    \begin{tabular}{|l|l|}
+        \hline Level & Score \\ \hline
+        0 & 0 \\
+        1 & 1.5 \\
+        2 & 2.2 \\
+        3 & 3.3 \\
+        4 & 4.9 \\
+        5 & 7.3 \\
+        6 & 11 \\
+        7 & 11 \\
+        8 & 11 \\ \hline
+    \end{tabular}
+    \caption[level to score map]{Corresponding score for each skill level, in Belgium, levels are limited to 6, any higher level remains a level 6.}
+    \label{tbl:Score mapping}
+\end{table}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|}
+        \hline
+        videoId & judges    & MViT         & Differencs \\ hline
+        2568	& 169.26	&   147	       & -13.15 \\
+        2569	& 181.23	&   166.9	   & -7.91  \\
+        2570	& 146.71	&   25.4	   & -82.69 \\
+        2571	& 180.58	&   170.8	   & -5.42  \\
+        2572	& 251.14	&   68.7       & -72.64 \\
+        2573	& 141.37	&   9.7	       & -93.14 \\
+        2574	& 272.28	&   227.4	   & -16.48 \\
+        2575	& 331.22	&   257.9	   & -22.14 \\
+        2576	& 210.86	&   207.3	   & -1.69  \\
+        2577	& 261.63	&   130.9	   & -49.97 \\
+        2578	& 128.6	    &   135.6	   & +5.44  \\
+        2579	& 203.48	&   196.4	   & -3.48  \\
+        2581	& 216.81	&   89.6	   & -58.67 \\
+        2582	& 259.88	&   223.7	   & -13.92 \\
+        2583	& 348.27	&   168.4	   & -51.65 \\
+        2584	& 366.94	&   177 	   & -51.76 \\
+        2585	& 68.31	    &   54.6	   & -20.07 \\
+        2586	& 175.59	&   159.9	   & -8.94  \\
+        2587	& 260.29	&   192.1	   & -26.2  \\
+        2588	& 319.09	&   231.4	   & -27.48 \\
+        2589	& 148.5	    &   108 	   & -27.27 \\ \hline
+        Total   & 4642.04	&   3148.7	   & -32.17 \\ \hline
+    \end{tabular}
+    \caption[judge diff score compared to MViT]{Score assigned by judges compared to the prediction the MViT model \\
+    Videos are on fully unlabeled data and from the same competitionday, with a camera perspective quite a bit lower than other times.
+    This results in quite some videos with inproper crops.}
+    \label{tbl:judge-score-comparison}
+\end{table}
