@@ -10,7 +10,7 @@
 
         <VideoPlayer class=" relative" 
         v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
-        :current-frame-nr="currentFrame" :videoinfo="videoinfo"
+        :current-frame-nr="currentFrame" :videoinfo="videoinfo" :labeltype="labeltypes[selectedLabeltype]"
         @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
         @add-box="onAddBox" @delete-box="onDeleteBox">
         </VideoPlayer>
@@ -57,7 +57,12 @@
         </div>
         <LocalizeInfo v-if="modeIsLocalize" :videoinfo="videoinfo"></LocalizeInfo>
         <div id="localize-controls" v-if="modeIsLocalize" class="my-2">
-          <div>
+          <div class="flex gap-2">
+            <span class="mr-2">Labeltype</span>
+            <Select v-model="selectedLabeltype" :options="Object.keys(labeltypes)"></Select>
+            <InputNumber v-if="selectedLabeltype == 'team'" v-model="currentFrame" inputId="input-currentFrame" fluid></InputNumber>
+          </div>
+          <div class="mt-2">
             <span class="mr-2">Canvas modus</span>
             <Select v-model="canvasMode" :options="canvasModes"></Select>
           </div>
@@ -125,6 +130,8 @@ const modeIsAnnotate = computed(() => predictMode.value == 'annotate')
 const modeIsPredict = computed(() => predictMode.value == 'predict')
 
 const canvasModes = ['draw', 'edit', 'delete', 'predict']
+const labeltypes = {'individual' : 2, 'team': 1}
+const selectedLabeltype = ref('individual')
 const canvasMode = ref('draw')
 const modelOptions = computed(() => ['yolov11n_ultralytics', 'yolov11n_run7'])
 const selectedModel = ref('boxes')
@@ -324,10 +331,10 @@ function ontimeupdate(seconds) {
 // Mode is localization
 const setToNextFrame = () => {
   let minFrameNr = videoinfo.value.Frames
-    .filter(b => b.LabelType == 2)
+    .filter(b => b.LabelType == labeltypes[selectedLabeltype.value])
     .reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
   let biggerFrameNr = videoinfo.value.Frames
-    .filter(b => b.LabelType == 2)
+    .filter(b => b.LabelType == labeltypes[selectedLabeltype.value])
     .filter((frameinfo) => frameinfo.FrameNr > currentFrame.value)
     .reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
   currentFrame.value = biggerFrameNr == Infinity ? minFrameNr : biggerFrameNr
@@ -336,11 +343,11 @@ const setToNextFrame = () => {
 
 const setToPreviousFrame = () => {
   let maxFrameNr = videoinfo.value.Frames
-    .filter(b => b.LabelType == 2)
+    .filter(b => b.LabelType == labeltypes[selectedLabeltype.value])
     .reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
   let smallerFrameNr = videoinfo.value.Frames
     .filter((frameinfo) => frameinfo.FrameNr < currentFrame.value)
-    .filter(b => b.LabelType == 2)
+    .filter(b => b.LabelType == labeltypes[selectedLabeltype.value])
     .reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
   currentFrame.value = smallerFrameNr == -Infinity ? maxFrameNr : smallerFrameNr
 }
@@ -358,6 +365,7 @@ const setToRandomFrame = () => {
 }
 
 const onAddBox = async (box) => {
+  box['labeltype'] = labeltypes[selectedLabeltype.value]
   await postVideoFrame(videoinfo.value.Id, Math.round(currentFrame.value), box).then(vi => videoinfo.value = vi).catch(e => error.value = e)
 }
 

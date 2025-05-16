@@ -10,6 +10,7 @@ import Aura from '@primevue/themes/aura'
 import Button from "primevue/button"
 import Card from 'primevue/card';
 import Chart from 'primevue/chart';
+import InputNumber from 'primevue/inputnumber';
 import Select from 'primevue/select';
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
@@ -38,6 +39,7 @@ app.use(PrimeVue,
 app.component('Button', Button);
 app.component('Card', Card);
 app.component('Chart', Chart);
+app.component('InputNumber', InputNumber)
 app.component('Select', Select);
 app.component('Tabs', Tabs);
 app.component('TabList', TabList);

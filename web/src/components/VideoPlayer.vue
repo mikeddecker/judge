@@ -28,7 +28,7 @@
 import { onMounted, ref, computed, watch } from 'vue'
 
 // Watch out, frame numbers can get floated: e.g. 112.000000000000001
-const props = defineProps(['title', 'videoId', 'videoSrc', 'mode', 'canvasMode', 'currentFrameNr', 'videoinfo'])
+const props = defineProps(['title', 'videoId', 'videoSrc', 'mode', 'canvasMode', 'currentFrameNr', 'videoinfo', 'labeltype'])
 const emit = defineEmits(['play', 'pause', 'seeked', 'timeupdate', 'loadeddata', 'deleteBox', 'addBox'])
 const videoElement = ref(null)
 const videoWidth = ref(0)
@@ -45,7 +45,7 @@ const canvasmodeIsDraw = computed(() => props.canvasMode == 'draw')
 const canvasmodeIsEdit = computed(() => props.canvasMode == 'edit')
 const canvasmodeIsDelete = computed(() => props.canvasMode == 'delete')
 const canvasmodeIsPredict = computed(() => props.canvasMode == 'predict')
-const boxes = computed(() => props.videoinfo.Frames.filter(b => b.LabelType == 2))
+const boxes = computed(() => props.videoinfo.Frames.filter(b => b.LabelType == props.labeltype))
 const boxesHovering = ref([])
 const selectedBox = ref(null)
 const paused = computed(() => videoElement.value?.paused)
