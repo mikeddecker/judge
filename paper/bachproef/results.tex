@@ -218,56 +218,6 @@ Each frame than has a value from zero to one. An example of consecutive splitpoi
 
 \([0, 0, 0.1, 0.31, 0.55, 0.86, 1, 0.86, 0.55, 0.31, 0.1, 0]\)
 
-\begin{listing}
-    \begin{minted}{python}
-        def calculate_splitpoint_values(videoId: int, frameLength:int, df_Skills:pd.DataFrame, fps:float, Nsec_frames_around=1/6):
-        """Creates a dataframe: 'videoId', 'frameNr', 'splitpoint'
-        Where splitpoint is the value 0 -> 1 whether the video needs to be split at that point or not"""
-        splitpoint_values = {
-            'videoId' : [videoId for _ in range(frameLength)],
-            'frameNr' : range(frameLength),
-            'splitpoint' : [0 for _ in range(frameLength)],
-        }
-
-        frames_around_splitpoint = round(Nsec_frames_around * fps)
-        for _, skillrow in df_Skills.iterrows():
-            frameStart = skillrow["frameStart"]
-            frameEnd = skillrow["frameEnd"]
-
-            currentFrameStart = frameStart - frames_around_splitpoint
-            currentFrameEnd = frameEnd - frames_around_splitpoint
-            while currentFrameStart < frameStart + frames_around_splitpoint:
-                framesApart = abs(currentFrameStart - frameStart)
-                splitvalue = 1 - (framesApart/frames_around_splitpoint) ** 2
-                splitvalue *= splitvalue
-
-                currentFrameStart += 1
-                currentFrameEnd += 1
-
-                splitpoint_values['splitpoint'][currentFrameStart] = splitvalue
-                if currentFrameEnd < frameLength:
-                    splitpoint_values['splitpoint'][currentFrameEnd] = splitvalue
-
-        return pd.DataFrame(splitpoint_values)
-    \end{minted}
-    \caption[call-splitpoint-calculation]{call-splitpoint-calculation}
-    \label{code:calculate-splitpoint-values}
-\end{listing}
-
-
-\begin{listing}
-    \begin{minted}{python}
-        df = calculate_splitpoint_values(
-            videoId=videoId,
-            frameLength=frameLength,
-            df_Skills=self.Skills[self.Skills['videoId'] == videoId],
-            fps = row["fps"]
-        )
-    \end{minted}
-    \caption[call-splitpoint-calculation]{call-splitpoint-calculation}
-    \label{code:call-splitpoint-calculation}
-\end{listing}
-
 
 \subsection{Video Vision Transformer \& Self-attention ConvLSTM}
 \label{subsec:video-models-from-scratch}
@@ -277,125 +227,6 @@ Implementations of these models, ViViT \ref{code:get_model_ViViT} and SA-ConvLST
 These models were then trained on 7.8k batches of 16 consecutive frames, which originate from 44 trainings videos for about 48 minutes of training data, having framerates between 25 and 60 \footnote{Most labeled videos have a framerate of 25, 30 or 50 frames per second}.
 Both models showed the same results, averaging out predictions slightly above 0 for all frames, stagnating on MSE losses of around 0.09 and 0.10. (Exact values are lost due to the switch to pytorch and bugs, will be re-added later.)
 
-\begin{listing}
-    \begin{minted}{python}
-        import keras
-        import pandas as pd
-        import tensorflow as tf
-        import numpy as np
-        import matplotlib.pyplot as plt
-        import sys
-        sys.path.append('..')
-        from api.helpers import ConfigHelper
-    \end{minted}
-    \caption[imports-ViViT]{imports-ViViT}
-    \label{code:imports-ViViT}
-\end{listing}
-
-
-\begin{listing}
-    \begin{minted}{python}
-        def mlp(x, hidden_units, dropout_rate):
-            for units in hidden_units:
-                x = keras.layers.Dense(units, activation=keras.activations.gelu)(x)
-                x = keras.layers.Dropout(dropout_rate)(x)
-            return x
-    \end{minted}
-    \caption[mlp layer]{ViViT: multi-layer-perceptron}
-    \label{code:mlp-layer}
-\end{listing}
-
-
-\begin{listing}
-    \begin{minted}{python}
-    def __init__(self, patch_size):
-        super().__init__()
-        self.patch_size = patch_size
-
-    def call(self, images):
-        input_shape = keras.ops.shape(images)
-        batch_size = input_shape[0]
-        timestep = input_shape[1]
-        height = input_shape[2]
-        width = input_shape[3]
-        channels = input_shape[4]
-        num_patches_h = height // self.patch_size
-        num_patches_w = width // self.patch_size
-
-        def create_single_timepatch(video_input):
-            patches = keras.ops.image.extract_patches(video_input, size=self.patch_size)
-            patches = keras.ops.reshape(
-                patches,
-                (
-                    num_patches_h * num_patches_w * timestep,
-                    self.patch_size * self.patch_size * channels,
-                ),
-            )
-
-            return patches
-
-        patches = tf.map_fn(create_single_timepatch, images)
-
-        return patches
-
-    \end{minted}
-    \caption[time-patches]{ViViT: Time Patches}
-    \label{code:timepatches}
-\end{listing}
-
-
-\begin{listing}
-    \begin{minted}{python}
-        def get_model(modelinfo):
-            inputs = keras.Input(shape = (modelinfo['timesteps'], modelinfo['dim'], modelinfo['dim'], 3))
-            patches = TimePatches(modelinfo['patch_size'])(inputs)
-            num_patches = (modelinfo['dim'] // modelinfo['patch_size']) ** 2
-            encoded_patches = TimePatchEncoder(num_patches, modelinfo['timesteps'], modelinfo['dim_embedding'])(patches)
-            print("shape of encoded_patches", encoded_patches.shape)
-
-            # Create multiple layers of the Transformer block.
-            for _ in range(modelinfo['encoder_blocks']):
-                # Layer normalization 1.
-                x1 = keras.layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
-                attention_output = keras.layers.MultiHeadAttention(
-                num_heads=modelinfo['num_heads'], key_dim=modelinfo['dim_embedding'], dropout=0.1
-                )(x1, x1)
-                # Skip connection 1.
-                x2 = keras.layers.Add()([attention_output, encoded_patches])
-                # Layer normalization 2.
-                x3 = keras.layers.LayerNormalization(epsilon=1e-6)(x2)
-                x3 = mlp(x3, hidden_units=[modelinfo['dim_embedding'] ** 2, modelinfo['dim_embedding']], dropout_rate=0.1)
-                # Skip connection 2.
-                encoded_patches = keras.layers.Add()([x3, x2])
-
-            # Create a [batch_size, projection_dim] tensor.
-            representation = keras.layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
-            representation = keras.layers.Flatten()(representation)
-            representation = keras.layers.Dropout(0.3)(representation)
-
-            features = mlp(representation, hidden_units=modelinfo['mlp_head_units'], dropout_rate=0.3)
-
-            ...
-
-    \end{minted}
-    \caption[get model ViViT]{ViViT: get model ViViT (keras), without output layer (part 1)
-    (Possible bugfixes done using \textcite{OpenAI_ChatGPT_2025})}
-    \label{code:get_model_ViViT}
-\end{listing}
-
-\begin{listing}
-    \begin{minted}{python}
-        # ... (this is the output layer of segmentation)
-        classes = modelinfo['timesteps']
-        outputs = keras.layers.Dense(classes, activation='softmax')(features)
-
-        return keras.Model(inputs=inputs, outputs=outputs)
-    \end{minted}
-    \caption[ViViT output segmentation]{ViViT output segmentation using features of code fragment \ref{code:get_model_ViViT}}
-    \label{code:ViViT-output-segmentation}
-\end{listing}
-
-
 \subsection{pre-trained MViT}
 
 In order to get better results on the little labeled available data, (44 videos for training, 7 validation videos), looking for a pre-trained model really helped a lot.
@@ -403,25 +234,6 @@ PyTorch provides a \href{https://pytorch.org/vision/main/models.html}{list} of p
 Fine-tuning this model lowered the MSE to 0.065 with peaks overlapping splitpoints as demonstrated and elaborated in figure \ref{fig:segmentation-plot}.
 
 To get al sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) having a splitpoint value more than 0.4 become the start and end frame of a skill section, which will be used to recognize which skill is displayed. The code filtering segments out of raw-predicted splitpoint values, as used in the segmentation-plot \ref{fig:segmentation-plot} can be found in code snippet \ref{code:predictions-to-splitpoints}.
-
-\begin{listing}
-    \begin{minted}{python}
-        predictions = np.array(predictions)
-        predictions_bigger_than_split_threshold = np.where(predictions > split_threshold, predictions, 0)
-        p_split = predictions_bigger_than_split_threshold
-        window_size = int(fps // 3)
-        predictions_argMax_in_window = [s - window_size + np.argmax(p_split[max(0, s-window_size):min(frameLength, s+window_size)]) for s in range(frameLength)]
-        predictions_splitmoments = np.where(predictions > split_threshold, predictions_argMax_in_window, 0)
-        predictions_splitmoments = np.unique(predictions_splitmoments)
-
-        distances = predictions_splitmoments[1:] - predictions_splitmoments[:-1]
-        predictions_splitmoments = predictions_splitmoments[1:]
-        predictions_splitmoments = predictions_splitmoments[np.where(distances < window_size // 3, False, True)]
-        predictions_splitmoments = [int(g) for g in predictions_splitmoments]
-    \end{minted}
-    \caption[predictions-to-splitpoints]{Code which filters splitpoints from the raw predicted splitpoint values to frame numbers.}
-    \label{code:predictions-to-splitpoints}
-\end{listing}
 
 \begin{figure}
     \centering
@@ -540,34 +352,6 @@ A breakdown of all classification reports can be found in tables \ref{tbl:mvit-c
 \section{Model verification - act as a judge}
 
 Comming soon... (Mapping predicted skills, turners, rotations... to its perspective level which will be compared with the score assigned by judges on competition.)
-
-\begin{listing}
-    \begin{minted}{python}
-        dd_config = ConfigHelper.get_discipline_DoubleDutch_config()
-        outputs = {}
-        for key, value in dd_config.items():
-            if key == "Tablename":
-                continue
-            if value[0] == "Categorical":
-                tablename = "skill"
-                match (key):
-                    case 'Skill':
-                        tablename = 'skills'
-                    case 'Turner1' | 'Turner2':
-                        tablename = "turners"
-                    case 'Type':
-                        tablename = 'types'
-                classes = int(df_table_counts.iloc[0][tablename])
-                outputs[key] = keras.layers.Dense(classes, activation='softmax', name=key)(features)
-            else:
-                outputs[key] = keras.layers.Dense(1, activation='sigmoid', name=key)(features)
-
-        return keras.Model(inputs=inputs, outputs=outputs)
-    \end{minted}
-    \caption[]{}
-    \label{code:keras-skill-top-layers}
-\end{listing}
-
 
 \begin{table}[h!]
     \begin{tabular}{|l|r|r|r|r|}
