@@ -85,6 +85,7 @@ def calculate_angle(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y
     return angle_rad, angle_deg
 
 def calculate_cosine_similarity(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y_min, old_x_max, old_y_max):
+    """ChatGPT assisted"""
     # Calculate centers
     new_center_x = (new_x_min + new_x_max) / 2
     new_center_y = (new_y_min + new_y_max) / 2
@@ -119,7 +120,6 @@ def calculate_smoothed_values(strat:str, params: dict, previous_values:dict, i:i
         case 'raw':
             return xmin, xmax, ymin, ymax
         case 'smoothing':
-            N = params['N']
             FPS = params['FPS']
             smoothval = params['smoothval']
             smoothval_shrink = params['smoothval_shrink']
@@ -130,6 +130,13 @@ def calculate_smoothed_values(strat:str, params: dict, previous_values:dict, i:i
             return next_xmin, next_xmax, next_ymin, next_ymax
         case 'cosine':
             raise NotImplementedError()
+            # stratparams['avgIOUlastNseconds'] = 0.0
+            # stratparams['secondary_avgIOUlastNseconds'] = 0.0
+            # stratparams['cos_similarity'] = 0
+            # stratparams['avgGradenLastKseconds'] = 0
+            # stratparams['previouscos_similarity'] = 0
+            # stratparams['avgGradenVerschilLastKseconds'] = 0
+
         case 'smoothing_skip_small_iou':
             iou = calculate_iou(
                 new_x_min=xmin, old_x_min=previous_values['xmin'][-1],
@@ -176,7 +183,6 @@ def localize_jumpers(
 
     cap = cv2.VideoCapture(videoPath)
 
-
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -194,17 +200,7 @@ def localize_jumpers(
         'ymax' : [],
     } for s in strategies}
 
-
-    # stratparams['avgIOUlastNseconds'] = 0.0
-    # stratparams['secondary_avgIOUlastNseconds'] = 0.0
-    # stratparams['cos_similarity'] = 0
-    # stratparams['avgGradenLastKseconds'] = 0
-    # stratparams['previouscos_similarity'] = 0
-    # stratparams['avgGradenVerschilLastKseconds'] = 0
-
-
     times_with_no_jumper = 0
-    cropping_started = False
     frames = []
     predicted_boxes = []
 
@@ -217,14 +213,8 @@ def localize_jumpers(
 
         if i % 1000 == 0:
             print(f"Predicting video {videoId} frame {i}")
-            # TODO : move strat loop here!!!
-
-        # ## DD3 only, additional labeling
-        # if xyxy_boxes.shape[0] != 3:
-        #     print(f"video {videoId}, frame {i-1} heeft {xyxy_boxes.shape[0]} boxes")
         
         if xyxy_boxes.shape[0] > 0:
-            cropping_started = True
             xmin = max(0, int(xyxy_boxes[:, 0].min().item()))
             ymin = max(0, int(xyxy_boxes[:, 1].min().item()))
             xmax = min(width, int(xyxy_boxes[:, 2].max().item()))
@@ -250,54 +240,8 @@ def localize_jumpers(
                 smoothed_values[s]['ymin'].append(smoothed_ymin)
                 smoothed_values[s]['ymax'].append(smoothed_ymax)
 
-
-
-        #
-        #
-        #
-        # Post smoothing, crop the image 
         if save_as_mp4:
             pass
-            # w_jumpers = smooted_x2_max - smooted_x1_min
-            # h_jumpers = smooted_y2_max - smooted_y1_min
-            # max_w = max(max_w, w_jumpers)
-            # max_h = max(max_h, h_jumpers)
-            # min_w = min(min_w, w_jumpers)
-            # min_h = min(max_h, h_jumpers)
-
-            # max_wh_jumpers = max(w_jumpers, h_jumpers)
-            # offset_x = (max_wh_jumpers - w_jumpers) // 2
-            # offset_y = (max_wh_jumpers - h_jumpers) // 2
-
-            # leftover_pixels_x = smooted_x1_min - offset_x
-            # if leftover_pixels_x < 0:
-            #     crop_x1 = 0
-            #     offset_x = abs(leftover_pixels_x)
-            # else:
-            #     crop_x1 = leftover_pixels_x
-            #     offset_x = 0
-            
-            # leftover_pixels_x_right = width - (smooted_x2_max + offset_x)
-            # crop_x2 = width if leftover_pixels_x_right < 0 else min(smooted_x2_max + offset_x, width)
-
-            # leftover_pixels_y = smooted_y1_min - offset_y
-            # if leftover_pixels_y < 0:
-            #     crop_y1 = 0
-            #     offset_y = abs(leftover_pixels_y)
-            # else:
-            #     crop_y1 = leftover_pixels_y
-            #     offset_y = 0
-            
-            # leftover_pixels_y_right = width - (smooted_y2_max + offset_y)
-            # crop_y2 = width if leftover_pixels_y_right < 0 else min(smooted_y2_max + offset_y, height)
-
-            # cropped_frame = frame[crop_y1:crop_y2, crop_x1:crop_x2]
-            # zeros = np.zeros((max_wh_jumpers, max_wh_jumpers, 3), dtype=np.uint8)
-            # zeros[offset_y:offset_y+(crop_y2-crop_y1), offset_x:offset_x+(crop_x2 - crop_x1)] = cropped_frame
-            # zeros = cv2.resize(zeros, (DIM, DIM))
-            # zeros = cv2.cvtColor(zeros, cv2.COLOR_BGR2RGB)
-
-            # frames.append(zeros)
             
         i += 1
         ret, frame = cap.read()
@@ -316,6 +260,7 @@ def localize_jumpers(
     print(f"Took {time.time()-start:.2f}s")
 
     for s in strategies:
+        # Transform absolute XYXY to relative xywh
         smoothed_values[s] = pd.DataFrame(smoothed_values[s])
         smoothed_values[s]['x'] = (smoothed_values[s]['xmin'] + smoothed_values[s]['xmax']) / 2 / width
         smoothed_values[s]['y'] = (smoothed_values[s]['ymin'] + smoothed_values[s]['ymax']) / 2 / height
@@ -349,7 +294,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
     DIM = 256
     df_videos_with_boxes = repo.get_videos_having_boxes_of_type(type=1).sample(frac=1.0)
     total_frames = df_videos_with_boxes['frameLength'].sum()
-    videoIds = df_videos_with_boxes['id'].tolist()
+    videoIds = df_videos_with_boxes['id'].tolist()[:5] # TODO : remove testrun
     print("Total frames", total_frames)
 
     model = YOLO(os.path.join(modeldir, "weights", "best.pt"))
@@ -361,7 +306,17 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
         'val' : repo.get_framelabels(train_test_val='val', type=1),
     }
 
-    ious_all = {s: { tv: { 'sum': 0, 'min': 1, 'max': 0, 'avg': 0, 'total': 0 } for tv in ['train', 'val'] } for s in strategies}
+    min_ious = [0, 0.1, 0.3, 0.5, 0.7, 0.9]
+    min_iou_text = "min_Iou_gt_"
+    min_iou_dict = { f"{min_iou_text}{min_iou:.1f}" : 0 for min_iou in min_ious }
+    ious_all = {
+        s: { 
+            tv: {
+                **{ 'sum': 0, 'min': 1, 'max': 0, 'avg': 0, 'total': 0, 'videoIds': set() },
+                **min_iou_dict
+            } for tv in ['train', 'val']
+        } for s in strategies
+    }
     invalid_frames = []
     errors = []
 
@@ -376,6 +331,9 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
 
         try:
 
+            # df_coordinates contains both:
+            # Xmin Ymin Xmax Ymax
+            # and relative x y w h
             df_coordinates = localize_jumpers(
                 model=model,
                 modelname=modelname,
@@ -399,7 +357,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
                     'num_boxes' : len(df_coordinates['raw']),
                     'maxFrameNr': max(frameNrs),
                 })
-                # TODO : fix or delete videos
+                # TODO : fix or delete videos (videos are of a particular competition, where it seems a conversion mistake has been made from m2ts to mp4)
                 continue
 
             for s in strategies:
@@ -418,6 +376,10 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
                 ious_all[s][train_or_val]['min'] = min(ious_all[s][train_or_val]['min'], ious_video.min())
                 ious_all[s][train_or_val]['max'] = max(ious_all[s][train_or_val]['max'], ious_video.max())
                 ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
+                ious_all[s][train_or_val]['videoIds'].add(videoId)
+                ious_all[s][train_or_val]['videos'] = len(ious_all[s][train_or_val]['videoIds'])
+                for min_iou in min_ious:
+                    ious_all[s][train_or_val][f"{min_iou_text}{min_iou:.1f}"] += 1 if ious_video.min() >= min_iou else 0
             pprint(ious_all)
         except Exception as e:
             raise e
@@ -425,7 +387,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
             print(f"Error count", len(invalid_frames))
 
         completed_videoIds.append(videoId)
-        ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
+        # ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
         frames_predicted = df_videos_with_boxes[df_videos_with_boxes['id'].isin(completed_videoIds)]['frameLength'].sum()
         expected_end = (time.time() - valstart) / frames_predicted * total_frames
         seconds_left = (time.time() - valstart) / frames_predicted * (total_frames- frames_predicted)
@@ -437,12 +399,13 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
     
     print(f"Invalid frames")
     print(pd.DataFrame(invalid_frames))
+    with open(os.path.join(modeldir, 'invalid_videos_framecount_and_effictive_frames_not_matching.json'), 'w') as f:
+        json.dump(invalid_frames, f, sort_keys=True, default=str)    
     
     print(f"Took {time.time()-valstart:.2f}s")
-    
     
 
 
     # Save validation
-    with open(os.path.join(modeldir, 'localize_ious.json'), 'w') as f:
+    with open(os.path.join(modeldir, 'localize_ious_test.json'), 'w') as f:
         json.dump(ious_all, f, sort_keys=True, default=str)

@@ -74,12 +74,6 @@ def train_yolo_model(variant: str, repo: DataRepository):
     # 'ap_class_index', 'box', 'class_result', 'confusion_matrix', 'curves', 'curves_results', 
     # 'fitness', 'keys', 'maps', 'mean_results', 'names', 'on_plot', 'plot', 'process', 'results_dict', 'save_dir', 'speed', 'task'
 
-    # with open("box_metrics.json", "w") as f:
-    #     json.dump(safe_serialize(vars(results.box)), f, indent=4)
-
-    # with open("confusion_matrix.json", "w") as f:
-    #     json.dump(safe_serialize(vars(results.confusion_matrix)), f, indent=4)
-
     simplified = {
         'ap_class_index': results.ap_class_index.tolist(),
         'fitness': results.fitness,
