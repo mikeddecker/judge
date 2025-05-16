@@ -196,7 +196,7 @@ Full code is visible in code snippet \ref{code:localization}. The results are br
         Nr of videos not ok &	21	& 15.6\% \\ \hline
         Total checked videos &	135	& (includes train videos) \\ \hline
     \end{tabular}
-    \caption{Crop results manually checked on the amount of seconds where a crop is disturbing. The reason why it is disturbing is added in the reason column, this could be athletes out of view, unstable/earthquake like predictions... \\
+    \caption[Manually checked crop results]{Crop results manually checked on the amount of seconds where a crop is disturbing. The reason why it is disturbing is added in the reason column, this could be athletes out of view, unstable/earthquake like predictions... \\
     Yellow indicated videos are not disturbing for recognition, even though the crops aren't perfect. Orange videos require more attention and shouldn't be used for recognition. \\
     The \(avg_{if}\) indicates the average time in case a video has crops which aren't good.}
     \label{tbl:crop-results}
@@ -370,7 +370,7 @@ A breakdown of all classification reports can be found in tables \ref{tbl:mvit-c
         0.0223 & 1 & footwork-open & 1 & 0.1495 \\
         \hline
     \end{tabular}
-    \caption{Skill distribution with training and validation counts and percentages. Null values indicate absence of skill occurrence in the validation data.}
+    \caption[Skill distribution skill]{Skill distribution with training and validation counts and percentages. Null values indicate absence of skill occurrence in the validation data.}
     \label{tab:skill_distribution_full_with_nulls}
 \end{table}
 
@@ -388,7 +388,7 @@ A breakdown of all classification reports can be found in tables \ref{tbl:mvit-c
         other & 526 & 11.7253 & 68 & 10.1645 \\
         \hline
     \end{tabular}
-    \caption{Train and validation skill distribution with low-frequency skills grouped as "other"}
+    \caption[Skill distribution skills limited classes]{Train and validation skill distribution with low-frequency skills grouped as "other"}
     \label{tab:skill_distribution_grouped_final}
 \end{table}
 
@@ -412,7 +412,7 @@ Comming soon... (Mapping predicted skills, turners, rotations... to its perspect
         macro avg       &   0.75    &   0.62    &   0.64    &  669 \\
         weighted avg    &   0.95    &   0.95    &   0.95    &  669 \\ \hline
     \end{tabular}
-    \caption{mvit-class-report-type}
+    \caption[Type distribution]{mvit-class-report-type}
     \label{tbl:mvit-class-report-type}
 \end{table}
 
@@ -432,7 +432,7 @@ Comming soon... (Mapping predicted skills, turners, rotations... to its perspect
         macro avg &       0.34 &     0.31 &     0.31 &      669 \\
         weighted avg &       0.82 &     0.86 &     0.83 &      669 \\ \hline
     \end{tabular}
-    \caption{mvit-class-report-rotations}
+    \caption[Rotation distribution]{mvit-class-report-rotations}
     \label{tbl:mvit-class-report-rotations}
 \end{table}
 
@@ -470,7 +470,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
          weighted avg &      0.89 &     0.91 &     0.90 &      669 \\
          \hline
     \end{tabular}
-    \caption{mvit-class-report-turner1}
+    \caption[Turner 1 class report]{mvit-class-report-turner1}
     \label{tbl:mvit-class-report-turner1}
 \end{table}
 
@@ -508,7 +508,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
           weighted avg &       0.87 &     0.90 &     0.88 &      669 \\
          \hline
     \end{tabular}
-    \caption{mvit-class-report-turner2}
+    \caption[Turner 2 class report]{mvit-class-report-turner2}
     \label{tbl:mvit-class-report-turner2}
 \end{table}
 
@@ -551,7 +551,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
         weighted avg &      0.93 &     0.93 &     0.93 &      669 \\
          \hline
     \end{tabular}
-    \caption{mvit-class-report-skill}
+    \caption[Skill class report]{mvit-class-report-skill}
     \label{tbl:mvit-class-report-skill}
 \end{table}
 
@@ -566,7 +566,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
      weighted avg &      0.89 &     0.88 &     0.88 &      669 \\
          \hline
     \end{tabular}
-    \caption{mvit-class-report-hands}
+    \caption[Hands class report]{mvit-class-report-hands}
     \label{tbl:mvit-class-report-hands}
 \end{table}
 
@@ -581,7 +581,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
      weighted avg &      0.87 &      0.87 &      0.87 &       669 \\
          \hline
     \end{tabular}
-    \caption{mvit-class-report-feet}
+    \caption[[Feet class report]]{mvit-class-report-feet}
     \label{tbl:mvit-class-report-feet}
 \end{table}
 
@@ -596,7 +596,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
      weighted avg &      0.97 &     0.97 &     0.97 &      669 \\
          \hline
     \end{tabular}
-    \caption{mvit-class-report-turntable}
+    \caption[Turntable class report]{mvit-class-report-turntable}
     \label{tbl:mvit-class-report-turntable}
 \end{table}
 
@@ -612,7 +612,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
 
          \hline
     \end{tabular}
-    \caption{mvit-class-report-bodyRotations}
+    \caption[Body rotations class report]{mvit-class-report-bodyRotations}
     \label{tbl:mvit-class-report-bodyRotations}
 \end{table}
 
@@ -626,7 +626,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
      weighted avg &       0.99 &     0.99 &     0.99 &      669 \\
          \hline
     \end{tabular}
-    \caption{mvit-class-report-backwards}
+    \caption[Backwards class report]{mvit-class-report-backwards}
     \label{tbl:mvit-class-report-backwards}
 \end{table}
 
@@ -640,7 +640,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
      weighted avg &      0.95 &     0.97 &     0.96 &      669 \\
          \hline
     \end{tabular}
-    \caption{mvit-class-report-sloppy}
+    \caption[Sloppy class report]{mvit-class-report-sloppy}
     \label{tbl:mvit-class-report-sloppy}
 \end{table}
 
@@ -655,7 +655,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
 
          \hline
     \end{tabular}
-    \caption{mvit-class-report-hard2see}
+    \caption[Hard to see class report]{mvit-class-report-hard2see}
     \label{tbl:mvit-class-report-hard2see}
 \end{table}
 
@@ -669,6 +669,6 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
      weighted avg &      0.91 &     0.96 &      0.93 &       669 \\
          \hline
     \end{tabular}
-    \caption{mvit-class-report-fault}
+    \caption[Fault class report]{mvit-class-report-fault}
     \label{tbl:mvit-class-report-fault}
 \end{table}
