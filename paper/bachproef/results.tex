@@ -5,7 +5,7 @@
 \chapter{\IfLanguageName{dutch}{Resultaten}{Results}}%
 \label{ch:results}
 
-The result section focuses on elaborating conducted experiments and acquired results, divided into the three main phases, localization, segmentation and recognition. In order to label, annotate videos and gain insights in the results a Vue3 web-app is created on a python flask API which reads and stores labels and video annotations from a MySQL database. Furthermore, the experiments are all performed using an Acer Nitro ANV15-51, running Ubuntu 24.04.2 LTS, using a 13th Gen Intel® Core™ i5-13420H × 12, with 16GB RAM and a NVIDIA GeForce RTX™ 4050 Laptop GPU 5898MiB.
+The result section focuses on elaborating conducted experiments and acquired results, divided into the three main phases, localization, segmentation and recognition. After discussing the first results, additional labels and fine-tuning is performed. The final amount of labels and results are added at the end. In order to label, annotate videos and gain insights in the results a Vue3 web-app is created on a python flask API which reads and stores labels and video annotations from a MySQL database. Furthermore, the experiments are all performed using an Acer Nitro ANV15-51, running Ubuntu 24.04.2 LTS, using a 13th Gen Intel® Core™ i5-13420H × 12, with 16GB RAM and a NVIDIA GeForce RTX™ 4050 Laptop GPU 5898MiB.
 
 \section{Jumper localization}
 
@@ -30,9 +30,10 @@ Below you can find a shortlist of experiments executed on localization.
 Before discussing the different results, let's discuss how the location of skippers are marked. To mark the position of an object on an image, there are multiple possibilities.
 For this project, the relative center point along the x-axis, y-axis, width and height of the box are stored. So regardless of the scale of the image, whether the image has size 1920 x 1080 pixels or 1080 x 720 pixels, the position of the box remains the same.
 An example of a box would be [0.6, 0.5, 0.4, 0.4], all values between 0 and 1. IoU accuracy can then be performed.
-... As explained in the literature (todo reference to lit)...
+... As explained in the literature (todo reference/add to literature)...
 % TODO : shift IoU comparison to literature
 
+(TODO: expand)
 In order to get an idea, whether following models are able to learn, a random convolutional network is created.
 ... elaborate results % TODO
 
@@ -42,7 +43,8 @@ To get a first idea whether it would start learning, so a transition can be made
 
 \subsection{Dedicated architectures}
 
-From scratch
+(TODO : expand)
+Trained from scratch
 
 GoogleNet, MobileNet... (on individual labels)
 
@@ -152,7 +154,7 @@ The total algorithm isn't perfect yet, but the results indicate sufficient valid
     \label{code:localization}
 \end{listing}
 
-Full code is visible in code snippet \ref{code:localization}. The results are broken down in table \ref{tbl:crop-results}.
+Full code is visible in code snippet \ref{code:localization}. The results are broken down in table \ref{tbl:crop-results}. In this table you can see that about 15\% of the videos aren't localized properly, some of them only have minor disturbs. This results in enough videos available to try and recognize skills.
 
 % TODO: pairwise distances?
 
@@ -194,11 +196,21 @@ Full code is visible in code snippet \ref{code:localization}. The results are br
         Nr of videos not ok &	21	& 15.6\% \\ \hline
         Total checked videos &	135	& (includes train videos) \\ \hline
     \end{tabular}
-    \caption{Crop results manually checked on the amount of seconds a crop is disturbing. \\
+    \caption{Crop results manually checked on the amount of seconds where a crop is disturbing. The reason why it is disturbing is added in the reason column, this could be athletes out of view, unstable/earthquake like predictions... \\
     Yellow indicated videos are not disturbing for recognition, even though the crops aren't perfect. Orange videos require more attention and shouldn't be used for recognition. \\
     The \(avg_{if}\) indicates the average time in case a video has crops which aren't good.}
     \label{tbl:crop-results}
 \end{table}
+
+
+\subsection{Full video crops - automated testing (Work in Progress)}
+
+As manual checking videos can be time consuming, automated tests are in progress of creation in order to check whether crop strategies work or not.
+
+
+
+
+
 
 
 
@@ -213,7 +225,7 @@ Full code is visible in code snippet \ref{code:localization}. The results are br
 Experiments on action segmentation have waited on skill recognition (section \ref{results:recognition}), this is why the experiments with action segmentation use the same models as the skill recognition, adapting only the top layers of the models.
 
 To annotate which moments are interesting split points, the start and end frame of a skill receive value 1, while other frames remain 0.
-As the start and end frame of a skill are rather subjective, frames around a split point also range somewhere in the interval \(]0, 1[\). These values are calculated using the function \ref{code:calculate-splitpoint-values} which is called on in the data generator demonstrated in code \ref{code:call-splitpoint-calculation}.
+As the start and end frame of a skill are rather subjective, frames around a split point also range somewhere between 0 and 1. These values are calculated using the function \ref{code:calculate-splitpoint-values} which is called on in the data generator demonstrated in code \ref{code:call-splitpoint-calculation}.
 Each frame than has a value from zero to one. An example of consecutive splitpointvalues could be:
 
 \([0, 0, 0.1, 0.31, 0.55, 0.86, 1, 0.86, 0.55, 0.31, 0.1, 0]\)
@@ -222,23 +234,26 @@ Each frame than has a value from zero to one. An example of consecutive splitpoi
 \subsection{Video Vision Transformer \& Self-attention ConvLSTM}
 \label{subsec:video-models-from-scratch}
 
-The first and second experiment for segmention use code implementations of the video vision transformer as described in \textcite{Arnab2021} and the Self-Attention ConvLSTM from \textcite{Lin_2020}.
-Implementations of these models, ViViT \ref{code:get_model_ViViT} and SA-ConvLSTM (TODO), are aided by \textcite{OpenAI_ChatGPT_2025} and \textcite{Deepseek_2025}.
-These models were then trained on 7.8k batches of 16 consecutive frames, which originate from 44 trainings videos for about 48 minutes of training data, having framerates between 25 and 60 \footnote{Most labeled videos have a framerate of 25, 30 or 50 frames per second}.
-Both models showed the same results, averaging out predictions slightly above 0 for all frames, stagnating on MSE losses of around 0.09 and 0.10. (Exact values are lost due to the switch to pytorch and bugs, will be re-added later.)
+The first and second experiment for segmention use code implementations of the Video Vision Transformer as developed in \textcite{Arnab2021} (ViViT - \ref{code:get_model_ViViT}) and the Self-Attention ConvLSTM from \textcite{Lin_2020} (SA-ConvLSTM - (TODO)).
+To resolve bugs and dimensionality issues, Large Language models are used (\autocite{OpenAI_ChatGPT_2025} and \autocite{Deepseek_2025}).
+These models were then trained on 7.8k batches of 16 consecutive frames, which originate from 44 trainings videos for about 48 minutes of training data, having framerates between 25 and 60 \footnote{Most labeled videos have a framerate of 25, 30 or 50 frames per second} images per second.
+Both models showed the same results, averaging out predictions slightly above 0 for all frames, stagnating on MSE losses of around 0.09 and 0.10. This was about the average when always predicting 0. (Exact values are lost due to the switch to pytorch and bugs, will/could be re-added later.)
 
-\subsection{pre-trained MViT}
+\subsection{Pre-trained MViT}
 
 In order to get better results on the little labeled available data, (44 videos for training, 7 validation videos), looking for a pre-trained model really helped a lot.
 PyTorch provides a \href{https://pytorch.org/vision/main/models.html}{list} of pre-build and pre-trained models such as \href{https://pytorch.org/vision/main/models/video_mvit.html}{mvit-v1-b}.
 Fine-tuning this model lowered the MSE to 0.065 with peaks overlapping splitpoints as demonstrated and elaborated in figure \ref{fig:segmentation-plot}.
 
-To get al sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) having a splitpoint value more than 0.4 become the start and end frame of a skill section, which will be used to recognize which skill is displayed. The code filtering segments out of raw-predicted splitpoint values, as used in the segmentation-plot \ref{fig:segmentation-plot} can be found in code snippet \ref{code:predictions-to-splitpoints}.
+To get al sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) having a splitpoint value more than 0.4 become the start and end frame of a skill section, which will be used to recognize which skill is displayed. The code filtering segments out of raw-predicted splitpoint values is \ref{code:predictions-to-splitpoints}, filtering peaks (fig  \ref{fig:segmentation-plot}) in a list of start and end frames. An example could be \([...2280, 2320, 2355, 2382...]\), as splitpoints.
+
 
 \begin{figure}
     \centering
     \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2250_with_250_points}
-    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2500_with_250_points}    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2750_with_250_points}    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_3000_with_250_points}
+    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2500_with_250_points}
+    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2750_with_250_points}
+    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_3000_with_250_points}
     \caption[Segmentation plot]{Segmentation plot comparing predictions with the splitpoint values indicating a match of interesting splitpoint. Visible errors are: \\
         at frame 2459, a relatively lower jump out of the rope with a snapper. \\
         at frames 2700 until 2900 indicating a transition which is labeled in one segment, but the athletes are rather bouncy on their feet, letting the model think those are splitpoints. \\
@@ -251,10 +266,36 @@ To get al sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) hav
 
 These predicted segments are the first usable split moments to use for splitting unseen videos recognizing or speeding up further labeling.
 
+% TODO : transition
+
 \section{Skill recognition}
 \label{results:recognition}
 
-Elaborate 16 frame time aspect.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{img/skilllengths}
+    \caption[frame counts of skill lengths]{Distribution of skill length (in frames), limited to 40 frames. Skill lengths differ depending on the frame rate of the video. Longer sequences than 40 frames include transitions, or mistake recoveries, typically occurring once or up to 3 times}
+    \label{fig:skilllengths-counts}
+\end{figure}
+
+
+Having small little sections of potential skills (normal jumps, and mistake recoveries included) allows to predict what actions are actually in this section.
+As the segments provided by the segmentation model have a varying frame count, and the length of skills in general can differ, they need to be transformed in equal sized frames.
+Depending on the frame rate, most skills have a frame rate between 12 and 18 frames per skill, see figure \ref{fig:skilllengths-counts} for a distribution. In order to transform skills into equally sized sections, frames are skipped or duplicated depending on the length of the skill.
+The selected frames are calculated in code snippet \ref{code:skill-frame-selection}.
+
+
+\begin{listing}
+    \begin{minted}{python}
+        timesteps = 16
+        slot = skill_length_over_timesteps = skill_length / timesteps
+        frames [frames_skill[round(i * slot)] for i in range(timesteps)]
+    \end{minted}
+    \caption[Code for frame selection skills]{Code for frame selection of skills}
+    \label{code:skill-frame-selection}
+\end{listing}
+
+
 
 \subsection{Video Vision Transformer \& Self-attention ConvLSTM}
 

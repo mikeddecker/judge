@@ -108,3 +108,9 @@ GROUP BY
         ELSE 'other'
     END
 ORDER BY train_count DESC;
+
+CREATE OR REPLACE VIEW SkillLengthCountInFrames AS
+SELECT length, COUNT(length) 
+FROM (SELECT frameEnd - frameStart as length FROM Skillinfo_DoubleDutch) AS skilllengths
+GROUP BY length
+ORDER BY length;
