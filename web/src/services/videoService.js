@@ -193,3 +193,13 @@ export const getLocalizeStats = async (selectedHar) => {
     throw error;
   }
 };
+
+
+export const hasVideoPredictions = async (videoId) => {
+  try {
+    return await api.get(`/video/${videoId}/hasPredictions`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};

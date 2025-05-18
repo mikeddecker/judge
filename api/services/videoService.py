@@ -32,6 +32,7 @@ LEVEL_TO_SCORE_MAP = {
     7 : 11,
     8 : 11,
 }
+VISION_MODELS = ['HAR_MViT']
 
 class VideoService:
     """Provides the video information of videos"""
@@ -607,7 +608,7 @@ class VideoService:
         return freq_table, score
 
     def get_score_comparison(self, videoIds: List[int]):
-        allowed_models = ['HAR_MViT']
+        allowed_models = VISION_MODELS
         print("@"*80)
         print(videoIds)
         scores = {
@@ -643,3 +644,12 @@ class VideoService:
             scores["total"][f"{model}_difference"] = round(100 * (scores["total"][model] - scores["total"]["judges"]) / scores["total"]["judges"], 2)
 
         return scores
+    
+    def hasVideoPredictions(self, videoId: int):
+        ValueHelper.check_raise_id(videoId)
+
+        for model in VISION_MODELS:
+            if os.path.exists(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")):
+                return True
+            
+        return False

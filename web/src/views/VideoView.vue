@@ -101,7 +101,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, hasVideoPredictions } from '../services/videoService';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -298,6 +298,11 @@ async function loadVideo(id) {
     })
     
     selectedSkill.value["ReversedSkillinfo"] = Object.fromEntries(Object.entries(reversedSkillOptions.value).map(([skillprop, options]) => [skillprop, defaultOptions.value[skillprop]]))
+  
+    if (await hasVideoPredictions(id)) {
+      console.log("Video has predictions", true)
+    }
+
   } catch (e) {
     console.error(e)
     error.value = 'Failed To load';

@@ -8,7 +8,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from repository.db import db
 from routers.folderRouter import FolderRouter
-from routers.videoRouter import VideoRouter, VideoRouterCropped, VideoImageRouter, VideoInfoRouter
+from routers.videoRouter import VideoRouter, VideoRouterCropped, VideoImageRouter, VideoInfoRouter, VideoPredictionRouter
 from routers.frameRouter import FrameRouter
 from routers.storageRouter import StorageRouter, OrphanDeleterRouter
 from routers.skillRouter import SkillRouter, OptionRouter, SkillLevel, SkillLabelingCompletedRouter, DiffScoreComparison
@@ -43,6 +43,7 @@ api.add_resource(VideoRouter, '/video/<int:videoId>')
 api.add_resource(VideoRouterCropped, '/video/<int:videoId>/cropped')
 api.add_resource(VideoInfoRouter, '/video/<int:videoId>/info')
 api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
+api.add_resource(VideoPredictionRouter, '/video/<int:videoId>/hasPredictions')
 
 api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
 api.add_resource(OptionRouter, '/skilloptions/<skilltype>/<tableinfo>')
