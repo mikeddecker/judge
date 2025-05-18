@@ -344,6 +344,9 @@ class VideoService:
         if skillinfo["Rotations"] > 1:
             print(f'+{skillinfo["Rotations"]-1} multiple under')
             additional_levels += skillinfo["Rotations"] - 1
+        elif skillinfo["Rotations"] == 0 and skillname != 'roll':
+            return 0
+
             
         if skillinfo["BodyRotations"] > 0 and skillname in ["crab", "pushup"]:
             print(f"+{skillinfo["BodyRotations"]} body rotations (crab/push)")
