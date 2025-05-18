@@ -264,7 +264,7 @@ class Predictor:
             horizontal += w
             w, h = draw_text(frame, turntable, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             horizontal += w
-            w, h = draw_text(frame, skill, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color)
+            w, h = draw_text(frame, skill, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
             vertical += 2 * h
             
             w, h = draw_text(frame, turners, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
@@ -446,7 +446,7 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    for videoId in [2582, 1320, 2288, 2289, 1315]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
+    for videoId in [1190]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
         predictor.predict(
             type="FULL",
             videoId=videoId,
