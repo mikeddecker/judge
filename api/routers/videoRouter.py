@@ -107,8 +107,8 @@ class VideoPredictionRouter(Resource):
             ValueHelper.check_raise_id(videoId)
         except ValueError as ve:
             return ve, 404
-
-        return self.videoService.hasVideoPredictions(videoId), 200
+        
+        return self.videoService.getVideoPredictions(videoId), 200
 
 class VideoImageRouter(Resource):
     def __init__(self, **kwargs):

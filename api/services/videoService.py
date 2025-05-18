@@ -5,12 +5,14 @@ from domain.videoinfo import VideoInfo
 from domain.frameinfo import FrameInfo
 from domain.skill import Skill
 from helpers.ValueHelper import ValueHelper
-from helpers.ConfigHelper import get_discipline_DoubleDutch_config
+from helpers.ConfigHelper import get_discipline_DoubleDutch_config, localize_get_best_modelpath
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from services.jobService import JobService
 from typing import List
+import yaml
+
 
 STORAGE_DIR = os.getenv("STORAGE_DIR")
 FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
@@ -581,12 +583,27 @@ class VideoService:
             os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
         )
 
+    def __load_predicted_skills(self, videoId:int, model:str):
+        filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
+        if os.path.exists(filepath):
+            with open(filepath, 'r') as f:
+                return json.load(f)
+        return []
+
+    def __load_predicted_boxes(self, videoId:int):
+        modelname, modelpath = localize_get_best_modelpath()
+        # TODO : update to get 'smoothing'
+        filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_crop_d224_{modelname}_smoothing.json")
+        if os.path.exists(filepath):
+            with open(filepath, 'r') as f:
+                return json.load(f)
+        return []
+
+
     def __calculate_diff_score(self, videoId: int, model: str):
         freq_table = {l: 0 for l in range(9)}
-        
-        filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
-        with open(filepath, 'r') as f:
-            predicted_skills = json.load(f)
+
+        predicted_skills = self.__load_predicted_skills(videoId=videoId, model=model)
         
         config = get_discipline_DoubleDutch_config()
         levels = [ 
@@ -653,3 +670,15 @@ class VideoService:
                 return True
             
         return False
+    
+    def getVideoPredictions(self, videoId: int):
+        ValueHelper.check_raise_id(videoId)
+        best_model = 'HAR_MViT'
+
+        predictions_path = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{best_model}.json")
+
+        predictions = {}
+        predictions['skills'] = self.__load_predicted_skills(videoId=videoId, model=best_model)
+        predictions['boxes'] = self.__load_predicted_boxes(videoId=videoId)
+
+        return predictions

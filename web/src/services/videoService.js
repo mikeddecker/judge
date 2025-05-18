@@ -195,9 +195,9 @@ export const getLocalizeStats = async (selectedHar) => {
 };
 
 
-export const hasVideoPredictions = async (videoId) => {
+export const getVideoPredictions = async (videoId) => {
   try {
-    return await api.get(`/video/${videoId}/hasPredictions`).then(response => response.data)
+    return await api.get(`/video/${videoId}/predictions`).then(response => response.data)
   } catch (error) {
     console.error('Error fetching data:', error);
     throw error;

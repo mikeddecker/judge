@@ -101,7 +101,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, hasVideoPredictions } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions } from '../services/videoService';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -298,11 +298,13 @@ async function loadVideo(id) {
     })
     
     selectedSkill.value["ReversedSkillinfo"] = Object.fromEntries(Object.entries(reversedSkillOptions.value).map(([skillprop, options]) => [skillprop, defaultOptions.value[skillprop]]))
-  
-    if (await hasVideoPredictions(id)) {
-      console.log("Video has predictions", true)
-    }
-
+    
+    let predictions = await getVideoPredictions(id).then(
+      p => {
+        return p
+      }
+    )
+    console.log("predictions", predictions)
   } catch (e) {
     console.error(e)
     error.value = 'Failed To load';
@@ -311,7 +313,7 @@ async function loadVideo(id) {
   }
   try {
     croppedVideoSrc.value = await getCroppedVideoPath(id)
-    console.log(croppedVideoSrc.value)
+    console.log('cropped video path', croppedVideoSrc.value)
   } catch {
     croperror.value = 'No cropped video available'
   }

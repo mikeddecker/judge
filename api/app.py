@@ -43,7 +43,7 @@ api.add_resource(VideoRouter, '/video/<int:videoId>')
 api.add_resource(VideoRouterCropped, '/video/<int:videoId>/cropped')
 api.add_resource(VideoInfoRouter, '/video/<int:videoId>/info')
 api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
-api.add_resource(VideoPredictionRouter, '/video/<int:videoId>/hasPredictions')
+api.add_resource(VideoPredictionRouter, '/video/<int:videoId>/predictions')
 
 api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
 api.add_resource(OptionRouter, '/skilloptions/<skilltype>/<tableinfo>')

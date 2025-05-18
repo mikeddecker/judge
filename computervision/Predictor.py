@@ -407,22 +407,13 @@ class Predictor:
         finally:
             torch.cuda.empty_cache()
             gc.collect()
-
-    def __localize_get_best_modelpath(self):
-        # TODO : make dynamic
-        return '/home/miked/code/judge/runs/detect/train11'
-        
+      
     
     def __predict_location(self, videoId):
-        modelpath = self.__localize_get_best_modelpath()
-        argpath = os.path.join(modelpath, 'args.yaml')
-        modelname = 'pathDoesNotExist'
-        if os.path.exists(argpath):
-            with open(argpath, 'r') as file:
-                modelname = yaml.safe_load(file)['model'].split('.')[0]
+        modelname, modelpath = ConfigHelper.localize_get_best_modelpath()
 
         predict_and_save_locations(
-            modeldir=self.__localize_get_best_modelpath(),
+            modeldir=modelpath,
             repo=self.repo,
             modelname=modelname,
             videoIds=[videoId]
