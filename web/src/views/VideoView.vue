@@ -15,9 +15,10 @@
         @add-box="onAddBox" @delete-box="onDeleteBox">
         </VideoPlayer>
         <SkillBalk :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
+        <SkillBalk :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
         <div id="skill-controls" class="flex gap-2 my-2 wrap" v-show="modeIsSkills">
-          <Button v-show="paused" @click="setFrameStart()">set frame Start</Button>
-          <Button v-show="paused" @click="setFrameEnd()">set frame End</Button>
+          <Button v-show="paused && !selectedSkill.Id" @click="setFrameStart()">set frame Start</Button>
+          <Button v-show="paused && !selectedSkill.Id" @click="setFrameEnd()">set frame End</Button>
           <Button @click="playJustALittleFurther(-25)" class="bg-teal-600">-25</Button>
           <Button @click="playJustALittleFurther(-15)" class="bg-teal-600">-15</Button>
           <Button @click="playJustALittleFurther(-10)" class="bg-teal-600">-10</Button>
@@ -140,6 +141,7 @@ const currentFrame = ref(0)
 const frameStart = ref(currentFrame.value)
 const frameEnd = ref(undefined)
 
+const predictions = ref({'boxes': [], 'skills': []})
 const skills = computed(() => {
   if (!videoinfo.value) { return [] }
   if (!videoinfo.value.Skills) { return [] }
@@ -185,9 +187,18 @@ watch(
   )
 )
 
+function guidGenerator() {
+    var S4 = function() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+}
+
 const updateLevel = async () => {
   if (frameStart.value) {
-    selectedSkillLevel.value = await getSkillLevel(normal2Reverse(selectedSkill.value.ReversedSkillinfo), frameStart.value, videoinfo.value.Id) //getSkillLevel()
+    let currentSkillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
+    let previousSkillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
+    selectedSkillLevel.value = await getSkillLevel(currentSkillinfo, previousSkillinfo, selectedSkill.value.ReversedSkillinfo["Skill"], frameStart.value, videoinfo.value.Id)
   }
 }
 
@@ -196,7 +207,7 @@ const reverseDict = (d) => {
 }
 
 const reverse2Normal = (rs) => {
-  return Object.fromEntries(Object.entries(rs).map(([skillProp, reversedValue]) => [skillProp, skillOptions.value[skillProp][reversedValue]]))
+  return Object.fromEntries(Object.entries(rs).map(([skillProp, reversedValue]) => [skillProp, skillOptions.value[skillProp][reversedValue] ? skillOptions.value[skillProp][reversedValue] : !!reversedValue ? "True" : "False"]))
 }
 
 const normal2Reverse = (ns) => {
@@ -299,12 +310,33 @@ async function loadVideo(id) {
     
     selectedSkill.value["ReversedSkillinfo"] = Object.fromEntries(Object.entries(reversedSkillOptions.value).map(([skillprop, options]) => [skillprop, defaultOptions.value[skillprop]]))
     
-    let predictions = await getVideoPredictions(id).then(
+    predictions.value = await getVideoPredictions(id).then(
       p => {
+        p['skills'] = Object.entries(p['skills']).map(
+          ([fs, pred]) => {
+            let frameStart = Number(fs)
+            let frameEnd = pred['Skill']['frameEnd']
+            let skillproperties = Object.fromEntries(
+              Object.entries(pred).map(
+                ([skillprop, values]) => {
+                  return [skillprop, values['y_pred']]
+                }
+              )
+            )
+            let transformedPrediction = {
+              "Id": guidGenerator(),
+              "IsPrediction" : true,
+              "Skillinfo": skillproperties,
+              "FrameStart": frameStart,
+              "FrameEnd": frameEnd,
+              "ReversedSkillinfo": reverse2Normal(skillproperties)
+            }
+            return transformedPrediction
+          }
+        )
         return p
       }
     )
-    console.log("predictions", predictions)
   } catch (e) {
     console.error(e)
     error.value = 'Failed To load';
@@ -313,7 +345,6 @@ async function loadVideo(id) {
   }
   try {
     croppedVideoSrc.value = await getCroppedVideoPath(id)
-    console.log('cropped video path', croppedVideoSrc.value)
   } catch {
     croperror.value = 'No cropped video available'
   }
@@ -387,8 +418,10 @@ const play = () => {
   videoElement.value.play()
 }
 
-const onSkillClicked = (skillId) => {
-  let skill = skills.value.filter(s => s.Id == skillId)[0]
+const onSkillClicked = (skillId, isPrediction) => {
+  let skillsToFilter = isPrediction ? predictions.value['skills'] : skills.value
+
+  let skill = skillsToFilter.filter(s => s.Id == skillId)[0]
   let skillinfo = skill['Skillinfo']
   skill['ReversedSkillinfo'] = reverse2Normal(skillinfo)
   
@@ -480,7 +513,6 @@ async function updateSkill() {
   videoinfo.value = await putSkill(videoinfo.value.Id, copy)
   deselectSkill()
   prepareNextLabel(copy.FrameEnd)
-
 }
 
 async function toggleSkillsCompleted() {

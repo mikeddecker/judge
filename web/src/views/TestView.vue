@@ -43,7 +43,6 @@ onMounted(async () => {
 
 async function createImage() {
   createVideoImage(videoId.value, frameNr.value).then(response => {
-    console.log(response.data)
     antwoord.value = response.data
   })
 }

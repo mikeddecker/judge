@@ -90,7 +90,7 @@ class TrainerSkills:
         classification_reports = {}
         for key in y_true.keys():
             classKey = key if key not in ['Turner1', 'Turner2'] else 'Turner'
-            labels = None if classKey not in target_names.keys() else range(len(target_names[classKey]))
+            labels = None if classKey not in target_names.keys() else range(1, len(target_names[classKey]) + 1) # Mysql startIdx = 1
             tn = None if classKey not in target_names.keys() else target_names[classKey]
             classification_reports_string = classification_report(y_true[key], y_pred[key], labels=labels, target_names=tn, zero_division=0)
             classification_reports[key] = classification_report(y_true[key], y_pred[key], output_dict=True, labels=labels, target_names=tn, zero_division=0)
@@ -119,7 +119,7 @@ class TrainerSkills:
                 raise ValueError(modelname)
             
             path = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
-            checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.checkpoint.pt")
+            checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}{'_testrun' if testrun else ''}.checkpoint.pt")
 
             
             DIM = 224
@@ -208,7 +208,7 @@ class TrainerSkills:
                     print(f"No improvement for {epochsNoImprovement} - stopping")
                     break
 
-                if not testrun and hasValLossImproved:
+                if hasValLossImproved:
                     torch.save({
                         'epoch': epoch,
                         'model_state_dict': model.state_dict(),

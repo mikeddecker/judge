@@ -239,7 +239,7 @@ In this appendix, code snippets to prevent code saturation in between text.
                         tablename = "turners"
                     case 'Type':
                         tablename = 'types'
-                classes = int(df_table_counts.iloc[0][tablename])
+                classes = int(df_table_counts.iloc[0][tablename] + 1) # Because of indexing
                 outputs[key] = keras.layers.Dense(classes, activation='softmax', name=key)(features)
             else:
                 outputs[key] = keras.layers.Dense(1, activation='sigmoid', name=key)(features)

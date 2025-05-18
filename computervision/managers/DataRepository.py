@@ -206,9 +206,10 @@ class DataRepository:
         qry = sqlal.text(f"""SELECT * FROM {tablename} WHERE modelname = \'{modelname}\' AND epoch = {epoch}""")
         return pd.read_sql(qry, con=self.con)
 
-    def get_category_names(self, balancedType):
+    def get_category_names(self, balancedType, shiftIndex=False):
         categoryNames = {}
-        for cat in ['Skill', 'Type', 'Turner']:
+        columns = ['Skill', 'Type', 'Turner']
+        for cat in columns:
             qry = sqlal.text(f"""SELECT name FROM Skillinfo_DoubleDutch_{cat}""")
             result = pd.read_sql(qry, con=self.con)
             categoryNames[cat] = result["name"].to_list()
@@ -216,6 +217,10 @@ class DataRepository:
         if balancedType == "jump_return_push_frog_other":
             categoryNames['Skill'] = ['jump', 'return from power', 'pushup', 'frog', 'other']
         
+        if shiftIndex:
+            for c in columns:
+                categoryNames[c].insert(0, '')
+
         return categoryNames
     
     def get_next_job(self):

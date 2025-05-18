@@ -21,7 +21,7 @@ def create_pytorch_skill_output_layers(lastNNeurons, balancedType, df_table_coun
             elif key == 'Type':
                 columnname = 'types'
             
-            classes = int(df_table_counts.iloc[0][columnname])
+            classes = int(df_table_counts.iloc[0][columnname] + 1) # Because of MysqlIndex starts from 1
             output_layers[key] = torch.nn.Linear(lastNNeurons, classes)
         else:
             output_layers[key] = torch.nn.Linear(lastNNeurons, 1)

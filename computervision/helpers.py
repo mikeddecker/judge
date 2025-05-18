@@ -194,7 +194,7 @@ def load_skill_batch_y_torch(skillinfo_row, flip_turner:bool=False):
         
         if value[0] == "Categorical":
             # Convert to 0-based index and long tensor
-            y[key] = torch.tensor(int(target_value) - 1, dtype=torch.long).to(device)
+            y[key] = torch.tensor(int(target_value), dtype=torch.long).to(device)
         elif value[0] == "Numerical":
             # Normalize and convert to float tensor
             normalized_value = target_value / value[2]

@@ -142,10 +142,12 @@ export const deleteSkill = async (videoId, start, end) => {
     });
 };
 
-export const getSkillLevel = async (skillinfo, frameStart, videoId) => {
+export const getSkillLevel = async (skillinfo, prevSkillinfo, prevSkillname, frameStart, videoId) => {
   try {
     const response = await api.post(`/skilllevel`, { 
         "skillinfo" : skillinfo,
+        "prevSkillinfo" : prevSkillinfo,
+        "prevSkillname" : prevSkillname,
         "frameStart" : frameStart,
         "videoId" : videoId,
       }, { headers: { 'Content-Type': 'application/json' }})

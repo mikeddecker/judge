@@ -5,7 +5,7 @@
         :key="s.Id" 
         :style="getSkillSectionStyle(s)" 
         class="skill-section"
-        @click="handleClick(s.Id)">
+        @click="handleClick(s.Id, s.hasOwnProperty('IsPrediction') ? s.hasOwnProperty('IsPrediction') : false)">
       </div>
       <div v-show="currentFrame" :style="getSkillSectionStyle(currentFrame)"></div>
     </div>
@@ -49,8 +49,8 @@ function getSkillSectionStyle(skill) {
       cursor: 'pointer'
   };
 }
-function handleClick(skillId) {
-    emit('skill-clicked', skillId);
+function handleClick(skillId, isPrediction) {
+    emit('skill-clicked', skillId, isPrediction);
 }
 </script>
   

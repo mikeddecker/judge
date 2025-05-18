@@ -157,7 +157,7 @@ class VideoService:
         videoinfo.remove_skill(skill)
         return videoinfo
     
-    def calculate_skill_level(self, disciplineconfig: dict, skillinfo: dict, frameStart: int, videoId: int) -> int:
+    def calculate_skill_level(self, disciplineconfig: dict, skillinfo: dict, frameStart: int, videoId: int, previous_skillinfo:dict = None, prev_skillname: str = None) -> int:
         ValueHelper.check_raise_skillinfo_values(config=disciplineconfig, skillinfo=skillinfo, repo=self.VideoRepo)
         ValueHelper.check_raise_frameNr(frameStart)
 
@@ -167,28 +167,28 @@ class VideoService:
 
         if skillinfo["Fault"]:
             skillinfo["Fault"] = False
-            return f"F {self.calculate_skill_level(disciplineconfig=disciplineconfig, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId)}"
+            return f"F {self.calculate_skill_level(disciplineconfig=disciplineconfig, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId, previous_skillinfo=previous_skillinfo, prev_skillname=prev_skillname)}"
         if skillinfo["Sloppy"]:
             skillinfo["Sloppy"] = False
-            return f"Onafgewerkte L{self.calculate_skill_level(disciplineconfig=disciplineconfig, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId)}"
+            return f"Onafgewerkte L{self.calculate_skill_level(disciplineconfig=disciplineconfig, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId, previous_skillinfo=previous_skillinfo, prev_skillname=prev_skillname)}"
 
         match (options_type[skillinfo["Type"]]):
             case 'Double Dutch':
-                return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
+                return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart, videoId, previous_skillinfo, prev_skillname)
             case 'Single Dutch':
-                return self.calculate_level_single_dutch(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
+                return self.calculate_level_single_dutch(skillinfo, options_type, options_skill, options_turner, frameStart, videoId, previous_skillinfo, prev_skillname)
             case 'Irish Dutch':
-                return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
+                return self.calculate_level_double_dutch(skillinfo, options_type, options_skill, options_turner, frameStart, videoId, previous_skillinfo, prev_skillname)
             case 'Chinese Wheel':
-                return self.calculate_level_chinese_wheel(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
+                return self.calculate_level_chinese_wheel(skillinfo, options_type, options_skill, options_turner, frameStart, videoId, previous_skillinfo, prev_skillname)
             case 'Transition':
                 return 1
             case 'Snapperlike':
-                return self.calculate_level_snapperlike(skillinfo, options_type, options_skill, options_turner, frameStart, videoId)
+                return self.calculate_level_snapperlike(skillinfo, options_type, options_skill, options_turner, frameStart, videoId, previous_skillinfo, prev_skillname)
             case _:
                 raise ValueError(f"unknown option {options_type[skillinfo["Type"]]}")
 
-    def calculate_level_double_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int) -> List[int]:
+    def calculate_level_double_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int, previous_skillinfo:dict = None, prev_skillname:str = None) -> List[int]:
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
@@ -212,7 +212,7 @@ class VideoService:
             case _:
                 base_skill_levels = [int(bs) for bs in base_skill_levels]
                 print("base skill levels", base_skill_levels)
-                prev_skillinfo, prev_skillname, base_level = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
+                prev_skillinfo, prev_skillname, _ = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
 
                 # high frog?
                 print("prev", prev_skillname)
@@ -289,7 +289,7 @@ class VideoService:
         print("level total", level_total)
         return level_total
 
-    def calculate_level_single_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
+    def calculate_level_single_dutch(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int, previous_skillinfo:dict = None, prev_skillname:str = None):
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
@@ -362,7 +362,7 @@ class VideoService:
         print("level total", level_total)
         return level_total
 
-    def calculate_level_snapperlike(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
+    def calculate_level_snapperlike(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int, previous_skillinfo:dict = None, prev_skillname:str = None):
         skillname = oskill[skillinfo["Skill"]]["name"]
         if skillname in ["roll", "rad", "rondat", "handspring", "stut"]:
             # Air skills
@@ -371,7 +371,7 @@ class VideoService:
             return int(oskill[skillinfo["Skill"]]["dd"][0])
         return 0
     
-    def calculate_level_chinese_wheel(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int):
+    def calculate_level_chinese_wheel(self, skillinfo: dict, otype, oskill, oturner, frameStart: int, videoId: int, previous_skillinfo:dict = None, prev_skillname:str = None):
         base_skill_levels = str.split(oskill[skillinfo["Skill"]]["dd"], sep="-")
         additional_levels = 0
         skillname = oskill[skillinfo["Skill"]]["name"]
@@ -609,7 +609,7 @@ class VideoService:
         levels = [ 
             self.calculate_skill_level(
                 disciplineconfig=config,
-                skillinfo= {k: v['y_pred'] + 1 if config[k][0] == 'Categorical' else v['y_pred'] for k, v in predicted_skills[frameStart].items()},
+                skillinfo= {k: v['y_pred'] if config[k][0] == "Categorical" else v['y_pred'] for k, v in predicted_skills[frameStart].items()},
                 frameStart=int(frameStart),
                 videoId=videoId
             ) for frameStart in
@@ -641,7 +641,7 @@ class VideoService:
                 scores[videoId] = {}
                 scores[videoId]["videoId"] = videoId
                 scores[videoId]["judges"] = self.get(id=videoId).JudgeDiffScore
-                if self.video_has_predictions(videoId=videoId, model=model):
+                if self.video_has_predictions(videoId=videoId, model=model) and not self.jobService.video_has_pending_job(videoId=videoId, model=model):
                     # TODO : add re-calculate after x days or when a new model has been trained
                     freq, score = self.__calculate_diff_score(videoId=videoId, model=model)
                     scores[videoId][model] = round(score, 2)
@@ -657,8 +657,11 @@ class VideoService:
                     scores[videoId][model] = "Created"
                 else:
                     scores[videoId][model] = "Waiting"
-            scores["total"]["judges"] = round(scores["total"]["judges"], 2)
-            scores["total"][f"{model}_difference"] = round(100 * (scores["total"][model] - scores["total"]["judges"]) / scores["total"]["judges"], 2)
+
+            if scores['total']["judges"]:
+                # scores["total"]["videoId"] = 0
+                scores["total"]["judges"] = round(scores["total"]["judges"], 2)
+                scores["total"][f"{model}_difference"] = round(100 * (scores["total"][model] - scores["total"]["judges"]) / scores["total"]["judges"], 2)
 
         return scores
     

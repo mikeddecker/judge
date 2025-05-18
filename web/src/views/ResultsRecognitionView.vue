@@ -68,8 +68,6 @@ function getColor(skillprop) {
 
 const transformF1ToChart = (fscores) => {
   let labels = Object.keys(fscores);
-  console.log("f1-scores", )
-  console.log("labels", labels)
   let key = 'Skill'
   
   let datapoints = {}

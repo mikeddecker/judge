@@ -86,9 +86,7 @@ class DataGeneratorSkills(keras.utils.Sequence):
 
                 y[key] = skillinfo_row[key_lower]
 
-                if value[0] == "Categorical":
-                    y[key] -= 1
-                elif value[0] == "Numerical":
+                if value[0] == "Numerical":
                     y[key] /= value[2]
 
                 y[key] = np.expand_dims(np.array(y[key]), axis=0)

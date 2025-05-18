@@ -64,9 +64,8 @@ async function getStatistics() {
   let maxId = 2590
   let minId = 2568
   bkVideoIds.value = [...Array(maxId - minId).keys()].map(i => i + minId)
-  console.log(bkVideoIds.value)
   let stats =  await getStats('HAR_MViT', bkVideoIds.value)
-  console.log(stats)
+  console.log("stats", stats)
   return stats
 }
 

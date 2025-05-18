@@ -135,12 +135,13 @@ class SkillLevel(Resource):
     def post(self):
         data = request.get_json()
         skillinfo = data.get('skillinfo')
-        print("Skillinfo", skillinfo)
+        previous_skillinfo = data.get('prevSkillinfo')
+        previous_skillname = data.get('prevSkillname')
         frameStart = data.get('frameStart')
         videoId = data.get('videoId')
         ValueHelper.check_raise_frameNr(frameStart)
         config = get_discipline_DoubleDutch_config()
-        return self.videoService.calculate_skill_level(config, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId)
+        return self.videoService.calculate_skill_level(config, skillinfo=skillinfo, previous_skillinfo=previous_skillinfo, prev_skillname=previous_skillname, frameStart=frameStart, videoId=videoId)
 
 class DiffScoreComparison(Resource):
     def __init__(self, **kwargs):
