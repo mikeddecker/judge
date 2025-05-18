@@ -48,6 +48,10 @@ h2 {
   border-bottom: 1px solid black;
 }
 
+.p-card-body {
+  margin: 0.2rem auto;
+}
+
 
 @media (hover: hover) {
   a:hover {

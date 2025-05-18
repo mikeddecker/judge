@@ -22,11 +22,5 @@ const props = defineProps({
 </template>
 
 <style scoped>
-.p-chart canvas {
-  height: 30rem;
-}
 
-.p-card-body {
-  padding-top: 0 !important;
-}
 </style>

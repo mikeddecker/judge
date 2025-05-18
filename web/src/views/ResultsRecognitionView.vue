@@ -111,14 +111,14 @@ const transformF1ToChart = (fscores) => {
     <Card>
       <template #header>Total Accuracy</template>
       <template #content>
-        <span class="text-2xl -pt-12">{{ totalAccuracy }}%</span>
+        <span class="text-2xl">{{ totalAccuracy }}%</span>
       </template>
     </Card>
     
     <Card>
       <template #header>Skill Accuracy</template>
       <template #content>
-        <span class="text-2xl -pt-12">{{ skillAccuracy }}%</span>
+        <span class="text-2xl">{{ skillAccuracy }}%</span>
       </template>
     </Card>
   </div>
@@ -128,11 +128,5 @@ const transformF1ToChart = (fscores) => {
 </template>
 
 <style scoped>
-.p-chart canvas {
-  height: 30rem;
-}
 
-.p-card-body {
-  padding-top: 0 !important;
-}
 </style>
