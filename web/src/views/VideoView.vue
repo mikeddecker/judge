@@ -60,7 +60,7 @@
           <div class="flex gap-2">
             <span class="mr-2">Labeltype</span>
             <Select v-model="selectedLabeltype" :options="Object.keys(labeltypes)"></Select>
-            <InputNumber v-if="selectedLabeltype == 'team'" v-model="currentFrame" inputId="input-currentFrame" fluid></InputNumber>
+            <InputNumber v-model="currentFrame" inputId="input-currentFrame" fluid></InputNumber>
           </div>
           <div class="mt-2">
             <span class="mr-2">Canvas modus</span>
@@ -90,7 +90,7 @@
       
     </div>
     <pre>{{ videoinfo }}</pre>
-    <Button v-if="modeIsSkills" class="mb-8" @click="() => updateVideoSkillsCompleted(videoinfo.Id, !videoinfo.Completed_Skill_Labels)">Toggle skills completed, now = {{ videoinfo.Completed_Skill_Labels }}</button>
+    <Button v-if="modeIsSkills" class="mb-8" @click="toggleSkillsCompleted">Toggle skills completed, now = {{ videoinfo.Completed_Skill_Labels }}</button>
       
   </div>
   <div v-else>
@@ -474,6 +474,10 @@ async function updateSkill() {
   deselectSkill()
   prepareNextLabel(copy.FrameEnd)
 
+}
+
+async function toggleSkillsCompleted() {
+  updateVideoSkillsCompleted(videoinfo.value.Id, !videoinfo.value.Completed_Skill_Labels).then(() => videoinfo.value.Completed_Skill_Labels = ! videoinfo.value.Completed_Skill_Labels)
 }
 
 </script>

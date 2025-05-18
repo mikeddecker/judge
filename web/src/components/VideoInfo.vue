@@ -106,7 +106,7 @@ img.completed {
 
 @media (min-width: 1024px) {
   .videoinfo {
-    width: 18%;
+    width: 23%;
   }
 }
 </style>
