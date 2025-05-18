@@ -260,10 +260,10 @@ def localize_jumpers(
 
         for s in strategies:
             if i == 0:
-                smoothed_values[s]['xmin'].append(xmin)
-                smoothed_values[s]['xmax'].append(xmax)
-                smoothed_values[s]['ymin'].append(ymin)
-                smoothed_values[s]['ymax'].append(ymax)
+                smoothed_values[s]['xmin'].append(int(xmin))
+                smoothed_values[s]['xmax'].append(int(xmax))
+                smoothed_values[s]['ymin'].append(int(ymin))
+                smoothed_values[s]['ymax'].append(int(ymax))
             else:
                 smoothed_xmin, smoothed_xmax, smoothed_ymin, smoothed_ymax = calculate_smoothed_values(strat=s, params=stratparams[s], previous_values=smoothed_values[s], i=i, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
                 smoothed_values[s]['xmin'].append(smoothed_xmin)
@@ -341,6 +341,10 @@ def localize_jumpers(
 
     print(f"Took {time.time()-start:.2f}s")
 
+    if save_as_mp4 and save_as_JSON:
+        with open(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.json"), 'w') as f:
+            json.dump(smoothed_values, f, sort_keys=True, indent=4)    
+
     for s in strategies:
         # Transform absolute XYXY to relative xywh
         smoothed_values[s] = pd.DataFrame(smoothed_values[s])
@@ -348,10 +352,6 @@ def localize_jumpers(
         smoothed_values[s]['y'] = (smoothed_values[s]['ymin'] + smoothed_values[s]['ymax']) / 2 / height
         smoothed_values[s]['width'] = (smoothed_values[s]['xmax'] - smoothed_values[s]['xmin']) / width
         smoothed_values[s]['height'] = (smoothed_values[s]['ymax'] - smoothed_values[s]['ymin']) / height
-
-    if save_as_mp4 and save_as_JSON:
-        with open(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.json"), 'w') as f:
-            json.dump(smoothed_values, f, sort_keys=True, default=str, indent=4)    
 
     return smoothed_values 
 
