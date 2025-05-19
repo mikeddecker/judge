@@ -25,6 +25,7 @@ class StatsRouter(Resource):
         super().__init__(**kwargs)
     
     def get(self):
+        start = time.time()
         videoIds = [int(i) for i in request.args.getlist('videoIds[]')]
         return {
             'localization': self.statsService.getLocalizeResults(selectedModel='TODO'),
@@ -49,6 +50,7 @@ class StatsRouter(Resource):
                 'train-time' : 6852.3
             },
             'recognition' : self.statsService.getRecognitionResults(selectedModel='HAR_MViT'),
-            'scores' : self.videoService.get_score_comparison(videoIds=videoIds)
+            'scores' : self.videoService.get_score_comparison(videoIds=videoIds),
+            'time' : time.time() - start,
         }, 200
 
