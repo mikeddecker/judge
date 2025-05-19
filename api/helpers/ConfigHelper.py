@@ -26,10 +26,7 @@ def localize_get_best_modelpath():
     # TODO : update to take actual best
     folder_path = os.path.join('..', 'runs', 'detect')
     trainrounds = os.listdir(folder_path)
-    print("|"*80)
-    print(trainrounds)
     nrs = [0 if s[5:] == '' else int(s[5:]) for s in trainrounds]
-    print(nrs)
     maxround = max(nrs)
     if maxround == 0:
         maxround == ''

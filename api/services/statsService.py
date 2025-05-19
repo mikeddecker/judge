@@ -116,7 +116,6 @@ class StatsService:
             trainpath = os.path.join(basepath, traindir)
             results[traindir]['content'] = os.listdir(trainpath)
             argpath = os.path.join(trainpath, 'args.yaml')
-            print(os.path.exists(argpath), argpath)
             if os.path.exists(argpath):
                 with open(argpath, 'r') as file:
                     results[traindir]['args'] = yaml.safe_load(file)
@@ -128,10 +127,7 @@ class StatsService:
             if 'results.csv' not in results[traindir]['content']:
                 continue
 
-            print(results[traindir]['args']['model'])
-            print(results[traindir]['args']['patience'])
             df_results = pd.read_csv(os.path.join(trainpath, 'results.csv'))
-            print(len(df_results))
 
 
         # checkpoint = torch.load(os.path.join('..', 'computervision', 'weights', f"{selectedModel}.checkpoint.pt"), weights_only=False)
