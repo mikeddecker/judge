@@ -27,6 +27,7 @@ class StatsRouter(Resource):
     def get(self):
         start = time.time()
         videoIds = [int(i) for i in request.args.getlist('videoIds[]')]
+        stat = request.args.get('stat')
         return {
             'localization': self.statsService.getLocalizeResults(selectedModel='TODO'),
             'segmentation' : {

@@ -174,11 +174,11 @@ export const updateVideoSkillsCompleted = async (videoId, completed) => {
   }
 }
 
-export const getStats = async (selectedHar, videoIds) => {
+export const getStats = async (stat, videoIds) => {
   try {
     return await api.get(
       `/stats`, {
-        params: { 'videoIds' : videoIds },
+        params: { 'stat': stat, 'videoIds' : videoIds },
         headers: { 'Content-Type': 'application/json' }
       }).then(response => response.data)
   } catch (error) {
