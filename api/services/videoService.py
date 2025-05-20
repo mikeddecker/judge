@@ -210,12 +210,12 @@ class VideoService:
             case _:
                 base_skill_levels = [int(bs) for bs in base_skill_levels]
                  
-                if previous_skillinfo["Skillinfo"] is not None:
+                if previous_skillinfo and previous_skillinfo["Skillinfo"] is not None:
                     prev_skillinfo, prev_skillname, _ = previous_skillinfo, prev_skillname, None
                 else:
                     prev_skillinfo, prev_skillname, _ = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
-                    prev_skillinfo = prev_skillinfo.to_dict()
-                    print(prev_skillinfo)
+                    if prev_skillinfo:
+                        prev_skillinfo = prev_skillinfo.to_dict()
 
                 # high frog?
                 if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce", "rol2kip"]:
@@ -258,8 +258,6 @@ class VideoService:
         turnername1 = oturner[skillinfo["Turner1"]]["name"]
         turnername2 = oturner[skillinfo["Turner2"]]["name"]
         # TODO : fix consequetive turns (i.e. keep turning in an EB or cross)
-        print("@"*80) 
-        print("prev skillinfo", prev_skillinfo)
         if not (turnername1 in ["cross", "crougercross", "inverse toad"] and prev_skillinfo is not None and oturner[prev_skillinfo["Skillinfo"]["Turner1"]]["name"] in ["cross", "crougercross", "inverse toad"] and prev_skillinfo["Skillinfo"]["Rotations"] < 3):
             extra_level = oturner[skillinfo['Turner1']]['dd']
             additional_levels += extra_level
@@ -296,12 +294,12 @@ class VideoService:
             case _:
                 base_skill_levels = [int(bs) for bs in base_skill_levels]
 
-                if previous_skillinfo["Skillinfo"] is not None:
+                if previous_skillinfo and previous_skillinfo["Skillinfo"] is not None:
                     prev_skillinfo, prev_skillname, _ = previous_skillinfo, prev_skillname, None
                 else:
                     prev_skillinfo, prev_skillname, _ = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
-                    prev_skillinfo = prev_skillinfo.to_dict()
-                    print(prev_skillinfo)
+                    if prev_skillinfo:
+                        prev_skillinfo = prev_skillinfo.to_dict()
 
                 # high frog?
                 if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce", "rol2kip"]:
@@ -371,12 +369,12 @@ class VideoService:
             case _:
                 base_skill_levels = [int(bs) for bs in base_skill_levels]
 
-                if previous_skillinfo["Skillinfo"] is not None:
+                if previous_skillinfo and previous_skillinfo["Skillinfo"] is not None:
                     prev_skillinfo, prev_skillname, _ = previous_skillinfo, prev_skillname, None
                 else:
                     prev_skillinfo, prev_skillname, _ = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
-                    prev_skillinfo = prev_skillinfo.to_dict()
-                    print(prev_skillinfo)
+                    if prev_skillinfo:
+                        prev_skillinfo = prev_skillinfo.to_dict()
 
                 # high frog?
                 if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce", "rol2kip"]:
@@ -594,7 +592,7 @@ class VideoService:
         score = 0
         for lvl in levels:
             freq_table[lvl] += 1
-            score += LEVEL_TO_SCORE_MAP[max(lvl, 8)]
+            score += LEVEL_TO_SCORE_MAP[min(lvl, 8)]
 
         return freq_table, score
 

@@ -437,7 +437,10 @@ if __name__ == "__main__":
     modelname = "HAR_MViT"
     predictor = Predictor()
 
-    for videoId in [1190]: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
+    videoIds = [2568,2569,2570,2571,2572,2573,2574,2575,2576,2577,2578,2579,2580,2581,2582,2583,2584,2585,2586,2587,2588,2589,]
+
+
+    for videoId in videoIds: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
         predictor.predict(
             type="FULL",
             videoId=videoId,
