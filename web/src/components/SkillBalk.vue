@@ -18,7 +18,28 @@ const props = defineProps(["videoinfo", "Skills", "currentFrame"])
 const FrameLength = computed(() => props.videoinfo ? props.videoinfo.FrameLength : 1000)
 const emit = defineEmits(["skill-clicked"])
 
+function getColor(inCreation, isPrediction, skill) {
+  if (inCreation) {
+    return 'purple'
+  }
+  
+  if (!isPrediction) {
+    return 'var(--color-nav)'
+  }
+
+  if (skill.ReversedSkillinfo.Skill == 'jump') {
+    return skill.Skillinfo.Rotations == 1 && skill.ReversedSkillinfo.Turner1 == 'normal' && skill.ReversedSkillinfo.Turner2 == 'normal' ? 'darkkhaki' : 'khaki'
+  }
+
+  if (!['frog', 'pushup', 'return from power'].includes(skill.ReversedSkillinfo.Skill)) {
+    return skill.Skillinfo.Rotations == 1 && skill.ReversedSkillinfo.Turner1 == 'normal' && skill.ReversedSkillinfo.Turner2 == 'normal' ? 'mediumblue' : 'navy'
+  }
+
+  return skill.Skillinfo.Rotations == 1 && skill.ReversedSkillinfo.Turner1 == 'normal' && skill.ReversedSkillinfo.Turner2 == 'normal' ? 'var(--color-nav)' : 'mediumaquamarine'
+}
+
 function getSkillSectionStyle(skill) {
+  // Current frame
   if (Number.isInteger(skill)) {
     // current position
     const relativeStart = skill / FrameLength.value;
@@ -31,6 +52,8 @@ function getSkillSectionStyle(skill) {
       backgroundColor: 'red',
       cursor: 'pointer',
   }}
+
+  // Skills
   const relativeStart = skill.FrameStart / FrameLength.value;
   const relativeEnd = skill.FrameEnd / FrameLength.value;
   let width = (relativeEnd - relativeStart) * 100 + 0.001;
@@ -39,13 +62,14 @@ function getSkillSectionStyle(skill) {
   if (skill.FrameStart == skill.FrameEnd) {
     width=0.001
   }
-  
+
+  let isPrediction = skill.hasOwnProperty("IsPrediction") && skill.IsPrediction
   return {
       width: `${width}%`,
       left: `${left}%`,
       position: 'absolute', // To align the sections within the skillbalk
       height: '100%',
-      backgroundColor: inCreation ? 'purple' : 'var(--color-nav)',
+      backgroundColor: getColor(inCreation, isPrediction, skill),
       cursor: 'pointer'
   };
 }

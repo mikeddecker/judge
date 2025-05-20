@@ -216,15 +216,12 @@ const updateLevel = async () => {
     let previousSkillinfo = null
     let previousSkillname = null
     if (selectedSkill.value.hasOwnProperty('IsPrediction') && selectedSkill.value.IsPrediction) {
-      console.log("fetch previous skill")
       let previousSkill = getPreviousPredictedSkill(true)
       if (previousSkill) {
-        console.log(previousSkill)
-        previousSkillinfo = normal2Reverse(previousSkill['Skillinfo'])
+        previousSkillinfo = previousSkill['Skillinfo']
         previousSkillname = previousSkill['Skillinfo']['Skill']
       }
     }
-    console.log(currentSkillinfo)
     selectedSkillLevel.value = await getSkillLevel(currentSkillinfo, previousSkillinfo, previousSkillname, frameStart.value, videoinfo.value.Id)
   }
 }
