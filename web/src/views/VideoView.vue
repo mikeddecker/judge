@@ -194,11 +194,38 @@ function guidGenerator() {
     return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
 }
 
+const getPreviousPredictedSkill = (adjacent) => {
+  if (adjacent) {
+    return predictions.value['skills'].filter(s => s.FrameEnd == selectedSkill.value.FrameStart)[0]
+  } else {
+    return predictions.value['skills'].filter(s => s.FrameEnd <= selectedSkill.value.FrameStart).reduce((acc, current) => acc ? (current.FrameEnd > acc.FrameEnd && current.FrameEnd <= selectedSkill.value.FrameStart ? current : acc) : current, null)
+  }
+}
+
+const getNextPredictedSkill = (adjacent) => {
+  if (adjacent) {
+    return predictions.value['skills'].filter(s => s.FrameStart == selectedSkill.value.FrameEnd)[0]
+  } else {
+    return predictions.value['skills'].filter(s => s.FrameStart >= selectedSkill.value.FrameEnd).reduce((acc, current) => acc ? (current.FrameStart < acc.FrameStart && current.FrameStart >= selectedSkill.value.FrameEnd ? current : acc) : current, null)
+  }
+}
+
 const updateLevel = async () => {
   if (frameStart.value) {
     let currentSkillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
-    let previousSkillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
-    selectedSkillLevel.value = await getSkillLevel(currentSkillinfo, previousSkillinfo, selectedSkill.value.ReversedSkillinfo["Skill"], frameStart.value, videoinfo.value.Id)
+    let previousSkillinfo = null
+    let previousSkillname = null
+    if (selectedSkill.value.hasOwnProperty('IsPrediction') && selectedSkill.value.IsPrediction) {
+      console.log("fetch previous skill")
+      let previousSkill = getPreviousPredictedSkill(true)
+      if (previousSkill) {
+        console.log(previousSkill)
+        previousSkillinfo = normal2Reverse(previousSkill['Skillinfo'])
+        previousSkillname = previousSkill['Skillinfo']['Skill']
+      }
+    }
+    console.log(currentSkillinfo)
+    selectedSkillLevel.value = await getSkillLevel(currentSkillinfo, previousSkillinfo, previousSkillname, frameStart.value, videoinfo.value.Id)
   }
 }
 
@@ -480,11 +507,13 @@ async function replaySection() {
   currentFrame.value = frameEnd.value
 }
 async function playNextSection() {
-  let nextSkill = videoinfo.value.Skills
+  let isPrediction = selectedSkill.value.hasOwnProperty('IsPrediction') && selectedSkill.value.IsPrediction
+  let skills = isPrediction ? predictions.value['skills'] : videoinfo.value.Skills
+  let nextSkill = skills
     .filter(skill => skill.FrameStart >= selectedSkill.value.FrameEnd)
     .sort((a,b) => a.FrameEnd - b.FrameEnd)[0]
   if (nextSkill) {
-    onSkillClicked(nextSkill.Id)
+    onSkillClicked(nextSkill.Id, isPrediction)
     replaySection()
   }
 }

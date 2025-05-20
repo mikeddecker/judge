@@ -146,7 +146,7 @@ export const getSkillLevel = async (skillinfo, prevSkillinfo, prevSkillname, fra
   try {
     const response = await api.post(`/skilllevel`, { 
         "skillinfo" : skillinfo,
-        "prevSkillinfo" : prevSkillinfo,
+        "prevSkillinfo" : {"Skillinfo": prevSkillinfo},
         "prevSkillname" : prevSkillname,
         "frameStart" : frameStart,
         "videoId" : videoId,
