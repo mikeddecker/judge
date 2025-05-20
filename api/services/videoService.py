@@ -228,7 +228,7 @@ class VideoService:
                 # one handed frog?
                 if skillname == 'frog' and skillinfo["Hands"] == 1:
                     additional_levels += 1
-                
+
                 # consequetive?
                 if skillname == 'frog' and prev_skillname == 'frog':
                     additional_levels += 1
@@ -295,9 +295,13 @@ class VideoService:
                 #     additional_levels += 1
             case _:
                 base_skill_levels = [int(bs) for bs in base_skill_levels]
-                prev_skillinfo, prev_skillname, _ = (previous_skillinfo, prev_skillname, None) if previous_skillinfo["Skillinfo"] is not None else self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
-                print("@-@"*50)
-                print(prev_skillinfo)
+
+                if previous_skillinfo["Skillinfo"] is not None:
+                    prev_skillinfo, prev_skillname, _ = previous_skillinfo, prev_skillname, None
+                else:
+                    prev_skillinfo, prev_skillname, _ = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
+                    prev_skillinfo = prev_skillinfo.to_dict()
+                    print(prev_skillinfo)
 
                 # high frog?
                 if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce", "rol2kip"]:
@@ -366,7 +370,13 @@ class VideoService:
                 base_skill_levels = [base_level + 1 if prev_skillname == "frog" and prev_skillinfo["Skillinfo"]["Hands"] == 1 else base_level]
             case _:
                 base_skill_levels = [int(bs) for bs in base_skill_levels]
-                prev_skillinfo, prev_skillname, _ = (previous_skillinfo, prev_skillname, None) if previous_skillinfo["Skillinfo"] is not None else self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
+
+                if previous_skillinfo["Skillinfo"] is not None:
+                    prev_skillinfo, prev_skillname, _ = previous_skillinfo, prev_skillname, None
+                else:
+                    prev_skillinfo, prev_skillname, _ = self.VideoRepo.get_previous_skill(videoId=videoId, frameEnd=frameStart)
+                    prev_skillinfo = prev_skillinfo.to_dict()
+                    print(prev_skillinfo)
 
                 # high frog?
                 if skillname == 'frog' and skillinfo["Feet"] == 2 and prev_skillname not in ["pushup", "split", "crab", "swift", "SPAGAAT", "buddy-bounce", "rol2kip"]:

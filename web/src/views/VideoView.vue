@@ -227,7 +227,7 @@ const updateLevel = async () => {
       let previousSkill = getPreviousPredictedSkill(true)
       if (previousSkill) {
         previousSkillinfo = previousSkill['Skillinfo']
-        previousSkillname = previousSkill['Skillinfo']['Skill']
+        previousSkillname = previousSkill['ReversedSkillinfo']['Skill']
       }
     }
     selectedSkillLevel.value = await getSkillLevel(currentSkillinfo, previousSkillinfo, previousSkillname, frameStart.value, videoinfo.value.Id)

@@ -27,14 +27,21 @@ function getColor(inCreation, isPrediction, skill) {
     return 'var(--color-nav)'
   }
 
-  if (skill.ReversedSkillinfo.Skill == 'jump') {
-    return skill.Skillinfo.Rotations == 1 && skill.ReversedSkillinfo.Turner1 == 'normal' && skill.ReversedSkillinfo.Turner2 == 'normal' ? 'darkkhaki' : 'khaki'
+  if (skill.Skillinfo.Turntable > 0) {
+    return 'orange'
   }
 
+  if (skill.ReversedSkillinfo.Skill == 'jump') {
+    if (skill.ReversedSkillinfo.Type == 'Chinese Wheel') {
+      return 'mistyrose'
+    }
+    return skill.Skillinfo.Rotations == 1 && skill.ReversedSkillinfo.Turner1 == 'normal' && skill.ReversedSkillinfo.Turner2 == 'normal' ? 'darkkhaki' : 'khaki'
+  }
+  
   if (!['frog', 'pushup', 'return from power'].includes(skill.ReversedSkillinfo.Skill)) {
     return skill.Skillinfo.Rotations == 1 && skill.ReversedSkillinfo.Turner1 == 'normal' && skill.ReversedSkillinfo.Turner2 == 'normal' ? 'mediumblue' : 'navy'
   }
-
+  
   return skill.Skillinfo.Rotations == 1 && skill.ReversedSkillinfo.Turner1 == 'normal' && skill.ReversedSkillinfo.Turner2 == 'normal' ? 'var(--color-nav)' : 'mediumaquamarine'
 }
 
