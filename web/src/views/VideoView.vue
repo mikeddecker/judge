@@ -32,9 +32,16 @@
           <Button @click="playJustALittleFurther(+15)" class="bg-teal-600">+15</Button>
           <Button @click="playJustALittleFurther(+25)" class="bg-teal-600">+25</Button>
           <Button v-show="selectedSkill.Id" @click="deselectSkill">Deselect skill</Button>
-          <Button v-show="selectedSkill.Id" @click="frameToEndOfSkill">Frame to end of selected skill</Button>
+          <Button v-show="selectedSkill.Id && selectedSkill.FrameEnd != currentFrame" @click="frameToEndOfSkill">Frame to END of selected skill</Button>
+          <Button v-show="selectedSkill.Id && selectedSkill.FrameEnd == currentFrame" @click="frameToStartOfSkill">Frame to START of selected skill</Button>
           <Button v-show="frameStart && frameEnd" @click="replaySection">Replay section</Button>
           <Button v-show="selectedSkill.Id" @click="playNextSection">Play next section</Button>
+        </div>
+        <div id="prediction-controls" class="flex gap-2 my-2 wrap" v-if="selectedSkillIsPrediction">
+          <Button @click="">Split prediction</Button>
+          <Button @click="() => shifPredictedSplitpoint(-1)">Shift splitpoint<i class="pi pi-arrow-left"></i></Button>
+          <Button @click="() => shifPredictedSplitpoint(+1)">Shift splitpoint<i class="pi pi-arrow-right"></i></Button>
+          <Button @click="acceptPredictedSkill">Accept<i class="pi pi-check"></i></Button>
         </div>
       </div>
 
@@ -84,7 +91,7 @@
             {{ skillProp }} <Select v-model="selectedSkill.ReversedSkillinfo[skillProp]" :options="Object.keys(skillPropOptions)" @update:model-value="updateLevel"></Select>
           </div>
           <Button v-show="frameStart && frameEnd && !selectedSkill.Id" @click="addSkill">Submit</Button>
-          <Button v-show="selectedSkill.Id" @click="updateSkill">Update</Button>
+          <Button v-show="selectedSkill.Id && !selectedSkillIsPrediction" @click="updateSkill">Update</Button>
           Level - {{ selectedSkillLevel }}
         </div>
       </div>
@@ -177,6 +184,7 @@ const defaultOptions = ref({
   "Hard2see" : "False",
   "Fault" : "False",
 })
+const selectedSkillIsPrediction = computed(() => selectedSkill.value.hasOwnProperty('IsPrediction') && selectedSkill.value.IsPrediction) 
 
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -215,7 +223,7 @@ const updateLevel = async () => {
     let currentSkillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
     let previousSkillinfo = null
     let previousSkillname = null
-    if (selectedSkill.value.hasOwnProperty('IsPrediction') && selectedSkill.value.IsPrediction) {
+    if (selectedSkillIsPrediction.value) {
       let previousSkill = getPreviousPredictedSkill(true)
       if (previousSkill) {
         previousSkillinfo = previousSkill['Skillinfo']
@@ -491,6 +499,11 @@ function deselectSkill() {
 function frameToEndOfSkill() {
   currentFrame.value = selectedSkill.value.FrameEnd
 }
+
+function frameToStartOfSkill() {
+  currentFrame.value = selectedSkill.value.FrameStart
+}
+
 async function replaySection() {
   currentFrame.value = frameStart.value
   await sleep(100)
@@ -504,22 +517,21 @@ async function replaySection() {
   currentFrame.value = frameEnd.value
 }
 async function playNextSection() {
-  let isPrediction = selectedSkill.value.hasOwnProperty('IsPrediction') && selectedSkill.value.IsPrediction
-  let skills = isPrediction ? predictions.value['skills'] : videoinfo.value.Skills
+  let skills = selectedSkillIsPrediction.value ? predictions.value['skills'] : videoinfo.value.Skills
   let nextSkill = skills
     .filter(skill => skill.FrameStart >= selectedSkill.value.FrameEnd)
     .sort((a,b) => a.FrameEnd - b.FrameEnd)[0]
   if (nextSkill) {
-    onSkillClicked(nextSkill.Id, isPrediction)
+    onSkillClicked(nextSkill.Id, selectedSkillIsPrediction.value)
     replaySection()
   }
 }
 
 async function addSkill() {
   let newSkill = {
-    "frameStart": frameStart.value,
-    "frameEnd" : frameEnd.value,
-    "skillinfo" : normal2Reverse(selectedSkill.value.ReversedSkillinfo)
+    "FrameStart": frameStart.value,
+    "FrameEnd" : frameEnd.value,
+    "Skillinfo" : normal2Reverse(selectedSkill.value.ReversedSkillinfo)
   }
   videoinfo.value = await postSkill(videoinfo.value.Id, newSkill)
   prepareNextLabel(frameEnd.value)
@@ -543,6 +555,41 @@ async function updateSkill() {
 
 async function toggleSkillsCompleted() {
   updateVideoSkillsCompleted(videoinfo.value.Id, !videoinfo.value.Completed_Skill_Labels).then(() => videoinfo.value.Completed_Skill_Labels = ! videoinfo.value.Completed_Skill_Labels)
+}
+
+function shifPredictedSplitpoint(addFrames) {
+  if (!selectedSkillIsPrediction.value) { return }
+  if (currentFrame.value != selectedSkill.value.FrameStart && currentFrame.value != selectedSkill.value.FrameEnd) { return }
+  
+  let shiftedFrameNr = Math.round(currentFrame.value + addFrames)
+  if (currentFrame.value == selectedSkill.value.FrameEnd) {
+    let nexSkill = getNextPredictedSkill(true)
+    console.log("next skill", nexSkill, selectedSkillLevel.value)
+    nexSkill.FrameStart = shiftedFrameNr
+    selectedSkill.value.FrameEnd = shiftedFrameNr
+    frameEnd.value = shiftedFrameNr
+  }
+
+  if (currentFrame.value == selectedSkill.value.FrameStart) {
+    let previousSkill = getPreviousPredictedSkill(true)
+    console.log("previous skill", previousSkill, selectedSkill.value)
+    previousSkill.FrameEnd = shiftedFrameNr
+    selectedSkill.value.FrameStart = shiftedFrameNr
+    frameStart.value = shiftedFrameNr
+  }
+  currentFrame.value = shiftedFrameNr
+}
+
+const acceptPredictedSkill = async () => {
+  console.log("accept", )
+  selectedSkill.value.Skillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
+  console.log("FrameNr", selectedSkill.value)
+  videoinfo.value = await postSkill(videoinfo.value.Id, {
+    'FrameStart' : selectedSkill.value.FrameStart,
+    'FrameEnd' : selectedSkill.value.FrameEnd,
+    'Skillinfo' : selectedSkill.value.Skillinfo
+  })
+  prepareNextLabel(frameEnd.value)
 }
 
 </script>

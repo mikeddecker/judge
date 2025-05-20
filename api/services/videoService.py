@@ -584,7 +584,7 @@ class VideoService:
         score = 0
         for lvl in levels:
             freq_table[lvl] += 1
-            score += LEVEL_TO_SCORE_MAP[lvl]
+            score += LEVEL_TO_SCORE_MAP[max(lvl, 8)]
 
         return freq_table, score
 

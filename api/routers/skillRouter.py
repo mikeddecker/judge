@@ -39,7 +39,6 @@ class SkillLabelingCompletedRouter(Resource):
         try:
             ValueHelper.check_raise_id(videoId)
             video = self.videoService.get(videoId)
-            print(videoId, completed)
             self.videoService.update_skills_completed(video=video, completed=completed)
             return "done" , 200        
         except ValueError as ve:
@@ -63,9 +62,9 @@ class SkillRouter(Resource):
         
         # Extract the required fields from the body
         # frameNr = data.get('frameNr')
-        skillinfo = data.get('skillinfo')
-        frameStart = data.get('frameStart')
-        frameEnd = data.get('frameEnd')
+        skillinfo = data.get('Skillinfo')
+        frameStart = data.get('FrameStart')
+        frameEnd = data.get('FrameEnd')
         try:
             ValueHelper.check_raise_id(videoId)
             ValueHelper.check_raise_frameNr(frameStart)
