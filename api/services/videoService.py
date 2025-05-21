@@ -236,11 +236,11 @@ class VideoService:
                     additional_levels += 1
                 
                 # 1h frog -> other skill
-                if prev_skillname == 'frog' and prev_skillinfo and prev_skillinfo["Skillinfo"]["Hands"] == 1:
+                if prev_skillname == 'frog' and prev_skillinfo is not None and prev_skillinfo["Skillinfo"]["Hands"] == 1:
                     additional_levels += 1
 
                 # Turntable
-                if skillname == prev_skillname and prev_skillinfo and skillinfo["Hands"] == prev_skillinfo["Skillinfo"]["Hands"]:
+                if ((skillname == prev_skillname) or (prev_skillname is not None and skillname in prev_skillname)) and prev_skillinfo is not None and (skillname == "crab" or (skillname == "pushup" and skillinfo["Hands"] == prev_skillinfo["Skillinfo"]["Hands"])):
                     additional_levels += skillinfo["Turntable"]
 
                 # Air skills
@@ -321,11 +321,11 @@ class VideoService:
                     additional_levels += 1
                 
                 # 1h frog -> other skill
-                if prev_skillname == 'frog' and prev_skillinfo and prev_skillinfo["Skillinfo"]["Hands"] == 1:
+                if prev_skillname == 'frog' and prev_skillinfo is not None and prev_skillinfo["Skillinfo"]["Hands"] == 1:
                     additional_levels += 1
 
                 # Turntable
-                if skillname == prev_skillname and prev_skillinfo and skillinfo["Hands"] == prev_skillinfo["Skillinfo"]["Hands"]:
+                if ((skillname == prev_skillname) or (prev_skillname is not None and skillname in prev_skillname)) and prev_skillinfo is not None and (skillname == "crab" or (skillname == "pushup" and skillinfo["Hands"] == prev_skillinfo["Skillinfo"]["Hands"])):
                     additional_levels += skillinfo["Turntable"]
 
                 # Air skills
@@ -398,11 +398,11 @@ class VideoService:
                     additional_levels += 1
                 
                 # 1h frog -> other skill
-                if prev_skillname == 'frog' and prev_skillinfo and prev_skillinfo["Skillinfo"]["Hands"] == 1:
+                if prev_skillname == 'frog' and prev_skillinfo is not None and prev_skillinfo["Skillinfo"]["Hands"] == 1:
                     additional_levels += 1
 
                 # Turntable
-                if skillname == prev_skillname and prev_skillinfo and prev_skillinfo["Skillinfo"]["Type"] == skillinfo["Type"] and skillinfo["Hands"] == prev_skillinfo["Skillinfo"]["Hands"]:
+                if ((skillname == prev_skillname) or (prev_skillname is not None and skillname in prev_skillname)) and prev_skillinfo is not None and (skillname == "crab" or (skillname == "pushup" and skillinfo["Hands"] == prev_skillinfo["Skillinfo"]["Hands"])):
                     additional_levels += skillinfo["Turntable"]
 
                 # Air skills
