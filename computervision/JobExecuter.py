@@ -51,6 +51,7 @@ while no_shutdown_job:
 
         # Create videocrops TODO: move to datagenerators or remove freshly labeled videos
         for videoId in REPO.get_videoIds_of_videos_with_skills():
+            # TODO : include modelname in crop video, but also a sort of confidence score.
             predictor.predict(
                 type="LOCALIZE",
                 videoId=videoId,
@@ -59,7 +60,7 @@ while no_shutdown_job:
             )
 
         print("Start training segments")
-        modelname = 'HAR_MViT'
+        modelname = 'HAR_MViT' # TODO : pick from job executor
         trainer.train(
             type="SEGMENT",
             modelname=modelname,
