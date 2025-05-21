@@ -93,7 +93,7 @@
           </div>
           <Button v-show="frameStart && frameEnd && !selectedSkill.Id" @click="addSkill">Submit</Button>
           <Button v-show="selectedSkill.Id && !selectedSkillIsPrediction" @click="updateSkill">Update</Button>
-          Level - {{ selectedSkillLevel }}
+          Level = {{ selectedSkillLevel }}
         </div>
       </div>
       
