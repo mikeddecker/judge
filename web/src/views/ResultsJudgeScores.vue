@@ -21,10 +21,10 @@ const resultsWithoutTotal = computed(() => {
 <template>
   <h2 class="mb-4">Judge scores</h2>
   <DataTable :value="resultsWithoutTotal" class="w-1/2">
-    <Column field="videoId" header="videoId"></Column>
-    <Column field="judges" header="judges"></Column>
-    <Column field="HAR_MViT" header="HAR_MViT"></Column>
-    <Column field="HAR_MViT_difference" header="Difference"></Column>
+    <Column sortable field="videoId" header="videoId"></Column>
+    <Column sortable field="judges" header="judges"></Column>
+    <Column sortable field="HAR_MViT" header="HAR_MViT"></Column>
+    <Column sortable field="HAR_MViT_difference" header="Difference"></Column>
   </DataTable>
 
   <pre>Total: {{ total }}</pre>
