@@ -109,8 +109,7 @@ class Predictor:
             modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
 
             DIM = 224
-            repo = self.repo
-            model = PYTORCH_MODELS_SKILLS[modelname](modelinfo=modelparams, df_table_counts=repo.get_skill_category_counts(), skill_or_segment='skills').to(device)
+            model = PYTORCH_MODELS_SKILLS[modelname](modelinfo=modelparams, df_table_counts=self.repo.get_skill_category_counts(), skill_or_segment='skills').to(device)
             model.load_state_dict(torch.load(modelPath, weights_only=True))
             model.eval()
 
@@ -119,7 +118,7 @@ class Predictor:
             timesteps = modelparams['timesteps']
             batch_size = modelparams['batch_size']
             assert batch_size == 1, f"Batch size must be one currently"
-            frameloader = FrameLoader(repo)
+            frameloader = FrameLoader(self.repo)
         
             skillsInformation = None
             if use_segment_predictions:
@@ -129,7 +128,7 @@ class Predictor:
                 })
                 print(skillsInformation)
             else:
-                skillsInformation = repo.get_skills(train_test_val='val', videoId=videoId)
+                skillsInformation = self.repo.get_skills(train_test_val='val', videoId=videoId)
                 skillsInformation = adaptSkillLabels(skillsInformation, balancedType)
 
             predictions = {}
@@ -183,7 +182,7 @@ class Predictor:
                 json.dump(predictions, f, sort_keys=True, default=str, indent=4)
 
             if saveAsVideo:
-                videoPath = repo.VideoNames.loc[videoId, "name"]
+                videoPath = self.repo.VideoNames.loc[videoId, "name"]
                 videoPath = os.path.join(STORAGE_DIR, videoPath)
                 print(videoPath)
                 print(f"saving predictions as a video.....")
@@ -192,7 +191,7 @@ class Predictor:
                     predictions=predictions,
                     balancedType=balancedType,
                     vpath=videoPath,
-                    targetNames=repo.get_category_names(balancedType=balancedType, shiftIndex=True)
+                    targetNames=self.repo.get_category_names(balancedType=balancedType, shiftIndex=True)
                 )
 
         except Exception as e:
@@ -313,23 +312,22 @@ class Predictor:
             modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_segmentation.state_dict.pt")
 
             DIM = 224
-            repo = DataRepository()
-            model = PYTORCH_MODELS_SKILLS[modelname](skill_or_segment='segments', modelinfo=modelparams, df_table_counts=repo.get_skill_category_counts()).to(device)
+            model = PYTORCH_MODELS_SKILLS[modelname](skill_or_segment='segments', modelinfo=modelparams, df_table_counts=self.repo.get_skill_category_counts()).to(device)
             model.load_state_dict(torch.load(modelPath, weights_only=True))
             model.eval()
 
             timesteps = modelparams['timesteps']
             batch_size = modelparams['batch_size']
             assert batch_size == 1, f"Batch size must be one currently"
-            frameloader = FrameLoader(repo)
+            frameloader = FrameLoader(self.repo)
         
-            videoInfo = repo.get_videoinfo(videoId)
+            videoInfo = self.repo.get_videoinfo(videoId)
             frameLength = videoInfo.loc[0, "frameLength"]
             fps = videoInfo.loc[0, "fps"]
             timesteps = modelparams["timesteps"]
             offset = (frameLength % timesteps) // 2
             batches = frameLength // timesteps
-            labeledSkills = repo.get_skills(train_test_val='val', videoId=videoId)
+            labeledSkills = self.repo.get_skills(train_test_val='val', videoId=videoId)
 
             split_threshold = 0.4
             df_splitpoint_values = calculate_splitpoint_values(
