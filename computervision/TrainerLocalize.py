@@ -59,8 +59,8 @@ def train_yolo_model(variant: str, repo: DataRepository):
 
                 cv2.imwrite(image_name, frame)
 
-            with open(label_name, 'a') as f:
-                f.write(f"{0} {x} {y} {w} {h}\n")
+                with open(label_name, 'a') as f:
+                    f.write(f"{0} {x} {y} {w} {h}\n")
 
             previous_frameNr = frameNr
 
