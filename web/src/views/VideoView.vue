@@ -80,7 +80,7 @@
             <Select v-model="selectedModel" :options="modelOptions"></Select>
           </div>
         </div>
-        <Button v-if="modeIsPredict">Launch job</Button>
+        <Button v-if="modeIsPredict" @click="() => predictSkills(videoinfo.Id)">Launch job</Button>
         
         <!--Skills -->
         <div id="skillinfo" v-if="modeIsSkills">
@@ -110,7 +110,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, predictSkills } from '../services/videoService';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';

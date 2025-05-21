@@ -26,3 +26,18 @@ class JobTrainRouter(Resource):
     def get(self):
         self.jobService.re_train_and_predict()
         return "Ok", 200
+
+class JobPredictVideo(Resource):
+    def __init__(self, **kwargs):
+        self.folderService = FolderService(STORAGE_DIR)
+        self.videoService = VideoService(STORAGE_DIR)
+        self.jobService = JobService(STORAGE_DIR)
+        super().__init__(**kwargs)
+    
+    def get(self, videoId:int):
+        self.jobService.launch_job_predict_skills(
+            step='FULL',
+            model='HAR_MViT',
+            videoId=videoId
+        )
+        return "Ok", 200

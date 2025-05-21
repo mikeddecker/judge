@@ -66,14 +66,14 @@ class JobService:
         )
     
     def launch_job_predict_skills(self, step:str, model: str, videoId: int):
-        self.__add(
-            Job(
-                type = 'PREDICT',
-                step = step,
-                status = 'Created',
-                job_arguments = { "videoId": videoId, "model": model, "save_mp4": True },
-            )
+        job = Job(
+            type = 'PREDICT',
+            step = step,
+            status = 'Created',
+            job_arguments = { "videoId": videoId, "model": model, "save_mp4": True },
         )
+        if not self.JobRepo.exists_by_job_content(job):
+            self.__add(job)
 
     def re_train_and_predict(self):
         trainjob = Job(
