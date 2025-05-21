@@ -438,9 +438,10 @@ if __name__ == "__main__":
     predictor = Predictor()
 
     videoIds = [2568,2569,2570,2571,2572,2573,2574,2575,2576,2577,2578,2579,2580,2581,2582,2583,2584,2585,2586,2587,2588,2589,]
-
-
-    for videoId in videoIds: # [1315, 1408, 2283, 2285, 2289, 2296, 2309]:
+    videoIds = [1285]
+    videoIds = [1315, 1408, 2283, 2285, 2289, 2288, 2296, 2309]
+    
+    for videoId in videoIds:
         predictor.predict(
             type="FULL",
             videoId=videoId,
