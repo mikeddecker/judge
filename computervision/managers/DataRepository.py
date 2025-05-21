@@ -82,6 +82,10 @@ class DataRepository:
             raise ValueError(f"Changed test to val !!")
         return pd.read_sql(qry, con=self.con)
 
+    def get_videoIds_of_videos_with_skills(self):
+        qry = sqlal.text(f"""SELECT DISTINCT videoId FROM Skillinfo_DoubleDutch""")  
+        return pd.read_sql(qry, con=self.con)['videoId'].to_list()
+
     def get_skills_of_fully_segmented_videos(self, train_test_val, type='DD'):
         if train_test_val == "train":
             qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")  

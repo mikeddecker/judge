@@ -57,7 +57,7 @@ class Predictor:
         start = time.time()
         match type:
             case 'LOCALIZE':
-                raise NotImplementedError()
+                self.__predict_location(videoId=videoId)
             case 'SEGMENT':
                 if modelname in PYTORCH_MODELS_SKILLS.keys():
                     self.__predict_segments_pytorch(videoId=videoId,
@@ -76,6 +76,16 @@ class Predictor:
                     raise NotImplementedError()
             case 'FULL':
                 self.__predict_location(videoId=videoId)
+                if modelname in PYTORCH_MODELS_SKILLS.keys():
+                    self.__predict_skills_pytorch(videoId=videoId,
+                                                       modelname=modelname,
+                                                       use_segment_predictions=True,
+                                                       modelparams=modelparams,
+                                                       saveAsVideo=saveAsVideo,
+                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, modelname=modelname, modelparams=modelparams))
+                else:
+                    raise NotImplementedError()
+            case 'SEGMENT_SKILL':
                 if modelname in PYTORCH_MODELS_SKILLS.keys():
                     self.__predict_skills_pytorch(videoId=videoId,
                                                        modelname=modelname,

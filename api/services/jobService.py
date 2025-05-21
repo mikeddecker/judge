@@ -90,7 +90,7 @@ class JobService:
         for videoId in videoIds:
             predictJob = Job(
                 type = 'PREDICT',
-                step = 'FULL',
+                step = 'SEGMENT_SKILL',
                 status = 'Created',
                 job_arguments = { "videoId": videoId, "model": VISION_MODELS[0], "save_mp4": True },
             )

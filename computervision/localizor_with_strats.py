@@ -234,6 +234,8 @@ def localize_jumpers(
         min_w = width
         min_h = height
         max_wh = max(width, height)
+    
+    print(f"Predicting video {videoId}")
 
     i = 0
     ret, frame = cap.read()
@@ -241,9 +243,6 @@ def localize_jumpers(
         result = model(frame, verbose=False)
         xyxy_boxes = result[0].boxes.xyxy
         predicted_boxes.append(xyxy_boxes.tolist())
-
-        if i % 1000 == 0:
-            print(f"Predicting video {videoId} frame {i}")
         
         if xyxy_boxes.shape[0] > 0:
             xmin = max(0, int(xyxy_boxes[:, 0].min().item()) - padding_x)
@@ -339,8 +338,6 @@ def localize_jumpers(
         clip = ImageSequenceClip(frames, fps=fps)
         clip.write_videofile(videoOutputPath)
 
-    print(f"Took {time.time()-start:.2f}s")
-
     if save_as_mp4 and save_as_JSON:
         with open(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.json"), 'w') as f:
             json.dump(smoothed_values, f, sort_keys=True, indent=4)    
@@ -420,7 +417,6 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
             ##################################
             # Dict with relative boxes
             frameNrs = full_team_relative_boxes_of_videoId['frameNr']
-            print(max(frameNrs))
             if max(frameNrs) >= len(df_coordinates['raw']):
                 print("Invalid framecounts... skipping videoId, maxFrameNr, count", videoId, max(frameNrs), len(df_coordinates['raw']))
                 invalid_frames.append({
@@ -439,9 +435,6 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
 
                 ious_video = calculate_iou_df(predicted_relative_boxes, full_team_relative_boxes_of_videoId)
                 
-                print(videoId, s)
-                print('ious_videos', s, ious_video)
-
                 ious_all[s][train_or_val]['sum'] += ious_video.sum()
                 ious_all[s][train_or_val]['total'] += len(ious_video)
                 ious_all[s][train_or_val]['min'] = min(ious_all[s][train_or_val]['min'], ious_video.min())
@@ -451,9 +444,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
                 ious_all[s][train_or_val]['videos'] = len(ious_all[s][train_or_val]['videoIds'])
                 for min_iou in min_ious:
                     ious_all[s][train_or_val][f"{min_iou_text}{min_iou:.1f}"].add(videoId)
-            
-            if ious_all[s][train_or_val]['videos'] % 10 == 0:
-                pprint(ious_all)
+
         except Exception as e:
             raise e
         finally:
@@ -464,8 +455,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
         frames_predicted = df_videos_with_boxes[df_videos_with_boxes['id'].isin(completed_videoIds)]['frameLength'].sum()
         expected_end = (time.time() - valstart) / frames_predicted * total_frames
         seconds_left = (time.time() - valstart) / frames_predicted * (total_frames- frames_predicted)
-        print(f"Currently {time.time()-valstart:.2f}s / {expected_end:.0f}s ---> seconds left: {seconds_left:.0f}s")
-        print(f"Currently {frames_predicted} / {total_frames} frames ({frames_predicted/total_frames*100:.1f}%)")
+        print(f"Currently {frames_predicted} / {total_frames} frames ({frames_predicted/total_frames*100:.1f}%) - elapsed {time.time()-valstart:.2f}s - estimated total time target {expected_end:.0f}s ---> seconds left: {seconds_left:.0f}s")
     
     for e in errors:
         print(e)

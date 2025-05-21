@@ -124,15 +124,11 @@ class VideoImageRouter(Resource):
             return Response(f.read(), mimetype='image/jpg')
         
     def post(self, videoId: int):
-        print("@"*80)
-        print("@"*80)
-        print(videoId, type(videoId))
         if not self.videoService.exists_in_database(id=videoId):
             return f"VideoId {videoId} does not exist", 404
         
         videoinfo = self.videoService.get(videoId)
         frameNr = request.get_json()
-        print(frameNr)
 
         cropped = True
         croptext = "_cropped" if cropped else ""

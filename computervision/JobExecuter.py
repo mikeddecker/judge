@@ -41,13 +41,23 @@ while no_shutdown_job:
         REPO.delete_job(job["id"])
     elif job["type"] == "TRAIN":
         print(job)
+
         
         # LOCALIZE: TODO : wrap in trainer
         size = 'n'
         variant = f'yolo11{size}.pt'
         save_dir = train_yolo_model(variant=variant, repo=REPO)
-        modelname = f"yolov11{size}_{save_dir.split('/')[-1]}" # TODO : get os seperator
+        modelname = f"yolov11{size}_{save_dir.name}"
         validate_localize(modeldir=save_dir, repo=REPO, modelname=modelname)
+
+        # Create videocrops
+        for videoId in REPO.get_videoIds_of_videos_with_skills():
+            predictor.predict(
+                type="LOCALIZE",
+                videoId=videoId,
+                modelname=None,
+                saveAsVideo=True
+            )
         
         trainer.train(
             type="SEGMENT",
