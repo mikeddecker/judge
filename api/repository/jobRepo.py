@@ -1,6 +1,7 @@
 from domain.job import Job
+import json
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from repository.models import Jobs as JobDB
 from repository.MapToDomain import MapToDomain
 from typing import List
@@ -30,9 +31,9 @@ class JobRepository:
             and_(
                 JobDB.type == job.type, 
                 JobDB.step == job.step,
-                JobDB.job_arguments.contains(job.job_arguments)
+                func.JSON_CONTAINS(JobDB.job_arguments, json.dumps(job.job_arguments))
             )
-        ).scalar() is not None
+        ).count() > 0
     
     def get_all(self) -> List[Job]:
         """

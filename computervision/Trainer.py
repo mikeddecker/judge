@@ -33,18 +33,20 @@ class Trainer:
             case _:
                 raise ValueError(f"Trainer - Type {type} not recognized")
 
+
+trainparams = {
+    # "balancedType" : "jump_return_push_frog_other",
+    "balancedType" : "limit_10procent",
+    "dim" : 224,
+    "timesteps" : 16,
+    "batch_size" : 1,
+}
+modelname = "HAR_SA_Conv3D"
+modelname = "HAR_MViT"
+max_rounds = [4, 40]
+
 if __name__ == "__main__":
-    trainparams = {
-        # "balancedType" : "jump_return_push_frog_other",
-        "balancedType" : "limit_10procent",
-        "dim" : 224,
-        "timesteps" : 16,
-        "batch_size" : 1,
-    }
-    modelname = "HAR_SA_Conv3D"
-    modelname = "HAR_MViT"
     trainer = Trainer()
-    max_rounds = [4, 40]
     
     
     ################################    
@@ -59,27 +61,27 @@ if __name__ == "__main__":
     #     learning_rate=4e-5
     # )
 
-    # trainer.train(
-    #     type="SEGMENT",
-    #     modelname=modelname,
-    #     from_scratch=False,
-    #     epochs=max_rounds[1],
-    #     save_anyway=True,
-    #     unfreeze_all_layers=True,
-    #     modelparams=trainparams,
-    #     learning_rate=1e-6
-    # )
-
     trainer.train(
-        type="SKILL",
+        type="SEGMENT",
         modelname=modelname,
-        from_scratch=True,
-        epochs=max_rounds[0],
+        from_scratch=False,
+        epochs=max_rounds[1],
         save_anyway=True,
-        unfreeze_all_layers=False,
+        unfreeze_all_layers=True,
         modelparams=trainparams,
-        learning_rate=4e-5
+        learning_rate=1e-6
     )
+
+    # trainer.train(
+    #     type="SKILL",
+    #     modelname=modelname,
+    #     from_scratch=True,
+    #     epochs=max_rounds[0],
+    #     save_anyway=True,
+    #     unfreeze_all_layers=False,
+    #     modelparams=trainparams,
+    #     learning_rate=4e-5
+    # )
 
     trainer.train(
         type="SKILL",

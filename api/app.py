@@ -10,6 +10,7 @@ from repository.db import db
 from routers.folderRouter import FolderRouter
 from routers.videoRouter import VideoRouter, VideoRouterCropped, VideoImageRouter, VideoInfoRouter, VideoPredictionRouter
 from routers.frameRouter import FrameRouter
+from routers.jobRouter import JobTrainRouter
 from routers.storageRouter import StorageRouter, OrphanDeleterRouter
 from routers.skillRouter import SkillRouter, OptionRouter, SkillLevel, SkillLabelingCompletedRouter, DiffScoreComparison
 from routers.downloadRouter import DownloadRouter
@@ -54,6 +55,7 @@ api.add_resource(SkillLabelingCompletedRouter, '/skillcompleted/<int:videoId>')
 api.add_resource(StorageRouter, '/discover')
 api.add_resource(OrphanDeleterRouter, '/discover/deleteOrphans')
 api.add_resource(DownloadRouter, '/download')
+api.add_resource(JobTrainRouter, '/job/retrain')
 
 
 
