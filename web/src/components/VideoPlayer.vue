@@ -99,7 +99,7 @@ onMounted(async () => {
 ========= */
 
 function updatePlaying(event) {
-  console.log("updatePlaying", event)
+  // console.log("updatePlaying", event)
 }
 function updatePaused(event) {
   emit('pause', event.target.currentTime)

@@ -15,7 +15,7 @@
         @add-box="onAddBox" @delete-box="onDeleteBox">
         </VideoPlayer>
         <SkillBalk :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
-        <SkillBalk :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
+        <SkillBalk :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2" :key="skillbalkKey"/>
         <div id="skill-controls" class="flex gap-2 my-2 wrap" v-show="modeIsSkills">
           <Button v-show="paused && !selectedSkill.Id" @click="setFrameStart()">set frame Start</Button>
           <Button v-show="paused && !selectedSkill.Id" @click="setFrameEnd()">set frame End</Button>
@@ -38,7 +38,8 @@
           <Button v-show="selectedSkill.Id" @click="playNextSection">Play next section</Button>
         </div>
         <div id="prediction-controls" class="flex gap-2 my-2 wrap" v-if="selectedSkillIsPrediction">
-          <Button @click="">Split prediction</Button>
+          <Button @click="splitPrediction">Split prediction</Button>
+          <Button @click="mergeSplits">Merge</Button>
           <Button @click="() => shifPredictedSplitpoint(-1)">Shift splitpoint<i class="pi pi-arrow-left"></i></Button>
           <Button @click="() => shifPredictedSplitpoint(+1)">Shift splitpoint<i class="pi pi-arrow-right"></i></Button>
           <Button @click="acceptPredictedSkill">Accept<i class="pi pi-check"></i></Button>
@@ -127,6 +128,7 @@ const videoPath = ref('')
 const croppedVideoSrc = ref('')
 const paused = ref(true)
 const videoElement = ref(null)
+const skillbalkKey = ref(0)
 
 const mode = ref('WATCH')
 const modeIsWatch = computed(() => mode.value == 'WATCH')
@@ -564,7 +566,6 @@ function shifPredictedSplitpoint(addFrames) {
   let shiftedFrameNr = Math.round(currentFrame.value + addFrames)
   if (currentFrame.value == selectedSkill.value.FrameEnd) {
     let nexSkill = getNextPredictedSkill(true)
-    console.log("next skill", nexSkill, selectedSkillLevel.value)
     nexSkill.FrameStart = shiftedFrameNr
     selectedSkill.value.FrameEnd = shiftedFrameNr
     frameEnd.value = shiftedFrameNr
@@ -572,7 +573,6 @@ function shifPredictedSplitpoint(addFrames) {
 
   if (currentFrame.value == selectedSkill.value.FrameStart) {
     let previousSkill = getPreviousPredictedSkill(true)
-    console.log("previous skill", previousSkill, selectedSkill.value)
     previousSkill.FrameEnd = shiftedFrameNr
     selectedSkill.value.FrameStart = shiftedFrameNr
     frameStart.value = shiftedFrameNr
@@ -581,15 +581,52 @@ function shifPredictedSplitpoint(addFrames) {
 }
 
 const acceptPredictedSkill = async () => {
-  console.log("accept", )
   selectedSkill.value.Skillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
-  console.log("FrameNr", selectedSkill.value)
   videoinfo.value = await postSkill(videoinfo.value.Id, {
     'FrameStart' : selectedSkill.value.FrameStart,
     'FrameEnd' : selectedSkill.value.FrameEnd,
     'Skillinfo' : selectedSkill.value.Skillinfo
   })
   prepareNextLabel(frameEnd.value)
+  playNextSection()
+}
+
+const mergeSplits = () => {
+
+  if (currentFrame.value == selectedSkill.value.FrameEnd) {
+    let nexSkill = getNextPredictedSkill(true)
+    let nextFrameEnd = nexSkill.FrameEnd
+    let idx = predictions.value["skills"].indexOf(nexSkill)
+    predictions.value["skills"].splice(idx, 1)
+
+    selectedSkill.value.FrameEnd = nextFrameEnd
+    frameEnd.value = nextFrameEnd
+    currentFrame.value = nextFrameEnd
+  }
+
+  if (currentFrame.value == selectedSkill.value.FrameStart) {
+    let previousSkill = getPreviousPredictedSkill(true)
+    let previsousFrameStart = previousSkill.FrameStart
+    let idx = predictions.value["skills"].indexOf(previousSkill)
+    predictions.value["skills"].splice(idx, 1)
+
+    selectedSkill.value.FrameStart = previsousFrameStart
+    frameStart.value = previsousFrameStart
+    currentFrame.value = previsousFrameStart
+  }
+}
+
+const splitPrediction = async () => {
+  let copy = structuredClone(toRaw(selectedSkill.value))
+  let splitpoint = Math.round((copy.FrameEnd + copy.FrameStart) / 2)
+  
+  selectedSkill.value.FrameEnd = splitpoint
+  frameEnd.value = splitpoint
+  copy.FrameStart = splitpoint
+  copy.Id = `${copy.Id}${splitpoint}`
+  predictions.value["skills"].push(copy)
+  currentFrame.value = splitpoint
+  skillbalkKey.value += 1
 }
 
 </script>
