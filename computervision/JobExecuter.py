@@ -42,7 +42,6 @@ while no_shutdown_job:
     elif job["type"] == "TRAIN":
         print(job)
 
-        
         # LOCALIZE: TODO : wrap in trainer
         size = 'n'
         variant = f'yolo11{size}.pt'
@@ -50,7 +49,7 @@ while no_shutdown_job:
         modelname = f"yolov11{size}_{save_dir.name}"
         validate_localize(modeldir=save_dir, repo=REPO, modelname=modelname)
 
-        # Create videocrops
+        # Create videocrops TODO: move to datagenerators or remove freshly labeled videos
         for videoId in REPO.get_videoIds_of_videos_with_skills():
             predictor.predict(
                 type="LOCALIZE",
@@ -58,7 +57,9 @@ while no_shutdown_job:
                 modelname=None,
                 saveAsVideo=True
             )
-        
+
+        print("Start training segments")
+        modelname = 'HAR_MViT'
         trainer.train(
             type="SEGMENT",
             modelname=modelname,
