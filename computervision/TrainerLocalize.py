@@ -99,6 +99,6 @@ if __name__ == "__main__":
     variant = f'yolo11{size}.pt'
     save_dir = '/home/miked/code/judge/runs/detect/train11'
     # save_dir = train_yolo_model(variant=variant, repo=repo)
-    # modelname = f"yolov11{size}_{save_dir.split('/')[-1]}" # TODO : get os seperator
-    # validate_localize(modeldir=save_dir, repo=repo, modelname='yolov11n_train9')
+    # modelname = f"yolov11{size}_{save_dir.name}"
+    # validate_localize(modeldir=save_dir, repo=repo, modelname=modelname)
 
