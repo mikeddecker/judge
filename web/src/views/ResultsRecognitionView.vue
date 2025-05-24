@@ -122,6 +122,11 @@ const transformF1ToChart = (fscores) => {
   </div>
 
   <Chart type="line" :data="chartDataVal" :options="chartOptions" class="w-full" />
+
+  <DataTable :value="Object.values(results['modelcomparison'])" class="w-1/2">
+    <Column sortable field="model" header="model"></Column>
+    <Column sortable field="total_accuracy_at_best" header="total accuracy"></Column>
+  </DataTable>
   <!-- <pre>{{ results }}</pre> -->
 </template>
 

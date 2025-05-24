@@ -43,7 +43,8 @@ class StatsService:
         results = {
             'best' : {
                 'accuracy' : 0
-            }
+            },
+            'modelcomparison' : {}
         }
       
         results['trainrounds'] = recognition_get_modelpaths()
@@ -83,9 +84,15 @@ class StatsService:
                 if tr_result['total_accuracy_at_best'] > results[modelname]['best']['accuracy']:
                     results[modelname]['best'] = results[modelname][traindate]
                     results[modelname]['date'] = traindate
+                    results['modelcomparison'][modelname] = {
+                        'model': modelname,
+                        'total_accuracy_at_best': tr_result['total_accuracy_at_best']
+                    }
 
                 if tr_result['total_accuracy_at_best'] > results['best']['accuracy']:
+                    modelcomparison = results['modelcomparison']
                     results['best'] = results[modelname][traindate]
+                    results['modelcomparison'] = modelcomparison
                     results['best']['date'] = traindate
                     results['best']['modelname'] = modelname
 
