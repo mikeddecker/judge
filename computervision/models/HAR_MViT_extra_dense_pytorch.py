@@ -27,11 +27,12 @@ class MViT(nn.Module):
             param.requires_grad = False
 
         self.mvit.head = torch.nn.Identity()  # This removes the top layer
+        self.LastNNeurons = 384
         self.flatten = nn.Flatten()
-        self.LastNNeurons = self._get_mvit_output(input_shape)
+        self.features = nn.Linear(self._get_mvit_output(input_shape), self.LastNNeurons)
         
         if self.isSkillModel:
-            self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType=modelinfo['balancedType'], df_table_counts = self.df_table_counts)
+            self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType=modelinfo['balancedType'], df_table_counts = self.df_table_counts) # TODO : make dynamic
         else:
             self.output_layer = create_pytorch_segmentation_output_layers(lastNNeurons=self.LastNNeurons, timesteps=modelinfo['timesteps'])
 
@@ -47,11 +48,12 @@ class MViT(nn.Module):
         # Input shape: (batch_size, timesteps, channels, height, width)
         x = self.mvit(x)
         x = self.flatten(x)
+        features = F.relu(self.features(x))
         
         if self.isSkillModel:
-            return forward_skill_output_layers(features=x, output_layers=self.output_layers)
+            return forward_skill_output_layers(features=features, output_layers=self.output_layers)
         else:
-            return forward_segmentation_output_layers(features=x, output_layer=self.output_layer)
+            return forward_segmentation_output_layers(features=features, output_layer=self.output_layer)
 
 def get_model(skill_or_segment:str, modelinfo, df_table_counts: pd.DataFrame):
     """Build a Self-Attention ConvLSTM model in PyTorch"""

@@ -211,8 +211,8 @@ class TrainerSkills:
                 val_loss, f1_scores_epoch, class_reports, conf_matrix = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
                 losses.append(val_loss)
                 scheduler.step(val_loss)
-                f1_scores[epoch] = f1_scores_epoch
-                classification_reports[epoch] = class_reports
+                f1_scores[f'{epoch}'] = f1_scores_epoch
+                classification_reports[f'{epoch}'] = class_reports
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
                 
                 minIndex = losses.index(min(losses))
@@ -235,7 +235,7 @@ class TrainerSkills:
                         json.dump({
                             'epoch': epoch,
                             'best_epoch' : minIndex,
-                            'total_accuracy_at_best' : f1_scores[minIndex]['Total'],
+                            'total_accuracy_at_best' : f1_scores[f'{minIndex}']['Total'],
                             'losses': losses,
                             'f1_scores': f1_scores,
                             'classification_reports' : classification_reports,
