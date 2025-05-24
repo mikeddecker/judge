@@ -2,6 +2,15 @@ import os
 import yaml
 import glob
 
+PYTORCH_MODELS_SKILLS = {
+    "HAR_SA_Conv3D" : None,
+    "HAR_MViT" : None,
+    "HAR_MViT_extra_dense" : None,
+    "HAR_Resnet_R3D" : None,
+    "HAR_Resnet_MC3" : None,
+    "HAR_Resnet_R2plus1" : None,
+}
+
 def get_discipline_DoubleDutch_config(include_tablename=True):
     config = {
         "Type" : ("Categorical", "Type"), # Will be textual representions
@@ -48,7 +57,5 @@ def recognition_get_modelpaths():
     # TODO : update to take actual best
     folder_path = os.path.join('..', 'computervision', 'weights', f"*skills*.stats.json")
     trainrounds = glob.glob(folder_path)
-    
-    print('globbed', trainrounds)
-    
+        
     return trainrounds

@@ -9,9 +9,9 @@ const props = defineProps({
 })
 
 const selected = props.results['selected-model']
-const totalAccuracy = round2decimals(props.results["modelcomparison"][selected]['accuracy'] * 100)
-const skillAccuracy = round2decimals(props.results["modelcomparison"][selected]['acc-skills'] * 100)
-const chartDataVal = computed(() => transformF1ToChart(props.results['f1-scores-val']))
+const totalAccuracy = round2decimals(props.results['best']['accuracy'] * 100)
+const skillAccuracy = round2decimals(props.results['best']['acc-skills'] * 100)
+const chartDataVal = computed(() => transformF1ToChart(props.results['best']['f1-scores-val']))
 
 const chartOptions = {
   responsive: true,

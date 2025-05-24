@@ -10,17 +10,20 @@
         <Tab value="recognition">Recognition</Tab>
         <Tab value="segmentation">Segmentation</Tab>
         <Tab value="localization">Localization</Tab>
+        <Tab value="diff-score-comparison">Judges</Tab>
       </TabList>
       <TabPanels>
         <TabPanel value="recognition">
-          <ResultsRecognitionView :results="data['recognition']"></ResultsRecognitionView>
-          <ResultsJudgeScores :results="data['scores']"></ResultsJudgeScores>
+          <ResultsRecognitionView v-if="recognitionStats" :results="recognitionStats"></ResultsRecognitionView>
         </TabPanel>
         <TabPanel value="segmentation">
-          <ResultsSegmentationView :results="data['segmentation']"></ResultsSegmentationView>
+          <ResultsSegmentationView v-if="segmentationStats" :results="segmentationStats"></ResultsSegmentationView>
         </TabPanel>
         <TabPanel value="localization">
-          <ResultsLocalizationView :results="data['localization']"></ResultsLocalizationView>
+          <ResultsLocalizationView v-if="localizeStats" :results="localizeStats"></ResultsLocalizationView>
+        </TabPanel>
+        <TabPanel value="diff-score-comparison">
+          <ResultsJudgeScores v-if="judgeStats" :results="judgeStats"></ResultsJudgeScores>
         </TabPanel>
       </TabPanels>
     </Tabs>
@@ -47,10 +50,15 @@ const antwoord = ref('')
 const recognitionResults = computed(() => data.value ? data.value['recognition'] : {})
 const bkVideoIds = ref([])
 
+const localizeStats = ref(null)
+const segmentationStats = ref(null)
+const recognitionStats = ref(null)
+const judgeStats = ref(null)
+
 onMounted(async () => {
   loading.value = true;
   try {
-    data.value = await getStatistics();
+    getStatistics();
   } catch (e) {
     console.log(e)
     error.value = e;
@@ -64,8 +72,14 @@ async function getStatistics() {
   let maxId = 2590
   let minId = 2568
   bkVideoIds.value = [...Array(maxId - minId).keys()].map(i => i + minId)
-  let stats =  await getStats('HAR_MViT', bkVideoIds.value)
-  return stats
+
+  getStats('localize', bkVideoIds.value).then(r => localizeStats.value = r)
+  getStats('segmentation', bkVideoIds.value).then(r => segmentationStats.value = r)
+  getStats('recognition', bkVideoIds.value).then(r => {
+    console.log(r);
+    recognitionStats.value = r
+  })
+  getStats('judge', bkVideoIds.value).then(r => judgeStats.value = r)
 }
 
 </script>

@@ -57,14 +57,14 @@ trainparams["HAR_Resnet_R2plus1"] = resnetparams
 
 modelname = "HAR_SA_Conv3D"
 modelname = "HAR_MViT"
-max_rounds = [1, 2]
+max_rounds = [2, 60]
 
 if __name__ == "__main__":
     trainer = Trainer()
     
     models = [
-        'HAR_MViT',
         'HAR_Resnet_MC3',
+        'HAR_MViT',
         'HAR_SA_Conv3D',
         'HAR_Resnet_R2plus1',
         'HAR_Resnet_R3D',

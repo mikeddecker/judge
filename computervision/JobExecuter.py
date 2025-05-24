@@ -72,16 +72,16 @@ while no_shutdown_job:
 
         for modelname in models:
             # modelname = 'HAR_MViT' # TODO : pick from job executor
-            trainer.train(
-                type="SEGMENT",
-                modelname=modelname,
-                from_scratch=True,
-                epochs=max_rounds[0],
-                save_anyway=True,
-                unfreeze_all_layers=False,
-                modelparams=trainparams[modelname],
-                learning_rate=4e-5
-            )
+            # trainer.train(
+            #     type="SEGMENT",
+            #     modelname=modelname,
+            #     from_scratch=True,
+            #     epochs=max_rounds[0],
+            #     save_anyway=True,
+            #     unfreeze_all_layers=False,
+            #     modelparams=trainparams[modelname],
+            #     learning_rate=4e-5
+            # )
 
             trainer.train(
                 type="SEGMENT",

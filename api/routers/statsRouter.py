@@ -9,16 +9,6 @@ from services.videoService import VideoService
 from services.statsService import StatsService
 from helpers.ValueHelper import ValueHelper
 
-PYTORCH_MODELS_SKILLS = {
-    "HAR_SA_Conv3D" : None,
-    "HAR_MViT" : None,
-    "HAR_MViT_extra_dense" : None,
-    "HAR_Resnet_R3D" : None,
-    "HAR_Resnet_MC3" : None,
-    "HAR_Resnet_R2plus1" : None,
-}
-
-
 load_dotenv()
 STORAGE_DIR = os.getenv("STORAGE_DIR")
 
@@ -29,33 +19,19 @@ class StatsRouter(Resource):
         super().__init__(**kwargs)
     
     def get(self):
-        start = time.time()
         videoIds = [int(i) for i in request.args.getlist('videoIds[]')]
         stat = request.args.get('stat')
-        return {
-            'localization': self.statsService.getLocalizeResults(selectedModel='TODO'),
-            'segmentation' : {
-                'mse-val' : 0.06,
-                'mse-test' : 0.065,
-                'test-iou-real-over-predict' : 0.7,
-                'test-iou-predict-over-real' : 0.71,
-                'test-avg-splitpoint-distance' : 7.31,
-                'test-avg-highest-splitpoint-distance' : 182,
-                'test-highest-splitpoint-distance': 1502,
-                'val-iou-real-over-predict' : 0.7,
-                'val-iou-predict-over-real' : 0.71,
-                'val-avg-splitpoint-distance' : 7.31,
-                'val-avg-highest-splitpoint-distance' : 182,
-                'val-highest-splitpoint-distance': 1502,
-                'videos-train' : 44,
-                'videos-val' : 7,
-                'videos-test': 3,
-                'total-frames': 7800,
-                'best-model' : 'MViT',
-                'train-time' : 6852.3
-            },
-            'recognition' : self.statsService.getRecognitionResults(selectedModel='HAR_MViT'),
-            'scores' : self.videoService.get_score_comparison(videoIds=videoIds),
-            'time' : time.time() - start,
-        }, 200
+
+        match stat:
+            case 'localize':
+                return self.statsService.getLocalizeResults(selectedModel='TODO'), 200
+            case 'segmentation':
+                return {}, 200
+            case 'recognition':
+                return self.statsService.getRecognitionResults(selectedModel='HAR_MViT'), 200
+            case 'judge':
+                return self.videoService.get_score_comparison(videoIds=videoIds), 200
+            case _:
+                return f'Forbidden {stat}', 404
+
 

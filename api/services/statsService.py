@@ -1,6 +1,7 @@
 import os
 import torch
 import glob
+import json
 import yaml
 import pandas as pd
 from .videoService import VideoService
@@ -10,7 +11,7 @@ from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from helpers.ValueHelper import ValueHelper
 from typing import List
-from helpers.ConfigHelper import recognition_get_modelpaths
+from helpers.ConfigHelper import recognition_get_modelpaths, PYTORCH_MODELS_SKILLS
 
 
 class StatsService:
@@ -39,33 +40,56 @@ class StatsService:
         super().__setattr__(name, value)
 
     def getRecognitionResults(self, selectedModel: str):
-        results = {}
-
-        # Selected model
-        results['selected-model'] = selectedModel
-        results['train-time'] = 6852.3
-
-        checkpoint = torch.load(os.path.join('..', 'computervision', 'weights', f"{selectedModel}.checkpoint.pt"), weights_only=False)
-        
-        results['trainrounds'] = recognition_get_modelpaths()
-        # modelstatsPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}{'_testrun' if testrun else ''}{rundate}.stats.json")
-
-        results['f1-scores-val'] = checkpoint["f1_scores"]
-        f1_last_epoch = results['f1-scores-val'][len(results['f1-scores-val']) - 1]
-
-        # All models
-        results['modelcomparison'] = {
-            'HAR_MViT' : {
-                'accuracy': f1_last_epoch["Total"],
-                'acc-skills': f1_last_epoch["Skill"],
-                'last-trained' : '2025-04-28'
-            },
-            'HAR_MViT_extra_dense' : {
-                'accuracy': 0.133,
-                'acc-skills': 0.3112,
-                'last-trained' : '2025-04-28'
+        results = {
+            'best' : {
+                'accuracy' : 0
             }
         }
+      
+        results['trainrounds'] = recognition_get_modelpaths()
+
+        for modelname in PYTORCH_MODELS_SKILLS.keys():
+            results[modelname] = {
+                'best' : {
+                    'accuracy' : 0
+                }
+            }
+        
+        for tr in results['trainrounds']:
+            print(tr.find('testrun'), tr)
+            if tr.find('testrun') != -1:
+                continue
+
+            tr_result = {}
+            if os.path.exists(tr):
+                with open(tr, 'r') as f:
+                    tr_result = json.load(f)
+                
+                filename = os.path.basename(tr)
+                modelname = filename[:filename.find('_skills')]
+                traindate = filename[filename.find('.stats')-8:filename.find('.stats')]
+
+                bestepoch = tr_result['f1_scores'][f"{len(tr_result['f1_scores']) - 1}"]
+                # bestepoch = lastepoch - patience
+                
+                results[modelname][traindate] = {
+                    'f1-scores-val' : tr_result['f1_scores'],
+                    'f1-scores-val-total' : [v['Total'] for v in tr_result['f1_scores'].values()],
+                    'f1-scores-val-skill' : [v['Skill'] for v in tr_result['f1_scores'].values()],
+                    'accuracy' : tr_result['total_accuracy_at_best'],
+                    'acc-skills' : bestepoch['Skill'],
+                }
+
+                if tr_result['total_accuracy_at_best'] > results[modelname]['best']['accuracy']:
+                    results[modelname]['best'] = results[modelname][traindate]
+                    results[modelname]['date'] = traindate
+
+                if tr_result['total_accuracy_at_best'] > results['best']['accuracy']:
+                    results['best'] = results[modelname][traindate]
+                    results['best']['date'] = traindate
+                    results['best']['modelname'] = modelname
+
+
         results['distributions'] = {
             'skills' : {
                 'push-up': {
@@ -86,10 +110,6 @@ class StatsService:
             }
         }
         
-        # Best model
-        results['best-model'] = selectedModel        
-
-
         return results
 
     def getLocalizeResults(self, selectedModel: str):
