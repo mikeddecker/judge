@@ -1,5 +1,6 @@
 import os
 import yaml
+import glob
 
 def get_discipline_DoubleDutch_config(include_tablename=True):
     config = {
@@ -40,3 +41,14 @@ def localize_get_best_modelpath():
             modelname = yaml.safe_load(file)['model'].split('.')[0]
     
     return modelname, modelpath
+
+
+def recognition_get_modelpaths():
+    """Returns path to modelstats, e.g. ./weights/HAR_MViT_skills_20250524.stats.json"""
+    # TODO : update to take actual best
+    folder_path = os.path.join('..', 'computervision', 'weights', f"*skills*.stats.json")
+    trainrounds = glob.glob(folder_path)
+    
+    print('globbed', trainrounds)
+    
+    return trainrounds

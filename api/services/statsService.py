@@ -1,5 +1,6 @@
 import os
 import torch
+import glob
 import yaml
 import pandas as pd
 from .videoService import VideoService
@@ -9,6 +10,7 @@ from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from helpers.ValueHelper import ValueHelper
 from typing import List
+from helpers.ConfigHelper import recognition_get_modelpaths
 
 
 class StatsService:
@@ -44,25 +46,13 @@ class StatsService:
         results['train-time'] = 6852.3
 
         checkpoint = torch.load(os.path.join('..', 'computervision', 'weights', f"{selectedModel}.checkpoint.pt"), weights_only=False)
-        results['f1-scores-val'] = checkpoint["f1_scores"]
-        results['f1-scores-test'] = {
-            "Type" : 0.51,
-            "Rotations" : 0.5,
-            "Turner1" : 0.5,
-            "Turner2" : 0.51,
-            "Skill" : 0.55,
-            "Hands" : 0.5,
-            "Feet" : 0.5,
-            "Turntable" : 0.5,
-            "BodyRotations" : 0.5,
-            "Backwards" : 0.5,
-            "Sloppy" : 0.5,
-            "Hard2see" : 0.5,
-            "Fault" : 0.5,
-            "Total": 0.505,
-        }
         
+        results['trainrounds'] = recognition_get_modelpaths()
+        # modelstatsPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}{'_testrun' if testrun else ''}{rundate}.stats.json")
+
+        results['f1-scores-val'] = checkpoint["f1_scores"]
         f1_last_epoch = results['f1-scores-val'][len(results['f1-scores-val']) - 1]
+
         # All models
         results['modelcomparison'] = {
             'HAR_MViT' : {

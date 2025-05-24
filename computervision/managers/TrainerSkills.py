@@ -1,9 +1,11 @@
 import gc
 import os
+import json
 import pandas as pd
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+import numpy as np
 
 from constants import PYTORCH_MODELS_SKILLS
 from dotenv import load_dotenv
@@ -14,10 +16,19 @@ from pprint import pprint
 from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
+from datetime import datetime, date
 
 import sys
 sys.path.append('..')
 from api.helpers import ConfigHelper
+
+class NumpyTypeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, np.generic):
+            return obj.item()
+        return super().default(obj)
 
 load_dotenv()
 
@@ -49,7 +60,7 @@ class TrainerSkills:
             losses.append(loss)
         return sum(losses)
 
-    def validate(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda'):
+    def validate(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda', rundate:str=date.today().strftime('%Y%d%m')):
         model.eval()
         val_loss = 0.0
 
@@ -113,15 +124,16 @@ class TrainerSkills:
         return val_loss / len(dataloader), f1_scores_epoch, classification_reports, cm
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
+        rundate=str=date.today().strftime('%Y%d%m')
         try:
-            testrun = False
+            testrun = True
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
             path = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
-            checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}{'_testrun' if testrun else ''}.checkpoint.pt")
+            checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}_{rundate}.checkpoint.pt")
+            modelstatsPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}_{rundate}.stats.json")
 
-            
             DIM = 224
             repo = DataRepository()
             model = PYTORCH_MODELS_SKILLS[modelname](skill_or_segment="skills", modelinfo=trainparams, df_table_counts=repo.get_skill_category_counts()).to(device)
@@ -131,15 +143,18 @@ class TrainerSkills:
             f1_scores = {}
             classification_reports = {}
             losses = []
-            if not from_scratch and os.path.exists(checkpointPath):
+            modelstats = {}
+            if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPath):
                 checkpoint = torch.load(checkpointPath, weights_only=False)
+                with open(modelstatsPath, 'r') as f:
+                    modelstats = json.load(f)
                 model.load_state_dict(checkpoint['model_state_dict'])
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-                epoch_start = checkpoint['epoch'] + 1
-                losses = checkpoint['losses']
-                f1_scores = {} if 'f1_scores' not in checkpoint.keys() else checkpoint['f1_scores']
-                classification_reports = {} if 'classification_reports' not in checkpoint.keys() else checkpoint['classification_reports']
+                epoch_start = modelstats['epoch'] + 1
+                losses = modelstats['losses']
+                f1_scores = {} if 'f1_scores' not in modelstats.keys() else modelstats['f1_scores']
+                classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
 
             if unfreeze_all_layers:
                 for param in model.parameters():
@@ -210,16 +225,20 @@ class TrainerSkills:
 
                 if hasValLossImproved:
                     torch.save({
-                        'epoch': epoch,
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
                         'scheduler_state_dict': scheduler.state_dict(),
-                        'losses': losses,
-                        'f1_scores': f1_scores,
-                        'classification_reports' : classification_reports,
-                        'final_classification_reports' : class_reports,
-                        'confusion_matrix': conf_matrix,
                     }, checkpointPath)
+                    
+                    with open(modelstatsPath, "w") as fp:
+                        json.dump({
+                            'epoch': epoch,
+                            'losses': losses,
+                            'f1_scores': f1_scores,
+                            'classification_reports' : classification_reports,
+                            'confusion_matrix': conf_matrix,
+                            'final_classification_reports' : class_reports,
+                        }, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
             
                     torch.save(model.state_dict(), path)
             pprint(f1_scores)
