@@ -64,7 +64,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
     def __len__(self):
         'Denotes the number of batches per epoch'
         if self.isTestrun:
-            return 50
+            return 140
         return len(self.BalancedSet) // self.batch_size if self.train_test_val == 'train' else len(self.Skills) // self.batch_size
 
     def __getitem__(self, batch_nr, normalize=True):

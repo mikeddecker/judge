@@ -219,7 +219,8 @@ class TrainerSkills:
                 epochsNoImprovement = len(losses) - minIndex - 1
                 hasValLossImproved = epochsNoImprovement == 0
 
-                if epochsNoImprovement > 2:
+                patience = 2
+                if epochsNoImprovement > patience:
                     print(f"No improvement for {epochsNoImprovement} - stopping")
                     break
 
@@ -233,6 +234,8 @@ class TrainerSkills:
                     with open(modelstatsPath, "w") as fp:
                         json.dump({
                             'epoch': epoch,
+                            'best_epoch' : minIndex,
+                            'total_accuracy_at_best' : f1_scores[minIndex]['Total'],
                             'losses': losses,
                             'f1_scores': f1_scores,
                             'classification_reports' : classification_reports,
