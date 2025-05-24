@@ -60,50 +60,63 @@ while no_shutdown_job:
             )
 
         print("Start training segments")
-        modelname = 'HAR_MViT' # TODO : pick from job executor
-        trainer.train(
-            type="SEGMENT",
-            modelname=modelname,
-            from_scratch=True,
-            epochs=max_rounds[0],
-            save_anyway=True,
-            unfreeze_all_layers=False,
-            modelparams=trainparams[modelname],
-            learning_rate=4e-5
-        )
 
-        trainer.train(
-            type="SEGMENT",
-            modelname=modelname,
-            from_scratch=False,
-            epochs=max_rounds[1],
-            save_anyway=True,
-            unfreeze_all_layers=True,
-            modelparams=trainparams[modelname],
-            learning_rate=1e-6
-        )
+        models = [
+            'HAR_MViT',
+            'HAR_Resnet_MC3',
+            'HAR_SA_Conv3D',
+            'HAR_Resnet_R2plus1',
+            'HAR_Resnet_R3D',
+            'HAR_MViT_extra_dense',
+        ]
 
-        trainer.train(
-            type="SKILL",
-            modelname=modelname,
-            from_scratch=True,
-            epochs=max_rounds[0],
-            save_anyway=True,
-            unfreeze_all_layers=False,
-            modelparams=trainparams[modelname],
-            learning_rate=4e-5
-        )
+        for modelname in models:
+            # modelname = 'HAR_MViT' # TODO : pick from job executor
+            trainer.train(
+                type="SEGMENT",
+                modelname=modelname,
+                from_scratch=True,
+                epochs=max_rounds[0],
+                save_anyway=True,
+                unfreeze_all_layers=False,
+                modelparams=trainparams[modelname],
+                learning_rate=4e-5
+            )
 
-        trainer.train(
-            type="SKILL",
-            modelname=modelname,
-            from_scratch=False,
-            epochs=max_rounds[1],
-            save_anyway=True,
-            unfreeze_all_layers=True,
-            modelparams=trainparams[modelname],
-            learning_rate=1e-6
-        )
+            trainer.train(
+                type="SEGMENT",
+                modelname=modelname,
+                from_scratch=False,
+                epochs=max_rounds[1],
+                save_anyway=True,
+                unfreeze_all_layers=True,
+                modelparams=trainparams[modelname],
+                learning_rate=1e-6
+            )
+
+            trainer.train(
+                type="SKILL",
+                modelname=modelname,
+                from_scratch=True,
+                epochs=max_rounds[0],
+                save_anyway=True,
+                unfreeze_all_layers=False,
+                modelparams=trainparams[modelname],
+                learning_rate=4e-5
+            )
+
+            trainer.train(
+                type="SKILL",
+                modelname=modelname,
+                from_scratch=False,
+                epochs=max_rounds[1],
+                save_anyway=True,
+                unfreeze_all_layers=True,
+                modelparams=trainparams[modelname],
+                learning_rate=1e-6
+            )
+        
+        REPO.check_connection_reconnect_if_needed()
         REPO.delete_job(job["id"])
     else:
         print('Unrecognized job?')

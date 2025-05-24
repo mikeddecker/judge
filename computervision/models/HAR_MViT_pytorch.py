@@ -7,11 +7,6 @@ import numpy as np
 import pandas as pd
 from models.torch_output_layers import create_pytorch_skill_output_layers, create_pytorch_segmentation_output_layers, forward_skill_output_layers, forward_segmentation_output_layers
 
-import sys
-sys.path.append('..')
-from api.helpers.ConfigHelper import get_discipline_DoubleDutch_config
-    
-
 class MViT(nn.Module):
     def __init__(self, skill_or_segment:str, modelinfo:dict, df_table_counts:pd.DataFrame):
         super(MViT, self).__init__()
@@ -54,5 +49,5 @@ class MViT(nn.Module):
             return forward_segmentation_output_layers(features=x, output_layer=self.output_layer)
 
 def get_model(skill_or_segment:str, modelinfo, df_table_counts: pd.DataFrame):
-    """Build a Self-Attention ConvLSTM model in PyTorch"""
+    """Build an MViT model in PyTorch"""
     return MViT(skill_or_segment=skill_or_segment, modelinfo=modelinfo, df_table_counts=df_table_counts)

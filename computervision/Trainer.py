@@ -50,6 +50,7 @@ resnetparams = {
 
 trainparams["HAR_MViT"] = mvitparams
 trainparams["HAR_MViT_extra_dense"] = mvitparams
+trainparams["HAR_SA_Conv3D"] = mvitparams
 trainparams["HAR_Resnet_R3D"] = resnetparams
 trainparams["HAR_Resnet_MC3"] = resnetparams
 trainparams["HAR_Resnet_R2plus1"] = resnetparams
@@ -62,11 +63,12 @@ if __name__ == "__main__":
     trainer = Trainer()
     
     models = [
+        'HAR_MViT',
         'HAR_Resnet_MC3',
+        'HAR_SA_Conv3D',
         'HAR_Resnet_R2plus1',
         'HAR_Resnet_R3D',
         'HAR_MViT_extra_dense',
-        'HAR_MViT',
     ]
 
     for modelname in models:

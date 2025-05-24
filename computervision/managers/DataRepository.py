@@ -241,11 +241,15 @@ class DataRepository:
     
     def upsert_skillsegmented_predictions(self, videoId:int, df_predictions):
         """Columns: Like Skillinfo_DoubleDutch"""
-        if not self.check_connection():
-            self.con = self.__get_connection()
+        self.check_connection_reconnect_if_needed()
+        
         df_predictions["videoId"] = videoId
         df_predictions.to_sql(name="Predictions_SkillSegment", if_exists='append', con=self.con, chunksize=500, index=False)
         self.con.commit()
 
     def get_video_path(self, videoId):
         return os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"])
+    
+    def check_connection_reconnect_if_needed(self):
+        if not self.check_connection():
+            self.con = self.__get_connection()

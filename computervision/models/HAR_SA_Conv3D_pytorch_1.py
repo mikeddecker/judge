@@ -4,11 +4,7 @@ import torch.nn.functional as F
 from torch.nn import Module, Parameter
 import numpy as np
 import pandas as pd
-from models.torch_output_layers import create_pytorch_skill_output_layers
-
-import sys
-sys.path.append('..')
-from api.helpers.ConfigHelper import get_discipline_DoubleDutch_config
+from models.torch_output_layers import create_pytorch_skill_output_layers, create_pytorch_segmentation_output_layers, forward_skill_output_layers, forward_segmentation_output_layers
 
 class SelfAttention(nn.Module):
     """3D version of self-attention that handles temporal dimension"""
@@ -48,10 +44,11 @@ class SelfAttention(nn.Module):
     
 
 class SAConv3D(nn.Module):
-    def __init__(self, modelinfo, df_table_counts):
+    def __init__(self, skill_or_segment:str, modelinfo:dict, df_table_counts:pd.DataFrame):
         super(SAConv3D, self).__init__()
         self.modelinfo = modelinfo
         self.df_table_counts = df_table_counts
+        self.isSkillModel = skill_or_segment == "skills"
         
         input_shape = (3,modelinfo['timesteps'], modelinfo['dim'], modelinfo['dim'])
         kernel_size = 3
@@ -81,14 +78,14 @@ class SAConv3D(nn.Module):
                                stride=(1, 2, 2), padding=kernel_size//2)
         self.conv12 = nn.Conv3d(int(filters * 8), int(filters * 8), kernel_size=1, stride=2)
         
-        # Flatten and dense layers
         self.flatten = nn.Flatten()
-        self.LastNNeurons = 256
-        self.features = nn.Linear(self._get_conv_output(input_shape), self.LastNNeurons)
-        
-        # Output layers
-        self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType=modelinfo['balancedType'], df_table_counts = self.df_table_counts) # TODO : make dynamic
-        
+        self.LastNNeurons = self._get_conv_output(input_shape)
+
+        if self.isSkillModel:
+            self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType=modelinfo['balancedType'], df_table_counts = self.df_table_counts)
+        else:
+            self.output_layer = create_pytorch_segmentation_output_layers(lastNNeurons=self.LastNNeurons, timesteps=modelinfo['timesteps'])
+      
     def _get_conv_output(self, shape):
         with torch.no_grad():
             input = torch.rand(1, *shape)
@@ -137,18 +134,12 @@ class SAConv3D(nn.Module):
         x = F.relu(self.conv12(x))
         
         x = self.flatten(x)
-        features = F.relu(self.features(x))
         
-        # Outputs
-        outputs = {}
-        for key, layer in self.output_layers.items():
-            if key in ['Skill', 'Turner1', 'Turner2', 'Type']:  # Categorical outputs
-                outputs[key] = layer(features)
-            else:  # Regression outputs
-                outputs[key] = torch.sigmoid(layer(features))
-        
-        return outputs
+        if self.isSkillModel:
+            return forward_skill_output_layers(features=x, output_layers=self.output_layers)
+        else:
+            return forward_segmentation_output_layers(features=x, output_layer=self.output_layer)
 
-def get_model(modelinfo, df_table_counts: pd.DataFrame):
+def get_model(skill_or_segment:str, modelinfo, df_table_counts: pd.DataFrame):
     """Build a Self-Attention ConvLSTM model in PyTorch"""
-    return SAConv3D(modelinfo, df_table_counts)
+    return SAConv3D(skill_or_segment=skill_or_segment, modelinfo=modelinfo, df_table_counts=df_table_counts)

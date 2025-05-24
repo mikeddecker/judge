@@ -126,7 +126,7 @@ class TrainerSkills:
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         rundate=str=date.today().strftime('%Y%d%m')
         try:
-            testrun = True
+            testrun = False
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
