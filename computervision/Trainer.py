@@ -34,21 +34,40 @@ class Trainer:
                 raise ValueError(f"Trainer - Type {type} not recognized")
 
 
-trainparams = {
-    # "balancedType" : "jump_return_push_frog_other",
+trainparams = {}
+mvitparams =  {    
     "balancedType" : "limit_10procent",
     "dim" : 224,
     "timesteps" : 16,
     "batch_size" : 1,
 }
+resnetparams = {
+    "balancedType" : "limit_10procent",
+    "dim" : 224, # 112 originally
+    "timesteps" : 16,
+    "batch_size" : 1,
+}
+
+trainparams["HAR_MViT"] = mvitparams
+trainparams["HAR_MViT_extra_dense"] = mvitparams
+trainparams["HAR_Resnet_R3D"] = resnetparams
+trainparams["HAR_Resnet_MC3"] = resnetparams
+trainparams["HAR_Resnet_R2plus1"] = resnetparams
+
 modelname = "HAR_SA_Conv3D"
 modelname = "HAR_MViT"
-max_rounds = [4, 40]
+max_rounds = [1, 2]
 
 if __name__ == "__main__":
     trainer = Trainer()
     
-    models = ['HAR_MViT', 'HAR_MViT_extra_dense']
+    models = [
+        'HAR_Resnet_MC3',
+        'HAR_Resnet_R2plus1',
+        'HAR_Resnet_R3D',
+        'HAR_MViT_extra_dense',
+        'HAR_MViT',
+    ]
 
     for modelname in models:
         ################################    
@@ -81,7 +100,7 @@ if __name__ == "__main__":
             epochs=max_rounds[0],
             save_anyway=True,
             unfreeze_all_layers=False,
-            modelparams=trainparams,
+            modelparams=trainparams[modelname],
             learning_rate=4e-5
         )
 
@@ -92,6 +111,6 @@ if __name__ == "__main__":
             epochs=max_rounds[1],
             save_anyway=True,
             unfreeze_all_layers=True,
-            modelparams=trainparams,
+            modelparams=trainparams[modelname],
             learning_rate=1e-6
         )

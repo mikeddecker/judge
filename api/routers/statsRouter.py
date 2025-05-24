@@ -12,7 +12,10 @@ from helpers.ValueHelper import ValueHelper
 PYTORCH_MODELS_SKILLS = {
     "HAR_SA_Conv3D" : None,
     "HAR_MViT" : None,
-    "HAR_MViT_extra_dense" : None
+    "HAR_MViT_extra_dense" : None,
+    "HAR_Resnet_R3D" : None,
+    "HAR_Resnet_MC3" : None,
+    "HAR_Resnet_R2plus1" : None,
 }
 
 

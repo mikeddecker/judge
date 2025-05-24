@@ -68,7 +68,7 @@ while no_shutdown_job:
             epochs=max_rounds[0],
             save_anyway=True,
             unfreeze_all_layers=False,
-            modelparams=trainparams,
+            modelparams=trainparams[modelname],
             learning_rate=4e-5
         )
 
@@ -79,7 +79,7 @@ while no_shutdown_job:
             epochs=max_rounds[1],
             save_anyway=True,
             unfreeze_all_layers=True,
-            modelparams=trainparams,
+            modelparams=trainparams[modelname],
             learning_rate=1e-6
         )
 
@@ -90,7 +90,7 @@ while no_shutdown_job:
             epochs=max_rounds[0],
             save_anyway=True,
             unfreeze_all_layers=False,
-            modelparams=trainparams,
+            modelparams=trainparams[modelname],
             learning_rate=4e-5
         )
 
@@ -101,7 +101,7 @@ while no_shutdown_job:
             epochs=max_rounds[1],
             save_anyway=True,
             unfreeze_all_layers=True,
-            modelparams=trainparams,
+            modelparams=trainparams[modelname],
             learning_rate=1e-6
         )
         REPO.delete_job(job["id"])
