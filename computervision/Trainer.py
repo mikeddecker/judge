@@ -72,6 +72,9 @@ if __name__ == "__main__":
     ]
 
     for modelname in models:
+        print("@"*80)
+        print(modelname)
+        print("@"*80)
         ################################    
         # trainer.train(
         #     type="SEGMENT",
