@@ -9,6 +9,8 @@ PYTORCH_MODELS_SKILLS = {
     "HAR_Resnet_R3D" : None,
     "HAR_Resnet_MC3" : None,
     "HAR_Resnet_R2plus1" : None,
+    "HAR_SwinT_t" : None,
+    "HAR_SwinT_s" : None,
 }
 
 def get_discipline_DoubleDutch_config(include_tablename=True):

@@ -47,6 +47,12 @@ resnetparams = {
     "timesteps" : 16,
     "batch_size" : 1,
 }
+swinparams =  {    
+    "balancedType" : "limit_10procent",
+    "dim" : 224,
+    "timesteps" : 16,
+    "batch_size" : 1,
+}
 
 trainparams["HAR_MViT"] = mvitparams
 trainparams["HAR_MViT_extra_dense"] = mvitparams
@@ -54,6 +60,8 @@ trainparams["HAR_SA_Conv3D"] = mvitparams
 trainparams["HAR_Resnet_R3D"] = resnetparams
 trainparams["HAR_Resnet_MC3"] = resnetparams
 trainparams["HAR_Resnet_R2plus1"] = resnetparams
+trainparams["HAR_SwinT_s"] = swinparams
+trainparams["HAR_SwinT_s"] = swinparams
 
 modelname = "HAR_SA_Conv3D"
 modelname = "HAR_MViT"
@@ -63,12 +71,14 @@ if __name__ == "__main__":
     trainer = Trainer()
     
     models = [
-        'HAR_Resnet_MC3',
-        'HAR_MViT',
-        'HAR_SA_Conv3D',
-        'HAR_Resnet_R2plus1',
-        'HAR_Resnet_R3D',
+        # 'HAR_Resnet_MC3',
+        # 'HAR_MViT',
+        # 'HAR_SA_Conv3D',
+        # 'HAR_Resnet_R2plus1',
+        'HAR_SwinT_s',
+        'HAR_SwinT_t',
         'HAR_MViT_extra_dense',
+        'HAR_Resnet_R3D',
     ]
 
     for modelname in models:
@@ -106,7 +116,7 @@ if __name__ == "__main__":
             save_anyway=True,
             unfreeze_all_layers=False,
             modelparams=trainparams[modelname],
-            learning_rate=4e-5
+            learning_rate=3e-5
         )
 
         trainer.train(
@@ -117,5 +127,5 @@ if __name__ == "__main__":
             save_anyway=True,
             unfreeze_all_layers=True,
             modelparams=trainparams[modelname],
-            learning_rate=1e-6
+            learning_rate=8e-7
         )
