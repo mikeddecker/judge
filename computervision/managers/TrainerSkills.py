@@ -16,7 +16,7 @@ from pprint import pprint
 from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
-from datetime import datetime, date
+from datetime import datetime, date, time
 from helpers import weighted_mse_loss
 
 import sys
@@ -127,6 +127,7 @@ class TrainerSkills:
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         rundate=str=date.today().strftime('%Y%d%m')
         try:
+            start = time.start()
             testrun = False
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
@@ -276,6 +277,9 @@ class TrainerSkills:
                             'classification_reports' : classification_reports,
                             'confusion_matrix': conf_matrix,
                             'final_classification_reports' : class_reports,
+                            'time' : time.time() - start,
+                            'length_train': len(train_generator),
+                            'length_val': len(val_generator),
                         }, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
             
                     torch.save(model.state_dict(), path)
