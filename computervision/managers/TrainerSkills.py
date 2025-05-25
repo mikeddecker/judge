@@ -61,7 +61,7 @@ class TrainerSkills:
             losses.append(loss)
         return sum(losses)
 
-    def validate(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda', rundate:str=date.today().strftime('%Y%d%m')):
+    def validate(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda', rundate:str=date.today().strftime('%Y%m%d')):
         model.eval()
         val_loss = 0.0
 
@@ -125,7 +125,7 @@ class TrainerSkills:
         return val_loss / len(dataloader), f1_scores_epoch, classification_reports, cm
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
-        rundate=str=date.today().strftime('%Y%d%m')
+        rundate = date.today().strftime('%Y%m%d')
         try:
             start = time.start()
             testrun = False

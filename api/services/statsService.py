@@ -88,6 +88,7 @@ class StatsService:
                         'model': modelname,
                         'total_accuracy_at_best': round(100 * tr_result['total_accuracy_at_best'], 2),
                         'acc-skills' : round(100 * bestepoch['Skill'], 2),
+                        'date' : traindate
                     }
 
                 if tr_result['total_accuracy_at_best'] > results['best']['accuracy']:
