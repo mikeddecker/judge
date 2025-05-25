@@ -145,6 +145,7 @@ class TrainerSkills:
             f1_scores = {}
             classification_reports = {}
             losses = []
+            total_accuracies = []
             modelstats = {}
             if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPath):
                 checkpoint = torch.load(checkpointPath, weights_only=False)
@@ -155,6 +156,7 @@ class TrainerSkills:
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
                 epoch_start = modelstats['epoch'] + 1
                 losses = modelstats['losses']
+                total_accuracies = modelstats['total_accuracies']
                 f1_scores = {} if 'f1_scores' not in modelstats.keys() else modelstats['f1_scores']
                 classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
 
@@ -201,7 +203,7 @@ class TrainerSkills:
 
                     maximum = value_counts_combined.max()
 
-                    weights = (maximum + maximum // 5 - value_counts_combined).pow(0.88)
+                    weights = (maximum + maximum // 8 - value_counts_combined).pow(0.75)
                     weights = weights / weights.mean()
                     if value[0] == 'Categorical':
                         weights.loc[0] = 0
@@ -210,6 +212,7 @@ class TrainerSkills:
                     w_all = torch.ones(value_counts_combined.index.max() + 1, dtype=torch.float32).to(device=device)
                     for idx, w in weights.items():
                         w_all[idx] = w
+                    w_all = (w_all + 1) ** 2
 
                     print("loss weights for", key, w_all)
                     if value[0] == 'Categorical':
@@ -237,21 +240,25 @@ class TrainerSkills:
 
                 val_loss, f1_scores_epoch, class_reports, conf_matrix = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
                 losses.append(val_loss)
+                total_accuracies.append(f1_scores_epoch['Total'])
                 scheduler.step(val_loss)
                 f1_scores[f'{epoch}'] = f1_scores_epoch
                 classification_reports[f'{epoch}'] = class_reports
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
                 
-                minIndex = losses.index(min(losses))
+                minIndexLoss = losses.index(min(losses))
+                minIndexAcc = total_accuracies.index(min(total_accuracies))
+                minIndex = min(minIndexAcc, minIndexLoss)
                 epochsNoImprovement = len(losses) - minIndex - 1
-                hasValLossImproved = epochsNoImprovement == 0
+                hasValLossImproved = len(losses) - minIndexLoss - 1 == 0
+                hasValAccImproved = len(losses) - minIndexAcc - 1 == 0
 
                 patience = 2
                 if epochsNoImprovement > patience:
                     print(f"No improvement for {epochsNoImprovement} - stopping")
                     break
 
-                if hasValLossImproved:
+                if hasValLossImproved or hasValAccImproved:
                     torch.save({
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
@@ -261,8 +268,9 @@ class TrainerSkills:
                     with open(modelstatsPath, "w") as fp:
                         json.dump({
                             'epoch': epoch,
-                            'best_epoch' : minIndex,
-                            'total_accuracy_at_best' : f1_scores[f'{minIndex}']['Total'],
+                            'best_epoch' : epoch,
+                            'total_accuracy_at_best' : f1_scores[f'{epoch}']['Total'],
+                            'total_accuracies' : total_accuracies,
                             'losses': losses,
                             'f1_scores': f1_scores,
                             'classification_reports' : classification_reports,
