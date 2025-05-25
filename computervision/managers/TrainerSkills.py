@@ -247,8 +247,8 @@ class TrainerSkills:
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
                 
                 minIndexLoss = losses.index(min(losses))
-                minIndexAcc = total_accuracies.index(min(total_accuracies))
-                minIndex = min(minIndexAcc, minIndexLoss)
+                minIndexAcc = total_accuracies.index(max(total_accuracies))
+                minIndex = max(minIndexAcc, minIndexLoss)
                 epochsNoImprovement = len(losses) - minIndex - 1
                 hasValLossImproved = len(losses) - minIndexLoss - 1 == 0
                 hasValAccImproved = len(losses) - minIndexAcc - 1 == 0

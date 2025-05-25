@@ -60,7 +60,7 @@ trainparams["HAR_SA_Conv3D"] = mvitparams
 trainparams["HAR_Resnet_R3D"] = resnetparams
 trainparams["HAR_Resnet_MC3"] = resnetparams
 trainparams["HAR_Resnet_R2plus1"] = resnetparams
-trainparams["HAR_SwinT_s"] = swinparams
+trainparams["HAR_SwinT_t"] = swinparams
 trainparams["HAR_SwinT_s"] = swinparams
 
 modelname = "HAR_SA_Conv3D"
