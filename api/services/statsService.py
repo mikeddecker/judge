@@ -75,8 +75,8 @@ class StatsService:
                 
                 results[modelname][traindate] = {
                     'f1-scores-val' : tr_result['f1_scores'],
-                    'f1-scores-val-total' : [v['Total'] for v in tr_result['f1_scores'].values()],
-                    'f1-scores-val-skill' : [v['Skill'] for v in tr_result['f1_scores'].values()],
+                    'f1-scores-val-total': [tr_result['f1_scores'][str(i)]['Total'] for i in range(len(tr_result['f1_scores']))],
+                    'f1-scores-val-skill': [tr_result['f1_scores'][str(i)]['Skill'] for i in range(len(tr_result['f1_scores']))],
                     'accuracy' : tr_result['total_accuracy_at_best'],
                     'acc-skills' : bestepoch['Skill'],
                 }
