@@ -17,6 +17,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 from datetime import datetime, date
+from helpers import weighted_mse_loss
 
 import sys
 sys.path.append('..')
@@ -53,9 +54,9 @@ class TrainerSkills:
             target = batch_y[key]
             
             if key in ['Skill', 'Turner1', 'Turner2', 'Type']:  # Categorical
-                loss = loss_fns['categorical'](pred, target.long())
+                loss = loss_fns[key](pred, target.long())
             else:
-                loss = loss_fns['regression'](pred.squeeze(), target)
+                loss = loss_fns[key](pred.squeeze(), target)
             
             losses.append(loss)
         return sum(losses)
@@ -134,6 +135,7 @@ class TrainerSkills:
             checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}_{rundate}.checkpoint.pt")
             modelstatsPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}_{rundate}.stats.json")
 
+            config: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
             DIM = 224
             repo = DataRepository()
             model = PYTORCH_MODELS_SKILLS[modelname](skill_or_segment="skills", modelinfo=trainparams, df_table_counts=repo.get_skill_category_counts()).to(device)
@@ -190,6 +192,31 @@ class TrainerSkills:
             # Training loop
             for epoch in range(epoch_start, epochs + epoch_start):
                 print(f"============= EPOCH {epoch} =============")
+
+                # Adapting the losses, as limiting to 10% can change occurences of faults, bodyrotations... a little
+                for key, value in config.items():
+                    value_counts_train = train_generator.BalancedSet[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
+                    value_counts_val = val_generator.Skills[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
+                    value_counts_combined = value_counts_train.add(value_counts_val, fill_value=0)
+
+                    maximum = value_counts_combined.max()
+
+                    weights = (maximum + maximum // 5 - value_counts_combined).pow(0.88)
+                    weights = weights / weights.mean()
+                    if value[0] == 'Categorical':
+                        weights.loc[0] = 0
+                    weights = weights.sort_index()
+
+                    w_all = torch.ones(value_counts_combined.index.max() + 1, dtype=torch.float32).to(device=device)
+                    for idx, w in weights.items():
+                        w_all[idx] = w
+
+                    print("loss weights for", key, w_all)
+                    if value[0] == 'Categorical':
+                        loss_fns[key] = torch.nn.CrossEntropyLoss(w_all).to(device=device)
+                    else:
+                        loss_fns[key] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=w_all)
+
                 model.train()
                 total_loss = 0.0
                 i = 0

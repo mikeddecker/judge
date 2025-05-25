@@ -71,13 +71,13 @@ if __name__ == "__main__":
     trainer = Trainer()
     
     models = [
+        'HAR_MViT',
+        'HAR_MViT_extra_dense',
         # 'HAR_Resnet_MC3',
-        # 'HAR_MViT',
         # 'HAR_SA_Conv3D',
         # 'HAR_Resnet_R2plus1',
-        'HAR_SwinT_s',
         'HAR_SwinT_t',
-        'HAR_MViT_extra_dense',
+        'HAR_SwinT_s',
         'HAR_Resnet_R3D',
     ]
 

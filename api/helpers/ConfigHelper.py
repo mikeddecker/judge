@@ -33,6 +33,9 @@ def get_discipline_DoubleDutch_config(include_tablename=True):
         config["Tablename"] = "DoubleDutch"
     return config
 
+def lowerProperty(property):
+    return property[0].lower() + property[1:]
+
 def localize_get_best_modelpath():
     """Returns modelname, modelpath, e.g. yolo11n ./runs/detect/train7"""
     # TODO : update to take actual best

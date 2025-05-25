@@ -302,3 +302,7 @@ def draw_text(img, text,
 
 def get_localize_strategy_list():
     return ['raw', 'smoothing', 'smoothing_skip_small_iou', 'cosine']
+
+def weighted_mse_loss(input, target, weight):
+    "https://discuss.pytorch.org/t/how-to-implement-weighted-mean-square-error/2547"
+    return torch.sum(weight * (input - target) ** 2)
