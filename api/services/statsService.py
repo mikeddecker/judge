@@ -86,7 +86,8 @@ class StatsService:
                     results[modelname]['date'] = traindate
                     results['modelcomparison'][modelname] = {
                         'model': modelname,
-                        'total_accuracy_at_best': tr_result['total_accuracy_at_best']
+                        'total_accuracy_at_best': round(100 * tr_result['total_accuracy_at_best'], 2),
+                        'acc-skills' : round(100 * bestepoch['Skill'], 2),
                     }
 
                 if tr_result['total_accuracy_at_best'] > results['best']['accuracy']:

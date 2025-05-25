@@ -126,6 +126,7 @@ const transformF1ToChart = (fscores) => {
   <DataTable :value="Object.values(results['modelcomparison'])" class="w-1/2">
     <Column sortable field="model" header="model"></Column>
     <Column sortable field="total_accuracy_at_best" header="total accuracy"></Column>
+    <Column sortable field="acc-skills" header="skill accuracy"></Column>
   </DataTable>
   <!-- <pre>{{ results }}</pre> -->
 </template>
