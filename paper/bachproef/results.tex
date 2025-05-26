@@ -18,28 +18,21 @@ As DD3 routines are the focus of this research, the idea was to predict the coor
 Below you can find a shortlist of experiments executed on localization.
 
 \begin{itemize}
-    \item random conv
-    \item googlenet, mobilenet...
-    \item Labeling individual jumpers \& pre-trained model yolo -> OK
+    \item random convolutional network
+    \item dedicated models googlenet, mobilenet...
+    \item pre-trained model yolo -> OK
 \end{itemize}
 
 \subsection{Random convolutional network}
 
 % TODO : illustrative image of box coords?
 
-Before discussing the different results, let's discuss how the location of skippers are marked. To mark the position of an object on an image, there are multiple possibilities.
+In order to get a first grasp of the results, a quick convolutional network is created \ref{code:keras-random-conv} to simulate the first results. To mark the position of an object on an image, there are multiple possibilities.
 For this project, the relative center point along the x-axis, y-axis, width and height of the box are stored. So regardless of the scale of the image, whether the image has size 1920 x 1080 pixels or 1080 x 720 pixels, the position of the box remains the same.
-An example of a box would be [0.6, 0.5, 0.4, 0.4], all values between 0 and 1. IoU accuracy can then be performed.
-... As explained in the literature (todo reference/add to literature)...
-% TODO : shift IoU comparison to literature
+This way, by scaling all images to the same size, frames of dimension (width, height, channels) can fed into the model \ref{code:keras-random-conv}, giving 4 values in return. An example of a box would be [0.6, 0.5, 0.4, 0.4], all values between 0 and 1.
+After training and predicting box coordinates, the IoU accuracy can then be performed evaluating the performance of the model.
 
-(TODO: expand)
-In order to get an idea, whether following models are able to learn, a random convolutional network is created.
-... elaborate results % TODO
-
--> low accuracy, naive predictions.
-
-To get a first idea whether it would start learning, so a transition can be made towards more advanced architectures.
+The first predictions average out the input coordinates, reaching a meaningless 25-28\% IoU.
 
 \subsection{Dedicated architectures}
 
@@ -86,7 +79,7 @@ Using these predictions, a crop around the three jumpers can be created using th
     \centering
     \includegraphics[width=0.45\linewidth]{img/1315_2935}
     \includegraphics[width=0.45\linewidth]{img/2297_134}
-    \caption[Valid crops of a DD3 routine on competition.]{Valid crops of a DD3 routine on competition. (224x244 pixels)}
+    \caption[Valid crops of a DD3 routine on competition.]{Valid crops of a DD3 routine on competition. (224x224 pixels)}
     \label{fig:dd3-crop}
 \end{figure}
 
@@ -98,8 +91,9 @@ Using these predictions, a crop around the three jumpers can be created using th
     \label{fig:dd3-crop-error}
 \end{figure}
 
-Annotating only athletes on 732 images \& fine-tuning the pre-trained nano yolo model, the first predictions of spectators are reduced considerately.
-This way crops can be created by taking the minimum and maximum \(x\) \& \(y\)-coordinates. Reviewing cropped videos show indicate occasional frames predicting spectators, coaches or judges and moments of instability, as if you are watching camera footage of an earthquake.
+Annotating only athletes on 732 images \& fine-tuning the pre-trained nano yolo model, the first predictions of spectators are reduced considerately. This is illustrated in figure \ref{fig:raw-vs-fine-tuned-boxes}.
+This way crops can be created by taking the minimum and maximum \(x\) \& \(y\)-coordinates of all boxes predicted on a frame. Predicting these crops for all frames, alles to crop a full video.
+However, reviewing cropped videos indicate occasional frames predicting spectators, coaches or judges and moments of instability, as if you are watching camera footage of an earthquake.
 
 In order to avoid a sudden zoom out, because of spectators, an IoU comparison of the previous predicted box with the new box is made. If the IoU value is larger than the average IoU of the last \(N\) seconds, powered to the fourth, than crop coordinates will be updated. Using this IoU comparison, reduces video crops including spectators, maintaining the earthquake effect.
 
@@ -110,6 +104,7 @@ $$ smth = smootval = 0.86  \quad \& \quad smths = smootval\_shrink = 0.94 $$
 
 Which makes the new coordinates:
 
+\bigskip
 \begin{math}
    smooted_{x1_{min}} =
    \begin{cases}
@@ -118,6 +113,7 @@ Which makes the new coordinates:
        smths^ * smooted_{x1_{min}} + (1-smths) * x1_{min} & \text{otherwise}
    \end{cases}
 \end{math}
+\medskip
 
 The same is done for \( y1_{min}, x2_{max}, y2_{max} \).
 
@@ -134,6 +130,7 @@ Utilizing these steps allows for videos where a team is always on display (\ref{
 
 One way to solve jumpers running out of view, is by adding a default movement corrector, like the smooth value, which follows the new coordinates every frame. The movement corrector is based on the \(iou\)-value powered to the \(1/8\). It makes the crop following predictions by default, when IoU is getting low.
 
+\medskip
 
 \begin{math}
     SQRT = 8 \\
@@ -141,10 +138,10 @@ One way to solve jumpers running out of view, is by adding a default movement co
     smooted_{x1_{min}} = smooted_{x1_{min}} * movementCorrector + (1 - movementCorrector) * {x1_{min}}
 \end{math}
 
-
+\medskip
 
 A possible improvement could be matching individual boxes with the new predictions, eliminating the spectator. Which raises concerns about jumpers entering the competition field. There are no earlier predicted boxes to match.
-The total algorithm isn't perfect yet, but the results indicate sufficient valid video crops to use and experiment on segmentation and recognition.
+The total algorithm isn't perfect yet, but the results indicate sufficient valid video crops to use and experiment on segmentation and recognition. (code \ref{code:localization})
 
 \begin{listing}
     \begin{minted}{python}
@@ -154,7 +151,7 @@ The total algorithm isn't perfect yet, but the results indicate sufficient valid
     \label{code:localization}
 \end{listing}
 
-Full code is visible in code snippet \ref{code:localization}. The results are broken down in table \ref{tbl:crop-results}. In this table you can see that about 15\% of the videos aren't localized properly, some of them only have minor disturbs. This results in enough videos available to try and recognize skills.
+The results are broken down in table \ref{tbl:crop-results}. In this table you can see that about 15\% of the videos aren't localized properly, some of them only have minor disturbs. This results in enough videos available to try and recognize skills.
 
 % TODO: pairwise distances?
 
@@ -233,11 +230,12 @@ Each frame than has a value from zero to one. An example of consecutive splitpoi
 
 \([0, 0, 0.1, 0.31, 0.55, 0.86, 1, 0.86, 0.55, 0.31, 0.1, 0]\)
 
+Having a splitpoint value for each frame of the video, the video can be partioned into consecutive sections of T timesteps. Because the Multiscale Vision Transformer is pre-trained on videosections of 16 frames, the same amount of timesteps are taken to finetune the model for segmentation. This makes the model transform the input of size (batch size, channels, timesteps, height, width) into an output of size (batch size, timesteps).
 
 \subsection{Video Vision Transformer \& Self-attention ConvLSTM}
 \label{subsec:video-models-from-scratch}
 
-The first and second experiment for segmention use code implementations of the Video Vision Transformer as developed in \textcite{Arnab2021} (ViViT - \ref{code:get_model_ViViT}) and the Self-Attention ConvLSTM from \textcite{Lin_2020} (SA-ConvLSTM - (TODO)).
+The first and second experiment for segmention use code implementations of the Video Vision Transformer as introduced in \textcite{Arnab2021} (ViViT - \ref{code:get_model_ViViT}) and the Self-Attention ConvLSTM from \textcite{Lin_2020} (SA-ConvLSTM - (TODO)).
 To resolve bugs and dimensionality issues, Large Language models are used (\autocite{OpenAI_ChatGPT_2025} and \autocite{Deepseek_2025}).
 These models were then trained on 7.8k batches of 16 consecutive frames, which originate from 44 trainings videos for about 48 minutes of training data, having framerates between 25 and 60 \footnote{Most labeled videos have a framerate of 25, 30 or 50 frames per second} images per second.
 Both models showed the same results, averaging out predictions slightly above 0 for all frames, stagnating on MSE losses of around 0.09 and 0.10. This was about the average when always predicting 0. (Exact values are lost due to the switch to pytorch and bugs, will/could be re-added later.)
