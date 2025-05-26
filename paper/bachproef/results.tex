@@ -32,18 +32,14 @@ For this project, the relative center point along the x-axis, y-axis, width and 
 This way, by scaling all images to the same size, frames of dimension (width, height, channels) can fed into the model \ref{code:keras-random-conv}, giving 4 values in return. An example of a box would be [0.6, 0.5, 0.4, 0.4], all values between 0 and 1.
 After training and predicting box coordinates, the IoU accuracy can then be performed evaluating the performance of the model.
 
-The first predictions average out the input coordinates, reaching a meaningless 25-28\% IoU.
+The first predictions average out the input coordinates, reaching a meaningless 25-28\% IoU on about 6200 train and about 800 validation images.
 
 \subsection{Dedicated architectures}
 
-(TODO : expand)
-Trained from scratch
+This section explains the experiments using dedicated architectures. Results weren't good, as these are classification models and nog specialized for localization. A second issue might be the low amount of labels, and the third reason that predicting full boxes may not have been possible for the low amount of labels.
+The first try-out using an existing architecture was the googlenet architecture, \autocite{Szegedy2014} - \ref{code:keras-googlenet-small-replication}
+It used the same input shape (W, H, C) to predict a full box around all three jumpers. Just like the implementation using MobileNetV3, \autocite{Howard2019} - \ref{code:keras-mobilenetv3small}, predictions only shifted a little towards the athletes, averaging out in the center of the image, reaching an IoU of about 28 to 30\%. These results where performed on the same dataset as in the experiment above.
 
-GoogleNet, MobileNet... (on individual labels)
-
-Display code \& mention unbalanced augmented, but still unbalanced dataset \& higher learning rate as compared below.
-
-Conclusion:
 Predicting full teams didn't work out which allowed for a transition to labeling and predicting individuals athletes. Below you find more information about those experiments.
 
 \subsection{YOLO}
