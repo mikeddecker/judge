@@ -10,15 +10,20 @@ from datetime import datetime
 sys.path.append('.')
 
 from helpers import iou, my_mse_loss_fn
-from FrameLoader import FrameLoader
-from DataGeneratorFrames import DataGeneratorFrames
-from DataRepository import DataRepository
+from managers.FrameLoader import FrameLoader
+from managers.DataGeneratorFrames import DataGeneratorFrames
+from managers.DataRepository import DataRepository
 
 from models.GoogleNet import get_model as get_model_googlenet
 from models.GoogleNet_extra_dense import get_model as get_model_googlenet_extra_dense
 from models.MobileNetV3Small import get_model as get_model_mobilenet
 from models.RandomCNN import get_model as get_model_randomcnn
 from models.vitransformer_enc import get_model as get_model_vit
+
+import tensorflow as tf
+print(tf.__version__)
+tf.config.list_physical_devices('GPU')
+
 
 def train_model(model: keras.Sequential, info_train, from_scratch=True):
     """Returns history object"""
@@ -158,7 +163,7 @@ info_mobilenet = {
 }
 
 ###############################################################################
-selected_info = info_ViViT
+selected_info = info_mobilenet
 ###############################################################################
 
 trainings_info = {
@@ -167,7 +172,7 @@ trainings_info = {
     'restore_best_weights' : False,
     'early_stopping_patience' : 6,
     'batch_size' : selected_info['batch_size'],
-    'learning_rate' : 8e-4 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
+    'learning_rate' : 8e-6 if 'learning_rate' not in selected_info.keys() else selected_info['learning_rate'],
     'train_date' : datetime.now().strftime("%Y%m%d"),
     'save_anyway' : True,
 }
