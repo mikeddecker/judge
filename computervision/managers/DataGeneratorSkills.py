@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 import random
 import math
-from DataRepository import DataRepository
-from FrameLoader import FrameLoader
+from managers.DataRepository import DataRepository
+from managers.FrameLoader import FrameLoader
 import sys
 sys.path.append('..')
 from api.helpers import ConfigHelper
