@@ -6,6 +6,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
+import time
 
 from constants import PYTORCH_MODELS_SKILLS
 from dotenv import load_dotenv
@@ -16,7 +17,7 @@ from pprint import pprint
 from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
-from datetime import datetime, date, time
+from datetime import datetime, date
 from helpers import weighted_mse_loss
 
 import sys
@@ -127,7 +128,7 @@ class TrainerSkills:
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         rundate = date.today().strftime('%Y%m%d')
         try:
-            start = time.start()
+            start = time.time()
             testrun = False
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
