@@ -45,7 +45,7 @@ class MViT(nn.Module):
             return output.shape[1]
     
     def forward(self, x):
-        # Input shape: (batch_size, timesteps, channels, height, width)
+        # Input shape: (batch_size, channels, timesteps, height, width)
         x = self.mvit(x)
         x = self.flatten(x)
         features = F.relu(self.features(x))

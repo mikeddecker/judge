@@ -46,7 +46,7 @@ class SwinTransformer(nn.Module):
             return output.shape[1]
     
     def forward(self, x):
-        # Input shape: (batch_size, timesteps, channels, height, width)
+        # Input shape: (batch_size, channels, timesteps, height, width)
         x = self.swint(x)
         x = self.flatten(x)
         

@@ -23,7 +23,7 @@ class SelfAttention(nn.Module):
         self.gamma = nn.Parameter(torch.zeros(1))
         
     def forward(self, x):
-        # x shape: [batch, channels, timesteps, height, width]
+        # Input shape: (batch_size, channels, timesteps, height, width)
         batch_size, C, T, H, W = x.size()
         
         # Project to query, key, value
@@ -87,6 +87,7 @@ class SAConv3D(nn.Module):
             self.output_layer = create_pytorch_segmentation_output_layers(lastNNeurons=self.LastNNeurons, timesteps=modelinfo['timesteps'])
       
     def _get_conv_output(self, shape):
+        # Input shape: (batch_size, channels, timesteps, height, width)
         with torch.no_grad():
             input = torch.rand(1, *shape)
             output = self.conv1(input)
