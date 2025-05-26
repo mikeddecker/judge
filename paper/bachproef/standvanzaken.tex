@@ -146,7 +146,7 @@ The following examples illustrate how scores are assigned for DD3 routines. Leve
     \end{itemize}
 \end{itemize}
 
-While these additions may seem simple, the combination of not knowing what will performed next, while keeping an eye on three people executing skills sequentially in about two thirds of a second makes it hard.
+While these additions may seem simple, the combination of not knowing what will performed next, while keeping an eye on three people executing skills sequentially in about two thirds of a second makes it hard to evaluate for judges.
 
 \section{Skill-matrix - complexity \& levels - towards model accuracy}
 \label{subsec:skillcomplexiteit}
@@ -366,5 +366,6 @@ Turntables even have the potential to be combined with a swift. Omitting turntab
 \section{Summary literature}
 \label{subsec:bp-summary literature}
 
-The PoC needs to localize the jumper \footnote{which can use fine-tuned pre-trained models}, segment actions, and using labeled splits or guessed ones to predict (sub)skills.
-Predicted skills will then be mapped to their corresponding level.
+According to the state of the art, it appears feasible to analyze the performed skills in a given recording. In order to evaluate this, a proof of concept will be developed predicting jump rope skills. Sequentially, three steps are be required. The first step involves localizing the position of the athletes. This way, computational resources can be spared in the following steps, namely segmenting and recognizing. The segmentation consists of predicting split moments which should divide the video into likely skills. In the final step, the recognition step, each seperated skill can be analyzed by a vision model, predicting the most likely skill performed for the given section.
+
+When all skills are predicted, corresponding levels and numeric scores can mapped onto each skillsection. These scores add up to difficulty score, usable to decide a victor on competitions.
