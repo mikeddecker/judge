@@ -239,10 +239,10 @@ Both models showed the same results, averaging out predictions slightly above 0 
 \subsection{Pre-trained MViT}
 
 In order to get better results on the little labeled available data, (44 videos for training, 7 validation videos), looking for a pre-trained model really helped a lot.
-PyTorch provides a \href{https://pytorch.org/vision/main/models.html}{list} of pre-build and pre-trained models such as \href{https://pytorch.org/vision/main/models/video_mvit.html}{mvit-v1-b}.
+PyTorch provides a \href{https://pytorch.org/vision/main/models.html}{list} of pre-built and pre-trained models such as \href{https://pytorch.org/vision/main/models/video_mvit.html}{mvit-v1-b}.
 Fine-tuning this model lowered the MSE to 0.065 with peaks overlapping splitpoints as demonstrated and elaborated in figure \ref{fig:segmentation-plot}.
 
-To get al sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) having a splitpoint value more than 0.4 become the start and end frame of a skill section, which will be used to recognize which skill is displayed. The code filtering segments out of raw-predicted splitpoint values is \ref{code:predictions-to-splitpoints}, filtering peaks (fig  \ref{fig:segmentation-plot}) in a list of start and end frames. An example could be \([...2280, 2320, 2355, 2382...]\), as splitpoints.
+To get all sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) having a splitpoint value more than 0.4 become the start and end frame of a skill section, which will be used to recognize which skill is displayed. The code filtering segments out of raw-predicted splitpoint values is \ref{code:predictions-to-splitpoints}, filtering peaks (fig  \ref{fig:segmentation-plot}) in a list of start and end frames. An example could be \([...2280, 2320, 2355, 2382...]\), as splitpoints.
 
 
 \begin{figure}
@@ -254,7 +254,7 @@ To get al sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) hav
     \caption[Segmentation plot]{Segmentation plot comparing predictions with the splitpoint values indicating a match of interesting splitpoint. Visible errors are: \\
         at frame 2459, a relatively lower jump out of the rope with a snapper. \\
         at frames 2700 until 2900 indicating a transition which is labeled in one segment, but the athletes are rather bouncy on their feet, letting the model think those are splitpoints. \\
-        a handspring occurs from frame 3140 until 3192, but the model indicates to much during the skill, while it doesn't indicate the moment right after the handspring.
+        a handspring occurs from frame 3140 until 3192, but the model indicates too much during the skill, while it doesn't indicate the moment right after the handspring.
     }
     \label{fig:segmentation-plot}
 \end{figure}
@@ -300,7 +300,7 @@ Using about 5k skills, 4550 to train and 669 to validate, the same video models 
 During the annotation of videos, it is noticed how screwed the skill-data is. Other action properties like turners, hands, type or faults are equally skewed. See table \ref{tab:skill_distribution_full_with_nulls} for a breakdown of skill occurrences.
 
 Both the ViViT and the SA-ConvLSTM were plateauing on the most appearing value, always predicting normal jumps, normally turned, without a mistake etc.
-Even up-sampling less occurring combination didn't help. The models stagnated on validation losses of 5.9 and 6.5. See figure \ref{fig:skill-upsampling-distribution} to see how many times a skill appears in a training round, depending on its uniqueness.
+Even up-sampling less occurring combinations didn't help. The models stagnated on validation losses of 5.9 and 6.5. See figure \ref{fig:skill-upsampling-distribution} to see how many times a skill appears in a training round, depending on its uniqueness.
 
 \begin{figure}
     \centering
