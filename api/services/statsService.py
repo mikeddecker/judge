@@ -76,6 +76,8 @@ class StatsService:
 
                 totalAccuraciesLastEpoch = [class_report['accuracy'] for class_report in tr_result["classification_reports"][lastEpochStr].values()]
                 totalAccuracy = sum(totalAccuraciesLastEpoch) / len(totalAccuraciesLastEpoch)
+                totalWeightedF1LastEpoch = [class_report['weighted avg']['f1-score'] for class_report in tr_result["classification_reports"][lastEpochStr].values()]
+                totalWeightedF1 = sum(totalWeightedF1LastEpoch) / len(totalWeightedF1LastEpoch)
 
                 results[modelname][traindate] = {
                     'f1-scores-val' : tr_result['f1_scores'],
@@ -83,6 +85,8 @@ class StatsService:
                     'f1-scores-val-skill': [tr_result['f1_scores'][str(i)]['Skill'] for i in range(len(tr_result['f1_scores']))],
                     'f1-macro-avg' : tr_result['total_accuracy_at_best'],
                     'f1-macro-avg-skills' : bestepoch['Skill'],
+                    'f1-weighted-avg' : totalWeightedF1,
+                    'f1-weighted-avg-skills' : tr_result["classification_reports"][lastEpochStr]['Skill']['weighted avg']['f1-score'],
                     'total-accuracy' : totalAccuracy,
                 }
 
@@ -93,6 +97,8 @@ class StatsService:
                         'model': modelname,
                         'f1-macro-avg': round(100 * tr_result['total_accuracy_at_best'], 2),
                         'f1-macro-avg-skills' : round(100 * bestepoch['Skill'], 2),
+                        'f1-weighted-avg': round(100 * totalWeightedF1, 2),
+                        'f1-weighted-avg-skills' : round(100 * tr_result["classification_reports"][lastEpochStr]['Skill']['weighted avg']['f1-score'], 2),
                         'total-accuracy' : round(100 * totalAccuracy, 2),
                         'date' : traindate
                     }

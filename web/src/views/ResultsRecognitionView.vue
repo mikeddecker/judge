@@ -127,6 +127,8 @@ const transformF1ToChart = (fscores) => {
     <Column sortable field="model" header="model"></Column>
     <Column sortable field="f1-macro-avg" header="f1-macro-avg"></Column>
     <Column sortable field="f1-macro-avg-skills" header="f1-macro-avg-skills"></Column>
+    <Column sortable field="f1-weighted-avg" header="f1-weighted-avg"></Column>
+    <Column sortable field="f1-weighted-avg-skills" header="f1-weighted-avg-skills"></Column>    
     <Column sortable field="total-accuracy" header="total-accuracy"></Column>
     <Column sortable field="date" header="date"></Column>
   </DataTable>
