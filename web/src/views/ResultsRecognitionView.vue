@@ -9,8 +9,8 @@ const props = defineProps({
 })
 
 const selected = props.results['selected-model']
-const totalAccuracy = round2decimals(props.results['best']['accuracy'] * 100)
-const skillAccuracy = round2decimals(props.results['best']['acc-skills'] * 100)
+const f1MacroAvg = round2decimals(props.results['best']['f1-macro-avg'] * 100)
+const f1MacroAvgSkills = round2decimals(props.results['best']['f1-macro-avg-skills'] * 100)
 const chartDataVal = computed(() => transformF1ToChart(props.results['best']['f1-scores-val']))
 
 const chartOptions = {
@@ -109,24 +109,25 @@ const transformF1ToChart = (fscores) => {
     <Card>
       <template #header>Total Accuracy</template>
       <template #content>
-        <span class="text-2xl">{{ totalAccuracy }}%</span>
+        <span class="text-2xl">{{ f1MacroAvg }}%</span>
       </template>
     </Card>
     
     <Card>
       <template #header>Skill Accuracy</template>
       <template #content>
-        <span class="text-2xl">{{ skillAccuracy }}%</span>
+        <span class="text-2xl">{{ f1MacroAvgSkills }}%</span>
       </template>
     </Card>
   </div>
 
   <Chart type="line" :data="chartDataVal" :options="chartOptions" class="w-full" />
 
-  <DataTable :value="Object.values(results['modelcomparison'])" class="w-1/2">
+  <DataTable :value="Object.values(results['modelcomparison'])" class="w-2/3">
     <Column sortable field="model" header="model"></Column>
-    <Column sortable field="total_accuracy_at_best" header="total accuracy"></Column>
-    <Column sortable field="acc-skills" header="skill accuracy"></Column>
+    <Column sortable field="f1-macro-avg" header="f1-macro-avg"></Column>
+    <Column sortable field="f1-macro-avg-skills" header="f1-macro-avg-skills"></Column>
+    <Column sortable field="total-accuracy" header="total-accuracy"></Column>
     <Column sortable field="date" header="date"></Column>
   </DataTable>
   <!-- <pre>{{ results }}</pre> -->

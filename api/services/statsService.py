@@ -42,7 +42,7 @@ class StatsService:
     def getRecognitionResults(self, selectedModel: str):
         results = {
             'best' : {
-                'accuracy' : 0
+                'f1-macro-avg' : 0
             },
             'modelcomparison' : {}
         }
@@ -52,7 +52,7 @@ class StatsService:
         for modelname in PYTORCH_MODELS_SKILLS.keys():
             results[modelname] = {
                 'best' : {
-                    'accuracy' : 0
+                    'f1-macro-avg' : 0
                 }
             }
         
@@ -70,28 +70,34 @@ class StatsService:
                 modelname = filename[:filename.find('_skills')]
                 traindate = filename[filename.find('.stats')-8:filename.find('.stats')]
 
-                bestepoch = tr_result['f1_scores'][f"{len(tr_result['f1_scores']) - 1}"]
+                lastEpochStr = str(tr_result['best_epoch'])
+                bestepoch = tr_result['f1_scores'][lastEpochStr]
                 # bestepoch = lastepoch - patience
-                
+
+                totalAccuraciesLastEpoch = [class_report['accuracy'] for class_report in tr_result["classification_reports"][lastEpochStr].values()]
+                totalAccuracy = sum(totalAccuraciesLastEpoch) / len(totalAccuraciesLastEpoch)
+
                 results[modelname][traindate] = {
                     'f1-scores-val' : tr_result['f1_scores'],
                     'f1-scores-val-total': [tr_result['f1_scores'][str(i)]['Total'] for i in range(len(tr_result['f1_scores']))],
                     'f1-scores-val-skill': [tr_result['f1_scores'][str(i)]['Skill'] for i in range(len(tr_result['f1_scores']))],
-                    'accuracy' : tr_result['total_accuracy_at_best'],
-                    'acc-skills' : bestepoch['Skill'],
+                    'f1-macro-avg' : tr_result['total_accuracy_at_best'],
+                    'f1-macro-avg-skills' : bestepoch['Skill'],
+                    'total-accuracy' : totalAccuracy,
                 }
 
-                if tr_result['total_accuracy_at_best'] > results[modelname]['best']['accuracy']:
+                if tr_result['total_accuracy_at_best'] > results[modelname]['best']['f1-macro-avg']:
                     results[modelname]['best'] = results[modelname][traindate]
                     results[modelname]['date'] = traindate
                     results['modelcomparison'][modelname] = {
                         'model': modelname,
-                        'total_accuracy_at_best': round(100 * tr_result['total_accuracy_at_best'], 2),
-                        'acc-skills' : round(100 * bestepoch['Skill'], 2),
+                        'f1-macro-avg': round(100 * tr_result['total_accuracy_at_best'], 2),
+                        'f1-macro-avg-skills' : round(100 * bestepoch['Skill'], 2),
+                        'total-accuracy' : round(100 * totalAccuracy, 2),
                         'date' : traindate
                     }
 
-                if tr_result['total_accuracy_at_best'] > results['best']['accuracy']:
+                if tr_result['total_accuracy_at_best'] > results['best']['f1-macro-avg']:
                     modelcomparison = results['modelcomparison']
                     results['best'] = results[modelname][traindate]
                     results['modelcomparison'] = modelcomparison
