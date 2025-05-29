@@ -32,7 +32,7 @@ Finally some challenges remain such as group activity or unknown/unusual skills.
 % > remaining challenges (group activity + unknown/unusual skills)
 
 \section{Challenges of judging}
-\label{subsubsec:bp-literature-judge-challenges}
+\label{lit:challenges-of-judging}
 
 \begin{table*}[]
     \begin{tabular}{lllllllll}
@@ -93,13 +93,16 @@ Even in slow motion, differences between assigned scores of judges exist when ca
 Incorporating all these things brought jump rope to where it is. To increase the accuracy of difficulty score assignments, we try to find improvements. One of these is exploring automatic skill-recognition by using AI. When skills are recognizable by a program, they can be mapped to their corresponding level, contributing towards the end score. Knowing what's represented in an image or a video is called computer vision. % TODO : source
 
 \section{Jump rope skills introduction}
-\label{subsec:bp-literature-basisskills}
+\label{lit:jump-rope-skills-introduction}
 
 Earlier we described the presence of multiple disciplines in jump rope. One particular discipline within jump rope that is highly complex and therefore challenging in terms of difficulty scoring is a Double Dutch Single Freestyle (DD3). This study will focus on this type of freestyle to explore how and in what way recent advancements in machine learning can facilitate and improve difficulty scoring.
 
 % \subsection{Double Dutch Single Freestyle - DD3}
 % \label{subsubsec:literature-dd3}
 \medskip
+
+% TODO : merge parts
+% During a DD3 freestyle, there are two turners and one jumper. All of them act as a unit executing skills or turner combinations. The jumper can do a handstand, a push-up or a cartwheel. Meanwhile, turners can cross their arms, hold them on their back or rotate multiple times underneath the jumper in a single jump. Each skill and turner have their base level, contributing to the total level when combined. Furthermore, additional bonus levels are assigned between some skill transitions, rewarding the more difficult ones. An example of this is performing a push-up to a push-up while your body position changes a quarter which gives an additional level.
 
 % TODO : add DD figure for clarification
 DD3 consists of two turners and one jumper alternating ropes. Elements in double dutch are similar to single rope, but different at the same time. The jumper can execute skills, mainly powers \footnote{powers/strength type skills}, gymnastics or footwork. Meanwhile, turners can manipulate the rope by rotating multiple ropes underneath the athlete in a single jump, called multiple unders. Another turner involvement could be turner-skills, which are restrictions like crossing the arms, restricting one of your arms behind your back (EB), maybe both arms (TS) or under your leg. Turners can even perform footwork, powers or gymnastics themselves. \footnote{Footwork as a turner doesn't raise your score.}
@@ -149,7 +152,7 @@ The following examples illustrate how scores are assigned for DD3 routines. Leve
 While these additions may seem simple, the combination of not knowing what will performed next, while keeping an eye on three people executing skills sequentially in about two thirds of a second makes it hard to evaluate for judges.
 
 \section{Skill-matrix - complexity \& levels - towards model accuracy}
-\label{subsec:skillcomplexiteit}
+\label{lit:skill-matrix}
 
 \begin{figure}
     \centering
@@ -192,7 +195,7 @@ On another note, \textcite{Guo_2017} explain that softmax isn't always a good in
 
 
 \section{Computer vision}
-\label{subsec:bp-literature-computer-vision}
+\label{lit:computer-vision}
 
 \begin{table*}[t]
     \centering
@@ -224,7 +227,7 @@ While these are interesting techniques, more effort is put into action recogniti
 
 
 \subsection{Computer vision in other sports}
-\label{subsubsec:bp-literature-computer-vision-sports}
+\label{lit:computer-vision-sports}
 
 \textcite{Soomro_2014} published a book about the first advancements in computer vision since it was applied to sports. In addition, \textcite{Yin_2024} published a paper on the latest advancements of computer vision in teams competitions. Although relatively popular, neither of them really talks about gymnastics, which is closer related to jump rope than sports like tennis, basketball or cricket.
 Given examples by those two sources of performed computer vision tasks are: player tracking, following the ball trajectory (e.g. in cricket, football, tennis), human to human interaction (e.g basket) or detecting action types (e.g. running, walking, hitting the ball) or predicting the sport itself. (e.g. Olympics dataset).
@@ -239,7 +242,7 @@ Meanwhile, the International Gymnastic Federation (\href{https://www.gymnastics.
 Combining these examples and earlier research, a robust action recognition model can be developed detecting key aspects of a a video. These aspects, such as the number of hands, feet, body rotations and the main pose/action, can then be mapped with a level/score resulting in the full difficulty score of a routine.
 
 \subsection{NextJump Speedcounter}
-\label{subsubsec:bp-literature-nextjump-speedcounter}
+\label{lit:nextjump-speedcounter}
 
 % \begin{figure}
 %     \centering
@@ -284,7 +287,7 @@ As jumpers can stand everywhere in a field \footnote{A field is generally 12x12 
 In what follows, a study of past and recent advancements are listed for each of the three steps, localization, segmentation and prediction. This allows for a selection of machine learning models, best suited for the task at hand. After selecting potential models, some potential hurdles are listed which can withold progression on skill recognition.
 
 \section{Jumper localization}
-\label{subsec:jumper localization}
+\label{lit:jumper-localization}
 
 Image recognition has been at the centre of many recent studies. The best models mostly utilize Convolutional Neural Networks processing spacial information in the image \autocite{Zaidi_2021}. \textcite{Zaidi_2021} further compare recent models for object detection such as YOLO(v4), CenterNet, SSD, EfficientDet-D2, each using some backbone architecture like VGG-16, AlexNet, GoogleNet or lightweight models such as ShuffleNet or MobileNet (all using CNN's). A subset of these models being real-time models (fps > 30).
 The goal of localizing the jumper is to center the athletes in the middle of the screen/video. \textcite{Bharadiya_2023} states that the position of objects in images doesn't really matter, but there are no clear statements about the size of objects. It could be that a jumper takes up 80 percent of the screen, while moments later he moved backwards and only takes up 30 percent of the video. The assumption is that centered and scaled data will work better later.
@@ -325,7 +328,7 @@ skill.
 
 
 \section{Skill recognition}
-\label{subsec:bp-skill-recognition}
+\label{lit:skill-recognition}
 
 The final step would be to recognize the total skill in a freestyle video.
 \textcite{Yin_2024} did a general HAR survey, mainly focused on team sports, in which they describe the evolution from normal CNN architectures, to recurrent neural networks for time sequences, remembering context, like the Long Short Term Memory model (LSTM), after which models were developed feeding the CNN output into LSTM or even implementing a convolutional filter in the memory cell \autocite{Shi_2015}.
@@ -349,7 +352,7 @@ As DD3 is a group activity, problems could arise while trying to detect skills. 
 
 
 \section{Unknown/Unusual skills}
-\label{subsec:bp-literature-unknowmultin-unusual-skills}
+\label{lit:unknown-unusual-skills}
 
 % TODO revise
 Unknown skills or special cases pose another challenge. That's why the skill-matrix needs to defined in such a way, to accommodate for new combinations or skills. This is called zero-shot learning, \autocite{Pourpanah_2022}, where actions or combinations get recognized without any labels.
@@ -362,7 +365,7 @@ Turntables even have the potential to be combined with a swift. Omitting turntab
 
 
 \section{Summary literature}
-\label{subsec:bp-summary literature}
+\label{lit:-summary-literature}
 
 According to the state of the art, it appears feasible to analyze the performed skills in a given recording. In order to evaluate this, a proof of concept will be developed predicting jump rope skills. Sequentially, three steps are be required. The first step involves localizing the position of the athletes. This way, computational resources can be spared in the following steps, namely segmenting and recognizing. The segmentation consists of predicting split moments which should divide the video into likely skills. In the final step, the recognition step, each seperated skill can be analyzed by a vision model, predicting the most likely skill performed for the given section.
 

@@ -296,7 +296,7 @@ The selected frames are calculated in code snippet \ref{code:skill-frame-selecti
 
 \subsection{Video Vision Transformer \& Self-attention ConvLSTM}
 
-Using about 5k skills, 4550 to train and 669 to validate, the same video models as described in the segmentation phase \ref{subsec:video-models-from-scratch} can be trained the skill properties defined in \ref{subsec:skillcomplexiteit}.
+Using about 5k skills, 4550 to train and 669 to validate, the same video models as described in the segmentation phase \ref{subsec:video-models-from-scratch} can be trained the skill properties defined in \ref{lit:skill-matrix}.
 During the annotation of videos, it is noticed how screwed the skill-data is. Other action properties like turners, hands, type or faults are equally skewed. See table \ref{tab:skill_distribution_full_with_nulls} for a breakdown of skill occurrences.
 
 Both the ViViT and the SA-ConvLSTM were plateauing on the most appearing value, always predicting normal jumps, normally turned, without a mistake etc.
