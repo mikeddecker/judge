@@ -35,7 +35,7 @@ Computer vision \ref{lit:computer-vision}, a subset of machine learning, is the 
 Exploring this topic; models, other sports, the jury support system of Fujitsu (\ref{intro-bp:question-earlier-research-guidance}, \ref{lit:computer-vision-sports}), the availability of video recordings (\ref{intro-bp:question-data}, \ref{tbl:data-comparison-sr-dd}), along with aquiring information about and NextJumps' speedcounter \ref{lit:nextjump-speedcounter} allowed for the choice to learn out of video material \ref{intro-bp:question-which-modern-technologies}.
 
 Using videodata and recognizing actions required to think about quite some properties. Recordings are typically full routines of about 60 to 75 seconds. These freestyles contain 40 to 60 skills, around 100 if you include normal jumps. Some recordings are zoomed-in, others are stationary capturing the whole field. The videotype may be mp4, blu-ray (m2ts) or AVI. Even the framerate could differ (25, 30, 50).
-Considering these aspects, a general approach for recognizing skills in a video is created while exploring human action recogniton \ref{lit:human-action-recognition}. This resulted in three steps; jumper localization \ref{lit:jumper-localization}, action segmentation \ref{lit:video-action-segmentation} and skill recognition \ref{lit:skill-recognition}.
+Considering these aspects, a general approach for recognizing skills in a video is created while exploring human action recogniton \ref{lit:human-action-recognition}. This resulted in three steps; jumper localization \ref{lit:jumper-localization}, action segmentation \ref{lit:video-action-segmentation} and skill recognition \ref{lit:skill-recognition}, each of them requiring future work \ref{discussion:future-work}.
 
 % TODO : add refs to methodology or results?
 
@@ -43,11 +43,40 @@ Considering these aspects, a general approach for recognizing skills in a video 
 
 Localization serves as a way to zoom in and focussing on the actions, sparing computational resources, rather than providing frames to a model where the actions and athletes only take up a limitted amount of space in the video \ref{fig:sr4-field}.
 
-on the  Tests on results for localizing \ref{results:jumper-localization} are limited in order to have spent sufficient time for segmenting and recognizing skills. Even then, time was limited. Predicting the location of jumpers has been tested using full boxes as a first stage. Models in this stage included MobileNet and GoogleNet, but results were lacking. The switch to annotate individuals instead of full teams and using a pre-trained YOLO model quickly reached better results. Even though the mAP50 reached 0.943 accuracy, intial full videocrops weren't stable, requiring smoothing techniques and more labels in order to reduce spectator predictions and visually disturbing shocks (table \ref{tbl:crop-results}). Utilizing a basic smoothing technique \ref{results:crop-stability} allowed for sufficient videocrops, which can be used for skill recognition, sparing 
+on the  Tests on results for localizing \ref{results:jumper-localization} are limited in order to have spent sufficient time for segmenting and recognizing skills. Even then, time was limited. Predicting the location of jumpers has been tested using full boxes as a first stage. Models in this stage included MobileNet and GoogleNet, but results were lacking. The switch to annotate individuals instead of full teams and using a pre-trained YOLO model quickly reached better results. 
+Even though the mAP50 reached 0.943 accuracy, intial full videocrops weren't stable, requiring smoothing techniques and more labels in order to reduce spectator predictions and visually disturbing shocks (table \ref{tbl:crop-results}). Utilizing a basic smoothing technique \ref{results:crop-stability} allowed for sufficient videocrops, which can be used for skill recognition \& segmentation.
+
+\subsection{Future work on localization}
+
+Localization can be improved in multiple areas. This could be involve training on full team labels using YOLO, applying other smoothing techniques or implenting other models. Other factors could be changing the competition setting to limit the amount of spectators, keeping the camera perspective consistent or provide more different perspectives. Another way is annotating the predicted spectators or judges, indicated by pre-trained models, which can be filtered out when cropping.
 
 \subsection{Segmentation}
 
+The part about action segmentation definitely needs more research and experiments. The easiest implementation was utilizing vision models used for recognizing actions to annotate interesting split points having a value of 1, a split moment, or 0, executing a skill or doing nothing. Using the Multiscale Vision Transformer, developed by \autocite{Fan2021}, which acquired great results recognition \ref{results:skill-recognition}, quickly showed overlap between predicted split points and labeled split points \ref{fig:segmentation-plot}.
+Videos were split into partitions of T = 16 timesteps, learning some context of previous and following frames, in order to predict T split output values as wel. The highest peaks were then considered split points.
+
+\subsection{Future work on action segmentation}
+
+Due to time constraints and priorities, only the MSE has been used to decide the most optimal split moments on the MViT model. There are still future actions which could improve action segmentation. Ideas, not limited to the list below, include:
+
+\begin{itemize}
+    \item Implement other metrics for segmentation next to MSE \\
+        \begin{itemize}
+            \item IoU section overlap
+            \item Average distance to closest split point
+            \item Count of predicted splitpoints vs actual splitpoints
+        \end{itemize}
+    \item Implement a second dimension, is jumping parameter to filter out mistake recoveries or non jumping moments.
+    \item Predict every other frame, instead of all frames.
+    \item Implementing a action segmentation specific models.
+    \item More labels
+\end{itemize} 
+
 \subsection{Recognition}
+
+
+
+
 
 It is unknown how much data is expected to increase the accuracy \ref{intro-bp:question-expected-data-to-increase-accuracy}, but one major improvement is adding sufficient examples of each skill or turner, in order to provide enough feedback to model to learn more about these less represented classes.
 
@@ -56,7 +85,8 @@ It is unknown how much data is expected to increase the accuracy \ref{intro-bp:q
 
 Summary machine learning using judge scores.
 
-\section{Future work}
+\section{Other future work}
+\label{discussion:future-work}
 
 While some areas about recognizing skills are covered, a lot need more attention in future studies. The additional questions from the introduction \ref{intro-bp:question-additional} remain along with new ones or unfinished work.
 
