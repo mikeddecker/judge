@@ -41,6 +41,8 @@ Considering these aspects, a general approach for recognizing skills in a video 
 
 \subsection{Localization}
 
+Tests on results for localizing \ref{results:jumper-localization} are limited in order to have spent sufficient time for segmenting and recognizing skills. Even then, time was limited. Predicting the location of jumpers has been tested using full boxes as a first stage. Models in this stage included MobileNet and GoogleNet, but results were lacking. The switch to annotate individuals instead of full teams and using YOLO quickly reached better results. The intial full videocrops weren't stable, requiring smoothing techniques and more labels in order to reduce spectator predictions and visually disturbing shocks (table \ref{tbl:crop-results}).
+
 \subsection{Segmentation}
 
 \subsection{Recognition}
