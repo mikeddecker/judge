@@ -74,7 +74,7 @@ class StatsService:
         score = 0
         for lvl in levels:
             if isinstance(lvl, int):
-                freq_table[lvl] += 1
+                freq_table[min(lvl, 8)] += 1
                 score += LEVEL_TO_SCORE_MAP[min(lvl, 8)]
             else:
                 pass # Mistakes
