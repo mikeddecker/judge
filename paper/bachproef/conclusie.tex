@@ -43,7 +43,7 @@ Considering these aspects, a general approach for recognizing skills in a video 
 
 Localization serves as a way to zoom in and focussing on the actions, sparing computational resources, rather than providing frames to a model where the actions and athletes only take up a limitted amount of space in the video \ref{fig:sr4-field}.
 
-on the  Tests on results for localizing \ref{results:jumper-localization} are limited in order to have spent sufficient time for segmenting and recognizing skills. Even then, time was limited. Predicting the location of jumpers has been tested using full boxes as a first stage. Models in this stage included MobileNet and GoogleNet, but results were lacking. The switch to annotate individuals instead of full teams and using a pre-trained YOLO model quickly reached better results. 
+on the  Tests on results for localizing \ref{results:jumper-localization} are limited in order to have spent sufficient time for segmenting and recognizing skills. Even then, time was limited. Predicting the location of jumpers has been tested using full boxes as a first stage. Models in this stage included MobileNet and GoogleNet, but results were lacking. The switch to annotate individuals instead of full teams and using a pre-trained YOLO model quickly reached better results.
 Even though the mAP50 reached 0.943 accuracy, intial full videocrops weren't stable, requiring smoothing techniques and more labels in order to reduce spectator predictions and visually disturbing shocks (table \ref{tbl:crop-results}). Utilizing a basic smoothing technique \ref{results:crop-stability} allowed for sufficient videocrops, which can be used for skill recognition \& segmentation.
 
 \subsection{Future work on localization}
@@ -67,7 +67,7 @@ Being able to predict splitpoints allows to perform skill recognition on complet
 Due to time constraints and priorities, only the MSE has been used to decide the most optimal split moments on the MViT model. There are still future actions which could improve action segmentation. Ideas, not limited to the list below, include:
 
 \begin{itemize}
-    \item Implement other metrics for segmentation next to MSE \\
+    \item Implement other metrics for segmentation next to MSE
         \begin{itemize}
             \item IoU section overlap
             \item Average distance to closest split point
@@ -77,7 +77,7 @@ Due to time constraints and priorities, only the MSE has been used to decide the
     \item Predict every other frame, instead of all frames.
     \item Implementing a action segmentation specific models.
     \item More labels
-\end{itemize} 
+\end{itemize}
 
 \subsection{Recognition}
 
@@ -104,4 +104,4 @@ Time constraints didn't allow for a comparison of judge scores and model predict
 
 When ground truths are available for the routines, an actual comparison between judge scores and models can be made to decide the better judge. Meanwhile, skill matrices for other events can be created, labeled on videos and trained, allowing for a broader range of models, model outputs and possibilities.
 
-To conclude, this research showed the possibilities of the proposed three step architecture for recognizing skills in a full routine on a limited dataset. While results aren't perfect, great effort has been put in the proof of concept, enabling furter research. The main priority should now be recording and annotating more videos, with different camera perspectives, including more skill of each skill variation in both the training and validation dataset. 
+To conclude, this research showed the possibilities of the proposed three step architecture for recognizing skills in a full routine on a limited dataset. While results aren't perfect, great effort has been put in the proof of concept, enabling furter research. The main priority should now be recording and annotating more videos, with different camera perspectives, including more skill of each skill variation in both the training and validation dataset.
