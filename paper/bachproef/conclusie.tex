@@ -86,20 +86,22 @@ But even before the ability to isolate skills, labeling and training experiments
 
 Next up was transforming all aspects of skills into machine understandable output labels. This was the reason why the skill matrix has been created \ref{lit:skill-matrix}. The matrix resulted in a skill configuration \ref{code:confighelper} for skill labels, specifying 13 different outputs; Type, Rotations, Turner1, Turner2, Skill, Hands, Feet, Turntable, BodyRotations, Backwards, Sloppy, Hard2see and Fault. Each aspect being a category, numeric value or a boolean.
 
-The final adaptation using weighted losses, which returned a different loss depending on the occurrence of skill aspects pushed the MViT model into grasping the meaning behind the fault, sloppy and hard2see aspects. It raised the f1 average macro accuracy from 45.61\% to 51.53\%, giving in on f1 macro skill accuracy. It fell from 34.93\% to 27.75\%, which is low compared to the skill recognition accuracies on MViT_extra_dense 31.46\%, HAR_SwinT_t 32.06\%, and HAR_SwinT_s 36.73\%. However, it still reached highest on the normal accuracy measure 93.83\%, compared to 93.73\%, 91.99\%, or 93.3\%.
+The final adaptation using weighted losses, which returned a different loss depending on the occurrence of skill aspects pushed the MViT model into grasping the meaning behind the fault, sloppy and hard2see aspects. It raised the f1 average macro accuracy from 45.61\% to 51.53\%, giving in on f1 macro skill accuracy. It fell from 34.93\% to 27.75\%, which is low compared to the skill recognition accuracies on MViT extra dense 31.46\%, SwinT t 32.06\%, and SwinT s 36.73\%. However, it still reached highest on the normal accuracy measure 93.83\%, compared to 93.73\%, 91.99\%, or 93.3\%.
 
+It is unknown how much data is expected to increase the accuracy \ref{intro-bp:question-expected-data-to-increase-accuracy}, but one major improvement is adding sufficient examples of each skill or turner, in order to provide enough feedback to model to learn more about these less represented skill aspects.
 
+\subsection{Future work on skill recognition}
 
-It is unknown how much data is expected to increase the accuracy \ref{intro-bp:question-expected-data-to-increase-accuracy}, but one major improvement is adding sufficient examples of each skill or turner, in order to provide enough feedback to model to learn more about these less represented classes.
+Aside from additional labels, some possibilities to increase accuracy are fine-tuning the weighted losses or experimenting using different models. Another could be predicting the actions of individual athletes, instead of regarding the video section as a single unit. This can be especially usefull when predicting single rope team freestyles, in which the jumpers act as a unit, but also act as an individual, contrary to double dutch freestyles.
 
 \subsection{Judge score}
 
-
-Summary machine learning using judge scores.
+In the final run, MViT reached the best judge score results, with a difference of -21.68\% compared to the scores allocated by judges.
+Time constraints didn't allow for a comparison of judge scores and model predictions with the ground truth. Thus the desired outcome to have a score difference around 5 to 10\% couldn't be measured. Even the -21.68\% is way to far off in order to use at competitions.
 
 \section{Other future work}
 \label{discussion:future-work}
 
-While some areas about recognizing skills are covered, a lot need more attention in future studies. The additional questions from the introduction \ref{intro-bp:question-additional} remain along with new ones or unfinished work.
+When ground truths are available for the routines, an actual comparison between judge scores and models can be made to decide the better judge. Meanwhile, skill matrices for other events can be created, labeled on videos and trained, allowing for a broader range of models, model outputs and possibilities.
 
-% TODO
+To conclude, this research showed the possibilities of the proposed three step architecture for recognizing skills in a full routine on a limited dataset. While results aren't perfect, great effort has been put in the proof of concept, enabling furter research. The main priority should now be recording and annotating more videos, with different camera perspectives, including more skill of each skill variation in both the training and validation dataset. 
