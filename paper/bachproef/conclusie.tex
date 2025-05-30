@@ -23,9 +23,37 @@ The first set being questions about jump rope, which will be answered in \ref{ch
 
 Today, the challenge for jump rope judges \ref{intro-bp:question-challenges-for-judges} is the ability to keep up with the skills performered, while calculating the skill level, in order to accurately score the difficulty of a routine. In order to reduce errors, judging methods change, such as adapting the rules \ref{lit:adapting-the-rules} or reviewing the routine post-performence at slower speeds \ref{lit:review-at-slower-speed}.
 
-Skills were then broken down \ref{lit:jump-rope-skills-introduction} to know better understand how difficulty is scored \ref{intro-bp:question-difficulty-scored}. This was further specified into the concept of a skill matrix \ref{lit:skill-matrix} in order to specify which exact actions needed to be recognized \ref{intro-bp:question-what-are-the-skills-to-be-recognized}.
-Having skills specified, lead to the machine learning part, exploring possibilities.
+Skills were then broken down \ref{lit:jump-rope-skills-introduction} to better understand how difficulty is scored \ref{intro-bp:question-difficulty-scored}. These were further specified and organized into a skill matrix \ref{lit:skill-matrix} in order to specify which exact actions needed to be recognized \ref{intro-bp:question-what-are-the-skills-to-be-recognized}.
+Having skills specified, leads to the machine learning part, transforming this matrix into computer output and exploring machine learning possibilities. % possibilities / results?
 
 
 \section{Machine learning answers}
 \label{ch:machine-learning-answers}
+
+% TODO add sensoric data if time?
+Computer vision \ref{lit:computer-vision}, a subset of machine learning, is the ability of computers to understand visual data.
+Exploring this topic; models, other sports, the jury support system of Fujitsu (\ref{intro-bp:question-earlier-research-guidance}, \ref{lit-computer-vision-sports}), the availability of video recordings (\ref{intro-bp:question-data}, \ref{tbl:data-comparison-sr-dd}), along with aquiring information about and NextJumps' speedcounter \ref{lit:nextjump-speedcounter} allowed for the choice to learn out of video material \ref{intro-bp:question-which-modern-technologies}.
+
+Using videodata and recognizing actions required to think about quite some properties. Recordings are typically full routines of about 60 to 75 seconds. These freestyles contain 40 to 60 skills, around 100 if you include normal jumps. Some recordings are zoomed-in, others are stationary capturing the whole field. The videotype may be mp4, blu-ray (m2ts) or AVI. Even the framerate could differ (25, 30, 50).
+Considering these aspects, a general approach for recognizing skills in a video is created while exploring human action recogniton \ref{lit:human-action-recognition}. This resulted in three steps; jumper localization \ref{lit:jumper-localization}, action segmentation \ref{lit:video-action-segmentation} and skill recognition \ref{lit:skill-recogniton}.
+
+% TODO : add refs to methodology or results?
+
+\subsection{Localization}
+
+\subsection{Segmentation}
+
+\subsection{Recognition}
+
+It is unknown how much data is expected to increase the accuracy \ref{intro-bp:question-expected-data-to-increase-accuracy}, but one major improvement is adding sufficient examples of each skill or turner, in order to provide enough feedback to model to learn more about these less represented classes.
+
+\subsection{Judge score}
+
+
+Summary machine learning using judge scores.
+
+\section{Future work}
+
+While some areas about recognizing skills are covered, a lot need more attention in future studies. The additional questions from the introduction \ref{intro-bp:question-additional} remain along with new ones or unfinished work.
+
+% TODO

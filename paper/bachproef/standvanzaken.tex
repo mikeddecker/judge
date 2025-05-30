@@ -270,8 +270,8 @@ They found that 10 hours was sufficient for a single event (e.g. just single rop
 
 
 \section{Human Action Recognition - general progress}
+\label{lit:human-action-recognition}
 
-% TODO : find paper, reference to come to steps or use pareek again?
 \textcite{Pareek_2020} summarized recent updates in human activity recognition. Based on their paper, a general approach is created in order to recognize the skills of jumpers.
 
 As jumpers can stand everywhere in a field \footnote{A field is generally 12x12 or 15x15 meters}, locating and cropping athletes can improve the segmentation model \footnote{If time allows it, the final model can be compared with or without localization}. When the skippers are centered, action segmentation can be performed. This allows for the predicting of skills on newly recorded videos, without the need to cut out the different skills. Finally, a level can be mapped on each predicted skill \footnote{Note that in skillrecognition can infer turner involvements, number of rotations, hands, feet, ...}. Below you can find a summary of each step.
@@ -317,6 +317,7 @@ Even when Densepose isn't used, smoothing can still be applied to the guessed bo
 
 
 \section{Video action segmentation}
+\label{lit:video-action-segmentation}
 
 When the athletes are cropped, videos need to be split \footnote{Not real/physical splits, but rather labels/annotations for where to split} in (sub)skills, because splitting new videos manually takes too much time and is impractical on competitions. A more specialized model like LTContext \autocite{Jiaming_2023} or a video vision model explored in section~\ref{subsec:bp-skill-recognition} could suffice.
 
