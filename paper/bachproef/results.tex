@@ -5,7 +5,7 @@
 \chapter{\IfLanguageName{dutch}{Resultaten}{Results}}%
 \label{ch:results}
 
-The result section focuses on elaborating conducted experiments and acquired results, divided into the three main phases, localization, segmentation and recognition. After discussing the first results, additional labels and fine-tuning is performed. The final amount of labels and results are added at the end. In order to label, annotate videos and gain insights in the results a Vue3 web-app is created on a python flask API which reads and stores labels and video annotations from a MySQL database. Furthermore, the experiments are all performed using an Acer Nitro ANV15-51, running Ubuntu 24.04.2 LTS, using a 13th Gen Intel® Core™ i5-13420H × 12, with 16GB RAM and a NVIDIA GeForce RTX™ 4050 Laptop GPU 5898MiB.
+The result section focuses on elaborating conducted experiments and acquired results. It specifies actual results, details about implementations and code snippet references.
 
 \section{Jumper localization}
 \label{results:jumper-localization}
@@ -19,31 +19,32 @@ As DD3 routines are the focus of this research, the idea was to predict the coor
 Below you can find a shortlist of experiments executed on localization.
 
 \begin{itemize}
-    \item random convolutional network
-    \item dedicated models googlenet, mobilenet...
-    \item pre-trained model yolo -> OK
+    \item GoogleNet
+    \item MobileNet
+    % \item Vision Transformer
+    \item YOLOv11
 \end{itemize}
-
-\subsection{Random convolutional network}
-
-% TODO : illustrative image of box coords?
-
-In order to get a first grasp of the results, a quick convolutional network is created \ref{code:keras-random-conv} to simulate the first results. To mark the position of an object on an image, there are multiple possibilities.
-For this project, the relative center point along the x-axis, y-axis, width and height of the box are stored. So regardless of the scale of the image, whether the image has size 1920 x 1080 pixels or 1080 x 720 pixels, the position of the box remains the same.
-This way, by scaling all images to the same size, frames of dimension (width, height, channels) can fed into the model \ref{code:keras-random-conv}, giving 4 values in return. An example of a box would be [0.6, 0.5, 0.4, 0.4], all values between 0 and 1.
-After training and predicting box coordinates, the IoU accuracy can then be performed evaluating the performance of the model.
-
-The first predictions average out the input coordinates, reaching a meaningless 25-28\% IoU on about 6200 train and about 800 validation images. The exact results are lost due to the transition from keras to pytorch.
 
 \subsection{Dedicated architectures}
 
-This section explains the experiments using dedicated architectures. Results weren't good, as these are classification models and nog specialized for localization. A second issue might be the low amount of labels, and the third reason that predicting full boxes may not have been possible for the low amount of labels.
-The first try-out using an existing architecture was the googlenet architecture, \autocite{Szegedy2014} - \ref{code:keras-googlenet-small-replication}
-It used the same input shape (W, H, C) to predict a full box around all three jumpers. Just like the implementation using MobileNetV3, \autocite{Howard2019} - \ref{code:keras-mobilenetv3small}, predictions only shifted a little towards the athletes, averaging out in the center of the image, reaching an IoU of about 28 to 30\%. These results where performed on the same dataset as in the experiment above.
+This section explains the experiments using dedicated architectures. Results weren't good on about 6200 train and about 800 validation images. One issue might be that these models were finetuned for classification and not specialized for localization. A second issue might be the low amount of labels. Thirdly, predicting full boxes may not have been possible at all for the low amount of labels.
+The first try-out used a personal implemenation, based on school courses of the GoogleNet architecture; \autocite{Szegedy2014} - \ref{code:keras-googlenet-small-replication}.
+It used the an input shape of (Width, Height, Channels) to predict a full box around all three jumpers. Just like the implementation using MobileNetV3, \autocite{Howard2019} - \ref{code:keras-mobilenetv3small}.
+
+% TODO Vision transformer?
+
+Predictions only shifted a little towards the athletes, averaging out in the center of the image, reaching an IoU of about 28 to 30\%. These results where performed on the same dataset as in the experiment above.
+
+\begin{itemize}
+    \item MobileNet IoU unknown / lost
+    \item GoogleNet IoU 31.06\%
+    % \item Vision Transformer IoU 26.6\%
+\end{itemize}
 
 Predicting full teams didn't work out which allowed for a transition to labeling and predicting individuals athletes. Below you find more information about those experiments.
 
 \subsection{YOLO}
+\label{results:yolo}
 
 Experiment 3, pre-trained models \& individual boxes.
 
@@ -139,77 +140,19 @@ One way to solve jumpers running out of view, is by adding a default movement co
 \medskip
 
 A possible improvement could be matching individual boxes with the new predictions, eliminating the spectator. Which raises concerns about jumpers entering the competition field. There are no earlier predicted boxes to match.
-The total algorithm isn't perfect yet, but the results indicate sufficient valid video crops to use and experiment on segmentation and recognition. (code \ref{code:localization})
-
-\begin{listing}
-    \begin{minted}{python}
-        print('TODO : cleanup code')
-    \end{minted}
-    \caption[Example codefragment]{Example of adding cropping code.}
-    \label{code:localization}
-\end{listing}
+The total algorithm isn't perfect yet, but the results indicate sufficient valid video crops to use and experiment on segmentation and recognition \ref{code:localizor-with-strats}.
 
 The results are broken down in table \ref{tbl:crop-results}. In this table you can see that about 15\% of the videos aren't localized properly, some of them only have minor disturbs. This results in enough videos available to try and recognize skills.
 
 % TODO: pairwise distances?
 
-\begin{table}[h!]
-    \begin{tabular}{|l|l|l|}
-        \hline
-        \textbf{videoId} & \textbf{seconds} & \textbf{reason} \\
-        \hline
-        \dots & \cellcolor{green!25} \dots & (other videos) \\ \hline
-        1435 &	\cellcolor{green!25} 0 &	 \\ \hline
-        1445 &	\cellcolor{green!25} 0 &	 \\ \hline
-        2285 &	\cellcolor{green!25} 0 &	 \\ \hline
-        2295 &	\cellcolor{green!25} 0 &	 \\ \hline
-        2305 &	\cellcolor{green!25} 0 &	 \\ \hline
-        2315 &	\cellcolor{green!25} 0 &	 \\ \hline
-        995  &	\cellcolor{yellow!25} 5 &	Schocks \& turner out-of-view \\ \hline
-        1275 &	\cellcolor{yellow!25} 1 &	aerial half \\ \hline
-        1405 &	\cellcolor{orange!25} 30 &	spectator \\ \hline
-        651  &	\cellcolor{yellow!25} 1    &	turner out of view \\ \hline
-        664  &	\cellcolor{yellow!25} 1.5  &	turner out of view \\ \hline
-        1202 &	\cellcolor{yellow!25} 5    &	turner out of view, recording itself \\ \hline
-        1178 &	\cellcolor{yellow!25} 2    &	turner out of view \\ \hline
-        1238 &	\cellcolor{yellow!25} 2    &	spectator before start routine \\ \hline
-        1244 &	\cellcolor{yellow!25} 0    &	stopped following, remained in view \\ \hline
-        1257 &	\cellcolor{yellow!25} 0    &	stopped following, remained in view \\ \hline
-        1275 &	\cellcolor{yellow!25} 1.5  &	half out of view \\ \hline
-        1339 &	\cellcolor{yellow!25} 8    &  spectator \\ \hline
-        1444 &	\cellcolor{yellow!25} 1.5  &	half out of view \\ \hline
-        2282 &	\cellcolor{yellow!25} 1    &	1 turner out of view, actual 3 sec no follow \\ \hline
-        2317 &	\cellcolor{yellow!25} 2    &	minor shocks \\ \hline
-        663  &	\cellcolor{orange!25} 25   &	Out-of-view \& shocks \\ \hline
-        1241 &	\cellcolor{orange!25} 8    &	Out-of-view \\ \hline
-        1267 &	\cellcolor{orange!25} 46   &	spectator \\ \hline
-        1271 &	\cellcolor{orange!25} 24   &	Out-of-view \\ \hline
-        1273 &	\cellcolor{orange!25} 8    &	Out-of-view \\ \hline
-        1326 &	\cellcolor{orange!25} 6.5  &	spectator \\ \hline
-        \(avg\) &	1.33 &	(seconds / 1m15) \\ \hline
-        \(avg_{if}\) &	8.55 &	(seconds / 1m15) \\ \hline
-        Nr of videos not ok &	21	& 15.6\% \\ \hline
-        Total checked videos &	135	& (includes train videos) \\ \hline
-    \end{tabular}
-    \caption[Manually checked crop results]{Crop results manually checked on the amount of seconds where a crop is disturbing. The reason why it is disturbing is added in the reason column, this could be athletes out of view, unstable/earthquake like predictions... \\
-    Yellow indicated videos are not disturbing for recognition, even though the crops aren't perfect. Orange videos require more attention and shouldn't be used for recognition. \\
-    The \(avg_{if}\) indicates the average time in case a video has crops which aren't good.}
-    \label{tbl:crop-results}
-\end{table}
 
+% \subsection{Full video crops - automated testing (Work in Progress - WIP)}
 
-\subsection{Full video crops - automated testing (Work in Progress - WIP)}
-
-As manual checking videos can be time consuming, automated tests are in progress of creation in order to check whether crop strategies work or not.
-Utilizing the 7k legacy labels of full team boxes, video crops are calculated for each strategy.
-Both train and validation will be added separately in the results as there are less trainings videos labeled with individual boxes (129) than there are full box annotations on the trainings videos (325).
-The code for localizing has been cleaned as well. % (TODO add)
-
-
-
-
-
-
+% As manual checking videos can be time consuming, automated tests are in progress of creation in order to check whether crop strategies work or not.
+% Utilizing the 7k legacy labels of full team boxes, video crops are calculated for each strategy.
+% Both train and validation will be added separately in the results as there are less trainings videos labeled with individual boxes (129) than there are full box annotations on the trainings videos (325).
+% The code for localizing has been cleaned as well. % (TODO add)
 
 
 
@@ -222,23 +165,16 @@ The code for localizing has been cleaned as well. % (TODO add)
 
 Experiments on action segmentation have waited on skill recognition (section \ref{results:recognition}), this is why the experiments with action segmentation use the same models as the skill recognition, adapting only the top layers of the models.
 
-To annotate which moments are interesting split points, the start and end frame of a skill receive value 1, while other frames remain 0.
-As the start and end frame of a skill are rather subjective, frames around a split point also range somewhere between 0 and 1. These values are calculated using the function \ref{code:calculate-splitpoint-values} which is called on in the data generator demonstrated in code \ref{code:call-splitpoint-calculation}.
-Each frame than has a value from zero to one. An example of consecutive splitpointvalues could be:
-
-\([0, 0, 0.1, 0.31, 0.55, 0.86, 1, 0.86, 0.55, 0.31, 0.1, 0]\)
-
-Having a splitpoint value for each frame of the video, the video can be partioned into consecutive sections of T timesteps. Because the Multiscale Vision Transformer is pre-trained on videosections of 16 frames, the same amount of timesteps are taken to finetune the model for segmentation. This makes the model transform the input of size (batch size, channels, timesteps, height, width) into an output of size (batch size, timesteps).
-
 \subsection{Video Vision Transformer \& Self-attention ConvLSTM}
 \label{subsec:video-models-from-scratch}
 
-The first and second experiment for segmention use code implementations of the Video Vision Transformer as introduced in \textcite{Arnab2021} (ViViT - \ref{code:get_model_ViViT}) and the Self-Attention ConvLSTM from \textcite{Lin_2020} (SA-ConvLSTM - (TODO)).
+The first and second experiment for segmention use code implementations of the Video Vision Transformer as introduced in \textcite{Arnab2021} (ViViT - \ref{code:get_model_ViViT}) and the Self-Attention ConvLSTM from \textcite{Lin_2020}.
 To resolve bugs and dimensionality issues, Large Language models are used (\autocite{OpenAI_ChatGPT_2025} and \autocite{Deepseek_2025}).
 These models were then trained on 7.8k batches of 16 consecutive frames, which originate from 44 trainings videos for about 48 minutes of training data, having framerates between 25 and 60 \footnote{Most labeled videos have a framerate of 25, 30 or 50 frames per second} images per second.
 Both models showed the same results, averaging out predictions slightly above 0 for all frames, stagnating on MSE losses of around 0.09 and 0.10. This was about the average when always predicting 0. (Exact values are lost due to the switch to pytorch and bugs, will/could be re-added later.)
 
 \subsection{Pre-trained MViT}
+\label{results:action-segmentation-mvit}
 
 In order to get better results on the little labeled available data, (44 videos for training, 7 validation videos), looking for a pre-trained model really helped a lot.
 PyTorch provides a \href{https://pytorch.org/vision/main/models.html}{list} of pre-built and pre-trained models such as \href{https://pytorch.org/vision/main/models/video_mvit.html}{mvit-v1-b}.
@@ -261,11 +197,9 @@ To get all sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) ha
     \label{fig:segmentation-plot}
 \end{figure}
 
-(Ideas for additional metrics such as avg distance between nearest peak and splitpoint, IoU like overlap with nearest peaks will follow later \& further research on segmentation will follow in another submit.)
-
 These predicted segments are the first usable split moments to use for splitting unseen videos recognizing or speeding up further labeling.
+This brings us to the main results of this paper, namely skill recognition results.
 
-% TODO : transition
 
 \section{Skill recognition}
 \label{results:skill-recognition}
@@ -314,7 +248,10 @@ Even up-sampling less occurring combinations didn't help. The models stagnated o
 In order to reach better results, the search for a pre-trained model leads us to the following experiment, namely the usage of PyTorch implementation of the Multiscale Video Vision Transformer.
 
 \subsection{Multiscale Video Vision Transformer - MViT}
+\ref{results:mvit}
 
+The implementation of the the Mutliscale vision transformer uses the PyTorch pre-trained model and weights \ref{code:pytorch-mvit-init}.
+The output layers of the model are stripped in order to adapt the model to recognizing jump rope skills. This allows the addition of new output layers, custom to DD3 freestyles \ref{code:pytorch-skill-output-layers}.
 
 \begin{figure}
     \centering
@@ -324,7 +261,7 @@ In order to reach better results, the search for a pre-trained model leads us to
 \end{figure}
 
 
-\href{https://pytorch.org/vision/main/models/video_mvit.html}{PyTorch's Video MViT} is an implementation based on the Multiscale Vision Transformer created by \textcite{Fan2021} and possibly pre-trained on the kinetics dataset.
+\href{https://pytorch.org/vision/main/models/video_mvit.html}{PyTorch's Video MViT} is an implementation based on the Multiscale Vision Transformer created by \textcite{Fan2021} which can be finetuned using the pre-trained weights on the kinetics dataset.
 The first experiment using this model used a perfectly balanced dataset for skills only, namely taking a random subset of maximum of 442 samples on each of the 5 classes seen in table \ref{tab:skill_distribution_grouped_final}.
 The first results showed accuracies of 87\% to 98\% (see fig. \ref{fig:mvit-5-classes}) even some turner skills getting predicted correctly.
 
@@ -387,8 +324,6 @@ A breakdown of all classification reports can be found in tables \ref{tbl:mvit-f
     \caption[Skill distribution skills limited classes]{Train and validation skill distribution with low-frequency skills grouped as "other"}
     \label{tab:skill_distribution_grouped_final}
 \end{table}
-
-
 
 \subsection{Skill recognition - Act as a judge}
 \label{results:skill-recognition-act-as-a-judge}

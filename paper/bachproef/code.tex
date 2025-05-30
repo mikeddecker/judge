@@ -20,53 +20,77 @@ In this appendix, code snippets to prevent code saturation in between text.
 
 \begin{listing}
     \begin{minted}{python}
-        DIM = 384
-        DefaultConv = functools.partial(
-            keras.layers.Conv2D, kernel_size=(3, 3), strides=(2, 2),
-            padding="same", activation="relu", kernel_initializer="he_normal")
-
         DefaultMaxPool = functools.partial(
             keras.layers.MaxPool2D,
             pool_size=(3,3), strides=(2,2), padding="same")
 
-        def get_model(input_shape, num_classes, use_batch_norm=True, **kwargs):
+        def get_googlenetsmall_model(input_shape, num_classes, use_batch_norm=True, **kwargs):
             model = keras.Sequential(**kwargs)
             model.add(keras.layers.Input(shape=input_shape))
-            model.add(DefaultConv(filters=32, kernel_size=(5,5), strides=(1,1)))
-            model.add(keras.layers.Dropout(0.05))
-            model.add(DefaultConv(filters=48, kernel_size=(5,5), strides=(2,2),  padding='same'))
-            if use_batch_norm:
-                model.add(keras.layers.BatchNormalization())
-            model.add(keras.layers.Dropout(0.05))
-            model.add(DefaultMaxPool())
-            model.add(DefaultConv(filters=48, strides=(1)))
-            model.add(DefaultConv(filters=64))
-            model.add(DefaultConv(filters=96, strides=(1)))
-            model.add(DefaultConv(filters=96))
+            model.add(DefaultConv(filters=24, kernel_size=(7,7), strides=(2,2),  padding='same'))
             if use_batch_norm:
                 model.add(keras.layers.BatchNormalization())
             model.add(DefaultMaxPool())
-            model.add(keras.layers.Dropout(0.05))
-            model.add(DefaultConv(filters=128))
+            model.add(DefaultConv(filters=32))
+            model.add(DefaultConv(filters=48, kernel_size=(3,3)))
+            if use_batch_norm:
+                model.add(keras.layers.BatchNormalization())
+            model.add(DefaultMaxPool())
 
-            model.add(keras.layers.GlobalAveragePooling2D())
-            model.add(keras.layers.Dropout(0.4))
-            model.add(keras.layers.Flatten())
-            model.add(keras.layers.Dense(units=128, activation="relu"))
-            model.add(keras.layers.Dense(units=num_classes, activation='sigmoid'))
-            return model
+            model.add(InceptionModule(filters11=32, filters33_reduce=48, filters33=64,
+                filters55_reduce=8, filters55=16, filters_pool_proj=16,
+                use_batch_norm=use_batch_norm))
+            model.add(InceptionModule(filters11=64, filters33_reduce=64, filters33=96,
+                filters55_reduce=16, filters55=48, filters_pool_proj=32,
+                use_batch_norm=use_batch_norm))
+            model.add(DefaultMaxPool())
+
+            # ... see part 2
     \end{minted}
-    \caption[keras random conv]{A random convolutional network to predict the very first localization results.}
-    \label{code:keras-random-conv}
+    \caption[GoogleNet implementation part 1]{GoogleNet implementation part 1}
+    \label{code:keras-googlenet-small-replication}
 \end{listing}
 
 \begin{listing}
     \begin{minted}{python}
-        import pandas as pd
+        def get_googlenetsmall_model(input_shape, num_classes, use_batch_norm=True, **kwargs):
+            # ... see part 1
+
+            model.add(InceptionModule(filters11=96, filters33_reduce=48, filters33=104,
+                filters55_reduce=8, filters55=24, filters_pool_proj=32,
+                use_batch_norm=use_batch_norm))
+            model.add(InceptionModule(filters11=80, filters33_reduce=56, filters33=224,
+                filters55_reduce=12, filters55=32, filters_pool_proj=32,
+                use_batch_norm=use_batch_norm))
+            model.add(InceptionModule(filters11=64, filters33_reduce=64, filters33=256,
+                filters55_reduce=12, filters55=32, filters_pool_proj=32,
+                use_batch_norm=use_batch_norm))
+            model.add(InceptionModule(filters11=56, filters33_reduce=64, filters33=144,
+                filters55_reduce=16, filters55=32, filters_pool_proj=32,
+                use_batch_norm=use_batch_norm))
+            model.add(InceptionModule(filters11=128, filters33_reduce=80, filters33=160,
+                filters55_reduce=16, filters55=64, filters_pool_proj=64,
+                use_batch_norm=use_batch_norm))
+
+            model.add(DefaultMaxPool())
+            model.add(InceptionModule(filters11=128, filters33_reduce=80, filters33=160,
+                filters55_reduce=16, filters55=64, filters_pool_proj=64,
+                use_batch_norm=use_batch_norm))
+            model.add(InceptionModule(filters11=192, filters33_reduce=92, filters33=192,
+                filters55_reduce=24, filters55=64, filters_pool_proj=64,
+                use_batch_norm=use_batch_norm))
+            model.add(keras.layers.GlobalAveragePooling2D())
+            model.add(keras.layers.Dropout(0.4))
+            model.add(keras.layers.Flatten())
+            model.add(keras.layers.Dense(units=256, activation="relu"))
+            model.add(keras.layers.Dense(units=num_classes, activation='sigmoid'))
+
+            return model
     \end{minted}
-    \caption[]{}
+    \caption[GoogleNet implementation part 1]{GoogleNet implementation part 2}
     \label{code:keras-googlenet-small-replication}
 \end{listing}
+
 
 \begin{listing}
     \begin{minted}{python}
@@ -104,7 +128,14 @@ In this appendix, code snippets to prevent code saturation in between text.
     \label{code:keras-mobilenetv3small}
 \end{listing}
 
-
+\begin{listing}
+    \begin{minted}{python}
+        # To long to properly include in the paper
+        # https://github.com/mikeddecker/judge/blob/main/computervision/localizor_with_strats.py
+    \end{minted}
+    \caption[Localizor with strats]{Localizor with strats}
+    \label{code:localizor-with-strats}
+\end{listing}
 
 \section{Segmentation}
 \label{sec:code-segmentation}
@@ -352,10 +383,112 @@ In this appendix, code snippets to prevent code saturation in between text.
 
         return keras.Model(inputs=inputs, outputs=outputs)
     \end{minted}
-    \caption[]{}
+    \caption[Keras output layers for skills]{Keras output layers for skills}
     \label{code:keras-skill-top-layers}
 \end{listing}
 
+\begin{listing}
+    \begin{minted}{python}
+        def create_pytorch_skill_output_layers(lastNNeurons, balancedType, df_table_counts):
+            dd_config = get_discipline_DoubleDutch_config()
+            output_layers = torch.nn.ModuleDict()
+            
+            for key, value in dd_config.items():
+                if key == "Tablename":
+                    continue
+                if value[0] == "Categorical":
+                    columnname = "skill"
+                    if key == 'Skill':
+                        columnname = 'skills'
+                    elif key in ['Turner1', 'Turner2']:
+                        columnname = "turners"
+                    elif key == 'Type':
+                        columnname = 'types'
+                    
+                    classes = int(df_table_counts.iloc[0][columnname] + 1) # Because of MysqlIndex starts from 1
+                    output_layers[key] = torch.nn.Linear(lastNNeurons, classes)
+                else:
+                    output_layers[key] = torch.nn.Linear(lastNNeurons, 1)
+            
+            if balancedType == 'jump_return_push_frog_other':
+                output_layers['Skill'] = torch.nn.Linear(lastNNeurons, 5)
+            
+            return output_layers
+    \end{minted}
+    \caption[Pytorch skill output layers]{PyTorch skill output layers, uses \ref{code:confighelper}}
+    \label{code:pytorch-skill-output-layers}
+\end{listing}
+
+\begin{listing}
+    \begin{minted}{python}
+        class MViT(nn.Module):
+            def __init__(self, skill_or_segment:str, modelinfo:dict, df_table_counts:pd.DataFrame):
+                super(MViT, self).__init__()
+                self.modelinfo = modelinfo
+                self.df_table_counts = df_table_counts
+                self.isSkillModel = skill_or_segment == "skills"
+                
+                input_shape = (3, modelinfo['timesteps'], modelinfo['dim'], modelinfo['dim'])
+                self.mvit = models.video.mvit_v1_b(weights='DEFAULT')
+                self.mvit = self.mvit.to('cuda').eval()
+
+                for param in self.mvit.parameters():
+                    param.requires_grad = False
+
+                self.mvit.head = torch.nn.Identity()  # This removes the top layer
+                self.flatten = nn.Flatten()
+                self.LastNNeurons = self._get_mvit_output(input_shape)
+                
+                if self.isSkillModel:
+                    self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType=modelinfo['balancedType'], df_table_counts = self.df_table_counts)
+                else:
+                    self.output_layer = create_pytorch_segmentation_output_layers(lastNNeurons=self.LastNNeurons, timesteps=modelinfo['timesteps'])
+
+                
+            def _get_mvit_output(self, shape):
+                with torch.no_grad():
+                    input = torch.rand(1, *shape).to('cuda')
+                    output = self.mvit(input)
+                    output = self.flatten(output)
+                    return output.shape[1]
+    \end{minted}
+    \caption[Pytorch MViT implementation init]{Pytorch MViT implementation init, uses \ref{code:pytorch-skill-output-layers} and \ref{code:skill-forward}}
+    \label{code:pytorch-mvit-init}
+\end{listing}
+
+\begin{listing}
+    \begin{minted}{python}
+    def forward(self, x):
+        # Input shape: (batch_size, channels, timesteps, height, width)
+        x = self.mvit(x)
+        x = self.flatten(x)
+        
+        if self.isSkillModel:
+            return forward_skill_output_layers(features=x, output_layers=self.output_layers)
+        else:
+            return forward_segmentation_output_layers(features=x, output_layer=self.output_layer)
+    \end{minted}
+    \caption[Pytorch MViT forward]{Pytorch MViT implementation of forward method, used by \ref{code:pytorch-mvit-init}}
+    \label{code:pytorch-forward}
+\end{listing}
+
+
+
+\begin{listing}
+    \begin{minted}{python}
+        def forward_skill_output_layers(features: torch.tensor, output_layers: dict[str, torch.nn.Module]):
+            outputs = {}
+            for key, layer in output_layers.items():
+                if key in ['Skill', 'Turner1', 'Turner2', 'Type']:
+                    outputs[key] = layer(features)
+                else:  # Regression outputs
+                    outputs[key] = torch.sigmoid(layer(features))
+            
+            return outputs
+    \end{minted}
+    \caption[Pytorch skill forward feed]{PyTorch skill forward feeding}
+    \label{code:pytorch-skill-layers-forward}
+\end{listing}
 
 \begin{listing}
     \begin{minted}{python}

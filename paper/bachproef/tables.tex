@@ -2,6 +2,51 @@
 \chapter{\IfLanguageName{dutch}{Tabellen}{Tables}}%
 \label{ch:tables}
 
+\section{Localization}
+
+\begin{table}[h!]
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{videoId} & \textbf{seconds} & \textbf{reason} \\
+        \hline
+        \dots & \cellcolor{green!25} \dots & (other videos) \\ \hline
+        1435 &	\cellcolor{green!25} 0 &	 \\ \hline
+        1445 &	\cellcolor{green!25} 0 &	 \\ \hline
+        2285 &	\cellcolor{green!25} 0 &	 \\ \hline
+        2295 &	\cellcolor{green!25} 0 &	 \\ \hline
+        2305 &	\cellcolor{green!25} 0 &	 \\ \hline
+        2315 &	\cellcolor{green!25} 0 &	 \\ \hline
+        995  &	\cellcolor{yellow!25} 5 &	Schocks \& turner out-of-view \\ \hline
+        1275 &	\cellcolor{yellow!25} 1 &	aerial half \\ \hline
+        1405 &	\cellcolor{orange!25} 30 &	spectator \\ \hline
+        651  &	\cellcolor{yellow!25} 1    &	turner out of view \\ \hline
+        664  &	\cellcolor{yellow!25} 1.5  &	turner out of view \\ \hline
+        1202 &	\cellcolor{yellow!25} 5    &	turner out of view, recording itself \\ \hline
+        1178 &	\cellcolor{yellow!25} 2    &	turner out of view \\ \hline
+        1238 &	\cellcolor{yellow!25} 2    &	spectator before start routine \\ \hline
+        1244 &	\cellcolor{yellow!25} 0    &	stopped following, remained in view \\ \hline
+        1257 &	\cellcolor{yellow!25} 0    &	stopped following, remained in view \\ \hline
+        1275 &	\cellcolor{yellow!25} 1.5  &	half out of view \\ \hline
+        1339 &	\cellcolor{yellow!25} 8    &  spectator \\ \hline
+        1444 &	\cellcolor{yellow!25} 1.5  &	half out of view \\ \hline
+        2282 &	\cellcolor{yellow!25} 1    &	1 turner out of view, actual 3 sec no follow \\ \hline
+        2317 &	\cellcolor{yellow!25} 2    &	minor shocks \\ \hline
+        663  &	\cellcolor{orange!25} 25   &	Out-of-view \& shocks \\ \hline
+        1241 &	\cellcolor{orange!25} 8    &	Out-of-view \\ \hline
+        1267 &	\cellcolor{orange!25} 46   &	spectator \\ \hline
+        1271 &	\cellcolor{orange!25} 24   &	Out-of-view \\ \hline
+        1273 &	\cellcolor{orange!25} 8    &	Out-of-view \\ \hline
+        1326 &	\cellcolor{orange!25} 6.5  &	spectator \\ \hline
+        \(avg\) &	1.33 &	(seconds / 1m15) \\ \hline
+        \(avg_{if}\) &	8.55 &	(seconds / 1m15) \\ \hline
+        Nr of videos not ok &	21	& 15.6\% \\ \hline
+        Total checked videos &	135	& (includes train videos) \\ \hline
+    \end{tabular}
+    \caption[Manually checked crop results]{Crop results manually checked on the amount of seconds where a crop is disturbing. The reason why it is disturbing is added in the reason column, this could be athletes out of view, unstable/earthquake like predictions... \\
+    Yellow indicated videos are not disturbing for recognition, even though the crops aren't perfect. Orange videos require more attention and shouldn't be used for recognition. \\
+    The \(avg_{if}\) indicates the average time in case a video has crops which aren't good.}
+    \label{tbl:crop-results}
+\end{table}
 
 \section{MViT classification result before weighted loss}
 
