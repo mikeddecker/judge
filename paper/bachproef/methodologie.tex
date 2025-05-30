@@ -40,6 +40,7 @@ Each recording lasts for about 60 to 75 seconds, depending on the competition le
 The quality of videos differ and range from anywhere between 8 and 550MB. It may not indicate much, but just to keep in mind. Even on the more qualitative videos, the rope disappears when making quick rotations. This is often better on higher fps videos.
 
 \section{Jumper localization}
+\label{methodology:jumper-localization}
 
 Jumper localization is needed in order crop a zoomed-in video of the skippers performing their routine. Image \ref{fig:sr4-field} perfectly illustrates a competition setting, where the majority of the video is lost on surroundings, judges and spectators.
 
@@ -57,6 +58,7 @@ Potential obstacles are predicted spectators or blurry athletes mid-skill being 
 
 
 \section{Action segmentation}
+\label{methodology:action-segmentation}
 
 The main purpose of the action segmentation is to enable predictions on full routines in order to actually use the whole model. Using the cropped images, and the assigned start and end frame of a skill, the model can predict whether a given frame is an interesting split point or not.
 
@@ -66,6 +68,7 @@ The best model or an ensemble of the best ones will be used in the full sequence
 A couple of ideas exist in order mark interesting split moments. Both the frame before and the frame after each split point can be assigned as split point, selecting the one with the highest probability as the final split point. Another idea would be to assign higher values to split points using a cyclic function like the sinus depending on its distance between two split points.
 
 \section{Skill recognition}
+\label{methodology:skill-recogntion}
 
 The last part involves recognizing the performed skill, which is, as introduced in the literature, a combination of different aspects. What are the turners doing, using one or both arms, an additional body rotation, etc.
 For this part, a video vision model is definitely required to fill in the temporal information, e.g. amount of rotations.
@@ -74,7 +77,8 @@ Furthermore, once-in-a-lifetime skills can be marked as unknown in order for the
 Multiple different models can be tested in order to find the best one.
 
 
-\section{Model verification}
+\section{Judge score comparison}
+\label{methodology:judge-score-comparison}
 
 Finally, when skills are predictable, a comparison between the jury assigned scores, the models prediction and the effective score can be made in order to check whether model predictions could be used or more research/training is needed. This is an additional check, beside the accuracy of the model or confusion matrices.
 

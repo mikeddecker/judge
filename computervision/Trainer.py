@@ -67,19 +67,19 @@ modelname = "HAR_SA_Conv3D"
 modelname = "HAR_MViT"
 max_rounds = [4, 60]
 
+models = [
+    'HAR_MViT',
+    'HAR_Resnet_MC3',
+    # 'HAR_SA_Conv3D',
+    'HAR_Resnet_R2plus1',
+    'HAR_SwinT_t',
+    'HAR_SwinT_s',
+    'HAR_Resnet_R3D',
+    'HAR_MViT_extra_dense',
+]
 if __name__ == "__main__":
     trainer = Trainer()
     
-    models = [
-        'HAR_MViT',
-        # 'HAR_Resnet_MC3',
-        # 'HAR_SA_Conv3D',
-        # 'HAR_Resnet_R2plus1',
-        'HAR_SwinT_t',
-        'HAR_SwinT_s',
-        'HAR_Resnet_R3D',
-        'HAR_MViT_extra_dense',
-    ]
 
     for modelname in models:
         print("@"*80)

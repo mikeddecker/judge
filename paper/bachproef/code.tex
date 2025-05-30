@@ -165,6 +165,33 @@ In this appendix, code snippets to prevent code saturation in between text.
 
 \begin{listing}
     \begin{minted}{python}
+        # ConfigHelper.py
+        def get_discipline_DoubleDutch_config(include_tablename=True):
+            config = {
+                "Type" : ("Categorical", "Type"), # Will be textual representions
+                "Rotations" : ("Numerical", 0, 8, 1), # min, max, step
+                "Turner1": ("Categorical", "Turner"),
+                "Turner2": ("Categorical", "Turner"),
+                "Skill" : ("Categorical", "Skill"),
+                "Hands" : ("Numerical", 0, 2, 1), # 0 for al salto types
+                "Feet" : ("Numerical", 0, 2, 1),
+                "Turntable" : ("Numerical", 0, 4, 0.25), # Per quarter (but still integers)
+                "BodyRotations" : ("Numerical", 0, 2, 0.5),
+                "Backwards" : ("Boolean"),
+                "Sloppy" : ("Boolean"),
+                "Hard2see" : ("Boolean"),
+                "Fault" : ("Boolean"),
+            }
+            if include_tablename:
+                config["Tablename"] = "DoubleDutch"
+            return config
+    \end{minted}
+    \caption[confighelper skill configuration]{ConfigHelper skill configuration for labeling aspects of a skill, devided in Categorical, Numerical and Boolean output values of skills. All values of the numerical output are integers, which is why you need to multiply by the step in order to get the actual numerical representation.}
+    \label{code:confighelper}
+\end{listing}
+
+\begin{listing}
+    \begin{minted}{python}
         import keras
         import pandas as pd
         import tensorflow as tf

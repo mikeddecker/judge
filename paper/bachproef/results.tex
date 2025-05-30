@@ -268,7 +268,7 @@ These predicted segments are the first usable split moments to use for splitting
 % TODO : transition
 
 \section{Skill recognition}
-\label{results:recognition}
+\label{results:skill-recognition}
 
 \begin{figure}
     \centering
@@ -389,289 +389,9 @@ A breakdown of all classification reports can be found in tables \ref{tbl:mvit-c
 \end{table}
 
 
-\section{Model verification - act as a judge}
 
-Comming soon... (Mapping predicted skills, turners, rotations... to its perspective level which will be compared with the score assigned by judges on competition.)
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-        \hline          & precision & recall & f1-score & support \\
-        \hline
-        Double Dutch    &   0.97    &   0.98    &   0.97    &  525 \\
-        Single Dutch    &   1.00    &   0.25    &   0.40    &  4   \\
-        Irish Dutch     &   0.00    &   0.00    &   0.00    &  0   \\
-        Chinese Wheel   &   0.92    &   0.97    &   0.94    &  86  \\
-        Transition      &   0.72    &   0.88    &   0.79    &  24  \\
-        Snapperlike     &   0.90    &   0.63    &   0.75    &  30  \\
-        \hline
-        accuracy        &           &           &   0.95    &  669 \\
-        macro avg       &   0.75    &   0.62    &   0.64    &  669 \\
-        weighted avg    &   0.95    &   0.95    &   0.95    &  669 \\ \hline
-    \end{tabular}
-    \caption[Type distribution]{mvit-class-report-type}
-    \label{tbl:mvit-class-report-type}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-        \hline
-          &  precision &   recall & f1-score &  support \\ \hline
-        0 &       0.00 &     0.00 &     0.00 &       26 \\
-        1 &       0.91 &     0.95 &     0.93 &      544 \\
-        2 &       0.59 &     0.67 &     0.63 &       70 \\
-        3 &       0.39 &     0.44 &     0.41 &       16 \\
-        4 &       0.50 &     0.10 &     0.17 &       10 \\
-        5 &       0.00 &     0.00 &     0.00 &        2 \\
-        8 &       0.00 &     0.00 &     0.00 &        1 \\
-        \hline
-        accuracy &            &          &     0.86 &      669 \\
-        macro avg &       0.34 &     0.31 &     0.31 &      669 \\
-        weighted avg &       0.82 &     0.86 &     0.83 &      669 \\ \hline
-    \end{tabular}
-    \caption[Rotation distribution]{mvit-class-report-rotations}
-    \label{tbl:mvit-class-report-rotations}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-               normal &      0.93 &     0.98 &     0.96 &      542 \\
-              crouger &      0.90 &     0.88 &     0.89 &       40 \\
-                cross &      0.80 &     0.58 &     0.67 &       57 \\
-             cross BW &      0.00 &     0.00 &     0.00 &        2 \\
-   jump over cross BW &      0.00 &     0.00 &     0.00 &        3 \\
-                   EB &      0.57 &     0.36 &     0.44 &       11 \\
-                 toad &      0.54 &     0.88 &     0.67 &        8 \\
-              toad BW &      0.00 &     0.00 &     0.00 &        1 \\
-              EB toad &      0.00 &     0.00 &     0.00 &        3 \\
-                   TS &      0.00 &     0.00 &     0.00 &        0 \\
-         inverse toad &      0.00 &     0.00 &     0.00 &        0 \\
-             elephant &      0.00 &     0.00 &     0.00 &        0 \\
-         crougercross &      0.00 &     0.00 &     0.00 &        0 \\
-             pinwheel &      0.00 &     0.00 &     0.00 &        1 \\
-              suicide &      0.00 &     0.00 &     0.00 &        0 \\
-      inverse crouger &      0.00 &     0.00 &     0.00 &        0 \\
-                 flip &      0.00 &     0.00 &     0.00 &        0 \\
-               T-toad &      0.00 &     0.00 &     0.00 &        0 \\
-MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
-           EB toad BW &      0.00 &     0.00 &     0.00 &        0 \\
-         L2-power-gym &      0.00 &     0.00 &     0.00 &        0 \\
-         L3-power-gym &      0.00 &     0.00 &     0.00 &        0 \\
-         L4-power-gym &      0.00 &     0.00 &     0.00 &        0 \\
-              UNKNOWN &      0.00 &     0.00 &     0.00 &        0 \\
-         jump-through &      0.00 &     0.00 &     0.00 &        0 \\
-      EB inverse toad &      0.00 &     0.00 &     0.00 &        1 \\ \hline
-             accuracy &           &          &     0.91 &      669 \\
-            macro avg &      0.14 &     0.14 &     0.14 &      669 \\
-         weighted avg &      0.89 &     0.91 &     0.90 &      669 \\
-         \hline
-    \end{tabular}
-    \caption[Turner 1 class report]{mvit-class-report-turner1}
-    \label{tbl:mvit-class-report-turner1}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                normal &       0.92 &     0.97 &     0.94 &      540 \\
-               crouger &       0.80 &     0.84 &     0.82 &       38 \\
-                 cross &       0.79 &     0.60 &     0.68 &       55 \\
-              cross BW &       0.00 &     0.00 &     0.00 &        4 \\
-    jump over cross BW &       0.00 &     0.00 &     0.00 &        2 \\
-                    EB &       0.67 &     0.31 &     0.42 &       13 \\
-                  toad &       0.50 &     0.86 &     0.63 &        7 \\
-               toad BW &       0.00 &     0.00 &     0.00 &        2 \\
-               EB toad &       0.00 &     0.00 &     0.00 &        4 \\
-                    TS &       0.00 &     0.00 &     0.00 &        0 \\
-          inverse toad &       0.00 &     0.00 &     0.00 &        0 \\
-              elephant &       0.00 &     0.00 &     0.00 &        0 \\
-          crougercross &       0.00 &     0.00 &     0.00 &        0 \\
-              pinwheel &       0.00 &     0.00 &     0.00 &        3 \\
-               suicide &       0.00 &     0.00 &     0.00 &        0 \\
-       inverse crouger &       0.00 &     0.00 &     0.00 &        0 \\
-                  flip &       0.00 &     0.00 &     0.00 &        0 \\
-                T-toad &       0.00 &     0.00 &     0.00 &        0 \\
- MULTIPLE TURNERSKILLS &       0.00 &     0.00 &     0.00 &        0 \\
-            EB toad BW &       0.00 &     0.00 &     0.00 &        0 \\
-          L2-power-gym &       0.00 &     0.00 &     0.00 &        0 \\
-          L3-power-gym &       0.00 &     0.00 &     0.00 &        0 \\
-          L4-power-gym &       0.00 &     0.00 &     0.00 &        0 \\
-               UNKNOWN &       0.00 &     0.00 &     0.00 &        0 \\
-          jump-through &       0.00 &     0.00 &     0.00 &        0 \\
-       EB inverse toad &       0.00 &     0.00 &     0.00 &        1 \\ \hline
-              accuracy &            &          &     0.90 &      669 \\
-             macro avg &       0.14 &     0.14 &     0.13 &      669 \\
-          weighted avg &       0.87 &     0.90 &     0.88 &      669 \\
-         \hline
-    \end{tabular}
-    \caption[Turner 2 class report]{mvit-class-report-turner2}
-    \label{tbl:mvit-class-report-turner2}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                jump &      1.00 &     0.98 &     0.99 &      380 \\
-   return from power &      0.88 &     0.87 &     0.88 &       85 \\
-              pushup &      0.84 &     0.96 &     0.90 &       72 \\
-                frog &      0.96 &     0.90 &     0.93 &       61 \\
-               split &      0.94 &     1.00 &     0.97 &       15 \\
-             SPAGAAT &      0.00 &     0.00 &     0.00 &        0 \\
-                crab &      0.64 &     0.88 &     0.74 &        8 \\
-               swift &      0.00 &     0.00 &     0.00 &        0 \\
-     mountainclimber &      0.00 &     0.00 &     0.00 &        0 \\
-                 rad &      0.00 &     0.00 &     0.00 &        2 \\
-              rondat &      0.40 &     0.40 &     0.40 &        5 \\
-          handspring &      0.43 &     0.60 &     0.50 &        5 \\
-                 kip &      1.00 &     0.83 &     0.91 &        6 \\
-              kopkip &      0.50 &     1.00 &     0.67 &        1 \\
-                flip &      0.50 &     0.60 &     0.55 &        5 \\
-             arabian &      0.00 &     0.00 &     0.00 &        0 \\
-             rol2kip &      0.83 &     0.83 &     0.83 &        6 \\
-                roll &      1.00 &     0.67 &     0.80 &        3 \\
-            leapfrog &      0.00 &     0.00 &     0.00 &        0 \\
-             suicide &      0.89 &     0.89 &     0.89 &        9 \\
-      flip-to-pushup &      0.00 &     0.00 &     0.00 &        1 \\
-        buddy-bounce &      0.00 &     0.00 &     0.00 &        1 \\
-                stut &      1.00 &     1.00 &     1.00 &        2 \\
-       footwork-kick &      0.00 &     0.00 &     0.00 &        0 \\
-               speed &      0.00 &     0.00 &     0.00 &        0 \\
-       footwork-open &      0.00 &     0.00 &     0.00 &        1 \\
-       footwork-knee &      0.00 &     0.00 &     0.00 &        0 \\
-     footwork-cancan &      0.00 &     0.00 &     0.00 &        0 \\
-      footwork-cross &      0.00 &     0.00 &     0.00 &        0 \\
-              UNKOWN &      0.00 &     0.00 &     0.00 &        1 \\
-        \hline
-            accuracy &           &          &     0.93 &      669 \\
-           macro avg &      0.39 &     0.41 &     0.40 &      669 \\
-        weighted avg &      0.93 &     0.93 &     0.93 &      669 \\
-         \hline
-    \end{tabular}
-    \caption[Skill class report]{mvit-class-report-skill}
-    \label{tbl:mvit-class-report-skill}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                0 &      0.99 &     0.94 &     0.96 &      481 \\
-                1 &      0.27 &     0.27 &     0.27 &       45 \\
-                2 &      0.75 &     0.88 &     0.81 &      143 \\ \hline
-         accuracy &           &          &     0.88 &      669 \\
-        macro avg &      0.67 &     0.70 &     0.68 &      669 \\
-     weighted avg &      0.89 &     0.88 &     0.88 &      669 \\
-         \hline
-    \end{tabular}
-    \caption[Hands class report]{mvit-class-report-hands}
-    \label{tbl:mvit-class-report-hands}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                0 &      0.94 &      0.70 &      0.80 &        67 \\
-                1 &      0.52 &      0.52 &      0.52 &        83 \\
-                2 &      0.92 &      0.95 &      0.94 &       519 \\
-         accuracy &           &           &      0.87 &       669 \\ \hline
-        macro avg &      0.80 &      0.72 &      0.75 &       669 \\
-     weighted avg &      0.87 &      0.87 &      0.87 &       669 \\
-         \hline
-    \end{tabular}
-    \caption[Feet class report]{mvit-class-report-feet}
-    \label{tbl:mvit-class-report-feet}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                0 &      0.98 &     0.99 &     0.99 &      656 \\
-                1 &      0.17 &     0.09 &     0.12 &       11 \\
-                2 &      0.00 &     0.00 &     0.00 &        2 \\ \hline
-         accuracy &           &          &     0.97 &      669 \\
-        macro avg &      0.38 &     0.36 &     0.37 &      669 \\
-     weighted avg &      0.97 &     0.97 &     0.97 &      669 \\
-         \hline
-    \end{tabular}
-    \caption[Turntable class report]{mvit-class-report-turntable}
-    \label{tbl:mvit-class-report-turntable}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                0 &      1.00 &      1.00 &     1.00 &      666 \\
-                1 &      0.00 &      0.00 &     0.00 &        2 \\
-                2 &      0.00 &      0.00 &     0.00 &        1 \\ \hline
-         accuracy &           &           &     1.00 &      669 \\
-        macro avg &      0.33 &      0.33 &     0.33 &      669 \\
-     weighted avg &      0.99 &      1.00 &     0.99 &      669 \\
-
-         \hline
-    \end{tabular}
-    \caption[Body rotations class report]{mvit-class-report-bodyRotations}
-    \label{tbl:mvit-class-report-bodyRotations}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                0 &       0.99 &     1.00 &     1.00 &      660 \\
-                1 &       0.80 &     0.44 &     0.57 &        9 \\ \hline
-         accuracy &            &          &     0.99 &      669 \\
-        macro avg &       0.90 &     0.72 &     0.78 &      669 \\
-     weighted avg &       0.99 &     0.99 &     0.99 &      669 \\
-         \hline
-    \end{tabular}
-    \caption[Backwards class report]{mvit-class-report-backwards}
-    \label{tbl:mvit-class-report-backwards}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                0 &      0.97 &     1.00 &     0.99 &      651 \\
-                1 &      0.00 &     0.00 &     0.00 &       18 \\
-         accuracy &           &          &     0.97 &      669 \\ \hline
-        macro avg &      0.49 &     0.50 &     0.49 &      669 \\
-     weighted avg &      0.95 &     0.97 &     0.96 &      669 \\
-         \hline
-    \end{tabular}
-    \caption[Sloppy class report]{mvit-class-report-sloppy}
-    \label{tbl:mvit-class-report-sloppy}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                0 &      1.00 &     1.00 &     1.00 &      666 \\
-                1 &      0.00 &     0.00 &     0.00 &        3 \\ \hline
-         accuracy &           &          &     1.00 &      669 \\
-        macro avg &      0.50 &     0.50 &     0.50 &      669 \\
-     weighted avg &      0.99 &     1.00 &     0.99 &      669 \\
-
-         \hline
-    \end{tabular}
-    \caption[Hard to see class report]{mvit-class-report-hard2see}
-    \label{tbl:mvit-class-report-hard2see}
-\end{table}
-
-\begin{table}[h!]
-    \begin{tabular}{|l|r|r|r|r|}
-                \hline & precision &   recall & f1-score &  support \\ \hline
-                0 &      0.96 &     1.00 &      0.98 &       639 \\
-                1 &      0.00 &     0.00 &      0.00 &        30 \\ \hline
-         accuracy &           &          &      0.96 &       669 \\
-        macro avg &      0.48 &     0.50 &      0.49 &       669 \\
-     weighted avg &      0.91 &     0.96 &      0.93 &       669 \\
-         \hline
-    \end{tabular}
-    \caption[Fault class report]{mvit-class-report-fault}
-    \label{tbl:mvit-class-report-fault}
-\end{table}
-
-
-\section{Skill recognition - First diff score mapping results}
-\label{results:score}
+\subsection{Skill recognition - Act as a judge}
+\label{results:skill-recognition-act-as-a-judge}
 
 Being able to recognize skills allows to assign respective levels on combinations. After assigning the proper levels, the respective scores can be assigned mapping based on the total levels jumped. Table \ref{tbl:Score mapping} illustrates how many points each level receives.
 
@@ -729,3 +449,13 @@ Another competition will be put next to these results, in order to gain more ins
     This results in quite some videos with inproper crops.}
     \label{tbl:judge-score-comparison}
 \end{table}
+
+\subsection{Weighted loss}
+\ref{results:skill-recognition-weighted-loss}
+
+% TODO
+
+\section{Resnet, Swin Transformer \& SA_Conv3d}
+\ref{results:skill-recognition-resnet-swin-saconv3d}
+
+% TODO

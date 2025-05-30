@@ -14,8 +14,8 @@ STORAGE_DIR = os.getenv("STORAGE_DIR")
 
 class StatsRouter(Resource):
     def __init__(self, **kwargs):
-        self.statsService = StatsService(STORAGE_DIR)
         self.videoService = VideoService(STORAGE_DIR)
+        self.statsService = StatsService(STORAGE_DIR, self.videoService)
         super().__init__(**kwargs)
     
     def get(self):
@@ -30,7 +30,7 @@ class StatsRouter(Resource):
             case 'recognition':
                 return self.statsService.getRecognitionResults(selectedModel='HAR_MViT'), 200
             case 'judge':
-                return self.videoService.get_score_comparison(videoIds=videoIds), 200
+                return self.statsService.get_score_comparison(videoIds=videoIds), 200
             case _:
                 return f'Forbidden {stat}', 404
 

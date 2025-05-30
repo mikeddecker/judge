@@ -22,20 +22,6 @@ SUPPORTED_VIDEO_FORMATS = [
     'jpg',
     'png',
 ] # Temporarily media formats
-
-LEVEL_TO_SCORE_MAP = {
-    0 : 0,
-    1 : 1.5,
-    2 : 2.2,
-    3 : 3.3,
-    4 : 4.9,
-    5 : 7.3,
-    6 : 11,
-    7 : 11,
-    8 : 11,
-}
-VISION_MODELS = ['HAR_MViT']
-
 class VideoService:
     """Provides the video information of videos"""
     PROPERTIES = [
@@ -556,19 +542,20 @@ class VideoService:
     def upload(self):
         raise NotImplementedError("Nice to have, end of journey")
 
-    def video_has_predictions(self, videoId: int, model: str):
+    def video_has_predictions(self, videoId: int, model: str, date: str = None):
+        datepart = "" if date is None else f"_{date}"
         return os.path.exists(
-            os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
+            os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}{datepart}.json")
         )
 
-    def __load_predicted_skills(self, videoId:int, model:str):
+    def load_predicted_skills(self, videoId:int, model:str):
         filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
         if os.path.exists(filepath):
             with open(filepath, 'r') as f:
                 return json.load(f)
         return []
 
-    def __load_predicted_boxes(self, videoId:int):
+    def load_predicted_boxes(self, videoId:int):
         modelname, modelpath = localize_get_best_modelpath()
         # TODO : update to get 'smoothing'
         filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_crop_d224_{modelname}_smoothing.json")
@@ -576,79 +563,6 @@ class VideoService:
             with open(filepath, 'r') as f:
                 return json.load(f)
         return []
-
-
-    def __calculate_diff_score(self, videoId: int, model: str):
-        freq_table = {l: 0 for l in range(9)}
-
-        predicted_skills = self.__load_predicted_skills(videoId=videoId, model=model)
-        
-        config = get_discipline_DoubleDutch_config()
-        levels = [ 
-            self.calculate_skill_level(
-                disciplineconfig=config,
-                skillinfo= {k: v['y_pred'] if config[k][0] == "Categorical" else v['y_pred'] for k, v in predicted_skills[frameStart].items()},
-                frameStart=int(frameStart),
-                videoId=videoId
-            ) for frameStart in
-            predicted_skills.keys()
-        ]
-        levels = [lvl if not isinstance(lvl, list) else lvl[0] for lvl in levels]
-        
-        score = 0
-        for lvl in levels:
-            freq_table[lvl] += 1
-            score += LEVEL_TO_SCORE_MAP[min(lvl, 8)]
-
-        return freq_table, score
-
-    def get_score_comparison(self, videoIds: List[int]):
-        allowed_models = VISION_MODELS
-        scores = {
-            "total" : { "judges": 0, "HAR_MViT": 0}
-        }
-        
-
-        for model in allowed_models:
-            for videoId in videoIds:
-                if model not in allowed_models:
-                    return f"Model {model} not allowed", 404
-                
-                scores[videoId] = {}
-                scores[videoId]["videoId"] = videoId
-                scores[videoId]["judges"] = self.get(id=videoId).JudgeDiffScore
-                if self.video_has_predictions(videoId=videoId, model=model) and not self.jobService.video_has_pending_job(videoId=videoId, model=model):
-                    # TODO : add re-calculate after x days or when a new model has been trained
-                    freq, score = self.__calculate_diff_score(videoId=videoId, model=model)
-                    scores[videoId][model] = round(score, 2)
-                    scores[videoId][f"{model}_freq"] = freq
-                    
-                    if scores[videoId]["judges"]:
-                        scores[videoId][f"{model}_difference"] = round(100 * (scores[videoId][model] - scores[videoId]["judges"]) / scores[videoId]["judges"], 2)
-                        scores["total"]["judges"] += scores[videoId]["judges"]
-                        scores["total"][f"{model}"] += round(score, 2)
-
-                elif not self.jobService.video_has_pending_job(videoId=videoId, model=model):
-                    self.jobService.launch_job_predict_skills(step='FULL', model=model, videoId=videoId)
-                    scores[videoId][model] = "Created"
-                else:
-                    scores[videoId][model] = "Waiting"
-
-            if scores['total']["judges"]:
-                # scores["total"]["videoId"] = 0
-                scores["total"]["judges"] = round(scores["total"]["judges"], 2)
-                scores["total"][f"{model}_difference"] = round(100 * (scores["total"][model] - scores["total"]["judges"]) / scores["total"]["judges"], 2)
-
-        return scores
-    
-    def hasVideoPredictions(self, videoId: int):
-        ValueHelper.check_raise_id(videoId)
-
-        for model in VISION_MODELS:
-            if os.path.exists(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")):
-                return True
-            
-        return False
     
     def getVideoPredictions(self, videoId: int):
         ValueHelper.check_raise_id(videoId)
@@ -657,7 +571,7 @@ class VideoService:
         predictions_path = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{best_model}.json")
 
         predictions = {}
-        predictions['skills'] = self.__load_predicted_skills(videoId=videoId, model=best_model)
-        predictions['boxes'] = self.__load_predicted_boxes(videoId=videoId)
+        predictions['skills'] = self.load_predicted_skills(videoId=videoId, model=best_model)
+        predictions['boxes'] = self.load_predicted_boxes(videoId=videoId)
 
         return predictions

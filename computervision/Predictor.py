@@ -11,6 +11,7 @@ from sklearn.metrics import classification_report
 from pprint import pprint
 import cv2
 
+from Trainer import models, trainparams
 from localizor_with_strats import predict_and_save_locations
 
 import matplotlib.pyplot as plt
@@ -53,7 +54,7 @@ class Predictor:
     def __init__(self):
         self.repo = DataRepository()
 
-    def predict(self, type, videoId, modelname, modelparams: dict = None, saveAsVideo:bool=False):
+    def predict(self, type, videoId, modelname, modelparams: dict = None, saveAsVideo:bool=False, date:str = None):
         start = time.time()
         match type:
             case 'LOCALIZE':
@@ -71,7 +72,8 @@ class Predictor:
                                                        modelname=modelname,
                                                        use_segment_predictions=False,
                                                        modelparams=modelparams,
-                                                       saveAsVideo=saveAsVideo)
+                                                       saveAsVideo=saveAsVideo,
+                                                       date=date)
                 else:
                     raise NotImplementedError()
             case 'FULL':
@@ -82,17 +84,20 @@ class Predictor:
                                                        use_segment_predictions=True,
                                                        modelparams=modelparams,
                                                        saveAsVideo=saveAsVideo,
-                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, modelname=modelname, modelparams=modelparams))
+                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, modelname=modelname, modelparams=modelparams),
+                                                       date=date)
                 else:
                     raise NotImplementedError()
             case 'SEGMENT_SKILL':
                 if modelname in PYTORCH_MODELS_SKILLS.keys():
+                    print("modelname", modelname)
                     self.__predict_skills_pytorch(videoId=videoId,
                                                        modelname=modelname,
                                                        use_segment_predictions=True,
                                                        modelparams=modelparams,
                                                        saveAsVideo=saveAsVideo,
-                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, modelname=modelname, modelparams=modelparams))
+                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, modelname="HAR_MViT_extra_dense", modelparams=modelparams),
+                                                       date=date)
                 else:
                     raise NotImplementedError()
             case _:
@@ -100,13 +105,17 @@ class Predictor:
         seconds = time.time() - start
         print(f"Done, took {seconds:.1f} seconds")
 
-    def __predict_skills_pytorch(self, videoId, modelname, use_segment_predictions, modelparams: dict = None, saveAsVideo:bool=False, segment_predictions:list = []):
+    def __predict_skills_pytorch(self, videoId, modelname, use_segment_predictions, modelparams: dict = None, saveAsVideo:bool=False, segment_predictions:list = [], date:str = None):
         try:
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
+            
             skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
             modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
+            if date is not None:
+                modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills_{date}.state_dict.pt") # TODO : update in trainer
+                modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
 
             DIM = 224
             model = PYTORCH_MODELS_SKILLS[modelname](modelinfo=modelparams, df_table_counts=self.repo.get_skill_category_counts(), skill_or_segment='skills').to(device)
@@ -441,20 +450,29 @@ modelparams = {
 }
 
 if __name__ == "__main__":
-    modelname = "HAR_SA_Conv3D"
-    modelname = "HAR_MViT"
     predictor = Predictor()
 
     videoIds = [1285, 1315, 1408, 2283, 2285, 2289, 2288, 2296, 2309, 2568,2569,2570,2571,2572,2573,2574,2575,2576,2577,2578,2579,2580,2581,2582,2583,2584,2585,2586,2587,2588,2589,]
-    
-    for videoId in videoIds:
-        predictor.predict(
-            type="FULL",
-            videoId=videoId,
-            modelname=modelname,
-            modelparams=modelparams["HAR_MViT"],
-            saveAsVideo=True,
-        )
+    videoIds = range(2568, 2590)
+    dates = ["20250525", "20250524"]
+
+    for d in dates:
+        for modelname in models:
+            for videoId in videoIds:
+                predictor.predict(
+                    type="LOCALIZE",
+                    videoId=videoId,
+                    modelname=None,
+                )
+                predictor.predict(
+                    type="SEGMENT_SKILL",
+                    videoId=videoId,
+                    modelname=modelname,
+                    modelparams=trainparams[modelname],
+                    saveAsVideo=False,
+                    date=d
+                )
+                # TODO : cache segment predictions or save them as json
 
     # predictor.predict(
     #     type="SKILL",

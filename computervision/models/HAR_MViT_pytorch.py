@@ -32,8 +32,6 @@ class MViT(nn.Module):
 
         
     def _get_mvit_output(self, shape):
-        for i in range(10):
-            print(shape)
         with torch.no_grad():
             input = torch.rand(1, *shape).to('cuda')
             output = self.mvit(input)

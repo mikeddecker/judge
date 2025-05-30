@@ -48,12 +48,19 @@ Even though the mAP50 reached 0.943 accuracy, intial full videocrops weren't sta
 
 \subsection{Future work on localization}
 
-Localization can be improved in multiple areas. This could be involve training on full team labels using YOLO, applying other smoothing techniques or implenting other models. Other factors could be changing the competition setting to limit the amount of spectators, keeping the camera perspective consistent or provide more different perspectives. Another way is annotating the predicted spectators or judges, indicated by pre-trained models, which can be filtered out when cropping.
+Localization can be improved in multiple areas. This could involve training on full team labels using YOLO, applying other smoothing techniques or implenting other models. Other factors could be changing the competition setting to limit the amount of spectators, keeping the camera perspective consistent or provide more different perspectives. Another way is annotating the predicted spectators or judges, indicated by pre-trained models, which can be filtered out when cropping.
 
 \subsection{Segmentation}
 
 The part about action segmentation definitely needs more research and experiments. The easiest implementation was utilizing vision models used for recognizing actions to annotate interesting split points having a value of 1, a split moment, or 0, executing a skill or doing nothing. Using the Multiscale Vision Transformer, developed by \autocite{Fan2021}, which acquired great results recognition \ref{results:skill-recognition}, quickly showed overlap between predicted split points and labeled split points \ref{fig:segmentation-plot}.
-Videos were split into partitions of T = 16 timesteps, learning some context of previous and following frames, in order to predict T split output values as wel. The highest peaks were then considered split points.
+The MViT applied for segmentation transforms the annotated skill labels \ref{methodology:skill-recognition} into split labels \ref{methodology:action-segmentation}. A little summary of the labels follows. Skills labels have a start and end frame, which allows to indicate split values at these frame numbers to be around one. An example would be:
+
+\(
+[0, 0, 0.1, 0.31, 0.55, 0.86, 1, 0.86, 0.55, 0.31, 0.1, 0, 0, 0 \dots]
+\)
+
+Videos were then split into partitions of T = 16 timesteps, learning some context of previous and following frames, in order to predict the corresponding T split output values as wel. The highest peaks were then considered split points \ref{fig:segmentation-plot}.
+Being able to predict splitpoints allows to perform skill recognition on completely unseen videos, isolating each action.
 
 \subsection{Future work on action segmentation}
 
@@ -74,7 +81,12 @@ Due to time constraints and priorities, only the MSE has been used to decide the
 
 \subsection{Recognition}
 
+Being able to zoom in on athletes and having a model which can segmenting actions, actual skills can be predicted on full videos.
+But even before the ability to isolate skills, labeling and training experiments on skill recognition are possible. One minor issue, solved in the methodology of skill recognition \ref{methodology:skill-recognition} was the fact that performed actions have a different length \ref{fig:skilllengths-counts}. This is solved by ensuring they have the same length of T = 16 timesteps, skipping or duplicating frames \ref{methodology:skill-recognition}. This resulted in equal inputs with a dimension of (channels, timesteps, height, width), (C, T, H, W) for short.
 
+Next up was transforming all aspects of skills into machine understandable output labels. This was the reason why the skill matrix has been created \ref{lit:skill-matrix}. The matrix resulted in a skill configuration \ref{code:confighelper} for skill labels, specifying 13 different outputs; Type, Rotations, Turner1, Turner2, Skill, Hands, Feet, Turntable, BodyRotations, Backwards, Sloppy, Hard2see and Fault. Each aspect being a category, numeric value or a boolean.
+
+The final adaptation using weighted losses, which returned a different loss depending on the occurrence of skill aspects pushed the MViT model into grasping the meaning behind the fault, sloppy and hard2see aspects. It raised the f1 average macro accuracy from 45.61\% to 51.53\%, giving in on f1 macro skill accuracy. It fell from 34.93\% to 27.75\%, which is low compared to the skill recognition accuracies on MViT_extra_dense 31.46\%, HAR_SwinT_t 32.06\%, and HAR_SwinT_s 36.73\%. However, it still reached highest on the normal accuracy measure 93.83\%, compared to 93.73\%, 91.99\%, or 93.3\%.
 
 
 

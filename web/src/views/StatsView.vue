@@ -79,7 +79,10 @@ async function getStatistics() {
     console.log(r);
     recognitionStats.value = r
   })
-  getStats('judge', bkVideoIds.value).then(r => judgeStats.value = r)
+  getStats('judge', bkVideoIds.value).then(r => {
+    console.log('judge results', r);
+    judgeStats.value = r
+  })
 }
 
 </script>
