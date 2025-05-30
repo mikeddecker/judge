@@ -163,7 +163,7 @@ The results are broken down in table \ref{tbl:crop-results}. In this table you c
 
 \section{Action segmentation}
 
-Experiments on action segmentation have waited on skill recognition (section \ref{results:recognition}), this is why the experiments with action segmentation use the same models as the skill recognition, adapting only the top layers of the models.
+Experiments on action segmentation have waited on skill recognition (section \ref{results:skill-recognition}), this is why the experiments with action segmentation use the same models as the skill recognition, adapting only the top layers of the models.
 
 \subsection{Video Vision Transformer \& Self-attention ConvLSTM}
 \label{subsec:video-models-from-scratch}
@@ -248,7 +248,7 @@ Even up-sampling less occurring combinations didn't help. The models stagnated o
 In order to reach better results, the search for a pre-trained model leads us to the following experiment, namely the usage of PyTorch implementation of the Multiscale Video Vision Transformer.
 
 \subsection{Multiscale Video Vision Transformer - MViT}
-\ref{results:mvit}
+\label{results:mvit}
 
 The implementation of the the Mutliscale vision transformer uses the PyTorch pre-trained model and weights \ref{code:pytorch-mvit-init}.
 The output layers of the model are stripped in order to adapt the model to recognizing jump rope skills. This allows the addition of new output layers, custom to DD3 freestyles \ref{code:pytorch-skill-output-layers}.

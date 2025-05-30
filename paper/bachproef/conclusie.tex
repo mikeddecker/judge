@@ -93,7 +93,10 @@ It is unknown how much data is expected to increase the accuracy \ref{intro-bp:q
 
 \subsection{Future work on skill recognition}
 
-Aside from additional labels, some possibilities to increase accuracy are fine-tuning the weighted losses or experimenting using different models. Another experiment could be predicting the actions of individual athletes, instead of regarding the video section as a single unit. This can be especially usefull when predicting single rope team freestyles, in which the jumpers act as a unit, but also act as an individual, contrary to double dutch freestyles. Currently the data has been downsampled, filtering mostly normal jumps. This downsampling can be adjusted, as it there could be turner skills when there is a normal jump, limiting the training of these turners. Further data augmentation, besides mirroring the visual, such as color shifts, random crops or camera motion can also increase the accuracy of the models. A more difficult research topic, could be to create a full 3D pose of the athletes, which might require multiple cameras. 
+Aside from additional labels, some possibilities to increase accuracy are fine-tuning the weighted losses or experimenting using different models. Another experiment could be predicting the actions of individual athletes, instead of regarding the video section as a single unit. This can be especially usefull when predicting single rope team freestyles, in which the jumpers act as a unit, but also act as an individual, contrary to double dutch freestyles. A model like stagNet, \autocite{Qi_2020}, looks interesting. 
+
+Currently the data has been downsampled, filtering mostly normal jumps. This downsampling can be adjusted, as it there could be turner skills when there is a normal jump, limiting the training of these turners. Further data augmentation, besides mirroring the visual, such as color shifts, random crops or camera motion can also increase the accuracy of the models. A more difficult research topic, could be to create a full 3D pose of the athletes, which might require multiple cameras. 
+
 
 \subsection{Judge score}
 

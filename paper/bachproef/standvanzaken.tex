@@ -166,7 +166,7 @@ While these additions may seem simple, the combination of not knowing what will 
     \label{fig:doubledutch-skill-matrix}
 \end{figure}
 
-The previous section, (\ref{subsec:bp-literature-basisskills}), provides a basic explanation of the skills to be judged, along some examples. To be able to develop a model that can accurately recognize all skills, it is necessary to draw up a detailed skills matrix. This section explains the composition of the skill-matrix, in order to give a better understanding on the total accuracy of the models later on. As described earlier, skills come with many transitions, take the first skill-matrix representation in figure \ref{fig:doubledutch-skill-matrix} to better understand skills and transitions.
+The previous section, (\ref{lit:jump-rope-skills-introduction}), provides a basic explanation of the skills to be judged, along some examples. To be able to develop a model that can accurately recognize all skills, it is necessary to draw up a detailed skills matrix. This section explains the composition of the skill-matrix, in order to give a better understanding on the total accuracy of the models later on. As described earlier, skills come with many transitions, take the first skill-matrix representation in figure \ref{fig:doubledutch-skill-matrix} to better understand skills and transitions.
 
 \textbf{Type:} You have four styles of turning in double dutch; the normal way or double dutch (DD), reversing the rope rotation, sort of like backwards called irish dutch (irish), the chinese way of turning, chinese wheel (CW) or only using one rope or the two combined as a single rope, called single dutch or one rope.
 
@@ -319,7 +319,7 @@ Even when Densepose isn't used, smoothing can still be applied to the guessed bo
 \section{Video action segmentation}
 \label{lit:video-action-segmentation}
 
-When the athletes are cropped, videos need to be split \footnote{Not real/physical splits, but rather labels/annotations for where to split} in (sub)skills, because splitting new videos manually takes too much time and is impractical on competitions. A more specialized model like LTContext \autocite{Jiaming_2023} or a video vision model explored in section~\ref{subsec:bp-skill-recognition} could suffice.
+When the athletes are cropped, videos need to be split \footnote{Not real/physical splits, but rather labels/annotations for where to split} in (sub)skills, because splitting new videos manually takes too much time and is impractical on competitions. A more specialized model like LTContext \autocite{Jiaming_2023} or a video vision model explored in section~\ref{lit:skill-recognition} could suffice.
 
 Just like in localization, extracting poses, filtering foreground from background etc. could improve the segmentation.
 
@@ -350,12 +350,6 @@ For reference, NextJump uses a CNN - MobileNetv4, \autocite{MobileNetv4_2024} an
 
 Even with a broad range of options, it isn't bad to think about potential hurdles. One of them are unknown of unusual skills. While a judge may refer to a head judge or think for itself, the AI model wouldn't be trained for that. The other hurdle could be that DD3 freestyles are a group activity, making it hard for models to recognize the required aspects. 
 
-\section{Group activity}
-
-As DD3 is a group activity, problems could arise while trying to detect skills. However, the hypothesis is that a DD3 freestyle always acts as one unit, thus not really requiring much special attention. One potential problem could be not know left from right, as there are two turners. Other problems might arise when adapting SR to SR2 where two individuals are not exactly one unit. Some further research can be done in models like stagNet \autocite{Qi_2020} to account for this idea. Another idea would be to apply the same method as YOLO, predicting multiple locations at the same time.
-
-
-
 
 \section{Unknown/Unusual skills}
 \label{lit:unknown-unusual-skills}
@@ -366,9 +360,6 @@ Unknown skills or special cases pose another challenge. That's why the skill-mat
 (Sort of marking unique skills as "I don't know" so that others new/unique ones will also be marked as "I don't know") Unusual skills on the other hand should be incorporated into the implementation.
 A more concrete example would be turntables, which are mainly performed using a crab or push-up, but also seen with a frog or a split.
 Turntables even have the potential to be combined with a swift. Omitting turntable frogs or splits in the train dataset can test this the ability to perform on unusual skills.
-
-
-
 
 \section{Summary literature}
 \label{lit:-summary-literature}

@@ -56,7 +56,7 @@ Jumper localization is needed in order crop a zoomed-in video of the skippers pe
 
 Experiments on localizing implement two major ways of labeling athlete locations, full team boxes and individual boxes.
 For this project the relative center point along the x-axis, y-axis, width and height of the box are stored. So regardless of the scale of the image, whether the image has size 1920 x 1080 pixels or 1080 x 720 pixels, the position of the box remains the same.
-This way, by scaling all images to the same size, frames of dimension (width, height, channels) can fed into the model \ref{code:keras-random-conv}, giving 4 values in return. An example of a box would be [0.6, 0.5, 0.4, 0.4], all values range between 0 and 1.
+This way, by scaling all images to the same size, frames of dimension (width, height, channels) can fed into the model, giving 4 values in return. An example of a box would be [0.6, 0.5, 0.4, 0.4], all values range between 0 and 1.
 Team labels require one box for a single image, contrary to multiple boxes for individual athletes. 
 After training and predicting box coordinates, the Jaccard similarity coefficient otherwise known as the Intersection over Union accuracy (IoU) can be performed evaluating the performance of the model. This allows for comparison of models or training rounds.
 
@@ -82,7 +82,7 @@ Each frame than has a value from zero to one. An example of consecutive splitpoi
 
 Having a splitpoint value for each frame of the video, the video can be partioned into consecutive sections of T timesteps. Because the Multiscale Vision Transformer is pre-trained on videosections of 16 frames, the same amount of timesteps are taken to finetune the model for segmentation. This makes the model transform the input of size (batch size, channels, timesteps, height, width) into an output of size (batch size, timesteps).
 
-Available experiments include code implementations of the Video Vision Transformer as introduced in \textcite{Arnab2021} (ViViT - \ref{code:get_model_ViViT}) and the Self-Attention ConvLSTM from \textcite{Lin_2020}. Both models showed the same results, averaging out predictions slightly above 0 for all frames, stagnating on MSE losses, not actually grasping what happens in given sections of frames it receives.
+Available experiments include code implementations of the Video Vision Transformer (ViViT) as introduced in \textcite{Arnab2021} and the Self-Attention ConvLSTM from \textcite{Lin_2020}. Both models showed the same results, averaging out predictions slightly above 0 for all frames, stagnating on MSE losses, not actually grasping what happens in given sections of frames it receives.
 
 The final experiment on action segmentation uses \href{https://pytorch.org/vision/main/models/video_mvit.html}{PyTorch's Video MViT}, which is an implementation based on the Multiscale Vision Transformer created by \textcite{Fan2021} which can be finetuned using the pre-trained weights on the kinetics dataset \autocite{Kay2017}. This experiment will be elaborated in section \ref{results:action-segmentation-mvit}.
 
@@ -108,7 +108,7 @@ These models were trained on upsampeled data, increasing occurances of more uniq
 Following unsuccesful trials trained from scratch, accelerated the implemenation of the Multiscale Vision Transformer for recognizing skills. At the same time, in order to test things out, skills where limited to to a balanced 5 class datataset; jumps, return from powers, pushups, frogs and other skills, hoping for better results.
 The results where excellent, even starting to recognize aspects of turners, quickly re-enabling predictions on all skills \ref{results:mvit}.
 
-Further experiments added other models, namely video ResNet models or Swin Transformers \ref{results:skill-recognition-resnet-swin-saconv3d} or adjusted the returned losses, based on skill aspect occurance in the dataset during training and validation \ref{results:skill-recognition-weighted-losses}. 
+Further experiments added other models, namely video ResNet models or Swin Transformers \ref{results:skill-recognition-resnet-swin-saconv3d} or adjusted the returned losses, based on skill aspect occurance in the dataset during training and validation \ref{results:skill-recognition-weighted-loss}. 
 
 \section{Judge score comparison}
 \label{methodology:judge-score-comparison}
