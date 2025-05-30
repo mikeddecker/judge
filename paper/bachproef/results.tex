@@ -54,36 +54,37 @@ Ultralytics \autocite{Khanam2024} provides an easy-to-use pre-trained implementa
 Using these predictions, a crop around the three jumpers can be created using the predicted jumper boxes from the fine-tuned YOLO model, after using the pre-trained weights on the COCO dataset \autocite{Lin2014}. In order to improve the crops some steps were required. Details are discussed below.
 
 \subsubsection{Crop stability}
+\label{results:crop-stability}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.95\linewidth]{img/1267_292_boxes}
-    \includegraphics[width=0.95\linewidth]{img/1267_292_boxes_reduced_spectators}
+    \includegraphics[width=0.95\linewidth]{1267_292_boxes}
+    \includegraphics[width=0.95\linewidth]{1267_292_boxes_reduced_spectators}
     \caption[raw vs fine-tuned YOLOv11 nano model predictions]{Raw predictions of the unrefined YOLOv11 nano model compared to the fine-tuned model which reduces predictions of spectators.}
     \label{fig:raw-vs-fine-tuned-boxes}
 \end{figure}
 
 \begin{figure}
     \centering
-%%    \includegraphics[width=0.35\linewidth]{img/PR_curve}
-    \includegraphics[width=0.95\linewidth]{img/results}
-    \includegraphics[width=0.85\linewidth]{img/confusion_matrix_normalized}
+%%    \includegraphics[width=0.35\linewidth]{PR_curve}
+    \includegraphics[width=0.95\linewidth]{results}
+    \includegraphics[width=0.85\linewidth]{confusion_matrix_normalized}
     \caption[metrics after fine-tuning YOLOv11]{Metrics after fine-tuning YOLOv11 on the validation set of 161 images, mAP50 of 0.953 \& mAP50-95 of 0.63, annotation of coaches was an idea.}
     \label{fig:localization-results}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.45\linewidth]{img/1315_2935}
-    \includegraphics[width=0.45\linewidth]{img/2297_134}
+    \includegraphics[width=0.45\linewidth]{1315_2935}
+    \includegraphics[width=0.45\linewidth]{2297_134}
     \caption[Valid crops of a DD3 routine on competition.]{Valid crops of a DD3 routine on competition. (224x224 pixels)}
     \label{fig:dd3-crop}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.45\linewidth]{img/1267_292_cropped}
-    \includegraphics[width=0.45\linewidth]{img/1405_1061_cropped}
+    \includegraphics[width=0.45\linewidth]{1267_292_cropped}
+    \includegraphics[width=0.45\linewidth]{1405_1061_cropped}
     \caption[dd3-crop-error]{Two crops including a spectator alongside the athletes.}
     \label{fig:dd3-crop-error}
 \end{figure}
@@ -120,7 +121,7 @@ Utilizing these steps allows for videos where a team is always on display (\ref{
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.45\linewidth]{img/1241_1093_cropped}
+    \includegraphics[width=0.45\linewidth]{1241_1093_cropped}
     \caption[dd3-crop-error]{Athletes running out of view.}
     \label{fig:dd3-crop-error-out-of-view}
 \end{figure}
@@ -248,10 +249,10 @@ To get all sections, all peaks in its neighborhood (\(windowsize = fps / 3\)) ha
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2250_with_250_points}
-    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2500_with_250_points}
-    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_2750_with_250_points}
-    \includegraphics[width=0.45\linewidth]{img/segmentplot_2285_frameStart_3000_with_250_points}
+    \includegraphics[width=0.45\linewidth]{segmentplot_2285_frameStart_2250_with_250_points}
+    \includegraphics[width=0.45\linewidth]{segmentplot_2285_frameStart_2500_with_250_points}
+    \includegraphics[width=0.45\linewidth]{segmentplot_2285_frameStart_2750_with_250_points}
+    \includegraphics[width=0.45\linewidth]{segmentplot_2285_frameStart_3000_with_250_points}
     \caption[Segmentation plot]{Segmentation plot comparing predictions with the splitpoint values indicating a match of interesting splitpoint. Visible errors are: \\
         at frame 2459, a relatively lower jump out of the rope with a snapper. \\
         at frames 2700 until 2900 indicating a transition which is labeled in one segment, but the athletes are rather bouncy on their feet, letting the model think those are splitpoints. \\
@@ -271,7 +272,7 @@ These predicted segments are the first usable split moments to use for splitting
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.95\linewidth]{img/skilllengths}
+    \includegraphics[width=0.95\linewidth]{skilllengths}
     \caption[frame counts of skill lengths]{Distribution of skill length (in frames), visually limited to 50 frames per skill. Skill lengths differ depending on the frame rate of the video. Most videos have a framerate of 25, 30 or 50 frames per second. Annotated sections longer than 50 frames are mostly transitions, mistake recoveries, gymnastic typed skills or powerskills with more than one rotation. These long duration frame counts occur at most 3 times.}
     \label{fig:skilllengths-counts}
 \end{figure}
@@ -305,7 +306,7 @@ Even up-sampling less occurring combinations didn't help. The models stagnated o
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.7\linewidth]{img/skill-upsampling-distribution}
+    \includegraphics[width=0.7\linewidth]{skill-upsampling-distribution}
     \caption[upsampling distribution of skills]{Occurance of each labeled skill (e.g. videoId 123, frameStart 480, frameEnd 504, Double Dutch, 1 rotation, split, EB, crouger...) in the upsampeled dataset. Values get duplicated based on the uniqueness of each property. E.g. because it is an EB and a split, it will be duplicated four times, but no/less duplication because Double Dutch and 1 rotation is more common.}
     \label{fig:skill-upsampling-distribution}
 \end{figure}
@@ -317,7 +318,7 @@ In order to reach better results, the search for a pre-trained model leads us to
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.7\linewidth]{img/mvit-5-classes}
+    \includegraphics[width=0.7\linewidth]{mvit-5-classes}
     \caption[Classification report on only 5 skill classes]{Classification report on the 5 classes jumps, pushups, return from powers, frogs or other skills after training mvit on an equally distributed, max 442 samples per skill as seen in table \ref{tab:skill_distribution_grouped_final}.}
     \label{fig:mvit-5-classes}
 \end{figure}
@@ -576,7 +577,7 @@ MULTIPLE TURNERSKILLS &      0.00 &     0.00 &     0.00 &        0 \\
      weighted avg &      0.87 &      0.87 &      0.87 &       669 \\
          \hline
     \end{tabular}
-    \caption[[Feet class report]]{mvit-class-report-feet}
+    \caption[Feet class report]{mvit-class-report-feet}
     \label{tbl:mvit-class-report-feet}
 \end{table}
 

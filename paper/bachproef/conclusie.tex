@@ -41,7 +41,9 @@ Considering these aspects, a general approach for recognizing skills in a video 
 
 \subsection{Localization}
 
-Tests on results for localizing \ref{results:jumper-localization} are limited in order to have spent sufficient time for segmenting and recognizing skills. Even then, time was limited. Predicting the location of jumpers has been tested using full boxes as a first stage. Models in this stage included MobileNet and GoogleNet, but results were lacking. The switch to annotate individuals instead of full teams and using YOLO quickly reached better results. The intial full videocrops weren't stable, requiring smoothing techniques and more labels in order to reduce spectator predictions and visually disturbing shocks (table \ref{tbl:crop-results}).
+Localization serves as a way to zoom in and focussing on the actions, sparing computational resources, rather than providing frames to a model where the actions and athletes only take up a limitted amount of space in the video \ref{fig:sr4-field}.
+
+on the  Tests on results for localizing \ref{results:jumper-localization} are limited in order to have spent sufficient time for segmenting and recognizing skills. Even then, time was limited. Predicting the location of jumpers has been tested using full boxes as a first stage. Models in this stage included MobileNet and GoogleNet, but results were lacking. The switch to annotate individuals instead of full teams and using a pre-trained YOLO model quickly reached better results. Even though the mAP50 reached 0.943 accuracy, intial full videocrops weren't stable, requiring smoothing techniques and more labels in order to reduce spectator predictions and visually disturbing shocks (table \ref{tbl:crop-results}). Utilizing a basic smoothing technique \ref{results:crop-stability} allowed for sufficient videocrops, which can be used for skill recognition, sparing 
 
 \subsection{Segmentation}
 

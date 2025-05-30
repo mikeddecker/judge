@@ -142,7 +142,7 @@ Multiples are built from unique rotation combinations. Some quads as example:
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.7\linewidth]{img/doubledutch-matrix}
+    \includegraphics[width=0.7\linewidth]{doubledutch-matrix}
     \caption[skill-matrix-DD]{Representation of a skill-matrix used for Doube Dutch}
     \label{fig:doubledutch-skill-matrix}
 \end{figure}

@@ -41,7 +41,7 @@ The quality of videos differ and range from anywhere between 8 and 550MB. It may
 
 \section{Jumper localization}
 
-Jumper localization is needed in order crop a zoomed-in video of the skippers performing their routine. The AI generated image \ref{fig:sr2-performance-ai-generated} perfectly illustrates a competition setting, where the majority of the image and computation is lost on surroundings, judges and spectators.
+Jumper localization is needed in order crop a zoomed-in video of the skippers performing their routine. Image \ref{fig:sr4-field} perfectly illustrates a competition setting, where the majority of the video is lost on surroundings, judges and spectators.
 
 For predicting the location of the athletes, any object detection model is fine with slight preference towards a model like YOLO or EfficientDet having a higher FPS rate than others based on survey of \textcite{Zaidi_2021}. In order to compare which model is suited for next steps, the Jaccard similarity coefficient, or intersection over union is used. 
 Using the predicted locations of the skippers, each frame of video can be cropped around the athletes.
@@ -50,9 +50,9 @@ Potential obstacles are predicted spectators or blurry athletes mid-skill being 
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.95\linewidth]{img/sr2-performance-ai-generated-HF-cinedifusion.png}
-    \caption[AI Generated image using takajordans CineDiffusion implementation on huggingface of two skippers performing a single rope 2 freestyle in front of judges and public]{AI Generated image using takajordans CineDiffusion implementation on huggingface of two skippers performing a single rope 2 freestyle in front of judges and public \autocite{HF_takarajordan_CineDiffusion}.}
-    \label{fig:sr2-performance-ai-generated}
+    \includegraphics[width=0.95\linewidth]{sr4-field}
+    \caption[Example jump rope competition setting]{Example of a competition setting in which four athletes are performing a SR4 freestyle.}
+    \label{fig:sr4-field}
 \end{figure}
 
 
