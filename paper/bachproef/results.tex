@@ -28,7 +28,7 @@ Below you can find a shortlist of experiments executed on localization.
 \subsection{Dedicated architectures}
 
 This section explains the experiments using dedicated architectures. Results weren't good on about 6200 train and about 800 validation images. One issue might be that these models were finetuned for classification and not specialized for localization. A second issue might be the low amount of labels. Thirdly, predicting full boxes may not have been possible at all for the low amount of labels.
-The first try-out used a personal implemenation, based on school courses of the GoogleNet architecture; \autocite{Szegedy2014} - \ref{code:keras-googlenet-small-replication}.
+The first try-out used a personal implementation, based on school courses of the GoogleNet architecture; \autocite{Szegedy2014} - \ref{code:keras-googlenet-small-replication}.
 It used the an input shape of (Width, Height, Channels) to predict a full box around all three jumpers. Just like the implementation using MobileNetV3, \autocite{Howard2019} - \ref{code:keras-mobilenetv3small}.
 
 % TODO Vision transformer?
@@ -91,7 +91,7 @@ Using these predictions, a crop around the three jumpers can be created using th
 \end{figure}
 
 Annotating only athletes on 732 images \& fine-tuning the pre-trained nano yolo model, the first predictions of spectators are reduced considerately. This is illustrated in figure \ref{fig:raw-vs-fine-tuned-boxes}.
-This way crops can be created by taking the minimum and maximum \(x\) \& \(y\)-coordinates of all boxes predicted on a frame. Predicting these crops for all frames, alles to crop a full video.
+This way crops can be created by taking the minimum and maximum \(x\) \& \(y\)-coordinates of all boxes predicted on a frame. Predicting these crops for all frames, i.e. a full video crop.
 However, reviewing cropped videos indicate occasional frames predicting spectators, coaches or judges and moments of instability, as if you are watching camera footage of an earthquake.
 
 In order to avoid a sudden zoom out, because of spectators, an IoU comparison of the previous predicted box with the new box is made. If the IoU value is larger than the average IoU of the last \(N\) seconds, powered to the fourth, than crop coordinates will be updated. Using this IoU comparison, reduces video crops including spectators, maintaining the earthquake effect.
@@ -170,8 +170,8 @@ Experiments on action segmentation have waited on skill recognition (section \re
 
 The first and second experiment for segmention use code implementations of the Video Vision Transformer as introduced in \textcite{Arnab2021} (ViViT - \ref{code:get_model_ViViT}) and the Self-Attention ConvLSTM from \textcite{Lin_2020}.
 To resolve bugs and dimensionality issues, Large Language models are used (\autocite{OpenAI_ChatGPT_2025} and \autocite{Deepseek_2025}).
-These models were then trained on 7.8k batches of 16 consecutive frames, which originate from 44 trainings videos for about 48 minutes of training data, having framerates between 25 and 60 \footnote{Most labeled videos have a framerate of 25, 30 or 50 frames per second} images per second.
-Both models showed the same results, averaging out predictions slightly above 0 for all frames, stagnating on MSE losses of around 0.09 and 0.10. This was about the average when always predicting 0. (Exact values are lost due to the switch to pytorch and bugs, will/could be re-added later.)
+These models were then trained on 7.8k batches of 16 consecutive frames, which originate from 44 trainings videos for about 48 minutes of training data, having frame rates between 25 and 60 \footnote{Most labeled videos have a frame rate of 25, 30 or 50 frames per second} images per second.
+Both models showed the same results, averaging out predictions slightly above 0 for all frames, stagnating on MSE losses of around 0.09 and 0.10. This was about the average when always predicting 0. (Exact values are lost due to the switch to PyTorch and bugs, will/could be re-added later.)
 
 \subsection{Pre-trained MViT}
 \label{results:action-segmentation-mvit}
@@ -207,7 +207,7 @@ This brings us to the main results of this paper, namely skill recognition resul
 \begin{figure}
     \centering
     \includegraphics[width=0.95\linewidth]{skilllengths}
-    \caption[frame counts of skill lengths]{Distribution of skill length (in frames), visually limited to 50 frames per skill. Skill lengths differ depending on the frame rate of the video. Most videos have a framerate of 25, 30 or 50 frames per second. Annotated sections longer than 50 frames are mostly transitions, mistake recoveries, gymnastic typed skills or powerskills with more than one rotation. These long duration frame counts occur at most 3 times.}
+    \caption[frame counts of skill lengths]{Distribution of skill length (in frames), visually limited to 50 frames per skill. Skill lengths differ depending on the frame rate of the video. Most videos have a frame rate of 25, 30 or 50 frames per second. Annotated sections longer than 50 frames are mostly transitions, mistake recoveries, gymnastic typed skills or power typed skills with more than one rotation. These long duration frame counts occur at most 3 times.}
     \label{fig:skilllengths-counts}
 \end{figure}
 
@@ -241,7 +241,7 @@ Even up-sampling less occurring combinations didn't help. The models stagnated o
 \begin{figure}
     \centering
     \includegraphics[width=0.7\linewidth]{skill-upsampling-distribution}
-    \caption[upsampling distribution of skills]{Occurance of each labeled skill (e.g. videoId 123, frameStart 480, frameEnd 504, Double Dutch, 1 rotation, split, EB, crouger...) in the upsampeled dataset. Values get duplicated based on the uniqueness of each property. E.g. because it is an EB and a split, it will be duplicated four times, but no/less duplication because Double Dutch and 1 rotation is more common.}
+    \caption[upsampling distribution of skills]{Occurrence of each labeled skill (e.g. videoId 123, frameStart 480, frameEnd 504, Double Dutch, 1 rotation, split, EB, crouger...) in the upsampeled dataset. Values get duplicated based on the uniqueness of each property. E.g. because it is an EB and a split, it will be duplicated four times, but no/less duplication because Double Dutch and 1 rotation is more common.}
     \label{fig:skill-upsampling-distribution}
 \end{figure}
 
@@ -256,12 +256,12 @@ The output layers of the model are stripped in order to adapt the model to recog
 \begin{figure}
     \centering
     \includegraphics[width=0.7\linewidth]{mvit-5-classes}
-    \caption[Classification report on only 5 skill classes]{Classification report on the 5 classes jumps, pushups, return from powers, frogs or other skills after training mvit on an equally distributed, max 442 samples per skill as seen in table \ref{tab:skill_distribution_grouped_final}.}
+    \caption[Classification report on only 5 skill classes]{Classification report on the 5 classes jumps, pushups, return from powers, frogs or other skills after training MViT on an equally distributed, max 442 samples per skill as seen in table \ref{tab:skill_distribution_grouped_final}.}
     \label{fig:mvit-5-classes}
 \end{figure}
 
 
-\href{https://pytorch.org/vision/main/models/video_mvit.html}{PyTorch's Video MViT} is an implementation based on the Multiscale Vision Transformer created by \textcite{Fan2021} which can be finetuned using the pre-trained weights on the kinetics dataset.
+\href{https://pytorch.org/vision/main/models/video_mvit.html}{PyTorch's Video MViT} is an implementation based on the Multiscale Vision Transformer created by \textcite{Fan2021} which can be fine-tuned using the pre-trained weights on the kinetics dataset.
 The first experiment using this model used a perfectly balanced dataset for skills only, namely taking a random subset of maximum of 442 samples on each of the 5 classes seen in table \ref{tab:skill_distribution_grouped_final}.
 The first results showed accuracies of 87\% to 98\% (see fig. \ref{fig:mvit-5-classes}) even some turner skills getting predicted correctly.
 
@@ -355,7 +355,7 @@ Another competition will be put next to these results, in order to gain more ins
 \begin{table}[h!]
     \begin{tabular}{|l|r|r|r|}
         \hline
-        videoId & judges    & MViT         & Differencs \\ \hline
+        videoId & judges    & MViT         & Differences \\ \hline
         2568	& 169.26	&   147	       & -13.15 \\
         2569	& 181.23	&   166.9	   & -7.91  \\
         2570	& 146.71	&   25.4	   & -82.69 \\
@@ -380,8 +380,8 @@ Another competition will be put next to these results, in order to gain more ins
         Total   & 4642.04	&   3148.7	   & -32.17 \\ \hline
     \end{tabular}
     \caption[judge diff score compared to MViT]{Score assigned by judges compared to the prediction the MViT model \\
-    Videos are on fully unlabeled data and from the same competitionday, with a camera perspective quite a bit lower than other times.
-    This results in quite some videos with inproper crops.}
+    Videos are on fully unlabeled data and from the same competition day, with a camera perspective quite a bit lower than other times.
+    This results in quite some videos with improper crops.}
     \label{tbl:judge-score-comparison}
 \end{table}
 
@@ -455,7 +455,6 @@ To keep things uncluttered, only the total deviation is showed now. While the sw
     \end{tabular}
     \caption[Judge diff score compared to all models]{Score assigned by judges compared to the prediction vision models \\
     The multiscale vision transformer is clearly winning on assigning scores.}
-    \label{tbl:judge-score-comparison}
 \end{table}
 
 You may have noticed, that the final run decreased the score difference from -32.17\% to a whopping -21.68\%, finalizing the results in a positive note, being able to discuss and summarize this research.

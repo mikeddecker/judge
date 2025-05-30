@@ -57,23 +57,23 @@ Jumper localization is needed in order crop a zoomed-in video of the skippers pe
 Experiments on localizing implement two major ways of labeling athlete locations, full team boxes and individual boxes.
 For this project the relative center point along the x-axis, y-axis, width and height of the box are stored. So regardless of the scale of the image, whether the image has size 1920 x 1080 pixels or 1080 x 720 pixels, the position of the box remains the same.
 This way, by scaling all images to the same size, frames of dimension (width, height, channels) can fed into the model, giving 4 values in return. An example of a box would be [0.6, 0.5, 0.4, 0.4], all values range between 0 and 1.
-Team labels require one box for a single image, contrary to multiple boxes for individual athletes. 
+Team labels require one box for a single image, contrary to multiple boxes for individual athletes.
 After training and predicting box coordinates, the Jaccard similarity coefficient otherwise known as the Intersection over Union accuracy (IoU) can be performed evaluating the performance of the model. This allows for comparison of models or training rounds.
 
 Full team predictions were experimented on MobileNetV3 \autocite{Howard2019} and GoogleNet \autocite{Szegedy2014}. Labeling some frames of almost any DD3 routine, variety in the leftover data was limited. This marked the transition towards individual labels.
 
 % TODO Vision Transformer?
-Ultralytics, \autocite{Khanam2024}, provides an easy way to implement their YOLO models. For this research, YOLOv11 is used to predict individual boxes, providing satisfying results \ref{results:yolo}. 
+Ultralytics, \autocite{Khanam2024}, provides an easy way to implement their YOLO models. For this research, YOLOv11 is used to predict individual boxes, providing satisfying results \ref{results:yolo}.
 Using the predicted locations of the skippers, each frame of video can be cropped around the athletes. Results weren't perfect, sometimes visual disturbing, because of sudden zoom outs, blurry athletes or predictions of spectators. This required smoothing techniques to improve full video crops \ref{results:crop-stability}.
 
-Manually reviewing full cropped videos is time consuming, requiring automated tests in order to check full video crops. The implementation of these automated tests used the full team boxes comparing the minimum IoU overlaps for each video, as these moments mattered most. By manually checking videos, problematic moments were additionally labeled as full team boxes. However, the further development and full video crop results were unfinished and put on hold due to time constraints. 
+Manually reviewing full cropped videos is time consuming, requiring automated tests in order to check full video crops. The implementation of these automated tests used the full team boxes comparing the minimum IoU overlaps for each video, as these moments mattered most. By manually checking videos, problematic moments were additionally labeled as full team boxes. However, the further development and full video crop results were unfinished and put on hold due to time constraints.
 
 \section{Action segmentation}
 \label{methodology:action-segmentation}
 
 The main purpose of the action segmentation is to enable predictions on full routines in order to actually use the whole model. Using the cropped images, and the assigned start and end frame of a skill, the model can predict whether a given frame is an interesting split point or not.
 
-For jump rope, this mostly means moments when an athlete leaves or lands on the floor. However there are special cases such as cartwheels. Only moments when either hands or feet land over a rope, are annotated as the end of a skill. 
+For jump rope, this mostly means moments when an athlete leaves or lands on the floor. However there are special cases such as cartwheels. Only moments when either hands or feet land over a rope, are annotated as the end of a skill.
 To annotate which moments are interesting split points, the start and end frame of a skill receive value 1, while other frames remain 0.
 As the start and end frame of a skill are rather subjective, frames around a split point also range somewhere between 0 and 1. These values are calculated using the function \ref{code:calculate-splitpoint-values} which is called on in the data generator demonstrated in code \ref{code:call-splitpoint-calculation}.
 Each frame than has a value from zero to one. An example of consecutive splitpointvalues could be:
@@ -102,13 +102,13 @@ Along the way, additional aspects to a skill label can be added in order to inco
 Furthermore, once-in-a-lifetime skills can be marked as unknown in order for the model to be robust in predicting new skills. After analyzing the given skillsection, a level can be assigned, based on the predicted aspects.
 Multiple different models can be tested in order to find the best one.
 
-The first experiments implement the Video Vision Transformer and the Self-Attention ConvLSTM, which averaged out the most occuring aspects; normal jumps, no mistakes, 1 rotation...
-These models were trained on upsampeled data, increasing occurances of more unique skill combinations.
+The first experiments implement the Video Vision Transformer and the Self-Attention ConvLSTM, which averaged out the most occurring aspects; normal jumps, no mistakes, 1 rotation...
+These models were trained on upsampeled data, increasing occurrences of more unique skill combinations.
 
-Following unsuccesful trials trained from scratch, accelerated the implemenation of the Multiscale Vision Transformer for recognizing skills. At the same time, in order to test things out, skills where limited to to a balanced 5 class datataset; jumps, return from powers, pushups, frogs and other skills, hoping for better results.
+Following unsuccessful trials trained from scratch, accelerated the implementation of the Multiscale Vision Transformer for recognizing skills. At the same time, in order to test things out, skills where limited to to a balanced 5 class dataset; jumps, return from powers, pushups, frogs and other skills, hoping for better results.
 The results where excellent, even starting to recognize aspects of turners, quickly re-enabling predictions on all skills \ref{results:mvit}.
 
-Further experiments added other models, namely video ResNet models or Swin Transformers \ref{results:skill-recognition-resnet-swin-saconv3d} or adjusted the returned losses, based on skill aspect occurance in the dataset during training and validation \ref{results:skill-recognition-weighted-loss}. 
+Further experiments added other models, namely video ResNet models or Swin Transformers \ref{results:skill-recognition-resnet-swin-saconv3d} or adjusted the returned losses, based on skill aspect occurrence in the dataset during training and validation \ref{results:skill-recognition-weighted-loss}.
 
 \section{Judge score comparison}
 \label{methodology:judge-score-comparison}

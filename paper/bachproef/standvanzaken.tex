@@ -13,7 +13,7 @@ Next follows a brief overview of DD3-skills, to further specify and clarify the 
 Skills, combinations and transitions will than be mapped in a skill-matrix, nearing close to binary computer output.
 Upon specifying these components, it is revealed that their are certain challenges for AI models in order to recognize these skills.
 Something is needed that can use video information to localize the jumper, sequence the video, and recognize the performed skill.
-These three main requirements are elaborated in computer vision literature. % TODO : ask alongside previous insights, is that NextJump?
+These three main requirements are elaborated in computer vision literature. % TODO : ask alongside previous insights, is that NextJump? 
 Finally some challenges remain such as group activity or unknown/unusual skills.
 
 % I think it would be good to slightly restructure your literature review for
@@ -243,7 +243,7 @@ Given examples by those two sources of performed computer vision tasks are: play
 A successful example recognizing static images on gymnastics rings, \textcite{Abdullah_2023}, illustrates the possibility of recognizing the main body positions in double dutch freestyles. Although the dataset is fully balanced and with a limited amount of classes, extending it shouldn't pose an issue. Preferably, identifying skills should incorporate the time aspect.
 \textcite{Zahan_2023} modified the Long Short Term Memory model (LSTM-model) to incorporate longer time sequences, to predict a full score of a routine which is static and not future proof. Changes in rules would make older scores useless and request for mistakes.
 
-Meanwhile, the International Gymnastic Federation (\href{https://www.gymnastics.sport/site/}{FIG}) has been working with Fujitsu sinds 2017 in order to create a \href{https://www.fujitsu.com/global/themes/data-driven/judging-support-system/}{Judging Support System}. Initially, sensor data was used in order to predict skills, however in their official launch, \autocite{Fujitsu2023launch}, they mentioned a transition towards camera based image analysis, reaching higher performance. The models have been tested and used on world championships, in order to review scores. The exact used model they use is unknown.
+Meanwhile, the International Gymnastic Federation (\href{https://www.gymnastics.sport/site/}{FIG}) has been working with Fujitsu since 2017 in order to create a \href{https://www.fujitsu.com/global/themes/data-driven/judging-support-system/}{Judging Support System}. Initially, sensor data was used in order to predict skills, however in their official launch, \autocite{Fujitsu2023launch}, they mentioned a transition towards camera based image analysis, reaching higher performance. The models have been tested and used on world championships, in order to review scores. The exact used model they use is unknown.
 Combining these examples and earlier research, a robust action recognition model can be developed detecting key aspects of a a video. These aspects, such as the number of hands, feet, body rotations and the main pose/action, can then be mapped with a level/score resulting in the full difficulty score of a routine.
 
 \subsection{NextJump Speedcounter}
@@ -289,12 +289,12 @@ As jumpers can stand everywhere in a field \footnote{A field is generally 12x12 
     \item Level \& Score mapping
 \end{enumerate}
 
-In what follows, a study of past and recent advancements are listed for each of the three steps, localization, segmentation and prediction. This allows for a selection of machine learning models, best suited for the task at hand. After selecting potential models, some potential hurdles are listed which can withold progression on skill recognition.
+In what follows, a study of past and recent advancements are listed for each of the three steps, localization, segmentation and prediction. This allows for a selection of machine learning models, best suited for the task at hand. After selecting potential models, some potential hurdles are listed which can withhold progression on skill recognition.
 
 \section{Jumper localization}
 \label{lit:jumper-localization}
 
-Image recognition has been at the centre of many recent studies. The best models mostly utilize Convolutional Neural Networks processing spacial information in the image \autocite{Zaidi_2021}. \textcite{Zaidi_2021} further compare recent models for object detection such as YOLO(v4), CenterNet, SSD, EfficientDet-D2, each using some backbone architecture like VGG-16, AlexNet, GoogleNet or lightweight models such as ShuffleNet or MobileNet (all using CNN's). A subset of these models being real-time models (fps > 30).
+Image recognition has been at the center of many recent studies. The best models mostly utilize Convolutional Neural Networks processing spacial information in the image \autocite{Zaidi_2021}. \textcite{Zaidi_2021} further compare recent models for object detection such as YOLO(v4), CenterNet, SSD, EfficientDet-D2, each using some backbone architecture like VGG-16, AlexNet, GoogleNet or lightweight models such as ShuffleNet or MobileNet (all using CNN's). A subset of these models being real-time models (fps > 30).
 The goal of localizing the jumper is to center the athletes in the middle of the screen/video. \textcite{Bharadiya_2023} states that the position of objects in images doesn't really matter, but there are no clear statements about the size of objects. It could be that a jumper takes up 80 percent of the screen, while moments later he moved backwards and only takes up 30 percent of the video. The assumption is that centered and scaled data will work better later.
 
 For the purposes of this study, it is possible to use one of the recent models of image recognition as a starting point, using transfer learning\footnote{Concept transfer learning explained in \autocite{Bharadiya_2023}} to fine-tune the results to localize the jumper.
@@ -339,7 +339,7 @@ skill.
 The final step would be to recognize the total skill in a freestyle video.
 \textcite{Yin_2024} did a general HAR survey, mainly focused on team sports, in which they describe the evolution from normal CNN architectures, to recurrent neural networks for time sequences, remembering context, like the Long Short Term Memory model (LSTM), after which models were developed feeding the CNN output into LSTM or even implementing a convolutional filter in the memory cell \autocite{Shi_2015}.
 
-\textcite{Wang_2019} investigated an improvement for current convolutional or recurrent models. They found that LSTM memory cells were too simple to contain higher-order complexities. As a result, they designed a memory in memory component, to replace the previous cell, which could predict actions on complexer data sets. This quickly formed the name Memory in Memory, MIM. Later, \textcite{Lin_2020} used a self-attention memory cell inside the convLSTM that can memorize global aspects in space and time. With about 35\% the number of parameters compared to Wang's MIM-model, SAM achieved a similar score as on the moving MNIST dataset, but faster. Although the focus of these papers was predicting future actions, the output can be transformed into a classification model, rather than a prediction model.
+\textcite{Wang_2019} investigated an improvement for current convolutional or recurrent models. They found that LSTM memory cells were too simple to contain higher-order complexities. As a result, they designed a memory in memory component, to replace the previous cell, which could predict actions on more complex data sets. This quickly formed the name Memory in Memory, MIM. Later, \textcite{Lin_2020} used a self-attention memory cell inside the convLSTM that can memorize global aspects in space and time. With about 35\% the number of parameters compared to Wang's MIM-model, SAM achieved a similar score as on the moving MNIST dataset, but faster. Although the focus of these papers was predicting future actions, the output can be transformed into a classification model, rather than a prediction model.
 
 Another approach would be using transformers as a described  in \textcite{Yin_2024}. Options are the video vision transformer \autocite{Arnab2021} or adaptions like the ViT-TAD model by \textcite{Yang_2023}, Swin transformer \textcite{Liu_2021} or VideoMAE v2 by \textcite{Wang_2023}. Further research/try-outs will be required to ensure the transfer models can predict actions.
 
@@ -348,7 +348,7 @@ For reference, NextJump uses a CNN - MobileNetv4, \autocite{MobileNetv4_2024} an
 % TODO : SA_ConvLSTM?
 % TODO : MViT
 
-Even with a broad range of options, it isn't bad to think about potential hurdles. One of them are unknown of unusual skills. While a judge may refer to a head judge or think for itself, the AI model wouldn't be trained for that. The other hurdle could be that DD3 freestyles are a group activity, making it hard for models to recognize the required aspects. 
+Even with a broad range of options, it isn't bad to think about potential hurdles. One of them are unknown of unusual skills. While a judge may refer to a head judge or think for itself, the AI model wouldn't be trained for that. The other hurdle could be that DD3 freestyles are a group activity, making it hard for models to recognize the required aspects.
 
 
 \section{Unknown/Unusual skills}
@@ -364,6 +364,6 @@ Turntables even have the potential to be combined with a swift. Omitting turntab
 \section{Summary literature}
 \label{lit:-summary-literature}
 
-According to the state of the art, it appears feasible to analyze the performed skills in a given recording. In order to evaluate this, a proof of concept will be developed predicting jump rope skills. Sequentially, three steps are be required. The first step involves localizing the position of the athletes. This way, computational resources can be spared in the following steps, namely segmenting and recognizing. The segmentation consists of predicting split moments which should divide the video into likely skills. In the final step, the recognition step, each seperated skill can be analyzed by a vision model, predicting the most likely skill performed for the given section.
+According to the state of the art, it appears feasible to analyze the performed skills in a given recording. In order to evaluate this, a proof of concept will be developed predicting jump rope skills. Sequentially, three steps are be required. The first step involves localizing the position of the athletes. This way, computational resources can be spared in the following steps, namely segmenting and recognizing. The segmentation consists of predicting split moments which should divide the video into likely skills. In the final step, the recognition step, each separated skill can be analyzed by a vision model, predicting the most likely skill performed for the given section.
 
-When all skills are predicted, corresponding levels and numeric scores can mapped onto each skillsection. These scores add up to difficulty score, usable to decide a victor on competitions.
+When all skills are predicted, corresponding levels and numeric scores can mapped for each skill section. These scores add up to difficulty score, usable to decide a victor on competitions.

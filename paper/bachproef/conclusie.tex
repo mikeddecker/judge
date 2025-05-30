@@ -32,23 +32,23 @@ Having skills specified, leads to the machine learning part, transforming this m
 
 % TODO add sensoric data if time?
 Computer vision \ref{lit:computer-vision}, a subset of machine learning, is the ability of computers to understand visual data.
-Exploring this topic; models, other sports, the jury support system of Fujitsu (\ref{intro-bp:question-earlier-research-guidance}, \ref{lit:computer-vision-sports}), the availability of video recordings (\ref{intro-bp:question-data}, \ref{tbl:data-comparison-sr-dd}), along with aquiring information about and NextJumps' speedcounter \ref{lit:nextjump-speedcounter} allowed for the choice to learn out of video material \ref{intro-bp:question-which-modern-technologies}.
+Exploring this topic; models, other sports, the jury support system of Fujitsu (\ref{intro-bp:question-earlier-research-guidance}, \ref{lit:computer-vision-sports}), the availability of video recordings (\ref{intro-bp:question-data}, \ref{tbl:data-comparison-sr-dd}), along with acquiring information about and NextJumps' speed-counter \ref{lit:nextjump-speedcounter} allowed for the choice to learn out of video material \ref{intro-bp:question-which-modern-technologies}.
 
-Using videodata and recognizing actions required to think about quite some properties. Recordings are typically full routines of about 60 to 75 seconds. These freestyles contain 40 to 60 skills, around 100 if you include normal jumps. Some recordings are zoomed-in, others are stationary capturing the whole field. The videotype may be mp4, blu-ray (m2ts) or AVI. Even the framerate could differ (25, 30, 50).
-Considering these aspects, a general approach for recognizing skills in a video is created while exploring human action recogniton \ref{lit:human-action-recognition}. This resulted in three steps; jumper localization \ref{lit:jumper-localization}, action segmentation \ref{lit:video-action-segmentation} and skill recognition \ref{lit:skill-recognition}, each of them requiring future work \ref{discussion:future-work}.
+Using video data and recognizing actions required to think about quite some properties. Recordings are typically full routines of about 60 to 75 seconds. These freestyles contain 40 to 60 skills, around 100 if you include normal jumps. Some recordings are zoomed-in, others are stationary capturing the whole field. The video type may be mp4, blu-ray (m2ts) or AVI. Even the frame rate could differ (25, 30, 50).
+Considering these aspects, a general approach for recognizing skills in a video is created while exploring human action recognition \ref{lit:human-action-recognition}. This resulted in three steps; jumper localization \ref{lit:jumper-localization}, action segmentation \ref{lit:video-action-segmentation} and skill recognition \ref{lit:skill-recognition}, each of them requiring future work \ref{discussion:future-work}.
 
 % TODO : add refs to methodology or results?
 
 \subsection{Localization}
 
-Localization serves as a way to zoom in and focussing on the actions, sparing computational resources, rather than providing frames to a model where the actions and athletes only take up a limitted amount of space in the video \ref{fig:sr4-field}.
+Localization serves as a way to zoom in and focusing on the actions, sparing computational resources, rather than providing frames to a model where the actions and athletes only take up a limitted amount of space in the video \ref{fig:sr4-field}.
 
 on the  Tests on results for localizing \ref{results:jumper-localization} are limited in order to have spent sufficient time for segmenting and recognizing skills. Even then, time was limited. Predicting the location of jumpers has been tested using full boxes as a first stage. Models in this stage included MobileNet and GoogleNet, but results were lacking. The switch to annotate individuals instead of full teams and using a pre-trained YOLO model quickly reached better results.
-Even though the mAP50 reached 0.943 accuracy, intial full videocrops weren't stable, requiring smoothing techniques and more labels in order to reduce spectator predictions and visually disturbing shocks (table \ref{tbl:crop-results}). Utilizing a basic smoothing technique \ref{results:crop-stability} allowed for sufficient videocrops, which can be used for skill recognition \& segmentation.
+Even though the mAP50 reached 0.943 accuracy, initial full videocrops weren't stable, requiring smoothing techniques and more labels in order to reduce spectator predictions and visually disturbing shocks (table \ref{tbl:crop-results}). Utilizing a basic smoothing technique \ref{results:crop-stability} allowed for sufficient videocrops, which can be used for skill recognition \& segmentation.
 
 \subsection{Future work on localization}
 
-Localization can be improved in multiple areas. This could involve training on full team labels using YOLO, applying other smoothing techniques or implenting other models. Other factors could be changing the competition setting to limit the amount of spectators, keeping the camera perspective consistent or provide more different perspectives. Another way is annotating the predicted spectators or judges, indicated by pre-trained models, which can be filtered out when cropping or properly managing the location of recording cameras on competition settings. 
+Localization can be improved in multiple areas. This could involve training on full team labels using YOLO, applying other smoothing techniques or implementing other models. Other factors could be changing the competition setting to limit the amount of spectators, keeping the camera perspective consistent or provide more different perspectives. Another way is annotating the predicted spectators or judges, indicated by pre-trained models, which can be filtered out when cropping or properly managing the location of recording cameras on competition settings.
 
 \subsection{Segmentation}
 
@@ -59,7 +59,7 @@ The MViT applied for segmentation transforms the annotated skill labels \ref{met
 [0, 0, 0.1, 0.31, 0.55, 0.86, 1, 0.86, 0.55, 0.31, 0.1, 0, 0, 0 \dots]
 \)
 
-Videos were then split into partitions of T = 16 timesteps, learning some context of previous and following frames, in order to predict the corresponding T split output values as wel. The highest peaks were then considered split points \ref{fig:segmentation-plot}.
+Videos were then split into partitions of T = 16 timesteps, learning some context of previous and following frames, in order to predict the corresponding T split output values as well. The highest peaks were then considered split points \ref{fig:segmentation-plot}.
 Being able to predict splitpoints allows to perform skill recognition on completely unseen videos, isolating each action.
 
 \subsection{Future work on action segmentation}
@@ -93,15 +93,15 @@ It is unknown how much data is expected to increase the accuracy \ref{intro-bp:q
 
 \subsection{Future work on skill recognition}
 
-Aside from additional labels, some possibilities to increase accuracy are fine-tuning the weighted losses or experimenting using different models. Another experiment could be predicting the actions of individual athletes, instead of regarding the video section as a single unit. This can be especially usefull when predicting single rope team freestyles, in which the jumpers act as a unit, but also act as an individual, contrary to double dutch freestyles. A model like stagNet, \autocite{Qi_2020}, looks interesting. 
+Aside from additional labels, some possibilities to increase accuracy are fine-tuning the weighted losses or experimenting using different models. Another experiment could be predicting the actions of individual athletes, instead of regarding the video section as a single unit. This can be especially usefull when predicting single rope team freestyles, in which the jumpers act as a unit, but also act as an individual, contrary to double dutch freestyles. A model like stagNet, \autocite{Qi_2020}, looks interesting.
 
-Currently the data has been downsampled, filtering mostly normal jumps. This downsampling can be adjusted, as it there could be turner skills when there is a normal jump, limiting the training of these turners. Further data augmentation, besides mirroring the visual, such as color shifts, random crops or camera motion can also increase the accuracy of the models. A more difficult research topic, could be to create a full 3D pose of the athletes, which might require multiple cameras. 
+Currently the data has been downsampled, filtering mostly normal jumps. This downsampling can be adjusted, as it there could be turner skills when there is a normal jump, limiting the training of these turners. Further data augmentation, besides mirroring the visual, such as color shifts, random crops or camera motion can also increase the accuracy of the models. A more difficult research topic, could be to create a full 3D pose of the athletes, which might require multiple cameras.
 
 
 \subsection{Judge score}
 
 In the final run, MViT reached the best judge score results, with a difference of -21.68\% compared to the scores allocated by judges.
-Time constraints didn't allow for a comparison of judge scores and model predictions with the ground truth. Thus the desired outcome to have a score difference around 5 to 10\% couldn't be measured. Even the -21.68\% is way to far off in order to use at competitions and unacceptible on competitions. 
+Time constraints didn't allow for a comparison of judge scores and model predictions with the ground truth. Thus the desired outcome to have a score difference around 5 to 10\% couldn't be measured. Even the -21.68\% is way to far off in order to use at competitions and unacceptable on competitions.
 Remember that the scores of scores are only a proxy for the actual score of a routine.
 
 \section{Other future work}
