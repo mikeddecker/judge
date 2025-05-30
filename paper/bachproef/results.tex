@@ -451,7 +451,7 @@ Another competition will be put next to these results, in order to gain more ins
 \end{table}
 
 \subsection{Weighted loss}
-\ref{results:skill-recognition-weighted-loss}
+\label{results:skill-recognition-weighted-loss}
 
 % TODO : paper source?
 In order to increase accuracy on lower represented classes. To enforce this, losses wil be increased for mistakes on lower represented classes. A little mathematical magic \ref{code:recognition-weighted-loss} based on the value counts of each skill aspect compared to highest occurance, applying some buffer, taking the difference, squaring, comparing to the mean etc. (\ref{code:recognition-weighted-loss}) allows for weight distributions below.
@@ -475,9 +475,52 @@ In order to increase accuracy on lower represented classes. To enforce this, los
 These weights are then given to CrossEntropyLoss of PyTorch for the categorical outputs and given to a customized MSE \ref{code:weighted-mse}, for numerical and boolean outputs, incorporating these weights.
 This resulted for Faults, Sloppy and Hard2See to start being recognized \ref{tbl:mvit-class-reports-fault-after-weighted-losses} and pushed the total macro f1 avg accuracy to 51.53\%, which is about 6\% higher then before.
 
-\section{Resnet, Swin Transformer \& SA\_Conv3d}
-\ref{results:skill-recognition-resnet-swin-saconv3d}
+\section{Video ResNet and Swin Transformer}
+\label{results:skill-recognition-resnet-swin-saconv3d}
 
 To top it all, additional models where added to fully compare the performance of the MViT model.
+The first additions are the PyTorch implementation of video ResNet models, based on the paper of \textcite{Tran2017}.
+All three of the adaptions, R3D, MC3 and R2plus1 were stripped from their head and filled with the jump rope skill output layers, just like the MViT implementation. Another model listed by PyTorch was the Swin Transformer, created by \textcite{Liu2021}, implemented the same way. Only the tiny (t) and small (s) versions of the Swin transformer have been tested.
 
-% TODO
+Utilizing the pre-trained weights on kinetics 400, only the Swin Transformer reached similar results and even bested the Multiscale Vision Transformer by a few percentiles (52.36\%), which you can see in table below \ref{tbl:skill-recognition-model-comparison}.
+However, the MViT models stays strong, keeping the highest total accuracy (93.83).
+% The final model which is implemented, not using pytorch
+
+\begin{table}[h!]
+    \begin{tabular}{|l|r|r|r|r|r|}
+        \hline model &  macro & m skills & weighted & w skills & total accuracy \\ \hline
+        Resnet\_R2plus1	    & 25.64 &	2.70 &	70.3	& 25.51	& 71.87 \\
+        Resnet\_MC3	        & 25.98 &	1.39 &	69.49	& 9.85	& 69.88 \\
+        Resnet\_R3D	        & 27.43 &	3.52 &	70.24	& 19.76	& 71.22 \\
+        SwinT\_t	        & 49.13 &	32.06 &	91.28	& 89.4	& 91.99 \\
+        MViT	            & 51.53 &	27.75 &	93.11	& 90.7	& 93.83 \\
+        MViT\_extra\_dense	& 51.96 &	31.46 &	93.1	& 91.45	& 93.73 \\
+        SwinT\_s	        & 52.36 &	36.73 &	92.8	& 91.79	& 93.3  \\ \hline
+\end{tabular}
+\caption[Skill recognition comparison on multiple models]{
+    macro = f1 avg macro accuracy \\
+    m skills = f1 avg skill accuracy \\
+    weighted = f1 weighted avg \\
+    w skills = f1 weighted avg skills \\
+    total accuracy = true positives / total aspects
+}
+\label{tbl:skill-recognition-model-comparison}
+\end{table}
+
+% SA_Conv3D	        & 24.12 &	2.53 &	69.71	& 37.97	& 75.39 \\
+
+Using these increased accuracies on recognition \& other models, judge scores can be compared along the models.
+To keep things uncluttered, only the total deviation is showed now. While the swin transformers showed more potential in the macro recognition of skills, the multiscale video transformer outperformed on similarity with the judges.
+
+\begin{table}[h!]
+    \begin{tabular}{|r|r|r|r|r|r|r|}
+        \hline
+        MViT   & MViT dense  & Swin s & Swin t & MC3    & R3D   & R2plus1 \\ \hline
+        -21.68 & -20.94      & -23.83 & -27.72 & -38.85 &-53.09 & +47.15  \\ \hline
+    \end{tabular}
+    \caption[Judge diff score compared to all models]{Score assigned by judges compared to the prediction vision models \\
+    The multiscale vision transformer is clearly winning on assigning scores.}
+    \label{tbl:judge-score-comparison}
+\end{table}
+
+You may have noticed, that the final run decreased the score difference from -32.17\% to a whopping -21.68\%, finalizing the results in a positive note, being able to discuss and summarize this research.
