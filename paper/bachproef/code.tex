@@ -356,3 +356,45 @@ In this appendix, code snippets to prevent code saturation in between text.
     \label{code:keras-skill-top-layers}
 \end{listing}
 
+
+\begin{listing}
+    \begin{minted}{python}
+        # Adapting the losses, as limiting to 10% can change occurences of faults, bodyrotations... a little
+        for key, value in config.items():
+            value_counts_train = train_generator.BalancedSet[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
+            value_counts_val = val_generator.Skills[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
+            value_counts_combined = value_counts_train.add(value_counts_val, fill_value=0)
+        
+            maximum = value_counts_combined.max()
+        
+            weights = (maximum + maximum // 8 - value_counts_combined).pow(0.75)
+            weights = weights / weights.mean()
+            if value[0] == 'Categorical':
+                weights.loc[0] = 0
+            weights = weights.sort_index()
+        
+            w_all = torch.ones(value_counts_combined.index.max() + 1, dtype=torch.float32).to(device=device)
+            for idx, w in weights.items():
+                w_all[idx] = w
+            w_all = (w_all + 1) ** 2
+        
+            print("loss weights for", key, w_all)
+            if value[0] == 'Categorical':
+                loss_fns[key] = torch.nn.CrossEntropyLoss(w_all).to(device=device)
+            else:
+                loss_fns[key] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=w_all)
+    \end{minted}
+    \caption[Code calculating weights for the loss functions]{Code calculating weights for the loss functions}
+    \label{code:recognition-weighted-loss}
+\end{listing}
+
+\begin{listing}
+    \begin{minted}{python}
+        def weighted_mse_loss(input, target, weight):
+            "https://discuss.pytorch.org/t/how-to-implement-weighted-mean-square-error/2547"
+            return torch.sum(weight * (input - target) ** 2)
+    \end{minted}
+    \caption[Weihted MSE]{Weighted MSE}
+    \label{code:weighted-mse}
+\end{listing}
+

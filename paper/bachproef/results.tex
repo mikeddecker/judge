@@ -33,7 +33,7 @@ For this project, the relative center point along the x-axis, y-axis, width and 
 This way, by scaling all images to the same size, frames of dimension (width, height, channels) can fed into the model \ref{code:keras-random-conv}, giving 4 values in return. An example of a box would be [0.6, 0.5, 0.4, 0.4], all values between 0 and 1.
 After training and predicting box coordinates, the IoU accuracy can then be performed evaluating the performance of the model.
 
-The first predictions average out the input coordinates, reaching a meaningless 25-28\% IoU on about 6200 train and about 800 validation images.
+The first predictions average out the input coordinates, reaching a meaningless 25-28\% IoU on about 6200 train and about 800 validation images. The exact results are lost due to the transition from keras to pytorch.
 
 \subsection{Dedicated architectures}
 
@@ -332,8 +332,8 @@ Re-enabling all skill classes and all other properties results in a total valida
 For skills only, the weighted f1-accuracy is 93\%, while macro f1-accuracy is 40\%.
 The macro accuracy gives a better indication as accuracies on all defined classes, e.g. pushup, jump, swift, are taken into account equally. In this experiment, the less appearing skills lower the score of the macro accuracy, as they do not appear as often.
 
-Like the previous subsection, these results are trained on the skilldistribution displayed in table \ref{tab:skill_distribution_full_with_nulls}).
-A breakdown of all classification reports can be found in tables \ref{tbl:mvit-class-report-type} -> \ref{tbl:mvit-class-report-fault}. You may notice that the predictions for bodyRotations, sloppy, hard2see \& faults have yet to start learning.
+Like the previous subsection, these results are trained on the skill distribution displayed in table \ref{tab:skill_distribution_full_with_nulls}).
+A breakdown of all classification reports can be found in tables \ref{tbl:mvit-first-class-reports-type} -> \ref{tbl:mvit-first-class-reports-fault}. You may notice that the predictions for bodyRotations, sloppy, hard2see \& faults have yet to start learning.
 
 \begin{table}[h!]
     \centering
@@ -453,11 +453,31 @@ Another competition will be put next to these results, in order to gain more ins
 \subsection{Weighted loss}
 \ref{results:skill-recognition-weighted-loss}
 
-Test
-% TODO
+% TODO : paper source?
+In order to increase accuracy on lower represented classes. To enforce this, losses wil be increased for mistakes on lower represented classes. A little mathematical magic \ref{code:recognition-weighted-loss} based on the value counts of each skill aspect compared to highest occurance, applying some buffer, taking the difference, squaring, comparing to the mean etc. (\ref{code:recognition-weighted-loss}) allows for weight distributions below.
+
+\begin{itemize}
+    \item loss weights for Type [1.0000, 1.5151, 4.7846, 4.7938, 4.2562, 4.7383, 4.6330]
+    \item loss weights for Rotations [4.4372, 1.4893, 3.9782, 4.4880, 4.5276, 4.5960, 4.5960, 4.0000, 4.5997]
+    \item loss weights for Turner1 [1.0000, 1.4437, 3.8602, 3.6128, 4.1699, 4.1746, 4.1079, 4.1067, 4.1866, 4.1711, 4.1818, 4.1818, 4.1890, 4.1902, 4.1878, 4.1926, 4.0000, 4.1914, 4.1914, 4.1938, 4.0000, 4.1926, 4.1902, 4.1938, 4.1938, 4.1938, 4.1938]
+    \item loss weights for Turner2 [1.0000, 1.4450, 3.8687, 3.6231, 4.1794, 4.1890, 4.1026, 4.1325, 4.1938, 4.1866, 4.1854, 4.1926, 4.1926, 4.1986, 4.1950, 4.2023, 4.2023, 4.1974, 4.1986, 4.0000, 4.2011, 4.2011, 4.1998, 4.0000, 4.2035, 4.0000, 4.1998]
+    \item loss weights for Skill [1.0000, 1.4673, 2.5125, 2.5218, 2.5897, 4.0175, 4.4216, 3.8261, 4.4017, 4.4216, 4.2631, 4.2532, 4.2697, 4.3224, 4.3752, 4.2236, 4.4216, 4.2828, 4.3719, 4.4150, 4.2598, 4.4216, 4.4183, 4.3786, 4.4183, 4.3719, 4.4183, 4.0000, 4.0000, 4.0000, 4.3984, 4.4216, 4.4216]
+    \item loss weights for Hands [2.0090, 7.7774, 3.2177]
+    \item loss weights for Feet [5.6549, 5.2853, 1.7504]
+    \item loss weights for Turntable [1.6041, 5.5475, 5.6556]
+    \item loss weights for BodyRotations [1.5966, 5.6104, 5.6066]
+    \item loss weights for Backwards [1.7598, 7.1472]
+    \item loss weights for Sloppy [1.7704, 7.1258]
+    \item loss weights for Hard2see [1.7622, 7.1423]
+    \item loss weights for Fault [1.7756, 7.1154]
+\end{itemize}
+
+These weights are then given to CrossEntropyLoss of PyTorch for the categorical outputs and given to a customized MSE \ref{code:weighted-mse}, for numerical and boolean outputs, incorporating these weights.
+This resulted for Faults, Sloppy and Hard2See to start being recognized \ref{tbl:mvit-class-reports-fault-after-weighted-losses} and pushed the total macro f1 avg accuracy to 51.53\%, which is about 6\% higher then before.
 
 \section{Resnet, Swin Transformer \& SA\_Conv3d}
 \ref{results:skill-recognition-resnet-swin-saconv3d}
 
-Test
+To top it all, additional models where added to fully compare the performance of the MViT model.
+
 % TODO
