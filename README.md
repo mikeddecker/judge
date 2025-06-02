@@ -12,7 +12,22 @@ Content:
 
 Focus = DD3. (Double Dutch Single Freestyle)
 
-1) Jumper Localisation (CNN based)
+### Jumper Localisation
+
+Jumper localization crops the athletes, frame by frame in a full video. 
+This uses [Ultralytics YOLOv11](https://github.com/ultralytics/ultralytics), licensed under AGPL-3.0.
+
+### Segmentation
+
+
+
+### Recognition
+
+Eventuall, each section can be transformed into a (1, 3, 16, 224, 224) input, (batch_size, channels, timesteps, height, width) or (B, C, T, H, W).
+![image](https://github.com/user-attachments/assets/f36e7ed3-f5ce-4566-96a6-4abd0a25b491)
+
+
+
 2) Skill segmentation, start of skill, end of skill (Using something like LTContext or others using [papers-with-code](https://paperswithcode.com/task/action-segmentation))
 3) Counting rotations (DU, TU, QU, Wrap with 3 rotations?) (ConvLSTM, MiM, (Vision)transformer)
 4) ... (unknown in betweens)
