@@ -5,7 +5,7 @@ from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_seg
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
-from moviepy import ImageSequenceClip, VideoFileClip
+from moviepy import ImageSequenceClip, VideoFileClip, VideoClip
 import torch.nn.functional as F
 from sklearn.metrics import classification_report
 from pprint import pprint
@@ -210,104 +210,122 @@ class Predictor:
             gc.collect()
 
     #### Save video predictions #####################################################################################################
-    def __save_skill_predictions_as_video(self, videoId:int, predictions:dict, balancedType:str, vpath:str, targetNames:dict):
+    def __save_skill_predictions_as_video(self, videoId:int, predictions:dict[int, dict], balancedType:str, vpath:str, targetNames:dict):
+        lowerDimension = None # Manual setting for demo purposes (e.g. 720)
+
         cap = cv2.VideoCapture(vpath)
         pos = cap.get(cv2.CAP_PROP_POS_FRAMES)
         fps = cap.get(cv2.CAP_PROP_FPS)
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        width = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         N = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        scale = 0.4
-        ret, frame = cap.read()
         frames = []
-        skill = highfrog = hands = fault = turntable = rotations = turners = type = hard2see = sloppy = bodyRotations = ""
-        endFrame = cap.get(cv2.CAP_PROP_FRAME_COUNT) - 1
-        currentLabel = None
-        videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_annotated.mp4")
+        videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_annotated{"_original_size" if lowerDimension is None else ""}.mp4")
         
         # tmp_mp4 = f"{videoId}_tmp.mp4"
         # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         # out = cv2.VideoWriter(videoOutputPath, fourcc, fps, (width, height))
 
 
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        text_pos = 20
-        fontScale = 0.75
-        txt_color = (0, 0, 0)
-        bg_color = (0, 255, 255)
-        bg_color_high = (0, 255, 255)
-        bg_color_default = (137,207,240)
-        bg_color_special = (255, 13, 220)
-        while ret:
-            if pos % 500 == 0:
-                print(f"{int(pos)}/{N}")
-            frame = cv2.resize(frame, (0,0), fx=scale, fy=scale)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            # draw_text(frame, )
-            
-            if pos in predictions.keys():
-                currentLabel = predictions[pos]["Skill"]
-                skill = targetNames["Skill"][currentLabel["y_pred"]] if balancedType != 'jump_return_push_frog_other' else mapBalancedSkillIndexToLabel(balancedType=balancedType, index=currentLabel["y_pred"])
-                highfrog = "high" if skill == "frog" and predictions[pos]["Feet"]["y_pred"] == 2 else ""
-                hands = f"{predictions[pos]["Hands"]["y_pred"]}h"
-                turntable = f"TT{predictions[pos]["Turntable"]["y_pred"]}" if predictions[pos]["Turntable"]["y_pred"] != 0 else ""
-                rotations = f"Rotations: {predictions[pos]["Rotations"]["y_pred"]}"
-                turners = f"Turners: {targetNames["Turner"][predictions[pos]["Turner1"]["y_pred"]]} - {targetNames["Turner"][predictions[pos]["Turner2"]["y_pred"]]}"
-                type = f"{targetNames["Type"][predictions[pos]["Type"]["y_pred"]]}"
-                fault = str(predictions[pos]["Fault"]["y_pred"]) # "Fault" if predictions[pos]["Fault"]["y_pred"] == 1 else ""
-                hard2see = str(predictions[pos]["Hard2see"]["y_pred"]) # "Hard2see" if predictions[pos]["Hard2see"]["y_pred"] == 1 else ""
-                sloppy = str(predictions[pos]["Sloppy"]["y_pred"]) # "Sloppy" if predictions[pos]["Sloppy"]["y_pred"] == 1 else ""
-                bodyRotations = f"BodyRotations: {predictions[pos]["BodyRotations"]["y_pred"]}" if predictions[pos]["BodyRotations"]["y_pred"] != 0 else ""
+        if lowerDimension is not None:
+            scale = lowerDimension / height
+        else:
+            scale = 1
+        
+        currentLabel = None
+        def edit_frame_at_time(t, cap, currentLabel):
+            skill = highfrog = hands = fault = turntable = rotations = turners = type = hard2see = sloppy = bodyRotations = ""
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            text_pos = 20
+            fontScale = (height if lowerDimension is None else lowerDimension) / 1000
+            fontThickness = height // 500
+            txt_color = (0, 0, 0)
+            bg_color = (0, 255, 255)
+            bg_color_high = (0, 255, 255)
+            bg_color_default = (137,207,240)
+            bg_color_special = (255, 13, 220)
 
-                bg_color = (0, 255, 0) if currentLabel["y_true"] == currentLabel["y_pred"] else bg_color_default
-                bg_color_high = (0, 255, 0) if predictions[pos]["Feet"]["y_true"] == predictions[pos]["Feet"]["y_pred"] else bg_color_default
-                
-                if currentLabel['y_true'] is None: # or currentLabel["y_true"] is None:
-                    bg_color = (255 * (1 - currentLabel['y_score'] ** 2), 255 * currentLabel['y_score'] ** 0.5, 100 * max(0, 0.6 - currentLabel['y_score']))
-                    bg_color_high = (0, 0, 255)
-
-            elif currentLabel is not None and pos == currentLabel["frameEnd"]:
-                currentLabel = None
-                skill = highfrog = hands = fault = turntable = rotations = turners = type = hard2see = sloppy = bodyRotations = ""
-
-            
-            horizontal = 0
-            vertical = 0
-            w, h = draw_text(frame, type, pos=(text_pos, text_pos), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            vertical += 2 * h
-            
-            w, h = draw_text(frame, hands, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            horizontal += w
-            w, h = draw_text(frame, highfrog, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            horizontal += w
-            w, h = draw_text(frame, turntable, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            horizontal += w
-            w, h = draw_text(frame, skill, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            vertical += 2 * h
-            
-            w, h = draw_text(frame, turners, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            vertical += 2 * h
-            w, h = draw_text(frame, rotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            vertical += 2 * h
-            w, h = draw_text(frame, bodyRotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            # vertical += 2 * h
-            # w, h = draw_text(frame, hard2see, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            # vertical += 2 * h
-            # w, h = draw_text(frame, sloppy, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            # vertical += 2 * h
-            # w, h = draw_text(frame, fault, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, text_color=txt_color, text_color_bg=bg_color_default)
-            # vertical += 2 * h
-
-            frames.append(frame)
-            # out.write(frame)
-            
-            pos = cap.get(cv2.CAP_PROP_POS_FRAMES)
+            pos = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
             ret, frame = cap.read()
+            if ret:
+                # if pos % 500 == 0:
+                #     print(f"{int(pos)}/{N}")
+                
+                if scale != 1:
+                    frame = cv2.resize(frame, (0,0), fx=scale, fy=scale)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                filteredlist = [l for start, l in predictions.items() if start <= pos and pos < l["Skill"]["frameEnd"]]
+                if len(filteredlist) > 1:
+                    raise ValueError(str(filteredlist))
+
+                # print(len(filteredlist), pos, t)
+                if len(filteredlist) > 0:
+                    currentLabel = filteredlist[0]
+
+                    skill = targetNames["Skill"][currentLabel["Skill"]["y_pred"]] if balancedType != 'jump_return_push_frog_other' else mapBalancedSkillIndexToLabel(balancedType=balancedType, index=currentLabel["Skill"]["y_pred"])
+                    highfrog = "high" if skill == "frog" and currentLabel["Feet"]["y_pred"] == 2 else ""
+                    hands = f"{currentLabel["Hands"]["y_pred"]}h"
+                    turntable = f"TT{currentLabel["Turntable"]["y_pred"]}" if currentLabel["Turntable"]["y_pred"] != 0 else ""
+                    rotations = f"Rotations: {currentLabel["Rotations"]["y_pred"]}"
+                    turners = f"Turners: {targetNames["Turner"][currentLabel["Turner1"]["y_pred"]]} - {targetNames["Turner"][currentLabel["Turner2"]["y_pred"]]}"
+                    type = f"{targetNames["Type"][currentLabel["Type"]["y_pred"]]}"
+                    fault = "Fault" if currentLabel["Fault"]["y_pred"] == 1 else ""
+                    hard2see = "Hard2see" if currentLabel["Hard2see"]["y_pred"] == 1 else ""
+                    sloppy = "Sloppy" if currentLabel["Sloppy"]["y_pred"] == 1 else ""
+                    bodyRotations = f"BodyRotations: {currentLabel["BodyRotations"]["y_pred"]}" if currentLabel["BodyRotations"]["y_pred"] != 0 else ""
+
+                    bg_color = (0, 255, 0) if currentLabel["Skill"]["y_true"] == currentLabel["Skill"]["y_pred"] else bg_color_default
+                    bg_color_high = (0, 255, 0) if currentLabel["Feet"]["y_true"] == currentLabel["Feet"]["y_pred"] else bg_color_default
+                    
+                    if currentLabel["Skill"]['y_true'] is None: # or currentLabel["Skill"]["y_true"] is None:
+                        bg_color = (255 * (1 - currentLabel["Skill"]['y_score'] ** 2), 255 * currentLabel["Skill"]['y_score'] ** 0.5, 100 * max(0, 0.6 - currentLabel["Skill"]['y_score']))
+                        bg_color_high = (0, 0, 255)
+
+                elif currentLabel is not None and pos == currentLabel["Skill"]["frameEnd"]:
+                    currentLabel = None
+                    skill = highfrog = hands = fault = turntable = rotations = turners = type = hard2see = sloppy = bodyRotations = ""
+
+                
+                horizontal = 0
+                vertical = 0
+                w, h = draw_text(frame, type, pos=(text_pos, text_pos), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                vertical += int(1.5*h)
+                
+                w, h = draw_text(frame, hands, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                horizontal += w
+                w, h = draw_text(frame, highfrog, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                horizontal += w
+                w, h = draw_text(frame, turntable, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                horizontal += w
+                w, h = draw_text(frame, skill, pos=(text_pos + horizontal, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                vertical += int(1.5*h)
+                
+                w, h = draw_text(frame, turners, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                vertical += int(1.5*h)
+                w, h = draw_text(frame, rotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                vertical += int(1.5*h)
+                w, h = draw_text(frame, bodyRotations, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                vertical += int(1.5*h)
+                w, h = draw_text(frame, hard2see, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                vertical += int(1.5*h)
+                w, h = draw_text(frame, sloppy, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                vertical += int(1.5*h)
+                w, h = draw_text(frame, fault, pos=(text_pos, text_pos + vertical), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
+                vertical += int(1.5*h)
+
+                # frames.append(frame)
+                # out.write(frame)
+                return frame
+            else:
+                return np.zeros(shape=(width,height,3))
+        
         # out.release()
         
-        clip = ImageSequenceClip(frames, fps=fps)
-        clip: ImageSequenceClip = clip.with_audio(VideoFileClip(vpath).audio)
-        clip.write_videofile(videoOutputPath, codec='libx264')
+        clip = VideoClip(lambda t: edit_frame_at_time(t, cap, currentLabel), duration=N/fps)
+        clip: VideoClip = clip.with_audio(VideoFileClip(vpath).audio)
+        clip.write_videofile(videoOutputPath, codec='libx264', fps=fps)
+        cap.release()
         # clip = ImageSequenceClip(frames, (tmp_mp4)
         # clip.write_videofile(videoOutputPath, codec='libx264')
         # os.remove(tmp_mp4)
@@ -454,22 +472,25 @@ if __name__ == "__main__":
 
     videoIds = [1285, 1315, 1408, 2283, 2285, 2289, 2288, 2296, 2309, 2568,2569,2570,2571,2572,2573,2574,2575,2576,2577,2578,2579,2580,2581,2582,2583,2584,2585,2586,2587,2588,2589,]
     videoIds = range(2568, 2590)
+    videoIds = [2749, 2776]
+    models = ['HAR_SwinT_s']
     dates = ["20250525", "20250524"]
+    dates = ["20250525"]
 
     for d in dates:
         for modelname in models:
             for videoId in videoIds:
-                predictor.predict(
-                    type="LOCALIZE",
-                    videoId=videoId,
-                    modelname=None,
-                )
+                # predictor.predict(
+                #     type="LOCALIZE",
+                #     videoId=videoId,
+                #     modelname=None,
+                # )
                 predictor.predict(
                     type="SEGMENT_SKILL",
                     videoId=videoId,
                     modelname=modelname,
                     modelparams=trainparams[modelname],
-                    saveAsVideo=False,
+                    saveAsVideo=True,
                     date=d
                 )
                 # TODO : cache segment predictions or save them as json

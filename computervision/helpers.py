@@ -293,12 +293,12 @@ def draw_text(img, text,
 
     x, y = pos
     text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
+    box_margin = 4 * font_thickness
     text_w, text_h = text_size
-    box_margin = 8
-    cv2.rectangle(img, pos, (x + text_w, y + text_h + box_margin), text_color_bg, -1)
+    cv2.rectangle(img, (x-2, y-max(8, font_thickness)), (x + 2 + text_w, y + text_h + box_margin + max(8, font_thickness)), text_color_bg, -1)
     cv2.putText(img, text, (x, int(y + text_h + font_scale + box_margin // 2)), font, font_scale, text_color, font_thickness)
 
-    return text_w, text_h
+    return text_w, text_h + box_margin
 
 def get_localize_strategy_list():
     return ['raw', 'smoothing', 'smoothing_skip_small_iou', 'cosine']
