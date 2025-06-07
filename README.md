@@ -28,6 +28,7 @@ Currently, only uses the [Multiscale Video Transformer](https://docs.pytorch.org
 
 Eventuall, each section can be transformed into a (1, 3, 16, 224, 224) input, (batch_size, channels, timesteps, height, width) or (B, C, T, H, W).
 ![image](https://github.com/user-attachments/assets/f36e7ed3-f5ce-4566-96a6-4abd0a25b491)
+[Video example](https://1drv.ms/v/c/6fa18b11a53f88a6/EWeE_YUHgkVJrhSFT4LIC3UB1WxjQLyZky4oNIUlqaqbQA?e=DBke8i)
 
 For full details see [paper](./paper/bachelorproef/DeDeckerMikeBP.tex), preferably compile it from a [pdf](./paper/DeDeckerMikeBP.tex)
 
