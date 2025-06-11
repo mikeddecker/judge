@@ -315,7 +315,7 @@
 
 %% Use the length of the 'HO' part of the logo to set the padding of the logo
 \newsavebox{\logopart}
-\savebox{\logopart}{\includegraphics[height=7cm]{logopart}}
+\savebox{\logopart}{\includegraphics[height=5cm]{logopart}}
 
 % First page footer
 \fancypagestyle{plain}{%
