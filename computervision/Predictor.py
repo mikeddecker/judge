@@ -96,7 +96,7 @@ class Predictor:
                                                        use_segment_predictions=True,
                                                        modelparams=modelparams,
                                                        saveAsVideo=saveAsVideo,
-                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, modelname="HAR_MViT_extra_dense", modelparams=modelparams),
+                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, modelname="MViT_extra_dense", modelparams=modelparams),
                                                        date=date)
                 else:
                     raise NotImplementedError()
@@ -459,7 +459,7 @@ class Predictor:
 ##################################################################################################################################
 
 modelparams = {
-    "HAR_MViT" : {
+    "MViT" : {
         "balancedType" : "limit_10procent", # jump_return_push_frog_other
         "dim" : 224,
         "timesteps" : 16,
@@ -473,7 +473,7 @@ if __name__ == "__main__":
     videoIds = [1285, 1315, 1408, 2283, 2285, 2289, 2288, 2296, 2309, 2568,2569,2570,2571,2572,2573,2574,2575,2576,2577,2578,2579,2580,2581,2582,2583,2584,2585,2586,2587,2588,2589,]
     videoIds = range(2568, 2590)
     videoIds = [2749, 2776]
-    models = ['HAR_SwinT_s']
+    models = ['SwinT_s']
     dates = ["20250525", "20250524"]
     dates = ["20250525"]
 

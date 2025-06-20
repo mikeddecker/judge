@@ -28,7 +28,7 @@ class StatsRouter(Resource):
             case 'segmentation':
                 return {}, 200
             case 'recognition':
-                return self.statsService.getRecognitionResults(selectedModel='HAR_MViT'), 200
+                return self.statsService.getRecognitionResults(selectedModel='MViT'), 200
             case 'judge':
                 return self.statsService.get_score_comparison(videoIds=videoIds), 200
             case _:

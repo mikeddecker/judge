@@ -566,7 +566,7 @@ class VideoService:
     
     def getVideoPredictions(self, videoId: int):
         ValueHelper.check_raise_id(videoId)
-        best_model = 'HAR_MViT'
+        best_model = 'MViT'
 
         predictions_path = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{best_model}.json")
 

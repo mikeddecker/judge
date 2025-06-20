@@ -62,16 +62,16 @@ while no_shutdown_job:
         print("Start training segments")
 
         models = [
-            'HAR_MViT',
-            'HAR_Resnet_MC3',
-            'HAR_SA_Conv3D',
-            'HAR_Resnet_R2plus1',
-            'HAR_Resnet_R3D',
-            'HAR_MViT_extra_dense',
+            'MViT',
+            'Resnet_MC3',
+            'SA_Conv3D',
+            'Resnet_R2plus1',
+            'Resnet_R3D',
+            'MViT_extra_dense',
         ]
 
         for modelname in models:
-            # modelname = 'HAR_MViT' # TODO : pick from job executor
+            # modelname = 'MViT' # TODO : pick from job executor
             # trainer.train(
             #     type="SEGMENT",
             #     modelname=modelname,

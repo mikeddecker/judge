@@ -54,28 +54,28 @@ swinparams =  {
     "batch_size" : 1,
 }
 
-trainparams["HAR_MViT"] = mvitparams
-trainparams["HAR_MViT_extra_dense"] = mvitparams
-trainparams["HAR_SA_Conv3D"] = mvitparams
-trainparams["HAR_Resnet_R3D"] = resnetparams
-trainparams["HAR_Resnet_MC3"] = resnetparams
-trainparams["HAR_Resnet_R2plus1"] = resnetparams
-trainparams["HAR_SwinT_t"] = swinparams
-trainparams["HAR_SwinT_s"] = swinparams
+trainparams["MViT"] = mvitparams
+trainparams["MViT_extra_dense"] = mvitparams
+trainparams["SA_Conv3D"] = mvitparams
+trainparams["Resnet_R3D"] = resnetparams
+trainparams["Resnet_MC3"] = resnetparams
+trainparams["Resnet_R2plus1"] = resnetparams
+trainparams["SwinT_t"] = swinparams
+trainparams["SwinT_s"] = swinparams
 
-modelname = "HAR_SA_Conv3D"
-modelname = "HAR_MViT"
+modelname = "SA_Conv3D"
+modelname = "MViT"
 max_rounds = [4, 60]
 
 models = [
-    'HAR_MViT',
-    'HAR_Resnet_MC3',
-    # 'HAR_SA_Conv3D',
-    'HAR_Resnet_R2plus1',
-    'HAR_SwinT_t',
-    'HAR_SwinT_s',
-    'HAR_Resnet_R3D',
-    'HAR_MViT_extra_dense',
+    'MViT',
+    'Resnet_MC3',
+    # 'SA_Conv3D',
+    'Resnet_R2plus1',
+    'SwinT_t',
+    'SwinT_s',
+    'Resnet_R3D',
+    'MViT_extra_dense',
 ]
 if __name__ == "__main__":
     trainer = Trainer()

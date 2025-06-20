@@ -37,7 +37,7 @@ class JobPredictVideo(Resource):
     def get(self, videoId:int):
         self.jobService.launch_job_predict_skills(
             step='FULL',
-            model='HAR_MViT',
+            model='MViT',
             videoId=videoId
         )
         return "Ok", 200

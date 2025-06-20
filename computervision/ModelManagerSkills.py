@@ -23,11 +23,11 @@ from models.MobileNetV3Small import get_model as get_model_mobilenet
 from models.RandomCNN import get_model as get_model_randomcnn
 from models.vitransformer_enc import get_model as get_model_vit
 from models.ViViTransformer_enc import get_model as get_model_ViViT
-from models.HAR_SA_ConvLSTM_Deepseek_adaption import get_model as get_model_SA_ConvLSTM_deepseek
-from models.HAR_SA_Conv3D_short import get_model as get_model_SA_Conv3D_short
-from models.HAR_SA_Conv3D_medium import get_model as get_model_SA_Conv3D_medium
-from models.HAR_SA_Conv3D_medium_strides_skip import get_model as get_model_SA_Conv3D_medium_strides_skip
-from models.HAR_SA_Conv3D_medium_strides_skip_lstm import get_model as get_model_SA_Conv3D_medium_strides_skip_lstm
+from models.SA_ConvLSTM_Deepseek_adaption import get_model as get_model_SA_ConvLSTM_deepseek
+from models.SA_Conv3D_short import get_model as get_model_SA_Conv3D_short
+from models.SA_Conv3D_medium import get_model as get_model_SA_Conv3D_medium
+from models.SA_Conv3D_medium_strides_skip import get_model as get_model_SA_Conv3D_medium_strides_skip
+from models.SA_Conv3D_medium_strides_skip_lstm import get_model as get_model_SA_Conv3D_medium_strides_skip_lstm
 
 
 class PrintEveryNBatch(keras.callbacks.Callback):

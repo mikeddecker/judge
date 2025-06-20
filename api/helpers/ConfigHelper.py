@@ -3,14 +3,14 @@ import yaml
 import glob
 
 PYTORCH_MODELS_SKILLS = {
-    "HAR_SA_Conv3D" : None,
-    "HAR_MViT" : None,
-    "HAR_MViT_extra_dense" : None,
-    "HAR_Resnet_R3D" : None,
-    "HAR_Resnet_MC3" : None,
-    "HAR_Resnet_R2plus1" : None,
-    "HAR_SwinT_t" : None,
-    "HAR_SwinT_s" : None,
+    "SA_Conv3D" : None,
+    "MViT" : None,
+    "MViT_extra_dense" : None,
+    "Resnet_R3D" : None,
+    "Resnet_MC3" : None,
+    "Resnet_R2plus1" : None,
+    "SwinT_t" : None,
+    "SwinT_s" : None,
 }
 
 def get_discipline_DoubleDutch_config(include_tablename=True):
@@ -58,7 +58,7 @@ def localize_get_best_modelpath():
 
 
 def recognition_get_modelpaths():
-    """Returns path to modelstats, e.g. ./weights/HAR_MViT_skills_20250524.stats.json"""
+    """Returns path to modelstats, e.g. ./weights/MViT_skills_20250524.stats.json"""
     # TODO : update to take actual best
     folder_path = os.path.join('..', 'computervision', 'weights', f"*skills*.stats.json")
     trainrounds = glob.glob(folder_path)

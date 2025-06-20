@@ -12,7 +12,7 @@ from repository.videoRepo import VideoRepository
 from repository.jobRepo import JobRepository
 from typing import List
 
-VISION_MODELS = ['HAR_MViT']
+VISION_MODELS = ['MViT']
 
 class JobService:
     """Provides the video information of videos"""
