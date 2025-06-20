@@ -97,6 +97,8 @@ class StatsService:
             scores[videoId]["judges"] = self.videoService.get(id=videoId).JudgeDiffScore
             if scores[videoId]["judges"]:
                 scores["total"]["judges"] += scores[videoId]["judges"]
+            else:
+                continue
 
             for model in allowed_models:
                 if model not in allowed_models:
