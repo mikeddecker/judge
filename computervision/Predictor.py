@@ -114,7 +114,7 @@ class Predictor:
             skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
             modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
             if date is not None:
-                modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills_{date}.state_dict.pt") # TODO : update in trainer
+                modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.state_dict.pt")
                 modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
 
             DIM = 224

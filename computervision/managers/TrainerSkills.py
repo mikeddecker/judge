@@ -62,7 +62,7 @@ class TrainerSkills:
             losses.append(loss)
         return sum(losses)
 
-    def validate(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda', rundate:str=date.today().strftime('%Y%m%d')):
+    def validate(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda'):
         model.eval()
         val_loss = 0.0
 
@@ -72,7 +72,7 @@ class TrainerSkills:
 
         with torch.no_grad():
             for batch_X, batch_y in tqdm(dataloader):
-                with torch.amp.autocast(device_type='cuda'):
+                with torch.amp.autocast(device_type=device):
                     optimizer.zero_grad()
                     outputs = model(batch_X / 255)
                     # Loss
@@ -134,8 +134,8 @@ class TrainerSkills:
                 raise ValueError(modelname)
             
             path = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
-            checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}_{rundate}.checkpoint.pt")
-            modelstatsPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}_{rundate}.stats.json")
+            checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.checkpoint.pt")
+            modelstatsPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.json")
 
             config: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
             DIM = 224
@@ -281,6 +281,7 @@ class TrainerSkills:
                             'time' : time.time() - start,
                             'length_train': len(train_generator),
                             'length_val': len(val_generator),
+                            'rundate': rundate,
                         }, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
             
                     torch.save(model.state_dict(), path)

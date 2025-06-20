@@ -543,9 +543,8 @@ class VideoService:
         raise NotImplementedError("Nice to have, end of journey")
 
     def video_has_predictions(self, videoId: int, model: str, date: str = None):
-        datepart = "" if date is None else f"_{date}"
         return os.path.exists(
-            os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}{datepart}.json")
+            os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
         )
 
     def load_predicted_skills(self, videoId:int, model:str):
