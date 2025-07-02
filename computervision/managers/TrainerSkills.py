@@ -129,12 +129,12 @@ class TrainerSkills:
         rundate = date.today().strftime('%Y%m%d')
         try:
             start = time.time()
-            testrun = False
+            testrun = True
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
             path = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.state_dict.pt")
-            pathBest = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.state_dict.pt")
+            pathBest = os.path.join(MODELWEIGHT_PATH, f"best_skills.state_dict.pt")
             checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.checkpoint.pt")
             modelstatsPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.json")
             modelstatsPathCurrent = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.current.json")

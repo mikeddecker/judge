@@ -88,9 +88,6 @@ class StatsService:
         }
         scores['total']['judges'] = 0
 
-        recognition_results = self.getRecognitionResults('')
-        
-
         for videoId in videoIds:
             scores[videoId] = {}
             scores[videoId]["videoId"] = videoId

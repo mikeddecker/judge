@@ -92,7 +92,7 @@ class JobService:
                 type = 'PREDICT',
                 step = 'SEGMENT_SKILL',
                 status = 'Created',
-                job_arguments = { "videoId": videoId, "model": VISION_MODELS[0], "save_mp4": True },
+                job_arguments = { "videoId": videoId, "model": "best", "save_mp4": True },
             )
             if not self.JobRepo.exists_by_job_content(predictJob):
                 self.__add(predictJob)

@@ -115,6 +115,16 @@ while no_shutdown_job:
                 modelparams=trainparams[modelname],
                 learning_rate=1e-6
             )
+
+            # Judge score validation preparation
+            for videoId in range(2568, 2590):
+                predictor.predict(
+                    type="FULL",
+                    videoId=videoId,
+                    modelname=modelname,
+                    modelparams=trainparams[modelname],
+                    saveAsVideo=False,
+                )
         
         REPO.check_connection_reconnect_if_needed()
         REPO.delete_job(job["id"])

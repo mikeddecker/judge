@@ -1,7 +1,7 @@
 from managers.TrainerSkills import TrainerSkills
 from constants import PYTORCH_MODELS_SKILLS
 
-from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values
+from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values, load_json_file
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
@@ -107,15 +107,17 @@ class Predictor:
 
     def __predict_skills_pytorch(self, videoId, modelname, use_segment_predictions, modelparams: dict = None, saveAsVideo:bool=False, segment_predictions:list = [], date:str = None):
         try:
-            if modelname not in PYTORCH_MODELS_SKILLS.keys():
+            if modelname not in PYTORCH_MODELS_SKILLS.keys() and modelname != 'best':
                 raise ValueError(modelname)
             
             
             skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
-            modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
-            if date is not None:
-                modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.state_dict.pt")
-                modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
+            modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.state_dict.pt")
+            modelPathJson = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.stats.json")
+            modelstats = load_json_file(modelPathJson)
+
+            if modelname == 'best':
+                modelname = modelstats['modelname']
 
             DIM = 224
             model = PYTORCH_MODELS_SKILLS[modelname](modelinfo=modelparams, df_table_counts=self.repo.get_skill_category_counts(), skill_or_segment='skills').to(device)

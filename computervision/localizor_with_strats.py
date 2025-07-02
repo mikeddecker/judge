@@ -191,7 +191,7 @@ def localize_jumpers(
     start = time.time()
 
     videoPath = repo.get_video_path(videoId=videoId)
-    rawPredictedBoxesPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_raw_boxes_{modelname}.json")
+    rawPredictedBoxesPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_raw_boxes.json")
     strat_model_name = f"{videoId}_crop_d{dim}_{modelname}" # TODO : include strat
     videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.mp4")
 
@@ -360,6 +360,7 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
     df_videos_with_boxes = repo.get_videos_having_boxes_of_type(type=1).sample(frac=1.0)
     total_frames = df_videos_with_boxes['frameLength'].sum()
     videoIds = df_videos_with_boxes['id'].tolist()
+    videoIds = videoIds[:5] # TODO : remove after testing
     print("Total frames", total_frames)
 
     model = YOLO(os.path.join(modeldir, "weights", "best.pt"))
@@ -371,14 +372,11 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
         'val' : repo.get_framelabels(train_test_val='val', type=1),
     }
 
-    min_ious = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    min_iou_text = "min_Iou_gt_"
-    min_iou_dict = { f"{min_iou_text}{min_iou:.1f}" : set() for min_iou in min_ious }
     ious_all = {
         s: { 
             tv: {
-                **{ 'sum': 0, 'min': 1, 'max': 0, 'avg': 0, 'total': 0, 'videoIds': set() },
-                **min_iou_dict
+                **{ 'sum': 0, 'min': 1, 'max': 0, 'avg': 0, 'total': 0 },
+                'videos' : {}
             } for tv in ['train', 'val']
         } for s in strategies
     }
@@ -441,9 +439,12 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
                 ious_all[s][train_or_val]['max'] = max(ious_all[s][train_or_val]['max'], ious_video.max())
                 ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
                 ious_all[s][train_or_val]['videoIds'].add(videoId)
-                ious_all[s][train_or_val]['videos'] = len(ious_all[s][train_or_val]['videoIds'])
-                for min_iou in min_ious:
-                    ious_all[s][train_or_val][f"{min_iou_text}{min_iou:.1f}"].add(videoId)
+                ious_all[s][train_or_val]['videos'][videoId] = {
+                    'ious': ious_video,
+                    'min': ious_video.min(),
+                    'max': ious_video.max(),
+                    'avg': ious_video.mean(),
+                }
 
         except Exception as e:
             raise e

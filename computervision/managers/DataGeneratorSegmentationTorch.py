@@ -84,6 +84,7 @@ class DataGeneratorSegmentation(torch.utils.data.Dataset):
         return X, y
 
     def on_epoch_end(self):
+        print("EPOCH END SEGMENTS")
         self._create_df_segment_samples() # Recreate, as a random offset is taken
 
     def _create_df_segment_samples(self):

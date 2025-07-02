@@ -309,7 +309,7 @@ def weighted_mse_loss(input, target, weight):
     "https://discuss.pytorch.org/t/how-to-implement-weighted-mean-square-error/2547"
     return torch.sum(weight * (input - target) ** 2)
 
-def load_json_file(path):
+def load_json_file(path) -> dict:
     if os.path.exists(path):
         with open(path, 'r') as f:
             return json.load(f)

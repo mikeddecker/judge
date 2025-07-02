@@ -68,7 +68,6 @@ onMounted(async () => {
 })
 
 async function getStatistics() {
-  let videoIds = [2582, 2583]
   let maxId = 2590
   let minId = 2568
   bkVideoIds.value = [...Array(maxId - minId).keys()].map(i => i + minId)
