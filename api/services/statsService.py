@@ -101,9 +101,8 @@ class StatsService:
                 continue
 
             for model in allowed_models:
-                if model not in allowed_models:
-                    return f"Model {model} not allowed", 404
 
+                # TODO : refactor
                 if self.videoService.video_has_predictions(videoId=videoId, model=model): # and not self.jobService.video_has_pending_job(videoId=videoId, model=model):
                     # TODO : add re-calculate after x days or when a new model has been trained
                     freq, score = self.__calculate_diff_score(videoId=videoId, model=model)

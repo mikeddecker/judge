@@ -92,6 +92,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         return X, y
 
     def on_epoch_end(self):
+        print("Epoch end - shuffle data (doubt myself)")
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
 

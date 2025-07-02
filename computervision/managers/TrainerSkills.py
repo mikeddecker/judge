@@ -133,9 +133,18 @@ class TrainerSkills:
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
-            path = os.path.join(MODELWEIGHT_PATH, f"{modelname}.state_dict.pt")
+            path = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.state_dict.pt")
+            pathBest = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.state_dict.pt")
             checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.checkpoint.pt")
             modelstatsPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.json")
+            modelstatsPathCurrent = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.current.json")
+            bestModelJsonStatsPath = os.path.join(MODELWEIGHT_PATH, f"best_skills{'_testrun' if testrun else ''}.stats.json")
+
+            bestModelStats = { 'f1_macro_avg_accuracy': 0 }
+            if os.path.exists(bestModelJsonStatsPath):
+                with open(bestModelJsonStatsPath, 'r') as f:
+                    bestModelStats = json.load(f)
+
 
             config: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
             DIM = 224
@@ -161,6 +170,8 @@ class TrainerSkills:
                 total_accuracies = modelstats['total_accuracies']
                 f1_scores = {} if 'f1_scores' not in modelstats.keys() else modelstats['f1_scores']
                 classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
+
+                # TODO : Re-evaluate previous run (because accuracy can have changed by new skills)
 
             if unfreeze_all_layers:
                 for param in model.parameters():
@@ -193,34 +204,16 @@ class TrainerSkills:
             balancedType = trainparams["balancedType"]
             target_names = repo.get_category_names(balancedType=balancedType)
 
+            # Re-evaluate to know whether the current run is better than the previous runs
+            # Adapting the losses, as limiting to 10% can change occurences of faults, bodyrotations... a little
+            # TODO : load previous model instead of current :)
+            loss_fns = self.get_weighted_loss_fns(train_generator=train_generator, val_generator=val_generator, skillconfig=config)
+            _, f1_macro_avg_scores_epoch_reval, _, _ = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
+
+
             # Training loop
             for epoch in range(epoch_start, epochs + epoch_start):
                 print(f"============= EPOCH {epoch} =============")
-
-                # Adapting the losses, as limiting to 10% can change occurences of faults, bodyrotations... a little
-                for key, value in config.items():
-                    value_counts_train = train_generator.BalancedSet[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
-                    value_counts_val = val_generator.Skills[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
-                    value_counts_combined = value_counts_train.add(value_counts_val, fill_value=0)
-
-                    maximum = value_counts_combined.max()
-
-                    weights = (maximum + maximum // 8 - value_counts_combined).pow(0.75)
-                    weights = weights / weights.mean()
-                    if value[0] == 'Categorical':
-                        weights.loc[0] = 0
-                    weights = weights.sort_index()
-
-                    w_all = torch.ones(value_counts_combined.index.max() + 1, dtype=torch.float32).to(device=device)
-                    for idx, w in weights.items():
-                        w_all[idx] = w
-                    w_all = (w_all + 1) ** 2
-
-                    print("loss weights for", key, w_all)
-                    if value[0] == 'Categorical':
-                        loss_fns[key] = torch.nn.CrossEntropyLoss(w_all).to(device=device)
-                    else:
-                        loss_fns[key] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=w_all)
 
                 model.train()
                 total_loss = 0.0
@@ -241,6 +234,7 @@ class TrainerSkills:
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
                 val_loss, f1_scores_epoch, class_reports, conf_matrix = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
+                
                 losses.append(val_loss)
                 total_accuracies.append(f1_scores_epoch['Total'])
                 scheduler.step(val_loss)
@@ -260,35 +254,79 @@ class TrainerSkills:
                     print(f"No improvement for {epochsNoImprovement} - stopping")
                     break
 
+                # TODO : add .current.json & compare to previous run
                 if hasValLossImproved or hasValAccImproved:
                     torch.save({
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
                         'scheduler_state_dict': scheduler.state_dict(),
                     }, checkpointPath)
+
+                    stats = {
+                        'epoch': epoch,
+                        'best_epoch' : epoch,
+                        'total_accuracy_at_best' : f1_scores[f'{epoch}']['Total'],
+                        'f1_macro_avg_accuracy' : f1_scores[f'{epoch}']['Total'],
+                        'total_accuracies' : total_accuracies,
+                        'losses': losses,
+                        'f1_scores': f1_scores,
+                        'classification_reports' : classification_reports,
+                        'confusion_matrix': conf_matrix,
+                        'final_classification_reports' : class_reports,
+                        'time' : time.time() - start,
+                        'length_train': len(train_generator),
+                        'length_val': len(val_generator),
+                        'rundate': rundate,
+                        'modelname': modelname,
+                    }
                     
-                    with open(modelstatsPath, "w") as fp:
-                        json.dump({
-                            'epoch': epoch,
-                            'best_epoch' : epoch,
-                            'total_accuracy_at_best' : f1_scores[f'{epoch}']['Total'],
-                            'total_accuracies' : total_accuracies,
-                            'losses': losses,
-                            'f1_scores': f1_scores,
-                            'classification_reports' : classification_reports,
-                            'confusion_matrix': conf_matrix,
-                            'final_classification_reports' : class_reports,
-                            'time' : time.time() - start,
-                            'length_train': len(train_generator),
-                            'length_val': len(val_generator),
-                            'rundate': rundate,
-                        }, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
+                    with open(modelstatsPathCurrent, "w") as fp:
+                        json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
+
+                    if stats['f1_macro_avg_accuracy'] > f1_macro_avg_scores_epoch_reval['Total']:
+                        with open(modelstatsPath, "w") as fp:
+                            json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
+
+                        torch.save(model.state_dict(), path)
+
+                    if stats['f1_macro_avg_accuracy'] > bestModelStats['f1_macro_avg_accuracy']:
+                        with open(bestModelJsonStatsPath, "w") as fp:
+                            json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
+
+                        torch.save(model.state_dict(), pathBest)
             
-                    torch.save(model.state_dict(), path)
-            pprint(f1_scores)
+            pprint(f"Current f1 macro avg accuracy: {f1_scores_epoch['Total']}")
 
         except Exception as e:
             raise e
         finally:
             torch.cuda.empty_cache()
             gc.collect()
+
+    def get_weighted_loss_fns(train_generator, val_generator, skillconfig):
+        loss_fns = {}
+        for key, value in skillconfig.items():
+            value_counts_train = train_generator.BalancedSet[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
+            value_counts_val = val_generator.Skills[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
+            value_counts_combined = value_counts_train.add(value_counts_val, fill_value=0)
+
+            maximum = value_counts_combined.max()
+
+            weights = (maximum + maximum // 8 - value_counts_combined).pow(0.75)
+            weights = weights / weights.mean()
+            if value[0] == 'Categorical':
+                weights.loc[0] = 0
+            weights = weights.sort_index()
+
+            w_all = torch.ones(value_counts_combined.index.max() + 1, dtype=torch.float32).to(device=device)
+            for idx, w in weights.items():
+                w_all[idx] = w
+            w_all = (w_all + 1) ** 2
+
+            print("loss weights for", key, w_all)
+            if value[0] == 'Categorical':
+                loss_fns[key] = torch.nn.CrossEntropyLoss(w_all).to(device=device)
+            else:
+                loss_fns[key] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=w_all)
+        
+        return loss_fns

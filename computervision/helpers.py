@@ -1,9 +1,11 @@
 import cv2
+import json
 import keras
 import random
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import sys
 import torch
 import pandas as pd
@@ -306,3 +308,13 @@ def get_localize_strategy_list():
 def weighted_mse_loss(input, target, weight):
     "https://discuss.pytorch.org/t/how-to-implement-weighted-mean-square-error/2547"
     return torch.sum(weight * (input - target) ** 2)
+
+def load_json_file(path):
+    if os.path.exists(path):
+        with open(path, 'r') as f:
+            return json.load(f)
+    return None
+
+def dump_json_file(jsondict, path):
+    with open(path, 'w') as f:
+        json.dump(jsondict, f, sort_keys=True, indent=4)    
