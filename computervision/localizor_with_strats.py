@@ -332,7 +332,7 @@ def localize_jumpers(
     cv2.destroyAllWindows()
 
     if save_as_mp4:
-        strat_model_name = f"{videoId}_crop_d{dim}_{modelname}_{s}" # TODO : include strat
+        strat_model_name = f"{videoId}_crop_d{dim}_{modelname}"
         videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.mp4")
 
         clip = ImageSequenceClip(frames, fps=fps)
@@ -438,7 +438,6 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
                 ious_all[s][train_or_val]['min'] = min(ious_all[s][train_or_val]['min'], ious_video.min())
                 ious_all[s][train_or_val]['max'] = max(ious_all[s][train_or_val]['max'], ious_video.max())
                 ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
-                ious_all[s][train_or_val]['videoIds'].add(videoId)
                 ious_all[s][train_or_val]['videos'][videoId] = {
                     'ious': ious_video,
                     'min': ious_video.min(),

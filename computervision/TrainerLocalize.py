@@ -68,7 +68,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
     num_val_images = len(os.listdir(os.path.join(STORAGE_DIR, LABELED_FRAMES_FOLDER, LABELS_FOLDER, 'val')))
 
     model = YOLO(variant)
-    args = dict(model=variant, data="jumpers.yml", epochs=300, batch=16, patience=15, lr0=0.001)
+    args = dict(model=variant, data="jumpers.yml", epochs=300, batch=32, patience=8, lr0=0.0001)
     results = model.train(**args)
 
     # 'ap_class_index', 'box', 'class_result', 'confusion_matrix', 'curves', 'curves_results', 

@@ -557,7 +557,7 @@ class VideoService:
     def load_predicted_boxes(self, videoId:int):
         modelname, modelpath = localize_get_best_modelpath()
         # TODO : update to get 'smoothing'
-        filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_crop_d224_{modelname}_smoothing.json")
+        filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_crop_d224_{modelname}.json")
         if os.path.exists(filepath):
             with open(filepath, 'r') as f:
                 return json.load(f)

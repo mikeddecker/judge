@@ -26,7 +26,7 @@ class FrameLoader:
         
         # TODO : update, select cropped with lowest min_iou which is not raw?
         if not strat:
-            vpathVideoresults = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_crop_d{dim}_yolo11n_smoothing.mp4")
+            vpathVideoresults = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_crop_d{dim}_yolo11n.mp4")
             if os.path.exists(vpathVideoresults):
                 return vpathVideoresults
 
