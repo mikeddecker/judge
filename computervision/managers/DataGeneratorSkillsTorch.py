@@ -44,7 +44,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.SkillCounts = self.repo.get_skill_category_counts()
 
         self.balancedType = 'jump_return_push_frog_other' # TODO : make dynamic, provide in init
-        self.balancedType = 'limit_10procent'
+        self.balancedType = 'limit_5procent'
         self.Skills = adaptSkillLabels(df_skills=self.Skills, balancedType=self.balancedType)
         self.BalancedSet = pd.DataFrame(columns=self.Skills.columns)
 
@@ -75,9 +75,6 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         frameStart = skillinfo_row["frameStart"]
         frameEnd = skillinfo_row["frameEnd"]
 
-        if batch_nr + 1 == self.__len__():
-            self.on_epoch_end()
-
         X, flip_turner = load_skill_batch_X_torch(
             frameloader=self.frameloader,
             videoId=videoId,
@@ -92,7 +89,6 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         return X, y
 
     def on_epoch_end(self):
-        print("Epoch end - shuffle data (doubt myself)")
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
 
@@ -115,8 +111,8 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
                 self.Skills[self.Skills['skill'] == 5].iloc[:lowestTrainAmount]
             ], ignore_index=True)
             self.BalancedSet = self.BalancedSet.sample(frac=1.)
-        elif self.balancedType == 'limit_10procent':
-            limit = len(self.Skills) // 10
+        elif self.balancedType == 'limit_5procent':
+            limit = len(self.Skills) // 5
             skillIndexesToBeLimited = skillValueCounts[skillValueCounts.values > limit].index.to_list()
             otherSkillIndexes = skillValueCounts[skillValueCounts.values <= limit].index.to_list()
             df_limited_skills = pd.concat([

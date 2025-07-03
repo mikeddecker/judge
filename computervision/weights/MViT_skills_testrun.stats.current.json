@@ -1,0 +1,3655 @@
+{
+    "best_epoch": 2,
+    "classification_reports": {
+        "0": {
+            "Backwards": {
+                "0": {
+                    "f1-score": 0.9928057553956835,
+                    "precision": 0.9857142857142858,
+                    "recall": 1.0,
+                    "support": 276.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "accuracy": 0.9857142857142858,
+                "macro avg": {
+                    "f1-score": 0.49640287769784175,
+                    "precision": 0.4928571428571429,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9786228160328881,
+                    "precision": 0.9716326530612246,
+                    "recall": 0.9857142857142858,
+                    "support": 280.0
+                }
+            },
+            "BodyRotations": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 278.0
+                },
+                "1": {
+                    "f1-score": 0.0071174377224199285,
+                    "precision": 0.0035714285714285713,
+                    "recall": 1.0,
+                    "support": 1.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "accuracy": 0.0035714285714285713,
+                "macro avg": {
+                    "f1-score": 0.0023724792408066427,
+                    "precision": 0.0011904761904761904,
+                    "recall": 0.3333333333333333,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 2.541942043721403e-05,
+                    "precision": 1.2755102040816325e-05,
+                    "recall": 0.0035714285714285713,
+                    "support": 280.0
+                }
+            },
+            "Fault": {
+                "0": {
+                    "f1-score": 0.9724770642201835,
+                    "precision": 0.9464285714285714,
+                    "recall": 1.0,
+                    "support": 265.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 15.0
+                },
+                "accuracy": 0.9464285714285714,
+                "macro avg": {
+                    "f1-score": 0.48623853211009177,
+                    "precision": 0.4732142857142857,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9203800786369594,
+                    "precision": 0.8957270408163265,
+                    "recall": 0.9464285714285714,
+                    "support": 280.0
+                }
+            },
+            "Feet": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 31.0
+                },
+                "1": {
+                    "f1-score": 0.2926829268292683,
+                    "precision": 0.17142857142857143,
+                    "recall": 1.0,
+                    "support": 48.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 201.0
+                },
+                "accuracy": 0.17142857142857143,
+                "macro avg": {
+                    "f1-score": 0.09756097560975609,
+                    "precision": 0.05714285714285714,
+                    "recall": 0.3333333333333333,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.05017421602787456,
+                    "precision": 0.029387755102040815,
+                    "recall": 0.17142857142857143,
+                    "support": 280.0
+                }
+            },
+            "Hands": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 187.0
+                },
+                "1": {
+                    "f1-score": 0.10810810810810811,
+                    "precision": 0.05714285714285714,
+                    "recall": 1.0,
+                    "support": 16.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 77.0
+                },
+                "accuracy": 0.05714285714285714,
+                "macro avg": {
+                    "f1-score": 0.036036036036036036,
+                    "precision": 0.019047619047619046,
+                    "recall": 0.3333333333333333,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.006177606177606178,
+                    "precision": 0.0032653061224489793,
+                    "recall": 0.05714285714285714,
+                    "support": 280.0
+                }
+            },
+            "Hard2see": {
+                "0": {
+                    "f1-score": 0.996415770609319,
+                    "precision": 0.9928571428571429,
+                    "recall": 1.0,
+                    "support": 278.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "accuracy": 0.9928571428571429,
+                "macro avg": {
+                    "f1-score": 0.4982078853046595,
+                    "precision": 0.49642857142857144,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9892985151049668,
+                    "precision": 0.9857653061224491,
+                    "recall": 0.9928571428571429,
+                    "support": 280.0
+                }
+            },
+            "Rotations": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 10.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 227.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 30.0
+                },
+                "3": {
+                    "f1-score": 0.042704626334519574,
+                    "precision": 0.02181818181818182,
+                    "recall": 1.0,
+                    "support": 6.0
+                },
+                "4": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 6.0
+                },
+                "5": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "accuracy": 0.02142857142857143,
+                "macro avg": {
+                    "f1-score": 0.007117437722419929,
+                    "precision": 0.003636363636363637,
+                    "recall": 0.16666666666666666,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.0009150991357397051,
+                    "precision": 0.00046753246753246754,
+                    "recall": 0.02142857142857143,
+                    "support": 280.0
+                }
+            },
+            "Skill": {
+                "SPAGAAT": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "UNKOWN": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.10357142857142858,
+                "buddy-bounce": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "crab": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "flip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 3.0
+                },
+                "flip-to-pushup": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-cancan": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-cross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-kick": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-knee": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-open": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "frog": {
+                    "f1-score": 0.05263157894736842,
+                    "precision": 0.25,
+                    "recall": 0.029411764705882353,
+                    "support": 34.0
+                },
+                "handspring": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 3.0
+                },
+                "handspring2crab": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 151.0
+                },
+                "jump2kip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "kip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "kopcrab": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "kopkip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "leapfrog": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "macro avg": {
+                    "f1-score": 0.00905545112781955,
+                    "precision": 0.021331188725490193,
+                    "recall": 0.032029608718487396,
+                    "support": 280.0
+                },
+                "mountainclimber": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "pushup": {
+                    "f1-score": 0.05714285714285714,
+                    "precision": 0.3333333333333333,
+                    "recall": 0.03125,
+                    "support": 32.0
+                },
+                "rad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "return from power": {
+                    "f1-score": 0.18,
+                    "precision": 0.09926470588235294,
+                    "recall": 0.9642857142857143,
+                    "support": 28.0
+                },
+                "rol2kip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "roll": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "rondat": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "speed": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "split": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 7.0
+                },
+                "stut": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "suicide": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "swift": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.030921589688506983,
+                    "precision": 0.07837885154061625,
+                    "recall": 0.10357142857142858,
+                    "support": 280.0
+                }
+            },
+            "Sloppy": {
+                "0": {
+                    "f1-score": 0.9891696750902527,
+                    "precision": 0.9785714285714285,
+                    "recall": 1.0,
+                    "support": 274.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 6.0
+                },
+                "accuracy": 0.9785714285714285,
+                "macro avg": {
+                    "f1-score": 0.49458483754512633,
+                    "precision": 0.48928571428571427,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9679731820526044,
+                    "precision": 0.9576020408163265,
+                    "recall": 0.9785714285714285,
+                    "support": 280.0
+                }
+            },
+            "Turner1": {
+                "EB": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "EB inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "EB toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 3.0
+                },
+                "EB toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L2-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L3-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L4-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "MULTIPLE_TURNERSKILLS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "T-toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "TS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "UNKNOWN": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.8,
+                "cross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 27.0
+                },
+                "cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 19.0
+                },
+                "crougercross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "elephant": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "flip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump over cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump-through": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "macro avg": {
+                    "f1-score": 0.03425600244685732,
+                    "precision": 0.030990592141671276,
+                    "recall": 0.03829059829059829,
+                    "support": 280.0
+                },
+                "normal": {
+                    "f1-score": 0.8906560636182903,
+                    "precision": 0.8057553956834532,
+                    "recall": 0.9955555555555555,
+                    "support": 225.0
+                },
+                "pinwheel": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "suicide": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.7157057654075547,
+                    "precision": 0.6474820143884892,
+                    "recall": 0.8,
+                    "support": 280.0
+                }
+            },
+            "Turner2": {
+                "EB": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 5.0
+                },
+                "EB inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "EB toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "EB toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L2-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L3-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L4-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "MULTIPLE_TURNERSKILLS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "T-toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "TS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "UNKNOWN": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.8142857142857143,
+                "cross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 26.0
+                },
+                "cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 11.0
+                },
+                "crougercross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "elephant": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "flip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump over cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump-through": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "macro avg": {
+                    "f1-score": 0.03452453058752271,
+                    "precision": 0.03131868131868132,
+                    "recall": 0.038461538461538464,
+                    "support": 280.0
+                },
+                "normal": {
+                    "f1-score": 0.8976377952755905,
+                    "precision": 0.8142857142857143,
+                    "recall": 1.0,
+                    "support": 228.0
+                },
+                "pinwheel": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "suicide": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.7309336332958379,
+                    "precision": 0.6630612244897959,
+                    "recall": 0.8142857142857143,
+                    "support": 280.0
+                }
+            },
+            "Turntable": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 276.0
+                },
+                "1": {
+                    "f1-score": 0.01568627450980392,
+                    "precision": 0.00796812749003984,
+                    "recall": 0.5,
+                    "support": 4.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.007142857142857143,
+                "macro avg": {
+                    "f1-score": 0.00522875816993464,
+                    "precision": 0.0026560424966799467,
+                    "recall": 0.16666666666666666,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.00022408963585434174,
+                    "precision": 0.00011383039271485487,
+                    "recall": 0.007142857142857143,
+                    "support": 280.0
+                }
+            },
+            "Type": {
+                "Chinese Wheel": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 39.0
+                },
+                "Double Dutch": {
+                    "f1-score": 0.8640973630831643,
+                    "precision": 0.7607142857142857,
+                    "recall": 1.0,
+                    "support": 213.0
+                },
+                "Irish Dutch": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "Single Dutch": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "Snapperlike": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 16.0
+                },
+                "Transition": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 11.0
+                },
+                "accuracy": 0.7607142857142857,
+                "macro avg": {
+                    "f1-score": 0.1440162271805274,
+                    "precision": 0.12678571428571428,
+                    "recall": 0.16666666666666666,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.6573312083454071,
+                    "precision": 0.5786862244897959,
+                    "recall": 0.7607142857142857,
+                    "support": 280.0
+                }
+            }
+        },
+        "1": {
+            "Backwards": {
+                "0": {
+                    "f1-score": 0.9928057553956835,
+                    "precision": 0.9857142857142858,
+                    "recall": 1.0,
+                    "support": 276.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "accuracy": 0.9857142857142858,
+                "macro avg": {
+                    "f1-score": 0.49640287769784175,
+                    "precision": 0.4928571428571429,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9786228160328881,
+                    "precision": 0.9716326530612246,
+                    "recall": 0.9857142857142858,
+                    "support": 280.0
+                }
+            },
+            "BodyRotations": {
+                "0": {
+                    "f1-score": 0.9037328094302554,
+                    "precision": 0.9956709956709957,
+                    "recall": 0.8273381294964028,
+                    "support": 278.0
+                },
+                "1": {
+                    "f1-score": 0.04,
+                    "precision": 0.02040816326530612,
+                    "recall": 1.0,
+                    "support": 1.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "accuracy": 0.825,
+                "macro avg": {
+                    "f1-score": 0.3145776031434185,
+                    "precision": 0.3386930529787673,
+                    "recall": 0.6091127098321343,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.8974204322200392,
+                    "precision": 0.9886319462850076,
+                    "recall": 0.825,
+                    "support": 280.0
+                }
+            },
+            "Fault": {
+                "0": {
+                    "f1-score": 0.9724770642201835,
+                    "precision": 0.9464285714285714,
+                    "recall": 1.0,
+                    "support": 265.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 15.0
+                },
+                "accuracy": 0.9464285714285714,
+                "macro avg": {
+                    "f1-score": 0.48623853211009177,
+                    "precision": 0.4732142857142857,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9203800786369594,
+                    "precision": 0.8957270408163265,
+                    "recall": 0.9464285714285714,
+                    "support": 280.0
+                }
+            },
+            "Feet": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 31.0
+                },
+                "1": {
+                    "f1-score": 0.2926829268292683,
+                    "precision": 0.17142857142857143,
+                    "recall": 1.0,
+                    "support": 48.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 201.0
+                },
+                "accuracy": 0.17142857142857143,
+                "macro avg": {
+                    "f1-score": 0.09756097560975609,
+                    "precision": 0.05714285714285714,
+                    "recall": 0.3333333333333333,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.05017421602787456,
+                    "precision": 0.029387755102040815,
+                    "recall": 0.17142857142857143,
+                    "support": 280.0
+                }
+            },
+            "Hands": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 187.0
+                },
+                "1": {
+                    "f1-score": 0.10810810810810811,
+                    "precision": 0.05714285714285714,
+                    "recall": 1.0,
+                    "support": 16.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 77.0
+                },
+                "accuracy": 0.05714285714285714,
+                "macro avg": {
+                    "f1-score": 0.036036036036036036,
+                    "precision": 0.019047619047619046,
+                    "recall": 0.3333333333333333,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.006177606177606178,
+                    "precision": 0.0032653061224489793,
+                    "recall": 0.05714285714285714,
+                    "support": 280.0
+                }
+            },
+            "Hard2see": {
+                "0": {
+                    "f1-score": 0.996415770609319,
+                    "precision": 0.9928571428571429,
+                    "recall": 1.0,
+                    "support": 278.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "accuracy": 0.9928571428571429,
+                "macro avg": {
+                    "f1-score": 0.4982078853046595,
+                    "precision": 0.49642857142857144,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9892985151049668,
+                    "precision": 0.9857653061224491,
+                    "recall": 0.9928571428571429,
+                    "support": 280.0
+                }
+            },
+            "Rotations": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 10.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 227.0
+                },
+                "2": {
+                    "f1-score": 0.2,
+                    "precision": 0.1125,
+                    "recall": 0.9,
+                    "support": 30.0
+                },
+                "3": {
+                    "f1-score": 0.043478260869565216,
+                    "precision": 0.025,
+                    "recall": 0.16666666666666666,
+                    "support": 6.0
+                },
+                "4": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 6.0
+                },
+                "5": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "accuracy": 0.1,
+                "macro avg": {
+                    "f1-score": 0.04057971014492754,
+                    "precision": 0.02291666666666667,
+                    "recall": 0.17777777777777778,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.02236024844720497,
+                    "precision": 0.012589285714285714,
+                    "recall": 0.1,
+                    "support": 280.0
+                }
+            },
+            "Skill": {
+                "SPAGAAT": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "UNKOWN": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.10714285714285714,
+                "buddy-bounce": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "crab": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "flip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 3.0
+                },
+                "flip-to-pushup": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-cancan": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-cross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-kick": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-knee": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-open": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "frog": {
+                    "f1-score": 0.09523809523809523,
+                    "precision": 0.25,
+                    "recall": 0.058823529411764705,
+                    "support": 34.0
+                },
+                "handspring": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 3.0
+                },
+                "handspring2crab": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 151.0
+                },
+                "jump2kip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "kip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "kopcrab": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "kopkip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "leapfrog": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "macro avg": {
+                    "f1-score": 0.010452097505668934,
+                    "precision": 0.018796992481203006,
+                    "recall": 0.032948726365546216,
+                    "support": 280.0
+                },
+                "mountainclimber": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "pushup": {
+                    "f1-score": 0.05555555555555555,
+                    "precision": 0.25,
+                    "recall": 0.03125,
+                    "support": 32.0
+                },
+                "rad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "return from power": {
+                    "f1-score": 0.1836734693877551,
+                    "precision": 0.10150375939849623,
+                    "recall": 0.9642857142857143,
+                    "support": 28.0
+                },
+                "rol2kip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "roll": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "rondat": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "speed": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "split": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 7.0
+                },
+                "stut": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "suicide": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "swift": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.036281179138321996,
+                    "precision": 0.06907894736842105,
+                    "recall": 0.10714285714285714,
+                    "support": 280.0
+                }
+            },
+            "Sloppy": {
+                "0": {
+                    "f1-score": 0.9891696750902527,
+                    "precision": 0.9785714285714285,
+                    "recall": 1.0,
+                    "support": 274.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 6.0
+                },
+                "accuracy": 0.9785714285714285,
+                "macro avg": {
+                    "f1-score": 0.49458483754512633,
+                    "precision": 0.48928571428571427,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9679731820526044,
+                    "precision": 0.9576020408163265,
+                    "recall": 0.9785714285714285,
+                    "support": 280.0
+                }
+            },
+            "Turner1": {
+                "EB": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "EB inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "EB toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 3.0
+                },
+                "EB toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L2-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L3-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L4-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "MULTIPLE_TURNERSKILLS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "T-toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "TS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "UNKNOWN": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.8035714285714286,
+                "cross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 27.0
+                },
+                "cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 19.0
+                },
+                "crougercross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "elephant": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "flip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump over cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump-through": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "macro avg": {
+                    "f1-score": 0.03427265803503427,
+                    "precision": 0.030906593406593408,
+                    "recall": 0.038461538461538464,
+                    "support": 280.0
+                },
+                "normal": {
+                    "f1-score": 0.8910891089108911,
+                    "precision": 0.8035714285714286,
+                    "recall": 1.0,
+                    "support": 225.0
+                },
+                "pinwheel": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "suicide": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.716053748231966,
+                    "precision": 0.6457270408163266,
+                    "recall": 0.8035714285714286,
+                    "support": 280.0
+                }
+            },
+            "Turner2": {
+                "EB": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 5.0
+                },
+                "EB inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "EB toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "EB toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L2-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L3-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L4-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "MULTIPLE_TURNERSKILLS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "T-toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "TS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "UNKNOWN": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.8142857142857143,
+                "cross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 26.0
+                },
+                "cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 11.0
+                },
+                "crougercross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "elephant": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "flip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump over cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump-through": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "macro avg": {
+                    "f1-score": 0.03452453058752271,
+                    "precision": 0.03131868131868132,
+                    "recall": 0.038461538461538464,
+                    "support": 280.0
+                },
+                "normal": {
+                    "f1-score": 0.8976377952755905,
+                    "precision": 0.8142857142857143,
+                    "recall": 1.0,
+                    "support": 228.0
+                },
+                "pinwheel": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "suicide": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.7309336332958379,
+                    "precision": 0.6630612244897959,
+                    "recall": 0.8142857142857143,
+                    "support": 280.0
+                }
+            },
+            "Turntable": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 276.0
+                },
+                "1": {
+                    "f1-score": 0.02857142857142857,
+                    "precision": 0.014492753623188406,
+                    "recall": 1.0,
+                    "support": 4.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.014285714285714285,
+                "macro avg": {
+                    "f1-score": 0.009523809523809523,
+                    "precision": 0.004830917874396135,
+                    "recall": 0.3333333333333333,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.0004081632653061224,
+                    "precision": 0.00020703933747412008,
+                    "recall": 0.014285714285714285,
+                    "support": 280.0
+                }
+            },
+            "Type": {
+                "Chinese Wheel": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 39.0
+                },
+                "Double Dutch": {
+                    "f1-score": 0.8640973630831643,
+                    "precision": 0.7607142857142857,
+                    "recall": 1.0,
+                    "support": 213.0
+                },
+                "Irish Dutch": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "Single Dutch": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "Snapperlike": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 16.0
+                },
+                "Transition": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 11.0
+                },
+                "accuracy": 0.7607142857142857,
+                "macro avg": {
+                    "f1-score": 0.1440162271805274,
+                    "precision": 0.12678571428571428,
+                    "recall": 0.16666666666666666,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.6573312083454071,
+                    "precision": 0.5786862244897959,
+                    "recall": 0.7607142857142857,
+                    "support": 280.0
+                }
+            }
+        },
+        "2": {
+            "Backwards": {
+                "0": {
+                    "f1-score": 0.9928057553956835,
+                    "precision": 0.9857142857142858,
+                    "recall": 1.0,
+                    "support": 276.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "accuracy": 0.9857142857142858,
+                "macro avg": {
+                    "f1-score": 0.49640287769784175,
+                    "precision": 0.4928571428571429,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9786228160328881,
+                    "precision": 0.9716326530612246,
+                    "recall": 0.9857142857142858,
+                    "support": 280.0
+                }
+            },
+            "BodyRotations": {
+                "0": {
+                    "f1-score": 0.9686924493554327,
+                    "precision": 0.9924528301886792,
+                    "recall": 0.9460431654676259,
+                    "support": 278.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "accuracy": 0.9392857142857143,
+                "macro avg": {
+                    "f1-score": 0.3228974831184776,
+                    "precision": 0.33081761006289306,
+                    "recall": 0.31534772182254195,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9617732175743227,
+                    "precision": 0.9853638814016173,
+                    "recall": 0.9392857142857143,
+                    "support": 280.0
+                }
+            },
+            "Fault": {
+                "0": {
+                    "f1-score": 0.9724770642201835,
+                    "precision": 0.9464285714285714,
+                    "recall": 1.0,
+                    "support": 265.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 15.0
+                },
+                "accuracy": 0.9464285714285714,
+                "macro avg": {
+                    "f1-score": 0.48623853211009177,
+                    "precision": 0.4732142857142857,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9203800786369594,
+                    "precision": 0.8957270408163265,
+                    "recall": 0.9464285714285714,
+                    "support": 280.0
+                }
+            },
+            "Feet": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 31.0
+                },
+                "1": {
+                    "f1-score": 0.2926829268292683,
+                    "precision": 0.17142857142857143,
+                    "recall": 1.0,
+                    "support": 48.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 201.0
+                },
+                "accuracy": 0.17142857142857143,
+                "macro avg": {
+                    "f1-score": 0.09756097560975609,
+                    "precision": 0.05714285714285714,
+                    "recall": 0.3333333333333333,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.05017421602787456,
+                    "precision": 0.029387755102040815,
+                    "recall": 0.17142857142857143,
+                    "support": 280.0
+                }
+            },
+            "Hands": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 187.0
+                },
+                "1": {
+                    "f1-score": 0.10810810810810811,
+                    "precision": 0.05714285714285714,
+                    "recall": 1.0,
+                    "support": 16.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 77.0
+                },
+                "accuracy": 0.05714285714285714,
+                "macro avg": {
+                    "f1-score": 0.036036036036036036,
+                    "precision": 0.019047619047619046,
+                    "recall": 0.3333333333333333,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.006177606177606178,
+                    "precision": 0.0032653061224489793,
+                    "recall": 0.05714285714285714,
+                    "support": 280.0
+                }
+            },
+            "Hard2see": {
+                "0": {
+                    "f1-score": 0.996415770609319,
+                    "precision": 0.9928571428571429,
+                    "recall": 1.0,
+                    "support": 278.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "accuracy": 0.9928571428571429,
+                "macro avg": {
+                    "f1-score": 0.4982078853046595,
+                    "precision": 0.49642857142857144,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9892985151049668,
+                    "precision": 0.9857653061224491,
+                    "recall": 0.9928571428571429,
+                    "support": 280.0
+                }
+            },
+            "Rotations": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 10.0
+                },
+                "1": {
+                    "f1-score": 0.017467248908296942,
+                    "precision": 1.0,
+                    "recall": 0.00881057268722467,
+                    "support": 227.0
+                },
+                "2": {
+                    "f1-score": 0.19727891156462585,
+                    "precision": 0.10984848484848485,
+                    "recall": 0.9666666666666667,
+                    "support": 30.0
+                },
+                "3": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 6.0
+                },
+                "4": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 6.0
+                },
+                "5": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "accuracy": 0.11071428571428571,
+                "macro avg": {
+                    "f1-score": 0.03579102674548713,
+                    "precision": 0.1849747474747475,
+                    "recall": 0.16257953989231522,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.03529797446115065,
+                    "precision": 0.8224837662337662,
+                    "recall": 0.11071428571428571,
+                    "support": 280.0
+                }
+            },
+            "Skill": {
+                "SPAGAAT": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "UNKOWN": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.11428571428571428,
+                "buddy-bounce": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "crab": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "flip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 3.0
+                },
+                "flip-to-pushup": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-cancan": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-cross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-kick": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-knee": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "footwork-open": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "frog": {
+                    "f1-score": 0.17857142857142858,
+                    "precision": 0.1282051282051282,
+                    "recall": 0.29411764705882354,
+                    "support": 34.0
+                },
+                "handspring": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 3.0
+                },
+                "handspring2crab": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump": {
+                    "f1-score": 0.049689440993788817,
+                    "precision": 0.4,
+                    "recall": 0.026490066225165563,
+                    "support": 151.0
+                },
+                "jump2kip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "kip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "kopcrab": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "kopkip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "leapfrog": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "macro avg": {
+                    "f1-score": 0.013788244766505637,
+                    "precision": 0.02714470812875068,
+                    "recall": 0.029968767825838946,
+                    "support": 280.0
+                },
+                "mountainclimber": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "pushup": {
+                    "f1-score": 0.05555555555555555,
+                    "precision": 0.25,
+                    "recall": 0.03125,
+                    "support": 32.0
+                },
+                "rad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "return from power": {
+                    "f1-score": 0.1574074074074074,
+                    "precision": 0.09042553191489362,
+                    "recall": 0.6071428571428571,
+                    "support": 28.0
+                },
+                "rol2kip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "roll": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "rondat": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "speed": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "split": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 7.0
+                },
+                "stut": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "suicide": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "swift": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.07057042623812809,
+                    "precision": 0.26889603304496923,
+                    "recall": 0.11428571428571428,
+                    "support": 280.0
+                }
+            },
+            "Sloppy": {
+                "0": {
+                    "f1-score": 0.9891696750902527,
+                    "precision": 0.9785714285714285,
+                    "recall": 1.0,
+                    "support": 274.0
+                },
+                "1": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 6.0
+                },
+                "accuracy": 0.9785714285714285,
+                "macro avg": {
+                    "f1-score": 0.49458483754512633,
+                    "precision": 0.48928571428571427,
+                    "recall": 0.5,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.9679731820526044,
+                    "precision": 0.9576020408163265,
+                    "recall": 0.9785714285714285,
+                    "support": 280.0
+                }
+            },
+            "Turner1": {
+                "EB": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "EB inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "EB toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 3.0
+                },
+                "EB toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L2-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L3-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L4-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "MULTIPLE_TURNERSKILLS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "T-toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "TS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "UNKNOWN": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.8035714285714286,
+                "cross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 27.0
+                },
+                "cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 19.0
+                },
+                "crougercross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "elephant": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "flip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump over cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump-through": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "macro avg": {
+                    "f1-score": 0.03427265803503427,
+                    "precision": 0.030906593406593408,
+                    "recall": 0.038461538461538464,
+                    "support": 280.0
+                },
+                "normal": {
+                    "f1-score": 0.8910891089108911,
+                    "precision": 0.8035714285714286,
+                    "recall": 1.0,
+                    "support": 225.0
+                },
+                "pinwheel": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "suicide": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 4.0
+                },
+                "toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.716053748231966,
+                    "precision": 0.6457270408163266,
+                    "recall": 0.8035714285714286,
+                    "support": 280.0
+                }
+            },
+            "Turner2": {
+                "EB": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 5.0
+                },
+                "EB inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "EB toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "EB toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L2-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L3-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "L4-power-gym": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "MULTIPLE_TURNERSKILLS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "T-toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "TS": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "UNKNOWN": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.8142857142857143,
+                "cross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 26.0
+                },
+                "cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 11.0
+                },
+                "crougercross": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "elephant": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "flip": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse crouger": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "inverse toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump over cross BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "jump-through": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "macro avg": {
+                    "f1-score": 0.03452453058752271,
+                    "precision": 0.03131868131868132,
+                    "recall": 0.038461538461538464,
+                    "support": 280.0
+                },
+                "normal": {
+                    "f1-score": 0.8976377952755905,
+                    "precision": 0.8142857142857143,
+                    "recall": 1.0,
+                    "support": 228.0
+                },
+                "pinwheel": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "suicide": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "toad": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "toad BW": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 2.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.7309336332958379,
+                    "precision": 0.6630612244897959,
+                    "recall": 0.8142857142857143,
+                    "support": 280.0
+                }
+            },
+            "Turntable": {
+                "0": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 276.0
+                },
+                "1": {
+                    "f1-score": 0.028268551236749116,
+                    "precision": 0.014336917562724014,
+                    "recall": 1.0,
+                    "support": 4.0
+                },
+                "2": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "accuracy": 0.014285714285714285,
+                "macro avg": {
+                    "f1-score": 0.009422850412249705,
+                    "precision": 0.0047789725209080045,
+                    "recall": 0.3333333333333333,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.0004038364462392731,
+                    "precision": 0.0002048131080389145,
+                    "recall": 0.014285714285714285,
+                    "support": 280.0
+                }
+            },
+            "Type": {
+                "Chinese Wheel": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 39.0
+                },
+                "Double Dutch": {
+                    "f1-score": 0.8640973630831643,
+                    "precision": 0.7607142857142857,
+                    "recall": 1.0,
+                    "support": 213.0
+                },
+                "Irish Dutch": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 0.0
+                },
+                "Single Dutch": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 1.0
+                },
+                "Snapperlike": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 16.0
+                },
+                "Transition": {
+                    "f1-score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "support": 11.0
+                },
+                "accuracy": 0.7607142857142857,
+                "macro avg": {
+                    "f1-score": 0.1440162271805274,
+                    "precision": 0.12678571428571428,
+                    "recall": 0.16666666666666666,
+                    "support": 280.0
+                },
+                "weighted avg": {
+                    "f1-score": 0.6573312083454071,
+                    "precision": 0.5786862244897959,
+                    "recall": 0.7607142857142857,
+                    "support": 280.0
+                }
+            }
+        }
+    },
+    "confusion_matrix": [
+        [
+            265,
+            0
+        ],
+        [
+            15,
+            0
+        ]
+    ],
+    "epoch": 2,
+    "f1_macro_avg_accuracy": 0.20798032039610123,
+    "f1_scores": {
+        "0": {
+            "Backwards": 0.49640287769784175,
+            "BodyRotations": 0.0023724792408066427,
+            "Fault": 0.48623853211009177,
+            "Feet": 0.09756097560975609,
+            "Hands": 0.036036036036036036,
+            "Hard2see": 0.4982078853046595,
+            "Rotations": 0.007117437722419929,
+            "Skill": 0.00905545112781955,
+            "Sloppy": 0.49458483754512633,
+            "Total": 0.18043092544456918,
+            "Turner1": 0.03425600244685732,
+            "Turner2": 0.03452453058752271,
+            "Turntable": 0.00522875816993464,
+            "Type": 0.1440162271805274
+        },
+        "1": {
+            "Backwards": 0.49640287769784175,
+            "BodyRotations": 0.3145776031434185,
+            "Fault": 0.48623853211009177,
+            "Feet": 0.09756097560975609,
+            "Hands": 0.036036036036036036,
+            "Hard2see": 0.4982078853046595,
+            "Rotations": 0.04057971014492754,
+            "Skill": 0.010452097505668934,
+            "Sloppy": 0.49458483754512633,
+            "Total": 0.20745982926341694,
+            "Turner1": 0.03427265803503427,
+            "Turner2": 0.03452453058752271,
+            "Turntable": 0.009523809523809523,
+            "Type": 0.1440162271805274
+        },
+        "2": {
+            "Backwards": 0.49640287769784175,
+            "BodyRotations": 0.3228974831184776,
+            "Fault": 0.48623853211009177,
+            "Feet": 0.09756097560975609,
+            "Hands": 0.036036036036036036,
+            "Hard2see": 0.4982078853046595,
+            "Rotations": 0.03579102674548713,
+            "Skill": 0.013788244766505637,
+            "Sloppy": 0.49458483754512633,
+            "Total": 0.20798032039610123,
+            "Turner1": 0.03427265803503427,
+            "Turner2": 0.03452453058752271,
+            "Turntable": 0.009422850412249705,
+            "Type": 0.1440162271805274
+        }
+    },
+    "final_classification_reports": {
+        "Backwards": {
+            "0": {
+                "f1-score": 0.9928057553956835,
+                "precision": 0.9857142857142858,
+                "recall": 1.0,
+                "support": 276.0
+            },
+            "1": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 4.0
+            },
+            "accuracy": 0.9857142857142858,
+            "macro avg": {
+                "f1-score": 0.49640287769784175,
+                "precision": 0.4928571428571429,
+                "recall": 0.5,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.9786228160328881,
+                "precision": 0.9716326530612246,
+                "recall": 0.9857142857142858,
+                "support": 280.0
+            }
+        },
+        "BodyRotations": {
+            "0": {
+                "f1-score": 0.9686924493554327,
+                "precision": 0.9924528301886792,
+                "recall": 0.9460431654676259,
+                "support": 278.0
+            },
+            "1": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 1.0
+            },
+            "2": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 1.0
+            },
+            "accuracy": 0.9392857142857143,
+            "macro avg": {
+                "f1-score": 0.3228974831184776,
+                "precision": 0.33081761006289306,
+                "recall": 0.31534772182254195,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.9617732175743227,
+                "precision": 0.9853638814016173,
+                "recall": 0.9392857142857143,
+                "support": 280.0
+            }
+        },
+        "Fault": {
+            "0": {
+                "f1-score": 0.9724770642201835,
+                "precision": 0.9464285714285714,
+                "recall": 1.0,
+                "support": 265.0
+            },
+            "1": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 15.0
+            },
+            "accuracy": 0.9464285714285714,
+            "macro avg": {
+                "f1-score": 0.48623853211009177,
+                "precision": 0.4732142857142857,
+                "recall": 0.5,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.9203800786369594,
+                "precision": 0.8957270408163265,
+                "recall": 0.9464285714285714,
+                "support": 280.0
+            }
+        },
+        "Feet": {
+            "0": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 31.0
+            },
+            "1": {
+                "f1-score": 0.2926829268292683,
+                "precision": 0.17142857142857143,
+                "recall": 1.0,
+                "support": 48.0
+            },
+            "2": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 201.0
+            },
+            "accuracy": 0.17142857142857143,
+            "macro avg": {
+                "f1-score": 0.09756097560975609,
+                "precision": 0.05714285714285714,
+                "recall": 0.3333333333333333,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.05017421602787456,
+                "precision": 0.029387755102040815,
+                "recall": 0.17142857142857143,
+                "support": 280.0
+            }
+        },
+        "Hands": {
+            "0": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 187.0
+            },
+            "1": {
+                "f1-score": 0.10810810810810811,
+                "precision": 0.05714285714285714,
+                "recall": 1.0,
+                "support": 16.0
+            },
+            "2": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 77.0
+            },
+            "accuracy": 0.05714285714285714,
+            "macro avg": {
+                "f1-score": 0.036036036036036036,
+                "precision": 0.019047619047619046,
+                "recall": 0.3333333333333333,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.006177606177606178,
+                "precision": 0.0032653061224489793,
+                "recall": 0.05714285714285714,
+                "support": 280.0
+            }
+        },
+        "Hard2see": {
+            "0": {
+                "f1-score": 0.996415770609319,
+                "precision": 0.9928571428571429,
+                "recall": 1.0,
+                "support": 278.0
+            },
+            "1": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 2.0
+            },
+            "accuracy": 0.9928571428571429,
+            "macro avg": {
+                "f1-score": 0.4982078853046595,
+                "precision": 0.49642857142857144,
+                "recall": 0.5,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.9892985151049668,
+                "precision": 0.9857653061224491,
+                "recall": 0.9928571428571429,
+                "support": 280.0
+            }
+        },
+        "Rotations": {
+            "0": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 10.0
+            },
+            "1": {
+                "f1-score": 0.017467248908296942,
+                "precision": 1.0,
+                "recall": 0.00881057268722467,
+                "support": 227.0
+            },
+            "2": {
+                "f1-score": 0.19727891156462585,
+                "precision": 0.10984848484848485,
+                "recall": 0.9666666666666667,
+                "support": 30.0
+            },
+            "3": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 6.0
+            },
+            "4": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 6.0
+            },
+            "5": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 1.0
+            },
+            "accuracy": 0.11071428571428571,
+            "macro avg": {
+                "f1-score": 0.03579102674548713,
+                "precision": 0.1849747474747475,
+                "recall": 0.16257953989231522,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.03529797446115065,
+                "precision": 0.8224837662337662,
+                "recall": 0.11071428571428571,
+                "support": 280.0
+            }
+        },
+        "Skill": {
+            "SPAGAAT": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "UNKOWN": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "accuracy": 0.11428571428571428,
+            "buddy-bounce": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 1.0
+            },
+            "crab": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 4.0
+            },
+            "flip": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 3.0
+            },
+            "flip-to-pushup": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "footwork-cancan": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "footwork-cross": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "footwork-kick": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "footwork-knee": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "footwork-open": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "frog": {
+                "f1-score": 0.17857142857142858,
+                "precision": 0.1282051282051282,
+                "recall": 0.29411764705882354,
+                "support": 34.0
+            },
+            "handspring": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 3.0
+            },
+            "handspring2crab": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "jump": {
+                "f1-score": 0.049689440993788817,
+                "precision": 0.4,
+                "recall": 0.026490066225165563,
+                "support": 151.0
+            },
+            "jump2kip": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "kip": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 4.0
+            },
+            "kopcrab": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "kopkip": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "leapfrog": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "macro avg": {
+                "f1-score": 0.013788244766505637,
+                "precision": 0.02714470812875068,
+                "recall": 0.029968767825838946,
+                "support": 280.0
+            },
+            "mountainclimber": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "pushup": {
+                "f1-score": 0.05555555555555555,
+                "precision": 0.25,
+                "recall": 0.03125,
+                "support": 32.0
+            },
+            "rad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 2.0
+            },
+            "return from power": {
+                "f1-score": 0.1574074074074074,
+                "precision": 0.09042553191489362,
+                "recall": 0.6071428571428571,
+                "support": 28.0
+            },
+            "rol2kip": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 4.0
+            },
+            "roll": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "rondat": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 2.0
+            },
+            "speed": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "split": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 7.0
+            },
+            "stut": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 1.0
+            },
+            "suicide": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 4.0
+            },
+            "swift": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "weighted avg": {
+                "f1-score": 0.07057042623812809,
+                "precision": 0.26889603304496923,
+                "recall": 0.11428571428571428,
+                "support": 280.0
+            }
+        },
+        "Sloppy": {
+            "0": {
+                "f1-score": 0.9891696750902527,
+                "precision": 0.9785714285714285,
+                "recall": 1.0,
+                "support": 274.0
+            },
+            "1": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 6.0
+            },
+            "accuracy": 0.9785714285714285,
+            "macro avg": {
+                "f1-score": 0.49458483754512633,
+                "precision": 0.48928571428571427,
+                "recall": 0.5,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.9679731820526044,
+                "precision": 0.9576020408163265,
+                "recall": 0.9785714285714285,
+                "support": 280.0
+            }
+        },
+        "Turner1": {
+            "EB": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 2.0
+            },
+            "EB inverse toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "EB toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 3.0
+            },
+            "EB toad BW": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "L2-power-gym": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "L3-power-gym": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "L4-power-gym": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "MULTIPLE_TURNERSKILLS": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "T-toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "TS": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "UNKNOWN": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "accuracy": 0.8035714285714286,
+            "cross": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 27.0
+            },
+            "cross BW": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "crouger": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 19.0
+            },
+            "crougercross": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "elephant": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "flip": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "inverse crouger": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "inverse toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "jump over cross BW": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "jump-through": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "macro avg": {
+                "f1-score": 0.03427265803503427,
+                "precision": 0.030906593406593408,
+                "recall": 0.038461538461538464,
+                "support": 280.0
+            },
+            "normal": {
+                "f1-score": 0.8910891089108911,
+                "precision": 0.8035714285714286,
+                "recall": 1.0,
+                "support": 225.0
+            },
+            "pinwheel": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "suicide": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 4.0
+            },
+            "toad BW": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "weighted avg": {
+                "f1-score": 0.716053748231966,
+                "precision": 0.6457270408163266,
+                "recall": 0.8035714285714286,
+                "support": 280.0
+            }
+        },
+        "Turner2": {
+            "EB": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 5.0
+            },
+            "EB inverse toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "EB toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 2.0
+            },
+            "EB toad BW": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "L2-power-gym": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "L3-power-gym": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "L4-power-gym": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "MULTIPLE_TURNERSKILLS": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "T-toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "TS": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 1.0
+            },
+            "UNKNOWN": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "accuracy": 0.8142857142857143,
+            "cross": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 26.0
+            },
+            "cross BW": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 2.0
+            },
+            "crouger": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 11.0
+            },
+            "crougercross": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "elephant": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "flip": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "inverse crouger": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "inverse toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "jump over cross BW": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "jump-through": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "macro avg": {
+                "f1-score": 0.03452453058752271,
+                "precision": 0.03131868131868132,
+                "recall": 0.038461538461538464,
+                "support": 280.0
+            },
+            "normal": {
+                "f1-score": 0.8976377952755905,
+                "precision": 0.8142857142857143,
+                "recall": 1.0,
+                "support": 228.0
+            },
+            "pinwheel": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 1.0
+            },
+            "suicide": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "toad": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 2.0
+            },
+            "toad BW": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 2.0
+            },
+            "weighted avg": {
+                "f1-score": 0.7309336332958379,
+                "precision": 0.6630612244897959,
+                "recall": 0.8142857142857143,
+                "support": 280.0
+            }
+        },
+        "Turntable": {
+            "0": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 276.0
+            },
+            "1": {
+                "f1-score": 0.028268551236749116,
+                "precision": 0.014336917562724014,
+                "recall": 1.0,
+                "support": 4.0
+            },
+            "2": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "accuracy": 0.014285714285714285,
+            "macro avg": {
+                "f1-score": 0.009422850412249705,
+                "precision": 0.0047789725209080045,
+                "recall": 0.3333333333333333,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.0004038364462392731,
+                "precision": 0.0002048131080389145,
+                "recall": 0.014285714285714285,
+                "support": 280.0
+            }
+        },
+        "Type": {
+            "Chinese Wheel": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 39.0
+            },
+            "Double Dutch": {
+                "f1-score": 0.8640973630831643,
+                "precision": 0.7607142857142857,
+                "recall": 1.0,
+                "support": 213.0
+            },
+            "Irish Dutch": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 0.0
+            },
+            "Single Dutch": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 1.0
+            },
+            "Snapperlike": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 16.0
+            },
+            "Transition": {
+                "f1-score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "support": 11.0
+            },
+            "accuracy": 0.7607142857142857,
+            "macro avg": {
+                "f1-score": 0.1440162271805274,
+                "precision": 0.12678571428571428,
+                "recall": 0.16666666666666666,
+                "support": 280.0
+            },
+            "weighted avg": {
+                "f1-score": 0.6573312083454071,
+                "precision": 0.5786862244897959,
+                "recall": 0.7607142857142857,
+                "support": 280.0
+            }
+        }
+    },
+    "length_train": 280,
+    "length_val": 280,
+    "losses": [
+        19.450270455224175,
+        14.795740457943507,
+        12.514276926858084
+    ],
+    "modelname": "MViT",
+    "rundate": "20250703",
+    "time": 137.960435628891,
+    "total_accuracies": [
+        0.18043092544456918,
+        0.20745982926341694,
+        0.20798032039610123
+    ],
+    "total_accuracy_at_best": 0.20798032039610123
+}

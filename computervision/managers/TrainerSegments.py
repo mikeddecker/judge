@@ -118,6 +118,10 @@ class TrainerSegments:
                     total_loss += batch_loss.item()
                     i+=1
 
+                # Call the epoch end self, because it is not called by DataLoader, although it shuffles.
+                # Random offset is taken
+                train_generator.on_epoch_end()
+
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
                 val_loss = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns)

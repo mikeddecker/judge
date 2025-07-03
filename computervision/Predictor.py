@@ -462,7 +462,7 @@ class Predictor:
 
 modelparams = {
     "MViT" : {
-        "balancedType" : "limit_10procent", # jump_return_push_frog_other
+        "balancedType" : "limit_5procent", # jump_return_push_frog_other
         "dim" : 224,
         "timesteps" : 16,
         "batch_size" : 1,

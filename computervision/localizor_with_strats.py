@@ -360,7 +360,6 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
     df_videos_with_boxes = repo.get_videos_having_boxes_of_type(type=1).sample(frac=1.0)
     total_frames = df_videos_with_boxes['frameLength'].sum()
     videoIds = df_videos_with_boxes['id'].tolist()
-    videoIds = videoIds[:5] # TODO : remove after testing
     print("Total frames", total_frames)
 
     model = YOLO(os.path.join(modeldir, "weights", "best.pt"))

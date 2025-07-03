@@ -36,19 +36,19 @@ class Trainer:
 
 trainparams = {}
 mvitparams =  {    
-    "balancedType" : "limit_10procent",
+    "balancedType" : "limit_5procent",
     "dim" : 224,
     "timesteps" : 16,
     "batch_size" : 1,
 }
 resnetparams = {
-    "balancedType" : "limit_10procent",
+    "balancedType" : "limit_5procent",
     "dim" : 224, # 112 originally
     "timesteps" : 16,
     "batch_size" : 1,
 }
 swinparams =  {    
-    "balancedType" : "limit_10procent",
+    "balancedType" : "limit_5procent",
     "dim" : 224,
     "timesteps" : 16,
     "batch_size" : 1,

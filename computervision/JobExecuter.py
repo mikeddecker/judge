@@ -42,23 +42,23 @@ while no_shutdown_job:
     elif job["type"] == "TRAIN":
         print(job)
 
-        # LOCALIZE: TODO : wrap in trainer
-        size = 'n'
-        variant = f'yolo11{size}.pt'
-        save_dir = train_yolo_model(variant=variant, repo=REPO)
-        modelname = f"yolov11{size}_{save_dir.name}"
-        validate_localize(modeldir=save_dir, repo=REPO, modelname=modelname)
+        # # LOCALIZE: TODO : wrap in trainer
+        # size = 'n'
+        # variant = f'yolo11{size}.pt'
+        # save_dir = train_yolo_model(variant=variant, repo=REPO)
+        # modelname = f"yolov11{size}_{save_dir.name}"
+        # validate_localize(modeldir=save_dir, repo=REPO, modelname=modelname)
 
-        print("Cropping labeled videos to train segment and recognize")
-        # Create videocrops TODO: move to datagenerators or remove freshly labeled videos
-        for videoId in REPO.get_videoIds_of_videos_with_skills():
-            # TODO : include modelname in crop video, but also a sort of confidence score.
-            predictor.predict(
-                type="LOCALIZE",
-                videoId=videoId,
-                modelname=None,
-                saveAsVideo=True
-            )
+        # print("Cropping labeled videos to train segment and recognize")
+        # # Create videocrops TODO: move to datagenerators or remove freshly labeled videos
+        # for videoId in REPO.get_videoIds_of_videos_with_skills():
+        #     # TODO : include modelname in crop video, but also a sort of confidence score.
+        #     predictor.predict(
+        #         type="LOCALIZE",
+        #         videoId=videoId,
+        #         modelname=None,
+        #         saveAsVideo=True
+        #     )
 
         print("Start training segments")
 
@@ -71,30 +71,29 @@ while no_shutdown_job:
             'MViT_extra_dense',
         ]
 
+        modelname = 'MViT' # TODO : pick from job executor
+        trainer.train(
+            type="SEGMENT",
+            modelname=modelname,
+            from_scratch=True,
+            epochs=max_rounds[0],
+            save_anyway=True,
+            unfreeze_all_layers=False,
+            modelparams=trainparams[modelname],
+            learning_rate=4e-5
+        )
+        trainer.train(
+            type="SEGMENT",
+            modelname=modelname,
+            from_scratch=False,
+            epochs=max_rounds[1],
+            save_anyway=True,
+            unfreeze_all_layers=True,
+            modelparams=trainparams[modelname],
+            learning_rate=1e-6
+        )
+
         for modelname in models:
-            # modelname = 'MViT' # TODO : pick from job executor
-            # trainer.train(
-            #     type="SEGMENT",
-            #     modelname=modelname,
-            #     from_scratch=True,
-            #     epochs=max_rounds[0],
-            #     save_anyway=True,
-            #     unfreeze_all_layers=False,
-            #     modelparams=trainparams[modelname],
-            #     learning_rate=4e-5
-            # )
-
-            trainer.train(
-                type="SEGMENT",
-                modelname=modelname,
-                from_scratch=False,
-                epochs=max_rounds[1],
-                save_anyway=True,
-                unfreeze_all_layers=True,
-                modelparams=trainparams[modelname],
-                learning_rate=1e-6
-            )
-
             trainer.train(
                 type="SKILL",
                 modelname=modelname,

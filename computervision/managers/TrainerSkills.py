@@ -129,7 +129,7 @@ class TrainerSkills:
         rundate = date.today().strftime('%Y%m%d')
         try:
             start = time.time()
-            testrun = True
+            testrun = False
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
@@ -230,11 +230,14 @@ class TrainerSkills:
                     
                     total_loss += total_batch_loss.item()
                     i+=1
-
+                
                 print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
 
                 val_loss, f1_scores_epoch, class_reports, conf_matrix = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
                 
+                # Call the epoch end self, because it is not called by DataLoader, although it shuffles.
+                train_generator.on_epoch_end()
+
                 losses.append(val_loss)
                 total_accuracies.append(f1_scores_epoch['Total'])
                 scheduler.step(val_loss)
@@ -303,7 +306,7 @@ class TrainerSkills:
             torch.cuda.empty_cache()
             gc.collect()
 
-    def get_weighted_loss_fns(train_generator, val_generator, skillconfig):
+    def get_weighted_loss_fns(self, train_generator, val_generator, skillconfig):
         loss_fns = {}
         for key, value in skillconfig.items():
             value_counts_train = train_generator.BalancedSet[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
