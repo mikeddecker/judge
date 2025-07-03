@@ -122,7 +122,7 @@ class TrainerSkills:
         f1_scores_epoch["Total"] = sum(f1_scores_epoch.values()) / len(f1_scores_epoch)
 
         print(f"Total skill (macro avg) accuracy", classification_reports['Skill']['macro avg'])
-
+        print(f"Total f1 score", sum(f1_scores_epoch.values()) / len(f1_scores_epoch))
         return val_loss / len(dataloader), f1_scores_epoch, classification_reports, cm
 
     def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
@@ -171,8 +171,6 @@ class TrainerSkills:
                 f1_scores = {} if 'f1_scores' not in modelstats.keys() else modelstats['f1_scores']
                 classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
 
-                # TODO : Re-evaluate previous run (because accuracy can have changed by new skills)
-
             if unfreeze_all_layers:
                 for param in model.parameters():
                     param.requires_grad = True
@@ -207,6 +205,8 @@ class TrainerSkills:
             # Re-evaluate to know whether the current run is better than the previous runs
             # Adapting the losses, as limiting to 10% can change occurences of faults, bodyrotations... a little
             # TODO : load previous model instead of current :)
+            # TODO : Re-evaluate previous run (because accuracy can have changed by new skills)
+            print("Update re-evaluate and use it to update best models")
             loss_fns = self.get_weighted_loss_fns(train_generator=train_generator, val_generator=val_generator, skillconfig=config)
             _, f1_macro_avg_scores_epoch_reval, _, _ = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
 

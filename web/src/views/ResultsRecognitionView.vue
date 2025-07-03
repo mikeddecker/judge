@@ -9,9 +9,9 @@ const props = defineProps({
 })
 
 const selected = props.results['selected-model']
-const f1MacroAvg = round2decimals(props.results['best']['f1-macro-avg'] * 100)
-const f1MacroAvgSkills = round2decimals(props.results['best']['f1-macro-avg-skills'] * 100)
-const chartDataVal = computed(() => transformF1ToChart(props.results['best']['f1-scores-val']))
+const f1MacroAvg = round2decimals(props.results['best']['f1_macro_avg_accuracy'] * 100)
+const f1MacroAvgSkills = round2decimals(props.results['best']['classification_reports'][props.results['best']['epoch']]['Skill']['macro avg']['f1-score'] * 100)
+const chartDataVal = computed(() => transformF1ToChart(props.results['best']['f1_scores']))
 
 const chartOptions = {
   responsive: true,
@@ -53,6 +53,10 @@ function round2decimals(i) {
   return Math.round(i * 100) / 100
 }
 
+function formatPercentage(value) {
+  return (value * 100).toFixed(1) + '%';
+}
+
 function getColor(skillprop) {
   switch (skillprop) {
     case 'Total':
@@ -68,7 +72,6 @@ function getColor(skillprop) {
 
 const transformF1ToChart = (fscores) => {
   let labels = Object.keys(fscores);
-  let key = 'Skill'
   
   let datapoints = {}
   Object.values(fscores).forEach(
@@ -125,11 +128,36 @@ const transformF1ToChart = (fscores) => {
 
   <DataTable :value="Object.values(results['modelcomparison'])" class="w-2/3">
     <Column sortable field="model" header="model"></Column>
-    <Column sortable field="f1-macro-avg" header="f1-macro-avg"></Column>
-    <Column sortable field="f1-macro-avg-skills" header="f1-macro-avg-skills"></Column>
-    <Column sortable field="f1-weighted-avg" header="f1-weighted-avg"></Column>
-    <Column sortable field="f1-weighted-avg-skills" header="f1-weighted-avg-skills"></Column>    
-    <Column sortable field="total-accuracy" header="total-accuracy"></Column>
+    
+    <Column sortable field="f1-macro-avg" header="f1-macro-avg">
+      <template #body="slotProps">
+        {{ formatPercentage(slotProps.data['f1-macro-avg']) }}
+      </template>
+    </Column>
+
+    <Column sortable field="f1-macro-avg-skills" header="f1-macro-avg-skills">
+      <template #body="slotProps">
+        {{ formatPercentage(slotProps.data['f1-macro-avg-skills']) }}
+      </template>
+    </Column>
+
+    <Column sortable field="f1-weighted-avg" header="f1-weighted-avg">
+      <template #body="slotProps">
+        {{ formatPercentage(slotProps.data['f1-weighted-avg']) }}
+      </template>
+    </Column>
+
+    <Column sortable field="f1-weighted-avg-skills" header="f1-weighted-avg-skills">
+      <template #body="slotProps">
+        {{ formatPercentage(slotProps.data['f1-weighted-avg-skills']) }}
+      </template>
+    </Column>
+
+    <Column sortable field="total-accuracy" header="total-accuracy">
+      <template #body="slotProps">
+        {{ formatPercentage(slotProps.data['total-accuracy']) }}
+      </template>
+    </Column>
     <Column sortable field="date" header="date"></Column>
   </DataTable>
   <!-- <pre>{{ results }}</pre> -->

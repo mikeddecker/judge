@@ -30,3 +30,4 @@ runs/*
 *.avi
 segmentplot*
 *.stats.json
+*.stats.current.json

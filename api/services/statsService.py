@@ -146,7 +146,6 @@ class StatsService:
             }
         
         for tr in results['trainrounds']:
-            print(tr.find('testrun'), tr)
             if tr.find('testrun') != -1:
                 continue
 
@@ -157,48 +156,33 @@ class StatsService:
                 
                 filename = os.path.basename(tr)
                 modelname = filename[:filename.find('_skills')]
-                traindate = filename[filename.find('.stats')-8:filename.find('.stats')]
 
                 lastEpochStr = str(tr_result['best_epoch'])
-                bestepoch = tr_result['f1_scores'][lastEpochStr]
-                # bestepoch = lastepoch - patience
 
                 totalAccuraciesLastEpoch = [class_report['accuracy'] for class_report in tr_result["classification_reports"][lastEpochStr].values()]
                 totalAccuracy = sum(totalAccuraciesLastEpoch) / len(totalAccuraciesLastEpoch)
                 totalWeightedF1LastEpoch = [class_report['weighted avg']['f1-score'] for class_report in tr_result["classification_reports"][lastEpochStr].values()]
                 totalWeightedF1 = sum(totalWeightedF1LastEpoch) / len(totalWeightedF1LastEpoch)
 
-                results[modelname][traindate] = {
-                    'f1-scores-val' : tr_result['f1_scores'],
-                    'f1-scores-val-total': [tr_result['f1_scores'][str(i)]['Total'] for i in range(len(tr_result['f1_scores']))],
-                    'f1-scores-val-skill': [tr_result['f1_scores'][str(i)]['Skill'] for i in range(len(tr_result['f1_scores']))],
-                    'f1-macro-avg' : tr_result['f1_macro_avg_accuracy'],
-                    'f1-macro-avg-skills' : bestepoch['Skill'],
-                    'f1-weighted-avg' : totalWeightedF1,
-                    'f1-weighted-avg-skills' : tr_result["classification_reports"][lastEpochStr]['Skill']['weighted avg']['f1-score'],
-                    'total-accuracy' : totalAccuracy,
-                }
-
-                if tr_result['f1_macro_avg_accuracy'] > results[modelname]['best']['f1-macro-avg']:
-                    results[modelname]['best'] = results[modelname][traindate]
-                    results[modelname]['date'] = traindate
+                f1_macro_avg = 0
+                # TODO : temp solution after delete
+                if 'total_accuracy_at_best' in tr_result.keys():
+                    f1_macro_avg = tr_result['total_accuracy_at_best']
+                else:
+                    f1_macro_avg = tr_result['f1_macro_avg_accuracy']
+                
+                results[modelname] = tr_result
+                if modelname != 'best':
                     results['modelcomparison'][modelname] = {
-                        'model': modelname,
-                        'f1-macro-avg': round(100 * tr_result['f1_macro_avg_accuracy'], 2),
-                        'f1-macro-avg-skills' : round(100 * bestepoch['Skill'], 2),
-                        'f1-weighted-avg': round(100 * totalWeightedF1, 2),
-                        'f1-weighted-avg-skills' : round(100 * tr_result["classification_reports"][lastEpochStr]['Skill']['weighted avg']['f1-score'], 2),
-                        'total-accuracy' : round(100 * totalAccuracy, 2),
-                        'date' : traindate
+                        "model" : modelname,
+                        "f1-macro-avg" : f1_macro_avg,
+                        "f1-macro-avg-skills" : tr_result['classification_reports'][lastEpochStr]['Skill']['macro avg']['f1-score'],
+                        "f1-weighted-avg" : totalWeightedF1,
+                        "f1-weighted-avg-skills" : tr_result['classification_reports'][lastEpochStr]['Skill']['weighted avg']['f1-score'],
+                        "total-accuracy" : totalAccuracy,
+                        "date" : 'pre-juli' if 'rundate' not in tr_result.keys() else tr_result['rundate'],
+                        "hours_training" : 0 if 'time' not in tr_result.keys() else round(tr_result["time"] / 36) / 100
                     }
-
-                if tr_result['f1_macro_avg_accuracy'] > results['best']['f1-macro-avg']:
-                    modelcomparison = results['modelcomparison']
-                    results['best'] = results[modelname][traindate]
-                    results['modelcomparison'] = modelcomparison
-                    results['best']['date'] = traindate
-                    results['best']['modelname'] = modelname
-
 
         results['distributions'] = {
             'skills' : {
