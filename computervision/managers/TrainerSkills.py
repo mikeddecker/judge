@@ -268,7 +268,6 @@ class TrainerSkills:
                     stats = {
                         'epoch': epoch,
                         'best_epoch' : epoch,
-                        'total_accuracy_at_best' : f1_scores[f'{epoch}']['Total'],
                         'f1_macro_avg_accuracy' : f1_scores[f'{epoch}']['Total'],
                         'total_accuracies' : total_accuracies,
                         'losses': losses,

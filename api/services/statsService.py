@@ -172,19 +172,19 @@ class StatsService:
                     'f1-scores-val' : tr_result['f1_scores'],
                     'f1-scores-val-total': [tr_result['f1_scores'][str(i)]['Total'] for i in range(len(tr_result['f1_scores']))],
                     'f1-scores-val-skill': [tr_result['f1_scores'][str(i)]['Skill'] for i in range(len(tr_result['f1_scores']))],
-                    'f1-macro-avg' : tr_result['total_accuracy_at_best'],
+                    'f1-macro-avg' : tr_result['f1_macro_avg_accuracy'],
                     'f1-macro-avg-skills' : bestepoch['Skill'],
                     'f1-weighted-avg' : totalWeightedF1,
                     'f1-weighted-avg-skills' : tr_result["classification_reports"][lastEpochStr]['Skill']['weighted avg']['f1-score'],
                     'total-accuracy' : totalAccuracy,
                 }
 
-                if tr_result['total_accuracy_at_best'] > results[modelname]['best']['f1-macro-avg']:
+                if tr_result['f1_macro_avg_accuracy'] > results[modelname]['best']['f1-macro-avg']:
                     results[modelname]['best'] = results[modelname][traindate]
                     results[modelname]['date'] = traindate
                     results['modelcomparison'][modelname] = {
                         'model': modelname,
-                        'f1-macro-avg': round(100 * tr_result['total_accuracy_at_best'], 2),
+                        'f1-macro-avg': round(100 * tr_result['f1_macro_avg_accuracy'], 2),
                         'f1-macro-avg-skills' : round(100 * bestepoch['Skill'], 2),
                         'f1-weighted-avg': round(100 * totalWeightedF1, 2),
                         'f1-weighted-avg-skills' : round(100 * tr_result["classification_reports"][lastEpochStr]['Skill']['weighted avg']['f1-score'], 2),
@@ -192,7 +192,7 @@ class StatsService:
                         'date' : traindate
                     }
 
-                if tr_result['total_accuracy_at_best'] > results['best']['f1-macro-avg']:
+                if tr_result['f1_macro_avg_accuracy'] > results['best']['f1-macro-avg']:
                     modelcomparison = results['modelcomparison']
                     results['best'] = results[modelname][traindate]
                     results['modelcomparison'] = modelcomparison
