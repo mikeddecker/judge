@@ -228,16 +228,16 @@ class DataRepository:
         return categoryNames
     
     def get_next_job(self):
-        qry = sqlal.text(f"""SELECT * FROM Jobs""")
-
-        df_jobs = pd.read_sql(qry, con=self.con)
-        return None if len(df_jobs) == 0 else df_jobs.iloc[0]
+        with self.__get_connection() as connection:
+            qry = sqlal.text(f"""SELECT * FROM Jobs""")
+            df_jobs = pd.read_sql(qry, con=connection)
+            return None if len(df_jobs) == 0 else df_jobs.iloc[0]
     
     def delete_job(self, jobId:int):
-        qry = sqlal.text(f"""DELETE FROM Jobs WHERE id = :id""")
-
-        self.con.execute(qry, {'id': jobId})
-        self.con.commit()
+        with self.__get_connection() as connection:
+            qry = sqlal.text(f"""DELETE FROM Jobs WHERE id = :id""")
+            self.con.execute(qry, {'id': jobId})
+            self.con.commit()
     
     def upsert_skillsegmented_predictions(self, videoId:int, df_predictions):
         """Columns: Like Skillinfo_DoubleDutch"""
