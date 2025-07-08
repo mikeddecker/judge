@@ -1,73 +1,58 @@
-<script>
+<script setup>
 import FolderContainer from '@/components/FolderContainer.vue';
 import VideoInfoContainer from '@/components/VideoInfoContainer.vue';
-import { getFolder } from '@/services/videoService';
-export default {
-  components: {
-    FolderContainer,
-    VideoInfoContainer,
-  },
-  data() {
-    return {
-      count: 0,
-      children: [],
-      folderId: 0,
-      folderName: "Storage drive",
-      parentId: 0,
-      videos: [],
-      totalLabels1: 0,
-      totalLabels2: 0,
-      totalFrames: 0,
-      testLabels1: 0,
-      testLabels2: 0,
-      testPercentage: 0,
-      currentLabelType: 2,
-      completed: 0,
-    };
-  },
-  methods: {
-    changeFolder(newFolderId) {
-      getFolder(newFolderId)
-      .then(response => {
-        this.children = response.Children;
-        this.folderName = response.Name;
-        this.videos = Object.values(response.Videos).sort((a, b) => b.Id - a.Id);
-        // this.videos = Object.values(response.Videos).sort((a, b) => a.FramesLabeledPerSecond - b.FramesLabeledPerSecond);        
-        this.count = response.VideoCount;
-        this.parentId = response.Parent ? response.Parent.Id : 0;
-        this.totalLabels1 = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
-        this.totalLabels2 = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount2, 0)
-        this.totalFrames = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.FrameLength, 0)
-        this.testLabels1 = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount : 0), 0)
-        this.testLabels2 = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount2 : 0), 0)
-        this.testPercentage = Math.round(this.testLabels / this.totalLabels * 100)
+import { discoverDrive, getFolder } from '@/services/videoService';
+import { onMounted, ref } from 'vue';
 
-        this.completed = Object.values(response.Videos).filter((v) => v.Completed_Skill_Labels).length
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-    }
-  },
-  mounted() {
-    this.changeFolder(this.folderId)
-  },
-};
+const count = ref(0)
+const children = ref([])
+const folderId = ref(0)
+const folderName = ref("Storage drive")
+const parentId = ref(0)
+const videos = ref([])
+const totalLabels1 = ref(0)
+const totalLabels2 = ref(0)
+const totalFrames = ref(0)
+const testLabels1 = ref(0)
+const testLabels2 = ref(0)
+const testPercentage = ref(0)
+const currentLabelType = ref(2)
+const completed = ref(0)
+
+const changeFolder = (newFolderId) => {
+  getFolder(newFolderId)
+  .then(response => {
+    children.value = response.Children;
+    folderName.value = response.Name;
+    videos.value = Object.values(response.Videos).sort((a, b) => b.Id - a.Id);
+    count.value = response.VideoCount;
+    parentId.value = response.Parent ? response.Parent.Id : 0;
+    totalLabels1.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
+    totalLabels2.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount2, 0)
+    totalFrames.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.FrameLength, 0)
+    testLabels1.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount : 0), 0)
+    testLabels2.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount2 : 0), 0)
+
+    completed.value = Object.values(response.Videos).filter((v) => v.Completed_Skill_Labels).length
+  })
+  .catch(error => {
+    console.error('Error fetching data:', error);
+  });
+}
+
+onMounted(async () => {
+  changeFolder(folderId.value)
+})
 </script>
 
 <template>
-  <div class="browse">
-    <h1>Navigate videos : {{ folderName }}</h1>
-    <p>Videos: {{ count }}</p>
-    <p>Completly labeled skills: {{ completed }}</p>
-    <p>Total frames : {{ totalFrames }}</p>
-    <p>Full team labels: {{ totalLabels1 }}</p>
-    <p>Individual team labels: {{ totalLabels2 }}</p>
-    <FolderContainer @changeFolder="changeFolder" v-bind:folders="children" v-bind:parent-id="parentId"/>
-    <VideoInfoContainer v-bind:videos="videos"/>
-    <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a>
-    <a href="https://www.flaticon.com/free-icons/tick" title="tick icons">Tick icons created by Roundicons - Flaticon</a>
-  </div>
+  <h1>Navigate {{ folderName }}</h1>
+  <p>Videos: {{ count }}</p>
+  <FolderContainer @changeFolder="changeFolder" v-bind:folders="children" v-bind:parent-id="parentId"/>
+  <VideoInfoContainer v-bind:videos="videos"/>
+  <Button @click="discoverDrive">Discover drive</Button>
+  <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a><br>
+  <a href="https://www.flaticon.com/free-icons/tick" title="tick icons">Tick icons created by Roundicons - Flaticon</a>
 </template>
 
 <style>

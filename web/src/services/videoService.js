@@ -214,3 +214,13 @@ export const predictSkills = async (videoId) => {
     throw error;
   }
 };
+
+export const discoverDrive = async () => {
+  try {
+    console.log('disvovers')
+    return await api.get(`/discover/deleteOrphans`)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};
