@@ -35,9 +35,16 @@ class JobPredictVideo(Resource):
         super().__init__(**kwargs)
     
     def get(self, videoId:int):
+        # TODO : modify
         self.jobService.launch_job_predict_skills(
             step='FULL',
             model='MViT',
             videoId=videoId
         )
+        return "Ok", 200
+
+    def post(self):
+        data = request.get_json()
+
+        # TODO : prepare
         return "Ok", 200
