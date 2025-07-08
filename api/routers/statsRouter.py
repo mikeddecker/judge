@@ -24,7 +24,7 @@ class StatsRouter(Resource):
 
         match stat:
             case 'general':
-                return {}, 200
+                return self.statsService.getGeneralStats(), 200
             case 'localize':
                 return self.statsService.getLocalizeResults(selectedModel='TODO'), 200
             case 'segmentation':

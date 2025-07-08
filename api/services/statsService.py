@@ -238,3 +238,8 @@ class StatsService:
 
 
         return results
+
+    def getGeneralStats(self) -> dict:
+        return {
+            'videos' : self.videoService.count()
+        }
