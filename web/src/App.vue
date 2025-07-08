@@ -25,7 +25,7 @@ const displayLogo = computed(() => route.name ? ['browse', 'about', 'stats', 'ho
     <nav>
       <RouterLink to="/">Home</RouterLink>
       <RouterLink to="/browse">Browse</RouterLink>
-      <RouterLink to="/download">Download</RouterLink>
+      <!-- <RouterLink to="/download">Download</RouterLink> -->
       <RouterLink to="/test">Test</RouterLink>
       <RouterLink to="/stats">Stats</RouterLink>
       <RouterLink to="/about">About</RouterLink>
