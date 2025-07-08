@@ -29,6 +29,8 @@ const displayLogo = computed(() => route.name ? ['browse', 'about', 'stats', 'ho
       <RouterLink to="/test">Test</RouterLink>
       <RouterLink to="/stats">Stats</RouterLink>
       <RouterLink to="/about">About</RouterLink>
+      <RouterLink to="/config">Config</RouterLink>
+
       <!-- <RouterLink to="/quick-localize">QuickLocalize</RouterLink> -->
     </nav>
   </header>
