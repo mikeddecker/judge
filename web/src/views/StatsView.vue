@@ -5,22 +5,26 @@
     
     
     <div v-if="loading">Loading...</div>
-    <Tabs v-else value="recognition">
+    <Tabs v-else value="general">
       <TabList>
+        <Tab value="general">General</Tab>
         <Tab value="recognition">Recognition</Tab>
         <Tab value="segmentation">Segmentation</Tab>
         <Tab value="localization">Localization</Tab>
         <Tab value="diff-score-comparison">Judges</Tab>
       </TabList>
       <TabPanels>
-        <TabPanel value="recognition">
-          <ResultsRecognitionView v-if="recognitionStats" :results="recognitionStats"></ResultsRecognitionView>
+        <TabPanel value="general">
+          <StatsGeneral v-if="generalStats" :stats="generalStats"></StatsGeneral>
+        </TabPanel>        
+        <TabPanel value="localization">
+          <ResultsLocalizationView v-if="localizeStats" :results="localizeStats"></ResultsLocalizationView>
         </TabPanel>
         <TabPanel value="segmentation">
           <ResultsSegmentationView v-if="segmentationStats" :results="segmentationStats"></ResultsSegmentationView>
         </TabPanel>
-        <TabPanel value="localization">
-          <ResultsLocalizationView v-if="localizeStats" :results="localizeStats"></ResultsLocalizationView>
+        <TabPanel value="recognition">
+          <ResultsRecognitionView v-if="recognitionStats" :results="recognitionStats"></ResultsRecognitionView>
         </TabPanel>
         <TabPanel value="diff-score-comparison">
           <ResultsJudgeScores v-if="judgeStats" :results="judgeStats"></ResultsJudgeScores>
@@ -40,6 +44,7 @@ import ResultsSegmentationView from './ResultsSegmentationView.vue';
 import ResultsRecognitionView from './ResultsRecognitionView.vue';
 import ResultsLocalizationView from '@/views/ResultsLocalizationView.vue';
 import ResultsJudgeScores from '@/views/ResultsJudgeScores.vue';
+import StatsGeneral from './StatsGeneral.vue';
 
 const data = ref(null)
 const loading = ref(true)
@@ -50,6 +55,7 @@ const antwoord = ref('')
 const recognitionResults = computed(() => data.value ? data.value['recognition'] : {})
 const bkVideoIds = ref([])
 
+const generalStats = ref(null)
 const localizeStats = ref(null)
 const segmentationStats = ref(null)
 const recognitionStats = ref(null)
@@ -68,20 +74,11 @@ onMounted(async () => {
 })
 
 async function getStatistics() {
-  let maxId = 2590
-  let minId = 2568
-  bkVideoIds.value = [...Array(maxId - minId).keys()].map(i => i + minId)
-
-  getStats('localize', bkVideoIds.value).then(r => localizeStats.value = r)
-  getStats('segmentation', bkVideoIds.value).then(r => segmentationStats.value = r)
-  getStats('recognition', bkVideoIds.value).then(r => {
-    console.log(r);
-    recognitionStats.value = r
-  })
-  getStats('judge', bkVideoIds.value).then(r => {
-    console.log('judge results', r);
-    judgeStats.value = r
-  })
+  getStats('general').then(r => generalStats.value = r)
+  getStats('localize').then(r => localizeStats.value = r)
+  getStats('segmentation').then(r => segmentationStats.value = r)
+  getStats('recognition').then(r => recognitionStats.value = r)
+  getStats('judge').then(r => judgeStats.value = r)
 }
 
 </script>
