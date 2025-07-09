@@ -7,6 +7,7 @@ from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
+from helpers.ValueHelper import ValueHelper
 from repository.db import db
 from routers.folderRouter import FolderRouter
 from routers.videoRouter import VideoRouter, VideoRouterCropped, VideoImageRouter, VideoInfoRouter, VideoPredictionRouter
@@ -60,6 +61,13 @@ api.add_resource(JobTrainRouter, '/job/retrain')
 api.add_resource(JobPredictVideo, '/job/predict/<int:videoId>')
 
 api.add_resource(StatsRouter, '/stats')
+
+# Check if .env folders are filled in
+ValueHelper.check_raise_string(ENVS.DIRS.VIDEOS)
+ValueHelper.check_raise_string(ENVS.DIRS.GENERATED)
+ValueHelper.check_raise_string(ENVS.DIRS.GENERATED_VIDEODATA)
+ValueHelper.check_raise_string(ENVS.DIRS.WEIGHTS)
+ValueHelper.check_raise_string(ENVS.DIRS.YOLO_LABELS)
 
 os.makedirs(ENVS.DIRS.GENERATED, exist_ok=True)
 os.makedirs(ENVS.DIRS.GENERATED_VIDEODATA, exist_ok=True)

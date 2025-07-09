@@ -24,15 +24,10 @@ class VideoService:
         "StorageFolder",
         "jobService",
     ]
-    def __init__(self, storage_folder: str):
-        ValueHelper.check_raise_string(storage_folder)
+    def __init__(self):
         self.VideoRepo = VideoRepository(db=db)
         self.FolderRepo = FolderRepository(db=db)
         self.jobService = JobService()
-
-        if not os.path.exists(storage_folder):
-            raise NotADirectoryError(f"StorageFolder {storage_folder} does not exist")
-        self.StorageFolder = storage_folder
         
     def __setattr__(self, name, value):
         if hasattr(self, name):
@@ -442,7 +437,7 @@ class VideoService:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"Folder must be provided, got {folder}")
-        return os.path.exists(os.path.join(self.StorageFolder, folder.get_relative_path(), name))
+        return os.path.exists(os.path.join(ENVS.DIRS.VIDEOS, folder.get_relative_path(), name))
 
     def get(self, id: int) -> VideoInfo:
         """Get video with the corresponding Id"""

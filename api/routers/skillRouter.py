@@ -1,14 +1,14 @@
 from flask import request
 from flask_restful import Resource
-from services.folderService import FolderService
-from helpers.ValueHelper import ValueHelper
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config
-
+from helpers.ValueHelper import ValueHelper
+from services.folderService import FolderService
+from services.videoService import VideoService
 
 class OptionRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
 
     def get(self, skilltype: str, tableinfo: str):
@@ -19,7 +19,7 @@ class OptionRouter(Resource):
 class SkillLabelingCompletedRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
 
     def post(self, videoId: int):
@@ -36,7 +36,7 @@ class SkillLabelingCompletedRouter(Resource):
 class SkillRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
@@ -117,7 +117,7 @@ class SkillRouter(Resource):
 class SkillLevel(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
 
     def post(self):
@@ -134,7 +134,7 @@ class SkillLevel(Resource):
 class DiffScoreComparison(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
 
     def get(self):

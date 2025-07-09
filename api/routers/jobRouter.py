@@ -1,12 +1,13 @@
 from flask import request
 from flask_restful import Resource
 from services.folderService import FolderService
+from services.videoService import VideoService
 from services.jobService import JobService
 
 class JobTrainRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         self.jobService = JobService()
         super().__init__(**kwargs)
     
@@ -17,7 +18,7 @@ class JobTrainRouter(Resource):
 class JobPredictVideo(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         self.jobService = JobService()
         super().__init__(**kwargs)
     

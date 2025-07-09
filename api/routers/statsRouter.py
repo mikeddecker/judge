@@ -1,11 +1,11 @@
 from flask import request
 from flask_restful import Resource
-from services.folderService import FolderService
+from services.videoService import VideoService
 from services.statsService import StatsService
 
 class StatsRouter(Resource):
     def __init__(self, **kwargs):
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         self.statsService = StatsService(self.videoService)
         super().__init__(**kwargs)
     

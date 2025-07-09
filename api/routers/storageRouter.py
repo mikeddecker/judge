@@ -1,12 +1,13 @@
 from flask import Response
 from flask_restful import Resource
 from services.folderService import FolderService
+from services.videoService import VideoService
 from services.storageService import StorageService
 
 class StorageRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         self.storageService = StorageService()
         super().__init__(**kwargs)
     
@@ -19,7 +20,7 @@ class StorageRouter(Resource):
 class OrphanDeleterRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         self.storageService = StorageService()
         super().__init__(**kwargs)
     

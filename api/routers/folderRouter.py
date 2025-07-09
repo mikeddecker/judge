@@ -1,11 +1,12 @@
 from flask_restful import Resource
 from services.folderService import FolderService
+from services.videoService import VideoService
 from helpers.ValueHelper import ValueHelper
 
 class FolderRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
     
     def get(self, folderId: int=None):

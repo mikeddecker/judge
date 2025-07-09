@@ -6,11 +6,12 @@ from flask import Response, request
 from flask_restful import Resource
 from helpers.ValueHelper import ValueHelper
 from services.folderService import FolderService
+from services.videoService import VideoService
 
 class VideoRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
@@ -27,7 +28,7 @@ class VideoRouter(Resource):
 class VideoRouterCropped(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
@@ -47,7 +48,7 @@ class VideoRouterCropped(Resource):
 class VideoInfoRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
@@ -62,7 +63,7 @@ class VideoInfoRouter(Resource):
 class VideoPredictionRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
@@ -76,7 +77,7 @@ class VideoPredictionRouter(Resource):
 class VideoImageRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
-        self.videoService = FolderService()
+        self.videoService = VideoService()
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
