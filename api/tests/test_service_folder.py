@@ -14,11 +14,11 @@ from tests.TestHelper import TestHelper
 from typing import List
 
 load_dotenv()
-STORAGE_DIR_TEST = os.getenv("STORAGE_DIR_TEST") 
-if os.path.exists(STORAGE_DIR_TEST):
-    os.system(f"rm -rf {STORAGE_DIR_TEST}/*")
+TESTDIR = os.getenv("TESTDIR") 
+if os.path.exists(TESTDIR):
+    os.system(f"rm -rf {TESTDIR}/*")
 else:
-    os.mkdir(STORAGE_DIR_TEST)
+    os.mkdir(TESTDIR)
 
 # TODO : test get_root_folders
 # TODO : test get_by_name(name=content, parent=parent)
@@ -37,8 +37,8 @@ class FolderServiceTest(TestCase):
         with app.app_context():
             db.create_all()
         
-        self.folderService = FolderService(STORAGE_DIR_TEST)
-        self.videoService = VideoService(STORAGE_DIR_TEST)
+        self.folderService = FolderService(TESTDIR)
+        self.videoService = VideoService(TESTDIR)
 
         return app
     
@@ -61,16 +61,16 @@ class FolderServiceTest(TestCase):
         Joins the relative path, depending on the operating system, then creates the folder.
         """
         # NICE_TO_HAVE : check existence here
-        os.mkdir(os.path.join(STORAGE_DIR_TEST, *relative_path))
+        os.mkdir(os.path.join(TESTDIR, *relative_path))
 
     ##################################
     # Test constructor
     ##################################
     def test_ctor_valid(self):
-        assert os.path.exists(STORAGE_DIR_TEST), f"Folder {STORAGE_DIR_TEST} doesn't exist"
-        service = FolderService(STORAGE_DIR_TEST)
+        assert os.path.exists(TESTDIR), f"Folder {TESTDIR} doesn't exist"
+        service = FolderService(TESTDIR)
         assert isinstance(service, FolderService)
-        assert STORAGE_DIR_TEST == service.StorageFolder, f"Storage folder in service is not the same"
+        assert TESTDIR == service.StorageFolder, f"Storage folder in service is not the same"
         assert os.path.exists(self.folderService.StorageFolder), f"Folder {self.folderService.StorageFolder} doesn't exist"
 
     def test_ctor_invalid_no_folder(self):
@@ -94,7 +94,7 @@ class FolderServiceTest(TestCase):
         testname = "test_create_valid_without_parent"
         created_folder = self.folderService.create(testname, None)
 
-        assert os.path.exists(os.path.join(STORAGE_DIR_TEST, testname)), f"folder {testname} was not created"
+        assert os.path.exists(os.path.join(TESTDIR, testname)), f"folder {testname} was not created"
         assert created_folder.Id is not None, "Folder id is None"
         assert created_folder.Id != 0, "Folder Id is 0"
 
@@ -108,8 +108,8 @@ class FolderServiceTest(TestCase):
         parent = self.folderService.create(testname, None)
         created_folder = self.folderService.create(child, parent=parent)
 
-        assert os.path.exists(os.path.join(STORAGE_DIR_TEST, testname, child)), f"folder {child} in {testname} was not created"
-        assert os.path.exists(os.path.join(STORAGE_DIR_TEST, created_folder.get_relative_path())), f"folder {created_folder.get_relative_path()} does not exist in {STORAGE_DIR_TEST}"
+        assert os.path.exists(os.path.join(TESTDIR, testname, child)), f"folder {child} in {testname} was not created"
+        assert os.path.exists(os.path.join(TESTDIR, created_folder.get_relative_path())), f"folder {created_folder.get_relative_path()} does not exist in {TESTDIR}"
         assert created_folder.Id is not None, "Folder id is None"
         assert created_folder.Id != 0, "Folder Id is 0"
         assert created_folder.Id != parent.Id, f"Parent id and child id are equal {created_folder.Id}"
@@ -133,7 +133,7 @@ class FolderServiceTest(TestCase):
         folder = self.folderService.create(nested2, folder)
         folder = self.folderService.create(nested3, folder)
         folder = self.folderService.create(child, folder)
-        assert os.path.exists(os.path.join(STORAGE_DIR_TEST, testname, nested1, nested2, nested3, child)), f"folder {child} in {testname} was not created"
+        assert os.path.exists(os.path.join(TESTDIR, testname, nested1, nested2, nested3, child)), f"folder {child} in {testname} was not created"
 
     def test_create_valid_has_equal_name_in_other_folder(self):
         testname = "test_create_invalid_has_equal_name_in_other_folder"
@@ -269,7 +269,7 @@ class FolderServiceTest(TestCase):
     def test_exists_path_on_drive_valid_does_exist(self):
         testname = "test_exists_valid_does_exist"
         self.make_folder_in_storage_dir([testname])
-        assert self.folderService.exists_path_on_drive(name=testname, parent=None), f"Folder {testname} does not exist in {STORAGE_DIR_TEST}"
+        assert self.folderService.exists_path_on_drive(name=testname, parent=None), f"Folder {testname} does not exist in {TESTDIR}"
 
     def test_exists_path_on_drive_valid_does_exist_with_parent(self):
         testname = "test_exists_path_on_drive_valid_does_exist_with_parent"
@@ -298,7 +298,7 @@ class FolderServiceTest(TestCase):
 
     def test_exists_path_on_drive_invalid_does_not_exists(self):
         testname = "test_exists_path_on_drive_invalid_does_not_exists"
-        assert not self.folderService.exists_path_on_drive(name=testname, parent=None), f"Folder {testname} does not exist in {STORAGE_DIR_TEST}"
+        assert not self.folderService.exists_path_on_drive(name=testname, parent=None), f"Folder {testname} does not exist in {TESTDIR}"
 
     def test_exists_path_on_drive_invalid_does_not_exists_with_parent(self):
         parent = Folder(2, "something_random_qsdj")
@@ -476,13 +476,13 @@ class FolderServiceTest(TestCase):
 
         assert self.folderService.exists_in_database(id=f.Id), f"Folder {f.Id} doesn't exist in the database"
         assert self.folderService.exists_in_database(name=testname), f"Folder {testname} does not exist in the database"
-        assert self.folderService.exists_path_on_drive(name=testname), f"Folder {testname} does not exist in {STORAGE_DIR_TEST}"
+        assert self.folderService.exists_path_on_drive(name=testname), f"Folder {testname} does not exist in {TESTDIR}"
 
         self.folderService.delete(id=f.Id)
 
         assert not self.folderService.exists_in_database(id=f.Id), f"Folder {f.Id} still exists in the database"
         assert not self.folderService.exists_in_database(name=testname), f"Folder {testname} still exists in the database"
-        assert not self.folderService.exists_path_on_drive(name=testname), f"Folder {testname} still exists in {STORAGE_DIR_TEST}"
+        assert not self.folderService.exists_path_on_drive(name=testname), f"Folder {testname} still exists in {TESTDIR}"
 
 
     @parameterized.expand(TestHelper.generate_invalid_ids())
@@ -506,7 +506,7 @@ class FolderServiceTest(TestCase):
         testname = "test_delete_invalid_has_videos"
         p = self.folderService.create(name=testname)
         videoname = 'empty_video.mp4'
-        with open(os.path.join(STORAGE_DIR_TEST, testname, videoname), 'w') as fp:
+        with open(os.path.join(TESTDIR, testname, videoname), 'w') as fp:
             pass
         self.videoService.add(name=videoname, folder=p, frameLength=500, width=1920, height=1080, fps=25.2)
 
@@ -516,9 +516,9 @@ class FolderServiceTest(TestCase):
     def test_delete_invalid_has_other_content(self):
         testname = "test_delete_invalid_has_other_content"
         p = self.folderService.create(name=testname)
-        with open(os.path.join(STORAGE_DIR_TEST, testname, 'undiscovered_video.mp4'), 'w') as fp:
+        with open(os.path.join(TESTDIR, testname, 'undiscovered_video.mp4'), 'w') as fp:
             pass
-        with open(os.path.join(STORAGE_DIR_TEST, testname, 'textfile'), 'w') as fp:
+        with open(os.path.join(TESTDIR, testname, 'textfile'), 'w') as fp:
             pass
 
         with self.assertRaises(PermissionError):

@@ -1,15 +1,16 @@
 import math
+
 from domain.videoinfo import VideoInfo
 from domain.folder import Folder
 from domain.skill import Skill
 from domain.videoinfo import VideoInfo
 from domain.frameinfo import FrameInfo
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc
 from helpers.ValueHelper import ValueHelper
-from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type
 from repository.MapToDomain import MapToDomain
 from repository.MapToDB import MapToDB
+from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type
+from sqlalchemy import desc
 from typing import List
 
 class VideoRepository:
@@ -19,9 +20,9 @@ class VideoRepository:
     # TODO : make width, height ... requirements
     def add(
             self, name: str, folder: Folder, frameLength: int,
-            width: float, height: float, fps: float,
+            width: float, height: float, fps: float, duration: float,
             training=True, qualitative=True, obstruction=False, private=True,
-            srcinfo:str=None
+            srcinfo:str=None,
         ) -> VideoInfo:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         ValueHelper.check_raise_id(frameLength)
@@ -36,6 +37,7 @@ class VideoRepository:
             frameLength = frameLength,
             width = width,
             height = height,
+            duration = duration,
             fps = fps,
             training = training,
             qualitative = qualitative,

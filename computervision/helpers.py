@@ -1,19 +1,20 @@
 import cv2
 import json
 import keras
-import random
+import math
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import os
+import random
 import sys
 import torch
-import pandas as pd
+
+from managers.FrameLoader import FrameLoader
 
 sys.path.append('..')
-
 from api.helpers import ConfigHelper
-from managers.FrameLoader import FrameLoader
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -318,3 +319,47 @@ def load_json_file(path) -> dict:
 def dump_json_file(jsondict, path):
     with open(path, 'w') as f:
         json.dump(jsondict, f, sort_keys=True, indent=4)    
+
+
+def calculate_angle(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y_min, old_x_max, old_y_max):
+    new_center_x = (new_x_min + new_x_max) / 2
+    new_center_y = (new_y_min + new_y_max) / 2
+    old_center_x = (old_x_min + old_x_max) / 2
+    old_center_y = (old_y_min + old_y_max) / 2
+
+    delta_x = new_center_x - old_center_x
+    delta_y = new_center_y - old_center_y
+
+    angle_rad = math.atan2(delta_y, delta_x)
+    angle_deg = math.degrees(angle_rad)
+
+    return angle_rad, angle_deg
+
+def calculate_cosine_similarity(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y_min, old_x_max, old_y_max):
+    # Calculate centers
+    new_center_x = (new_x_min + new_x_max) / 2
+    new_center_y = (new_y_min + new_y_max) / 2
+    old_center_x = (old_x_min + old_x_max) / 2
+    old_center_y = (old_y_min + old_y_max) / 2
+
+    # Calculate movement vector
+    delta_x = new_center_x - old_center_x
+    delta_y = new_center_y - old_center_y
+
+    # Reference vector (moving horizontally right)
+    ref_x = 1
+    ref_y = 0
+
+    # Dot product
+    dot_product = delta_x * ref_x + delta_y * ref_y
+
+    # Magnitudes
+    magnitude_movement = math.sqrt(delta_x**2 + delta_y**2)
+    magnitude_ref = 1  # (1,0) has length 1
+
+    if magnitude_movement == 0:
+        return 1.0  # No movement = fully similar
+
+    cosine_similarity = dot_product / (magnitude_movement * magnitude_ref)
+
+    return cosine_similarity

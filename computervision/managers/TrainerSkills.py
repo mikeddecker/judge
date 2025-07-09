@@ -8,7 +8,7 @@ import torch.optim as optim
 import numpy as np
 import time
 
-from constants import PYTORCH_MODELS_SKILLS
+from constants import ENVS, PYTORCH_MODELS_SKILLS
 from dotenv import load_dotenv
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
@@ -39,12 +39,6 @@ print(f"Using device: {device}")
 
 torch.backends.cudnn.benchmark = True
 scaler = torch.GradScaler()
-
-STORAGE_DIR = os.getenv("STORAGE_DIR")
-LABELS_FOLDER = "labels"
-SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS")
-CROPPED_VIDEOS_FOLDER = os.getenv("CROPPED_VIDEOS_FOLDER")
-MODELWEIGHT_PATH = "weights"
 
 class TrainerSkills:
     def __compute_losses(self, outputs, batch_y, loss_fns):
@@ -133,12 +127,12 @@ class TrainerSkills:
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
-            path = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.state_dict.pt")
-            pathBest = os.path.join(MODELWEIGHT_PATH, f"best_skills.state_dict.pt")
-            checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.checkpoint.pt")
-            modelstatsPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.json")
-            modelstatsPathCurrent = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.current.json")
-            bestModelJsonStatsPath = os.path.join(MODELWEIGHT_PATH, f"best_skills{'_testrun' if testrun else ''}.stats.json")
+            path = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills.state_dict.pt")
+            pathBest = os.path.join(ENVS.DIRS.WEIGHTS, f"best_skills.state_dict.pt")
+            checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills{'_testrun' if testrun else ''}.checkpoint.pt")
+            modelstatsPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.json")
+            modelstatsPathCurrent = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.current.json")
+            bestModelJsonStatsPath = os.path.join(ENVS.DIRS.WEIGHTS, f"best_skills{'_testrun' if testrun else ''}.stats.json")
 
             bestModelStats = { 'f1_macro_avg_accuracy': 0 }
             if os.path.exists(bestModelJsonStatsPath):

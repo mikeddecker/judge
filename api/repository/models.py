@@ -43,6 +43,7 @@ class Video(db.Model):
     folderId = db.Column(db.Integer, db.ForeignKey('Folders.id'), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     frameLength = db.Column(db.Integer, nullable=False)
+    duration = db.Column(db.Float, nullable=False)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
     fps = db.Column(db.Float, nullable=False)

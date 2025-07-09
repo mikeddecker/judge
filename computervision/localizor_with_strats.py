@@ -1,29 +1,16 @@
-import os
 import cv2
 import json
 import math
-import shutil
-import pandas as pd
 import numpy as np
+import os
+import pandas as pd
 import time
-from moviepy import ImageSequenceClip
 
-# from colorama import Fore, Style
+from constants import ENVS, DIM
 from helpers import get_localize_strategy_list
-from typing import List
-from dotenv import load_dotenv
 from managers.DataRepository import DataRepository
-from pprint import pprint
+from moviepy import ImageSequenceClip
 from ultralytics import YOLO
-
-load_dotenv()
-STORAGE_DIR = os.getenv("STORAGE_DIR")
-SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS")
-SUPPORTED_IMAGE_FORMATS = os.getenv("SUPPORTED_IMAGE_FORMATS")
-FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
-
-COLUMNS = [ 'xmin', 'xmax', 'ymin', 'ymax' ]
-DIM = 224
 
 strategyparams = {
     'raw' : {
@@ -191,9 +178,9 @@ def localize_jumpers(
     start = time.time()
 
     videoPath = repo.get_video_path(videoId=videoId)
-    rawPredictedBoxesPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_raw_boxes.json")
+    rawPredictedBoxesPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json")
     strat_model_name = f"{videoId}_crop_d{dim}_{modelname}" # TODO : include strat
-    videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.mp4")
+    videoOutputPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{strat_model_name}.mp4")
 
     # if os.path.exists(videoOutputPath):
     #     return None
@@ -333,13 +320,13 @@ def localize_jumpers(
 
     if save_as_mp4:
         strat_model_name = f"{videoId}_crop_d{dim}_{modelname}"
-        videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.mp4")
+        videoOutputPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{strat_model_name}.mp4")
 
         clip = ImageSequenceClip(frames, fps=fps)
         clip.write_videofile(videoOutputPath)
 
     if save_as_mp4 and save_as_JSON:
-        with open(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{strat_model_name}.json"), 'w') as f:
+        with open(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{strat_model_name}.json"), 'w') as f:
             json.dump(smoothed_values, f, sort_keys=True, indent=4)    
 
     for s in strategies:

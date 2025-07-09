@@ -1,5 +1,6 @@
 import os
 
+from config import ENVS
 from flask import Flask, request, jsonify, current_app, g
 from flask_cors import CORS
 from flask_restful import Api, Resource
@@ -58,9 +59,12 @@ api.add_resource(DownloadRouter, '/download')
 api.add_resource(JobTrainRouter, '/job/retrain')
 api.add_resource(JobPredictVideo, '/job/predict/<int:videoId>')
 
-
-
 api.add_resource(StatsRouter, '/stats')
+
+os.makedirs(ENVS.DIRS.GENERATED, exist_ok=True)
+os.makedirs(ENVS.DIRS.GENERATED_VIDEODATA, exist_ok=True)
+os.makedirs(ENVS.DIRS.WEIGHTS, exist_ok=True)
+os.makedirs(ENVS.DIRS.YOLO_LABELS, exist_ok=True)
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

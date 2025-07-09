@@ -16,11 +16,11 @@ from tests.TestHelper import TestHelper
 from typing import List
 
 load_dotenv()
-STORAGE_DIR_TEST = os.getenv("STORAGE_DIR_TEST") 
-if os.path.exists(STORAGE_DIR_TEST):
-    os.system(f"rm -rf {STORAGE_DIR_TEST}/*")
+TESTDIR = os.getenv("TESTDIR") 
+if os.path.exists(TESTDIR):
+    os.system(f"rm -rf {TESTDIR}/*")
 else:
-    os.mkdir(STORAGE_DIR_TEST)
+    os.mkdir(TESTDIR)
 
 # TODO : update tests width, height, fps... are required
 # TODO : unique name in folder
@@ -44,8 +44,8 @@ class VideoServiceTest(TestCase):
         with app.app_context():
             db.create_all()
         
-        self.folderService = FolderService(STORAGE_DIR_TEST)
-        self.videoService = VideoService(STORAGE_DIR_TEST)
+        self.folderService = FolderService(TESTDIR)
+        self.videoService = VideoService(TESTDIR)
 
 
         return app
@@ -83,23 +83,23 @@ class VideoServiceTest(TestCase):
         Joins the relative path, depending on the operating system, then creates the folder.
         """
         # NICE_TO_HAVE : check existence here
-        os.mkdir(os.path.join(STORAGE_DIR_TEST, *relative_path))
+        os.mkdir(os.path.join(TESTDIR, *relative_path))
 
     def make_video_in_folder(self, videoname: str, folder: Folder):
         """
         Create the video in the given folder.
         """
-        with open(os.path.join(STORAGE_DIR_TEST, folder.get_relative_path(), videoname), 'w') as fp:
+        with open(os.path.join(TESTDIR, folder.get_relative_path(), videoname), 'w') as fp:
             pass
 
     ##################################
     # Test constructor
     ##################################
     def test_ctor_valid(self):
-        assert os.path.exists(STORAGE_DIR_TEST), f"Folder {STORAGE_DIR_TEST} doesn't exist"
-        service = VideoService(STORAGE_DIR_TEST)
+        assert os.path.exists(TESTDIR), f"Folder {TESTDIR} doesn't exist"
+        service = VideoService(TESTDIR)
         assert isinstance(service, VideoService)
-        assert STORAGE_DIR_TEST == service.StorageFolder, f"Storage folder in service is not the same"
+        assert TESTDIR == service.StorageFolder, f"Storage folder in service is not the same"
         assert os.path.exists(self.videoService.StorageFolder), f"Folder {self.videoService.StorageFolder} doesn't exist"
 
     def test_ctor_invalid_no_folder(self):
@@ -192,7 +192,7 @@ class VideoServiceTest(TestCase):
 
     def test_exists_on_drive_invalid_does_not_exists(self):
         testname = "test_exists_on_drive_invalid_does_not_exists.mp4"
-        assert not self.videoService.exists_on_drive(name=testname, folder=self.some_folder), f"Video {testname} does not exist in {STORAGE_DIR_TEST}"
+        assert not self.videoService.exists_on_drive(name=testname, folder=self.some_folder), f"Video {testname} does not exist in {TESTDIR}"
 
     def test_exists_on_drive_invalid_does_not_exists_in_nested_folder(self):
         testname = "test_exists_on_drive_invalid_does_not_exists_in_nested_folder.mp4"

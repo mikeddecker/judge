@@ -1,6 +1,7 @@
 import os
-from typing import Optional
+
 from helpers.ValueHelper import ValueHelper
+from typing import Optional
 
 class Folder:
     PROPERTIES = ["Id", "Name", "Parent"]

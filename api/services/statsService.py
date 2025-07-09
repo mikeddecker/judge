@@ -1,18 +1,14 @@
 import os
-import torch
-import glob
 import json
 import yaml
 import pandas as pd
-from .videoService import VideoService
-from .jobService import JobService
-from domain.folder import Folder
+from .videoService import VideoService # TODO : move to repo
+from .jobService import JobService # TODO : move to repo
+from helpers.ConfigHelper import recognition_get_modelpaths, PYTORCH_MODELS_SKILLS, get_discipline_DoubleDutch_config
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
-from helpers.ValueHelper import ValueHelper
 from typing import List
-from helpers.ConfigHelper import recognition_get_modelpaths, PYTORCH_MODELS_SKILLS, get_discipline_DoubleDutch_config
 
 LEVEL_TO_SCORE_MAP = {
     0 : 0,
@@ -30,20 +26,14 @@ class StatsService:
     PROPERTIES = [
         "FolderRepo",
         "VideoRepo",
-        "StorageFolder",
         "videoService",
         "jobService",
     ]
-    def __init__(self, storage_folder: str, videoService:VideoService):
-        ValueHelper.check_raise_string(storage_folder)
+    def __init__(self, videoService:VideoService):
         self.FolderRepo = FolderRepository(db=db)
         self.VideoRepo = VideoRepository(db=db)
         self.videoService = videoService
-        self.jobService = JobService(storage_folder=storage_folder)
-
-        if not os.path.exists(storage_folder):
-            raise NotADirectoryError(f"StorageFolder {storage_folder} does not exist")
-        self.StorageFolder = storage_folder
+        self.jobService = JobService()
         
     def __setattr__(self, name, value):
         if hasattr(self, name):

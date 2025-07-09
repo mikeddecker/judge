@@ -1,18 +1,11 @@
-import os
-from domain.folder import Folder
-from domain.videoinfo import VideoInfo
-from domain.frameinfo import FrameInfo
-from domain.skill import Skill
 from domain.job import Job
-from helpers.ValueHelper import ValueHelper
-from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from repository.jobRepo import JobRepository
 from typing import List
 
-VISION_MODELS = ['MViT']
+VISION_MODELS = ['MViT'] # TODO : delete, rewrite this
 
 class JobService:
     """Provides the video information of videos"""
@@ -20,18 +13,11 @@ class JobService:
         "VideoRepo",
         "FolderRepo",
         "JobRepo",
-        "StorageFolder",
     ]
-    def __init__(self, storage_folder: str):
-        ValueHelper.check_raise_string(storage_folder)
+    def __init__(self):
         self.VideoRepo = VideoRepository(db=db)
         self.FolderRepo = FolderRepository(db=db)
         self.JobRepo = JobRepository(db=db)
-
-
-        if not os.path.exists(storage_folder):
-            raise NotADirectoryError(f"StorageFolder {storage_folder} does not exist")
-        self.StorageFolder = storage_folder
         
     def __setattr__(self, name, value):
         if hasattr(self, name):

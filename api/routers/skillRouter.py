@@ -1,25 +1,14 @@
-import os
-import json
-from dotenv import load_dotenv
-from flask import send_file, Response, request
-from flask_restful import Resource, current_app
-from domain.frameinfo import FrameInfo
-from domain.skill import Skill
-from domain.videoinfo import VideoInfo
+from flask import request
+from flask_restful import Resource
 from services.folderService import FolderService
-from services.jobService import JobService
-from services.videoService import VideoService
 from helpers.ValueHelper import ValueHelper
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 
-load_dotenv()
-STORAGE_DIR = os.getenv("STORAGE_DIR")
-FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 
 class OptionRouter(Resource):
     def __init__(self, **kwargs):
-        self.folderService = FolderService(STORAGE_DIR)
-        self.videoService = VideoService(STORAGE_DIR)
+        self.folderService = FolderService()
+        self.videoService = FolderService()
         super().__init__(**kwargs)
 
     def get(self, skilltype: str, tableinfo: str):
@@ -29,8 +18,8 @@ class OptionRouter(Resource):
 
 class SkillLabelingCompletedRouter(Resource):
     def __init__(self, **kwargs):
-        self.folderService = FolderService(STORAGE_DIR)
-        self.videoService = VideoService(STORAGE_DIR)
+        self.folderService = FolderService()
+        self.videoService = FolderService()
         super().__init__(**kwargs)
 
     def post(self, videoId: int):
@@ -46,8 +35,8 @@ class SkillLabelingCompletedRouter(Resource):
         
 class SkillRouter(Resource):
     def __init__(self, **kwargs):
-        self.folderService = FolderService(STORAGE_DIR)
-        self.videoService = VideoService(STORAGE_DIR)
+        self.folderService = FolderService()
+        self.videoService = FolderService()
         super().__init__(**kwargs)
     
     def get(self, videoId: int):
@@ -127,8 +116,8 @@ class SkillRouter(Resource):
 
 class SkillLevel(Resource):
     def __init__(self, **kwargs):
-        self.folderService = FolderService(STORAGE_DIR)
-        self.videoService = VideoService(STORAGE_DIR)
+        self.folderService = FolderService()
+        self.videoService = FolderService()
         super().__init__(**kwargs)
 
     def post(self):
@@ -144,8 +133,8 @@ class SkillLevel(Resource):
 
 class DiffScoreComparison(Resource):
     def __init__(self, **kwargs):
-        self.folderService = FolderService(STORAGE_DIR)
-        self.videoService = VideoService(STORAGE_DIR)
+        self.folderService = FolderService()
+        self.videoService = FolderService()
         super().__init__(**kwargs)
 
     def get(self):

@@ -25,6 +25,7 @@ class MapToDomain:
             name = videoDB.name,
             folder = MapToDomain.map_folder(videoDB.folder),
             frameLength = videoDB.frameLength,
+            duration = videoDB.duration,
             fps = videoDB.fps,
             completed_skill_labels = videoDB.completed_skill_labels,
             width=videoDB.width,

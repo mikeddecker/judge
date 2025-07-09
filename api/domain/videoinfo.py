@@ -1,4 +1,4 @@
-from typing import Dict, Set, List
+from typing import Set, List
 import os
 
 from .folder import Folder
@@ -10,6 +10,7 @@ class VideoInfo:
     PROPERTIES = [
         "Id", 
         "Name", 
+        "Duration",
         "Folder", 
         "Frames", 
         "FPS",
@@ -24,7 +25,7 @@ class VideoInfo:
     Frames: List[FrameInfo] # Key = frameId, value is Frame
     Skills: Set[Skill] = set()
 
-    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float, width:int, height:int, completed_skill_labels: bool = False, judgeDiffScore: int = None):
+    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float, duration: float, width:int, height:int, completed_skill_labels: bool = False, judgeDiffScore: int = None):
         self.Frames = []  # Initialize frames as an empty dictionary
         self.Skills = set()  # Initialize skills as an empty set
 
@@ -49,6 +50,8 @@ class VideoInfo:
                 self.__setFolder(value)
             if name == 'FPS':
                 self.__setFPS(value)
+            if name == "Duration":
+                self.__setDuration(value)
             if name == 'Completed_Skill_Labels':
                 self.__setCompletedSkillLabels(value)
             # if name in ["Name", "Folder"]:
@@ -101,6 +104,13 @@ class VideoInfo:
         if fps is None or fps <= 0:
             raise ValueError("FPS must be strict positive")
         object.__setattr__(self, 'FPS', fps)
+
+    def __setDuration(self, duration: int):
+        if hasattr(self, 'Duration') and self.Duration is not None:
+            raise AttributeError(f"Cannot modify Duration once it is set")
+        if duration is None or duration <= 0:
+            raise ValueError("Duration must be strict positive")
+        object.__setattr__(self, 'Duration', duration)
 
     def __setCompletedSkillLabels(self, completed: bool):
         if not isinstance(completed, bool):

@@ -1,6 +1,6 @@
-# Does in depth checks
 import os
-from .videoService import VideoService
+
+from config import ENVS
 from domain.folder import Folder
 from repository.db import db
 from repository.folderRepo import FolderRepository
@@ -14,14 +14,14 @@ class FolderService:
         "VideoRepo",
         "StorageFolder",
     ]
-    def __init__(self, storage_folder: str):
-        ValueHelper.check_raise_string(storage_folder)
+    def __init__(self):
         self.FolderRepo = FolderRepository(db=db)
         self.VideoRepo = VideoRepository(db=db)
 
-        if not os.path.exists(storage_folder):
-            raise NotADirectoryError(f"StorageFolder {storage_folder} does not exist")
-        self.StorageFolder = storage_folder
+        ValueHelper.check_raise_string(ENVS.DIRS.VIDEOS)
+        if not os.path.exists(ENVS.DIRS.VIDEOS):
+            raise NotADirectoryError(f"StorageFolder {ENVS.DIRS.VIDEOS} does not exist")
+        self.StorageFolder = ENVS.DIRS.VIDEOS
         
     def __setattr__(self, name, value):
         if hasattr(self, name):
@@ -131,7 +131,7 @@ class FolderService:
     
     def get_root_folders(self) -> List[Folder]:
         """
-        Gets the folders located in the root of the STORAGE_DIR
+        Gets the folders located in the root of the DIR_VIDEOS
         """
         return self.FolderRepo.get_root_folders()
 

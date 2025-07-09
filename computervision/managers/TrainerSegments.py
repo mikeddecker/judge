@@ -5,27 +5,17 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from constants import PYTORCH_MODELS_SKILLS
-from dotenv import load_dotenv
+from constants import ENVS, PYTORCH_MODELS_SKILLS
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSegmentationTorch import DataGeneratorSegmentation
 from managers.FrameLoader import FrameLoader
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-load_dotenv()
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
-
 torch.backends.cudnn.benchmark = True
 scaler = torch.GradScaler()
-
-STORAGE_DIR = os.getenv("STORAGE_DIR")
-LABELS_FOLDER = "labels"
-SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS")
-CROPPED_VIDEOS_FOLDER = os.getenv("CROPPED_VIDEOS_FOLDER")
-MODELWEIGHT_PATH = "weights"
 
 class TrainerSegments:
     def validate(self, model, dataloader, optimizer, loss_fns, device='cuda'):
@@ -51,8 +41,8 @@ class TrainerSegments:
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
             
-            path = os.path.join(MODELWEIGHT_PATH, f"{modelname}_segmentation.state_dict.pt")
-            checkpointPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_segmentation.checkpoint.pt")
+            path = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_segmentation.state_dict.pt")
+            checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_segmentation.checkpoint.pt")
 
             
             DIM = 224

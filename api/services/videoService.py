@@ -1,27 +1,21 @@
-import os
 import json
+import os
+
+from config import ENVS
 from domain.folder import Folder
-from domain.videoinfo import VideoInfo
 from domain.frameinfo import FrameInfo
 from domain.skill import Skill
-from helpers.ValueHelper import ValueHelper
+from domain.videoinfo import VideoInfo
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config, localize_get_best_modelpath
+from helpers.ValueHelper import ValueHelper
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from services.jobService import JobService
 from typing import List
-import yaml
 
+# TODO : move ConfigHelper to database
 
-STORAGE_DIR = os.getenv("STORAGE_DIR")
-FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
-SUPPORTED_VIDEO_FORMATS = [
-    'webm',
-    'mp4'
-    'jpg',
-    'png',
-] # Temporarily media formats
 class VideoService:
     """Provides the video information of videos"""
     PROPERTIES = [
@@ -34,7 +28,7 @@ class VideoService:
         ValueHelper.check_raise_string(storage_folder)
         self.VideoRepo = VideoRepository(db=db)
         self.FolderRepo = FolderRepository(db=db)
-        self.jobService = JobService(STORAGE_DIR)
+        self.jobService = JobService()
 
         if not os.path.exists(storage_folder):
             raise NotADirectoryError(f"StorageFolder {storage_folder} does not exist")
@@ -67,12 +61,15 @@ class VideoService:
         if frameLength <= 0 or width <= 0 or height <= 0 or fps <= 0:
             raise ValueError(f"FrameLength, width and height must be > 0, got", frameLength, width, height)
 
+        duration = frameLength / fps
+
         return self.VideoRepo.add(
             name=name,
             folder=folder,
             frameLength=frameLength,
             width=width,
             height=height,
+            duration=duration,
             fps=fps,
             srcinfo=ytid, # TODO : make better
         )
@@ -543,12 +540,13 @@ class VideoService:
         raise NotImplementedError("Nice to have, end of journey")
 
     def video_has_predictions(self, videoId: int, model: str, date: str = None):
+        # TODO : make as 
         return os.path.exists(
-            os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
+            os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_skills_{model}.json")
         )
 
     def load_predicted_skills(self, videoId:int, model:str):
-        filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{model}.json")
+        filepath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_skills_{model}.json")
         if os.path.exists(filepath):
             with open(filepath, 'r') as f:
                 return json.load(f)
@@ -557,7 +555,7 @@ class VideoService:
     def load_predicted_boxes(self, videoId:int):
         modelname, modelpath = localize_get_best_modelpath()
         # TODO : update to get 'smoothing'
-        filepath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_crop_d224_{modelname}.json")
+        filepath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_crop_d224_{modelname}.json")
         if os.path.exists(filepath):
             with open(filepath, 'r') as f:
                 return json.load(f)
@@ -567,7 +565,7 @@ class VideoService:
         ValueHelper.check_raise_id(videoId)
         best_model = 'MViT'
 
-        predictions_path = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_skills_{best_model}.json")
+        predictions_path = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_skills_{best_model}.json")
 
         predictions = {}
         predictions['skills'] = self.load_predicted_skills(videoId=videoId, model=best_model)

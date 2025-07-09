@@ -1,21 +1,12 @@
-import os
-import time
-import torch
-from dotenv import load_dotenv
-from flask import send_file, request
+from flask import request
 from flask_restful import Resource
 from services.folderService import FolderService
-from services.videoService import VideoService
 from services.statsService import StatsService
-from helpers.ValueHelper import ValueHelper
-
-load_dotenv()
-STORAGE_DIR = os.getenv("STORAGE_DIR")
 
 class StatsRouter(Resource):
     def __init__(self, **kwargs):
-        self.videoService = VideoService(STORAGE_DIR)
-        self.statsService = StatsService(STORAGE_DIR, self.videoService)
+        self.videoService = FolderService()
+        self.statsService = StatsService(self.videoService)
         super().__init__(**kwargs)
     
     def get(self):

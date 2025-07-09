@@ -1,17 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
-import os
 import numpy as np
+import os
 import pandas as pd
 import sqlalchemy as sqlal
-from sqlalchemy.exc import SQLAlchemyError
+
+from constants import ENVS
 from datetime import datetime
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
-STORAGE_DIR = os.getenv("STORAGE_DIR")
+from sqlalchemy.exc import SQLAlchemyError
 
 class DataRepository:
     VideoNames = {} # pandas dataframe
@@ -248,7 +244,7 @@ class DataRepository:
         self.con.commit()
 
     def get_video_path(self, videoId):
-        return os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"])
+        return os.path.join(ENVS.DIRS.VIDEOS, self.VideoNames.loc[videoId, "name"])
     
     def check_connection_reconnect_if_needed(self):
         if not self.check_connection():

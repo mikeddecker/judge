@@ -1,19 +1,11 @@
-import os
-import time
-from dotenv import load_dotenv
-from flask import send_file
 from flask_restful import Resource
 from services.folderService import FolderService
-from services.videoService import VideoService
 from helpers.ValueHelper import ValueHelper
-
-load_dotenv()
-STORAGE_DIR = os.getenv("STORAGE_DIR")
 
 class FolderRouter(Resource):
     def __init__(self, **kwargs):
-        self.folderService = FolderService(STORAGE_DIR)
-        self.videoService = VideoService(STORAGE_DIR)
+        self.folderService = FolderService()
+        self.videoService = FolderService()
         super().__init__(**kwargs)
     
     def get(self, folderId: int=None):

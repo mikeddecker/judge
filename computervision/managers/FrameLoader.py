@@ -3,14 +3,10 @@ import math
 import random
 import numpy as np
 import os
-import sys
 import random
-from dotenv import load_dotenv
 
-load_dotenv()
+from constants import ENVS
 
-STORAGE_DIR = os.getenv("STORAGE_DIR")
-CROPPED_VIDEOS_FOLDER = 'cropped-videos'
 FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
 
 class FrameLoader:
@@ -18,27 +14,8 @@ class FrameLoader:
         self.VideoNames = datarepo.VideoNames
         self.VideoNames.index = self.VideoNames["id"]
 
-    def __get_cropped_video_path(self, videoId, dim:int = 224, strat: str = None):
-        vpathUNK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, f'{dim}_{videoId}.mp4')
-        vpathOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK", f"{dim}_{videoId}.mp4")
-        vpathNOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "OK_NET_NIET_PERFECT", f"{dim}_{videoId}.mp4")
-        vpathAlmostOK = os.path.join(STORAGE_DIR, CROPPED_VIDEOS_FOLDER, "SLECHT", f"{dim}_{videoId}.mp4")
-        
-        # TODO : update, select cropped with lowest min_iou which is not raw?
-        if not strat:
-            vpathVideoresults = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_crop_d{dim}_yolo11n.mp4")
-            if os.path.exists(vpathVideoresults):
-                return vpathVideoresults
-
-        vpath = ""
-        if os.path.exists(vpathOK):
-            vpath = vpathOK
-        elif os.path.exists(vpathAlmostOK):
-            vpath = vpathAlmostOK
-        elif os.path.exists(vpathUNK):
-            vpath = vpathUNK
-        elif os.path.exists(vpathNOK):
-            vpath = vpathNOK
+    def __get_cropped_video_path(self, videoId):
+        vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_cropped.mp4")
 
         if not os.path.exists(vpath):
             raise ValueError("path does not exist", vpath)
@@ -49,7 +26,7 @@ class FrameLoader:
     def get_frame_original(self, videoId, frameNr, dim, original_x, original_y, original_width, original_height, printId=False):
         if printId:
             print(frameNr)
-        vpath = os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"])
+        vpath = os.path.join(ENVS.DIRS.VIDEOS, self.VideoNames.loc[videoId, "name"])
         cap = cv2.VideoCapture(vpath)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -79,7 +56,7 @@ class FrameLoader:
     def get_frame(self, videoId, frameNr, dim, original_x, original_y, original_width, original_height, printId=False):
         if printId:
             print(frameNr)
-        vpath = os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"])
+        vpath = os.path.join(ENVS.DIRS.VIDEOS, self.VideoNames.loc[videoId, "name"])
         cap = cv2.VideoCapture(vpath)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -184,7 +161,7 @@ class FrameLoader:
         # On loading:  frameInfo = { 'frameNr' : (loaded_frame, y) }
         if printId:
             print(frameInfo)
-        vpath = os.path.join(STORAGE_DIR, self.VideoNames.loc[videoId, "name"])
+        vpath = os.path.join(ENVS.DIRS.VIDEOS, self.VideoNames.loc[videoId, "name"])
         cap = cv2.VideoCapture(vpath)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -223,7 +200,7 @@ class FrameLoader:
     
     def get_skill(self, videoId: int, dim: tuple[int, int],
                   start: int, end: int, timesteps: int, normalized: bool = True, augment=False, flip_image=False):
-        vpath = os.path.join(STORAGE_DIR, 'cropped-videos', f'224_{videoId}.mp4')
+        vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}_cropped.mp4')
         cap = cv2.VideoCapture(vpath)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
         _, frame = cap.read()
@@ -272,7 +249,7 @@ class FrameLoader:
     def get_segment(self, videoId: int, dim: tuple[int, int],
                   start: int, end: int, normalized: bool = True, augment=False, channels_last=False):
         """Returns frames in interval [start, end["""
-        vpath = self.__get_cropped_video_path(videoId=videoId, dim=dim[0])
+        vpath = self.__get_cropped_video_path(videoId=videoId)
 
         cap = cv2.VideoCapture(vpath)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
@@ -299,8 +276,7 @@ class FrameLoader:
 
     def get_skill_torch(self, videoId: int, dim: tuple[int, int],
                   start: int, end: int, timesteps: int, normalized: bool = True, augment=False):
-        DIM = dim[0]
-        vpath = self.__get_cropped_video_path(videoId=videoId, dim=DIM)
+        vpath = self.__get_cropped_video_path(videoId=videoId)
         
         cap = cv2.VideoCapture(vpath)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)

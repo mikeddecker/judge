@@ -1,54 +1,30 @@
-from managers.TrainerSkills import TrainerSkills
-from constants import PYTORCH_MODELS_SKILLS
-
-from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values, load_json_file
-from managers.DataRepository import DataRepository
-from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
-from managers.FrameLoader import FrameLoader
-from moviepy import ImageSequenceClip, VideoFileClip, VideoClip
 import torch.nn.functional as F
-from sklearn.metrics import classification_report
-from pprint import pprint
 import cv2
-
-from Trainer import models, trainparams
-from localizor_with_strats import predict_and_save_locations
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import time
 import json
-import yaml
-
-from dotenv import load_dotenv
-load_dotenv()
-
 import sys
+import gc
+import os
+import torch
+
+from constants import ENVS, PYTORCH_MODELS_SKILLS
+from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values, load_json_file
+from localizor_with_strats import predict_and_save_locations
+from managers.DataRepository import DataRepository
+from managers.FrameLoader import FrameLoader
+from moviepy import VideoFileClip, VideoClip
+from tqdm import tqdm
+from Trainer import models, trainparams
+
 sys.path.append('..')
 from api.helpers import ConfigHelper
 
-import gc
-import os
-from tqdm import tqdm
-import torch
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
-from ultralytics import YOLO
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f"Using device: {device}")
-
 torch.backends.cudnn.benchmark = True
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 scaler = torch.GradScaler()
-
-STORAGE_DIR = os.getenv("STORAGE_DIR")
-LABELS_FOLDER = "labels"
-SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS")
-CROPPED_VIDEOS_FOLDER = os.getenv("CROPPED_VIDEOS_FOLDER")
-MODELWEIGHT_PATH = "weights"
-FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
-
 
 class Predictor:
     def __init__(self):
@@ -110,10 +86,10 @@ class Predictor:
             if modelname not in PYTORCH_MODELS_SKILLS.keys() and modelname != 'best':
                 raise ValueError(modelname)
             
-            
+            # TODO : move confighelper to settings from the database
             skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
-            modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.state_dict.pt")
-            modelPathJson = os.path.join(MODELWEIGHT_PATH, f"{modelname}_skills.stats.json")
+            modelPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills.state_dict.pt")
+            modelPathJson = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills.stats.json")
             modelstats = load_json_file(modelPathJson)
 
             if modelname == 'best':
@@ -189,14 +165,13 @@ class Predictor:
             # pprint(predictions, sort_dicts=False)
 
             # Save predictions as JSON
-            with open(os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f'{videoId}_skills_{modelname}.json'), 'w') as f:
+            with open(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f'{videoId}_skills_{modelname}.json'), 'w') as f:
                 json.dump(predictions, f, sort_keys=True, default=str, indent=4)
 
             if saveAsVideo:
                 videoPath = self.repo.VideoNames.loc[videoId, "name"]
-                videoPath = os.path.join(STORAGE_DIR, videoPath)
-                print(videoPath)
-                print(f"saving predictions as a video.....")
+                videoPath = os.path.join(ENVS.DIRS.VIDEOS, videoPath)
+                print(f"Saving predictions as a video {videoId}")
                 self.__save_skill_predictions_as_video(
                     videoId=videoId,
                     predictions=predictions,
@@ -222,7 +197,7 @@ class Predictor:
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         N = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         frames = []
-        videoOutputPath = os.path.join(STORAGE_DIR, FOLDER_VIDEORESULTS, f"{videoId}", f"{videoId}_annotated{"_original_size" if lowerDimension is None else ""}.mp4")
+        videoOutputPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_annotated{"_original_size" if lowerDimension is None else ""}.mp4")
         
         # tmp_mp4 = f"{videoId}_tmp.mp4"
         # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -338,7 +313,7 @@ class Predictor:
                 raise ValueError(modelname)
             
             # TODO : update to use best val checkpoint 
-            modelPath = os.path.join(MODELWEIGHT_PATH, f"{modelname}_segmentation.state_dict.pt")
+            modelPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_segmentation.state_dict.pt")
 
             DIM = 224
             model = PYTORCH_MODELS_SKILLS[modelname](skill_or_segment='segments', modelinfo=modelparams, df_table_counts=self.repo.get_skill_category_counts()).to(device)

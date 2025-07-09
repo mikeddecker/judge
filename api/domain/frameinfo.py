@@ -1,5 +1,6 @@
-from helpers.ValueHelper import ValueHelper
 import numpy as np
+
+from helpers.ValueHelper import ValueHelper
 
 class FrameInfo:
     PROPERTIES = ["FrameNr", "X", "Y", "Width", "Height", "JumperVisible", "LabelType"]

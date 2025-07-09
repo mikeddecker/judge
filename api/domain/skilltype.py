@@ -1,6 +1,5 @@
 from helpers.ValueHelper import ValueHelper
 
-
 class SkillType:
     PROPERTIES = [
         'Id', 'Name',

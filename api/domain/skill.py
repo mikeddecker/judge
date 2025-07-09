@@ -1,6 +1,3 @@
-from domain.enums import DDtype
-from domain.skilltype import SkillType
-from domain.turner import Turner
 from helpers.ValueHelper import ValueHelper
 
 class Skill:
@@ -23,7 +20,6 @@ class Skill:
         self.__setSkillinfo(skillinfo)
         self.__setFrameStart(start)
         self.__setFrameEnd(end)
-        # self.__setDottedNameFromAttributes()
             
 
     def __setattr__(self, name, value):
@@ -107,9 +103,6 @@ class Skill:
             raise ValueError("Starting frame must be an integer bigger than 0")
         self.FrameEnd = end
     
-    def __setDottedNameFromAttributes(self):
-        self.__setDottedName(".".join([self.Type, self.Rotations, self.JumperSkill, self.OneHanded, self.Turner1, self.Turner2]))
-
     def __str__(self):
         return str(self.to_dict())
     
