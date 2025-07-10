@@ -4,31 +4,20 @@ defineProps(['title', 'folderId'])
 </script>
 
 <template>
-  <div class="folderinfo" @click="$emit('changeFolder', folderId)">
-    <div class="container">
+  <div 
+    class="folderinfo w-[120px] m-2 p-1 border-1 border-solid border-zinc-200 rounded-xl" 
+    @click="$emit('changeFolder', folderId)">
+    <div class="container p-1">
       <img src="@/assets/folder.png" alt="folder image" />
     </div>
-    <div class="info">
-      <p>{{ title }}</p>
-    </div>
+    <p class="m-1">{{ title }}</p>
   </div>
 </template>
 
 <style scoped>
-.folderinfo {
-  margin: 0.7%;
-  padding: 0.2rem;
-  width: 120px;
-}
-
 .folderinfo:hover{
   border: 1px solid var(--color-border);
-  border-radius: 0.55rem;
   box-shadow: 0.5px 0.5px 3px var(--color-heading);
-}
-
-.info {
-  margin: 0 0.2rem;
 }
 
 h2 {

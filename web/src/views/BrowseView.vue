@@ -50,15 +50,15 @@ onMounted(async () => {
   <p>Videos: {{ count }}</p>
   <FolderContainer @changeFolder="changeFolder" v-bind:folders="children" v-bind:parent-id="parentId"/>
   <VideoInfoContainer v-bind:videos="videos"/>
-  <Button @click="discoverDrive">Discover drive</Button>
-  <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a><br>
-  <a href="https://www.flaticon.com/free-icons/tick" title="tick icons">Tick icons created by Roundicons - Flaticon</a>
+  <Button class="my-2" icon="pi pi-server" @click="discoverDrive" label="Discover drive" aria-label="Discover drive"></Button>
+  <div>
+    <a class="w-full" href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a><br>
+    <a class="w-full" href="https://www.flaticon.com/free-icons/tick" title="tick icons">Tick icons created by Roundicons - Flaticon</a>
+  </div>
 </template>
 
 <style>
 @media (min-width: 1024px) {
-  .flexcontainer {
-    display: flex
-  }
+
 }
 </style>
