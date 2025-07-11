@@ -37,6 +37,26 @@ class CompetitionInfo(db.Model):
     info = db.Column(db.String(255), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     
+class TagGroup(db.Model):
+    __tablename__ = 'TagGroups'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(127), nullable=False, unique=True)
+
+    tags = db.relationship('Tag', backref='group', lazy=True)
+
+class Tag(db.Model):
+    __tablename__ = 'Tags'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(127), nullable=False)
+
+    tagGroupId = db.Column(db.Integer, db.ForeignKey('TagGroups.id'), nullable=True)
+
+# Association table for Video <-> Tag (Many-to-Many)
+video_tag = db.Table('video_tag',
+    db.Column('videoId', db.Integer, db.ForeignKey('Videos.id'), primary_key=True),
+    db.Column('tagId', db.Integer, db.ForeignKey('Tags.id'), primary_key=True)
+)
+
 class Video(db.Model):
     __tablename__ = 'Videos'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -58,6 +78,7 @@ class Video(db.Model):
     judgeDiffScore = db.Column(db.Float, nullable=True)
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
+    tags = db.relationship('Tag', secondary=video_tag, backref='videos', lazy='joined')
 
     __table_args__ = (
         db.UniqueConstraint('name', 'folderId', name='_name_folder_unique_constraint'),
@@ -193,7 +214,7 @@ class Prediction_Frames(db.Model):
     
     predictionDate = db.Column(db.DateTime, default=date.today())
 
-class ML_Models(db.Model):
+class ML_Model(db.Model):
     __tablename__ = 'ML_Models'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     type = db.Column(db.String(30), nullable=False)
@@ -208,25 +229,3 @@ class Jobs(db.Model):
     request_time = db.Column(db.DateTime, default=datetime.now)
     status = db.Column(db.String(30), nullable=False)
     status_details = db.Column(db.String(127))
-
-
-# class Skillinfo_DoubleDutch(db.Model):
-#     __tablename__ = 'Predictions_SkillSegment'
-#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#     videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
-#     frameStart = db.Column(db.Integer, nullable=False)
-#     frameEnd = db.Column(db.Integer, nullable=False)
-#     type = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Type.id'), nullable=False)
-#     rotations = db.Column(TINYINT(unsigned=True), nullable=False)
-#     turner1 = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Turner.id'), nullable=False)
-#     turner2 = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Turner.id'), nullable=False)
-#     skill = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Skill.id'), nullable=False)
-#     hands = db.Column(TINYINT(unsigned=True), nullable=False)
-#     feet = db.Column(TINYINT(unsigned=True), nullable=False)
-#     turntable = db.Column(TINYINT(unsigned=True), nullable=False)
-#     bodyRotations = db.Column(TINYINT(unsigned=True), nullable=False)
-#     backwards = db.Column(db.Boolean, nullable=False)
-#     sloppy = db.Column(db.Boolean, nullable=False)
-#     hard2see = db.Column(db.Boolean, nullable=False, default=False)
-#     fault = db.Column(db.Boolean, nullable=False, default=False)
-#     predictionDate = db.Column(db.DateTime, default=date.today())

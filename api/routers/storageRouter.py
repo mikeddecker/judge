@@ -29,4 +29,3 @@ class OrphanDeleterRouter(Resource):
             return self.storageService.discover_drive_cached_version(deleteOrphans=True), 200
         except Exception as ve:
             return Response(str(ve), status=500)
-

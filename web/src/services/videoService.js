@@ -217,10 +217,67 @@ export const predictSkills = async (videoId) => {
 
 export const discoverDrive = async () => {
   try {
-    console.log('disvovers')
     return await api.get(`/discover/deleteOrphans`)
   } catch (error) {
     console.error('Error fetching data:', error);
     throw error;
   }
+};
+
+export const getTags = async () => {
+  try {
+    return await api.get(`/tags`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};
+
+export const getTagGroups = async () => {
+  try {
+    return await api.get(`/tagGroups`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};
+
+export const addTag = async (name, group) => {
+  return await api.post('/tags', { 'name': name, 'group': group }, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+};
+
+export const addTagGroup = async (name) => {
+  return await api.post('/tagGroups', { 'name': name }, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+};
+
+export const updateTag = async (id, name) => {
+  return await api.put('/tags', { 'id': id, 'name': name}, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+};
+
+export const updateTagGroup = async (id, group) => {
+  return await api.put('/tags', { 'id': id, 'group': group }, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
 };

@@ -52,8 +52,10 @@ onMounted(async () => {
   <VideoInfoContainer v-bind:videos="videos"/>
   <Button class="my-2" icon="pi pi-server" @click="discoverDrive" label="Discover drive" aria-label="Discover drive"></Button>
   <div>
-    <a class="w-full" href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a><br>
-    <a class="w-full" href="https://www.flaticon.com/free-icons/tick" title="tick icons">Tick icons created by Roundicons - Flaticon</a>
+    <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by DinosoftLabs - Flaticon</a><br>
+    <a href="https://www.flaticon.com/free-icons/tick" title="tick icons">Tick icons created by Roundicons - Flaticon</a>
+    <a href="https://www.flaticon.com/free-icons/objects" title="objects icons">Objects icons created by Smashicons - Flaticon</a>
+    <a href="https://www.flaticon.com/free-icons/3d-model" title="3d-model icons">3d-model icons created by Mihimihi - Flaticon</a>
   </div>
 </template>
 

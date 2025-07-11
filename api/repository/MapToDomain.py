@@ -1,11 +1,14 @@
 from domain.folder import Folder
 from domain.frameinfo import FrameInfo
 from domain.job import Job
-from domain.videoinfo import VideoInfo
+from domain.tag import Tag
+from domain.tagGroup import TagGroup
 from domain.skill import Skill
-from repository.models import Folder as FolderDB, Video as VideoDB, FrameLabel, Skillinfo_DoubleDutch, Jobs as JobDB
-from typing import List
+from domain.videoinfo import VideoInfo
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config
+from repository.models import Folder as FolderDB, Video as VideoDB, FrameLabel, Skillinfo_DoubleDutch, Jobs as JobDB
+from repository.models import Tag as TagDB, TagGroup as TagGroupDB 
+from typing import List
 
 class MapToDomain:
     def map_folder(folderDB: FolderDB) -> Folder:
@@ -72,4 +75,21 @@ class MapToDomain:
             request_time = jobDB.request_time,
             status = jobDB.status,
             status_details = jobDB.status_details,
+        )
+    
+    def map_tag(tagDB: TagDB) -> Tag:
+        return Tag(
+            id = tagDB.id,
+            name = tagDB.name,
+            tagGroup = None if not tagDB.tagGroupId else TagGroup(
+                id = tagDB.tagGroupId,
+                name = tagDB.group.name, # Add tags if necessairy
+            )
+        )
+    
+    def map_tag_group(tagGroupDB: TagGroupDB) -> TagGroup:
+        return TagGroup(
+            id = tagGroupDB.id,
+            name = tagGroupDB.name,
+            tags = [Tag(id = t.id, name = t.name) for t in tagGroupDB.tags]
         )

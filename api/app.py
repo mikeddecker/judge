@@ -17,6 +17,7 @@ from routers.storageRouter import StorageRouter, OrphanDeleterRouter
 from routers.skillRouter import SkillRouter, OptionRouter, SkillLevel, SkillLabelingCompletedRouter, DiffScoreComparison
 from routers.downloadRouter import DownloadRouter
 from routers.statsRouter import StatsRouter
+from routers.tagRouter import TagRouter, TagGroupRouter
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -47,6 +48,8 @@ api.add_resource(VideoRouterCropped, '/video/<int:videoId>/cropped')
 api.add_resource(VideoInfoRouter, '/video/<int:videoId>/info')
 api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
 api.add_resource(VideoPredictionRouter, '/video/<int:videoId>/predictions')
+api.add_resource(TagRouter, '/tags')
+api.add_resource(TagGroupRouter, '/tagGroups')
 
 api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
 api.add_resource(OptionRouter, '/skilloptions/<skilltype>/<tableinfo>')
