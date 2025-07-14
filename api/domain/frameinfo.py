@@ -95,7 +95,7 @@ class FrameInfo:
         object.__setattr__(self, 'JumperVisible', visible)
 
     def setLabelType(self, lt: int):
-        ValueHelper.check_raise_id(lt)
+        ValueHelper.check_raise_frameNr(lt)
         object.__setattr__(self, 'LabelType', lt)
 
     def __check_raise_values(self, x: int, y: int, width: int, height: int, jumperVisible: bool = True):

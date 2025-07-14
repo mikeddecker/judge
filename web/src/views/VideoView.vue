@@ -110,7 +110,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, predictSkills } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, predictSkills, getFrameLabelTypes } from '../services/videoService';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -140,8 +140,8 @@ const modeIsAnnotate = computed(() => predictMode.value == 'annotate')
 const modeIsPredict = computed(() => predictMode.value == 'predict')
 
 const canvasModes = ['draw', 'edit', 'delete', 'predict']
-const labeltypes = {'individual' : 2, 'team': 1}
-const selectedLabeltype = ref('individual')
+const labeltypes = ref([])
+const selectedLabeltype = ref(null)
 const canvasMode = ref('draw')
 const modelOptions = computed(() => ['yolov11n_ultralytics', 'yolov11n_run7'])
 const selectedModel = ref('boxes')
@@ -254,6 +254,10 @@ const dictValueStringToInt = (d) => {
 
 onMounted(async () => {
   await loadVideo(videoId.value)
+  await getFrameLabelTypes().then(types => {
+    labeltypes.value = reverseDict(types)
+    selectedLabeltype.value = types['1']
+  })
   videoElement.value = document.getElementById("vid")
 })
 
@@ -436,7 +440,7 @@ const setToRandomFrame = () => {
 }
 
 const onAddBox = async (box) => {
-  box['labeltype'] = labeltypes[selectedLabeltype.value]
+  box['labeltype'] = Number(labeltypes.value[selectedLabeltype.value])
   await postVideoFrame(videoinfo.value.Id, Math.round(currentFrame.value), box).then(vi => videoinfo.value = vi).catch(e => error.value = e)
 }
 

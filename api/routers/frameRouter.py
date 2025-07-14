@@ -33,6 +33,9 @@ class FrameRouter(Resource):
             return str(ve), 404
         frameinfo = FrameInfo(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible, labeltype=labeltype)
         video = self.videoService.get(videoId)
+        print("@"*80)
+        print(video)
+        
         video = self.videoService.set_frameInfo(frameInfo=frameinfo, video=video)
         return video.to_dict(), 200
     

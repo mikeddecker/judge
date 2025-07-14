@@ -277,9 +277,9 @@ class VideoRepository:
     def initiate(self):
         print('init db')
         if FrameLabelType.query.count() == 0:
-            self.db.session.add(FrameLabelType(id= 0, info='foreground-person'))
-            self.db.session.add(FrameLabelType(id= 1, info='background-person'))
+            self.db.session.add(FrameLabelType(id=1, info='foreground-person'))
+            self.db.session.add(FrameLabelType(id=2, info='background-person'))
             self.db.session.commit()
 
-    def get_frame_label_types(self) -> list:
-        return [t.info for t in FrameLabelType.query.all()]
+    def get_frame_label_types(self) -> dict:
+        return {t.id: t.info for t in FrameLabelType.query.all()}
