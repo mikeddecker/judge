@@ -567,3 +567,9 @@ class VideoService:
         predictions['boxes'] = self.load_predicted_boxes(videoId=videoId)
 
         return predictions
+    
+    def initiate(self):
+        self.VideoRepo.initiate()
+
+    def get_frame_label_types(self) -> list[str]:
+        return self.VideoRepo.get_frame_label_types()

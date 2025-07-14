@@ -15,6 +15,7 @@ import DataTable from 'primevue/datatable';
 import InputNumber from 'primevue/inputnumber';
 import InputText from 'primevue/inputtext';
 import { IftaLabel } from 'primevue';
+import Listbox from 'primevue/listbox';
 import Select from 'primevue/select';
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
@@ -48,7 +49,7 @@ app.component('DataTable', DataTable);
 app.component('InputNumber', InputNumber)
 app.component('InputText', InputText)
 app.component('IftaLabel', IftaLabel)
-
+app.component('Listbox', Listbox)
 app.component('Select', Select);
 app.component('Tabs', Tabs);
 app.component('TabList', TabList);

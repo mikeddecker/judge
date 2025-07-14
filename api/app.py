@@ -11,13 +11,14 @@ from helpers.ValueHelper import ValueHelper
 from repository.db import db
 from routers.folderRouter import FolderRouter
 from routers.videoRouter import VideoRouter, VideoRouterCropped, VideoImageRouter, VideoInfoRouter, VideoPredictionRouter
-from routers.frameRouter import FrameRouter
+from routers.frameRouter import FrameRouter, FrameLabelTypeRouter
 from routers.jobRouter import JobTrainRouter, JobPredictVideo
 from routers.storageRouter import StorageRouter, OrphanDeleterRouter
 from routers.skillRouter import SkillRouter, OptionRouter, SkillLevel, SkillLabelingCompletedRouter, DiffScoreComparison
 from routers.downloadRouter import DownloadRouter
 from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
+from services.videoService import VideoService
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -52,6 +53,7 @@ api.add_resource(TagRouter, '/tags')
 api.add_resource(TagGroupRouter, '/tagGroups')
 
 api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
+api.add_resource(FrameLabelTypeRouter, '/frameLabelTypes')
 api.add_resource(OptionRouter, '/skilloptions/<skilltype>/<tableinfo>')
 api.add_resource(SkillRouter, '/skill/<int:videoId>')
 api.add_resource(SkillLevel, '/skilllevel')
@@ -78,4 +80,8 @@ os.makedirs(ENVS.DIRS.WEIGHTS, exist_ok=True)
 os.makedirs(ENVS.DIRS.YOLO_LABELS, exist_ok=True)
 
 if __name__ == '__main__':
+    with app.app_context():
+        videoservice = VideoService()
+        videoservice.initiate()
+        del videoservice
     app.run(port=5555, debug=True)

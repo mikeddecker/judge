@@ -281,3 +281,12 @@ export const updateTagGroup = async (id, group) => {
     console.error(error);
   });
 };
+
+export const getFrameLabelTypes = async () => {
+  try {
+    return await api.get('/frameLabelTypes').then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}

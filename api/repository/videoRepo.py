@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from helpers.ValueHelper import ValueHelper
 from repository.MapToDomain import MapToDomain
 from repository.MapToDB import MapToDB
-from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type
+from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type, FrameLabelType
 from sqlalchemy import desc
 from typing import List
 
@@ -274,4 +274,12 @@ class VideoRepository:
         videoDB.completed_skill_labels = completed
         self.db.session.commit()
 
-    
+    def initiate(self):
+        print('init db')
+        if FrameLabelType.query.count() == 0:
+            self.db.session.add(FrameLabelType(id= 0, info='foreground-person'))
+            self.db.session.add(FrameLabelType(id= 1, info='background-person'))
+            self.db.session.commit()
+
+    def get_frame_label_types(self) -> list:
+        return [t.info for t in FrameLabelType.query.all()]

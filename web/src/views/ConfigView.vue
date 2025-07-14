@@ -43,15 +43,17 @@
       Total {{ tags ? tags.length : 0 }} tags in {{ tagGroups ? tagGroups.length : 0 }} groups. {{ tagGroups }}
     </template>
   </DataTable>
-  <h2>Localization</h2>
 
+  <h2>Localization</h2>
+  <Listbox :options="frameLabelTypes" disabled class="w-full md:w-56"></Listbox>
+  
   <h2>Recognition</h2>
 
 </template>
 
 <script setup>
 import { isNullOrWhiteSpace } from '@/helpers/utils';
-import { addTag, addTagGroup, getTagGroups, getTags, updateTag, updateTagGroup } from '@/services/videoService';
+import { addTag, addTagGroup, getFrameLabelTypes, getTagGroups, getTags, updateTag, updateTagGroup } from '@/services/videoService';
 import { InputText } from 'primevue';
 import { computed, onMounted, ref } from 'vue';
 
@@ -61,11 +63,13 @@ const new_tag = ref('')
 const new_tag_group = ref('')
 const new_tag_is_empty = computed(() => isNullOrWhiteSpace(new_tag.value))
 const new_tag_group_is_empty = computed(() => isNullOrWhiteSpace(new_tag_group.value))
+const frameLabelTypes = ref([])
 
 const expandedRowGroups = ref([])
 
 onMounted(async () => {
   refreshTags()
+  getFrameLabelTypes().then(types => frameLabelTypes.value = types)
 })
 
 const refreshTags = async () => {

@@ -50,3 +50,12 @@ class FrameRouter(Resource):
                               jumperVisible=frameinfo["JumperVisible"], labeltype=frameinfo["LabelType"])
         return self.videoService.remove_frameInfo(frameNr=frameNr, video=videoinfo, frameinfo=frameinfo).to_dict(), 200
 
+class FrameLabelTypeRouter(Resource):
+    def __init__(self, **kwargs):
+        self.folderService = FolderService()
+        self.videoService = VideoService()
+        super().__init__(**kwargs)
+
+    def get(self):
+        return self.videoService.get_frame_label_types(), 200
+    
