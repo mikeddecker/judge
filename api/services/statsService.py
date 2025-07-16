@@ -8,6 +8,7 @@ from helpers.ConfigHelper import recognition_get_modelpaths, PYTORCH_MODELS_SKIL
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
+from repository.statsRepo import StatsRepository
 from typing import List
 
 LEVEL_TO_SCORE_MAP = {
@@ -26,12 +27,14 @@ class StatsService:
     PROPERTIES = [
         "FolderRepo",
         "VideoRepo",
+        "StatsRepo",
         "videoService",
         "jobService",
     ]
     def __init__(self, videoService:VideoService):
         self.FolderRepo = FolderRepository(db=db)
         self.VideoRepo = VideoRepository(db=db)
+        self.StatsRepo = StatsRepository(db=db)
         self.videoService = videoService
         self.jobService = JobService()
         
@@ -196,10 +199,13 @@ class StatsService:
         
         return results
 
-    def getLocalizeResults(self, selectedModel: str):
+    def getLocalizeResults(self):
         results = {
+            'boxcounts': {
+                'total' : self.StatsRepo.localize_framelabels_total(),
+                'daily' : self.StatsRepo.localize_framelabels_daily(),
+            },
             'general' : {},
-            'best' : selectedModel,
         }
 
         basepath = os.path.join('..', 'runs', 'detect')

@@ -18,7 +18,7 @@
           <StatsGeneral v-if="generalStats" :stats="generalStats"></StatsGeneral>
         </TabPanel>        
         <TabPanel value="localization">
-          <ResultsLocalizationView v-if="localizeStats" :results="localizeStats"></ResultsLocalizationView>
+          <ResultsLocalizationView v-if="localizeStats && frameLabelTypes" :results="localizeStats" :frame-label-types="frameLabelTypes"></ResultsLocalizationView>
         </TabPanel>
         <TabPanel value="segmentation">
           <ResultsSegmentationView v-if="segmentationStats" :results="segmentationStats"></ResultsSegmentationView>
@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { getFolder, getStats } from '../services/videoService';
+import { getFolder, getFrameLabelTypes, getStats } from '../services/videoService';
 import { computed, onMounted, ref } from 'vue';
 import ResultsSegmentationView from './ResultsSegmentationView.vue';
 import ResultsRecognitionView from './ResultsRecognitionView.vue';
@@ -61,6 +61,8 @@ const segmentationStats = ref(null)
 const recognitionStats = ref(null)
 const judgeStats = ref(null)
 
+const frameLabelTypes = ref(null)
+
 onMounted(async () => {
   loading.value = true;
   try {
@@ -79,6 +81,7 @@ async function getStatistics() {
   getStats('segmentation').then(r => segmentationStats.value = r)
   getStats('recognition').then(r => recognitionStats.value = r)
   getStats('judge').then(r => judgeStats.value = r)
+  getFrameLabelTypes().then(types => frameLabelTypes.value = types)
 }
 
 </script>

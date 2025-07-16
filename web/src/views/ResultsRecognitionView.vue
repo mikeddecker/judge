@@ -1,4 +1,5 @@
 <script setup>
+import { formatPercentage, getColor, round2decimals } from '@/helpers/utils'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -45,30 +46,6 @@ const chartOptions = {
   }
 }
 
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}
-
-function round2decimals(i) {
-  return Math.round(i * 100) / 100
-}
-
-function formatPercentage(value) {
-  return (value * 100).toFixed(1) + '%';
-}
-
-function getColor(skillprop) {
-  switch (skillprop) {
-    case 'Total':
-      return `rgb(150, 50, 0)`
-    case 'Skill':
-      return `rgb(0, 20, 20)`
-    default:
-      let greencolor = 80 + getRandomInt(175)
-      return `rgb(${greencolor * Math.random()}, ${190 + getRandomInt(65)}, ${greencolor})`
-      return `rgb(${getRandomInt(255)}, ${getRandomInt(255)}, ${getRandomInt(255)})`
-  }
-}
 
 const transformF1ToChart = (fscores) => {
   let labels = Object.keys(fscores);
@@ -77,7 +54,7 @@ const transformF1ToChart = (fscores) => {
   Object.values(fscores).forEach(
     (f, e) => {
       Object.entries(f).forEach(
-        ( [skillprop, accuracy_value]) => {
+        ([skillprop, accuracy_value]) => {
           if (skillprop in datapoints) {
             datapoints[skillprop].push(accuracy_value)
           } else {
