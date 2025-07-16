@@ -114,7 +114,9 @@ class FrameLabel(db.Model):
     height = db.Column(db.Float, nullable=False)
     jumperVisible = db.Column(db.Boolean, nullable=False, default=True)
     labeltype = db.Column(db.Integer, db.ForeignKey('FrameLabelTypes.id'), nullable=False, default=1)
-    labeldate = db.Column(db.DateTime, default=datetime.now)
+    labeldatetime = db.Column(db.DateTime, default=datetime.now)
+    labeldate = db.Column(db.Date, default=lambda: datetime.now().date())
+    labeltime = db.Column(db.Time, default=lambda: datetime.now().time())
 
     def to_dict(self):
         return {
