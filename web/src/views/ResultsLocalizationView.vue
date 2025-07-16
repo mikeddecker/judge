@@ -55,6 +55,7 @@ const transformBoxCounts = (typedDays, cummulative) => {
 const getChartOptions = (title) => {
   return {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       title: {
         display: true,
@@ -89,8 +90,8 @@ const getChartOptions = (title) => {
 
 <template>
   <h2>Localization results</h2>
-  <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getChartOptions('Daily box count')" class="w-full" />
-  <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getChartOptions('Daily box count (cumulative)')" class="w-full" />
+  <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getChartOptions('Daily box count')" class="h-[25rem]" />
+  <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getChartOptions('Daily box count (cumulative)')" class="h-[25rem]" />
 
   <pre>{{ results }}</pre>
 </template>
