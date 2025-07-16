@@ -15,6 +15,25 @@ class JobTrainRouter(Resource):
         self.jobService.re_train_and_predict()
         return "Ok", 200
 
+class JobOptionsRouter(Resource):
+    def __init__(self, **kwargs):
+        self.folderService = FolderService()
+        self.videoService = VideoService()
+        self.jobService = JobService()
+        super().__init__(**kwargs)
+    
+    def get(self, step):
+        match (step):
+            case 'LOCALIZE':
+                return {
+                    'yolo11' : {
+                        'size': ['n', 's', 'm'],
+                        'weight': ['ultralytics', 'custom']
+                    }
+                }
+                # TODO : add best model training
+        return "Ok", 200
+
 class JobPredictVideo(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()

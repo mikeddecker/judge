@@ -290,3 +290,12 @@ export const getFrameLabelTypes = async () => {
     throw error;
   }
 }
+
+export const getJobOptions = async (step) => {
+  try {
+    return await api.get(`/job/options/${step}`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}

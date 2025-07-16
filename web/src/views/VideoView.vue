@@ -77,7 +77,7 @@
           </div>
           <div class="mt-2">
             <span class="mr-2">Use</span>
-            <Select v-model="selectedModel" :options="modelOptions"></Select>
+            <Select v-model="selectedLocalizeModel" :options="Object.keys(localizeModelOptions)"></Select>
           </div>
         </div>
         <Button v-if="modeIsPredict" @click="() => predictSkills(videoinfo.Id)">Launch job</Button>
@@ -110,7 +110,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, predictSkills, getFrameLabelTypes } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, predictSkills, getFrameLabelTypes, getJobOptions } from '../services/videoService';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -143,8 +143,8 @@ const canvasModes = ['draw', 'edit', 'delete', 'predict']
 const labeltypes = ref([])
 const selectedLabeltype = ref(null)
 const canvasMode = ref('draw')
-const modelOptions = computed(() => ['yolov11n_ultralytics', 'yolov11n_run7'])
-const selectedModel = ref('boxes')
+const localizeModelOptions = ref(null)
+const selectedLocalizeModel = ref(null)
 
 const currentFrame = ref(0)
 const frameStart = ref(currentFrame.value)
@@ -252,7 +252,32 @@ const dictValueStringToInt = (d) => {
   return Object.fromEntries(Object.entries(d).map(([key, value]) => [key, Number(value)]))
 }
 
+function generateCombinations(kwargs, model) {
+  let combinations = [{}];
+
+  for (const [key, values] of Object.entries(kwargs)) {
+    combinations = combinations.flatMap(combo =>
+      values.map(value => ({ ...combo, [key]: value }))
+    );
+  }
+
+  const result = {};
+  for (const combo of combinations) {
+    const key = model + '-' + Object.values(combo).join('-');
+    result[key] = combo;
+  }
+
+  return result;
+}
+
 onMounted(async () => {
+  getJobOptions('LOCALIZE').then(o => {
+    let shortModelNames = {}
+    Object.entries(o).forEach(([model, kwargs]) => {
+      Object.assign(shortModelNames, generateCombinations(kwargs, model))
+    })
+    localizeModelOptions.value = shortModelNames
+  })
   await loadVideo(videoId.value)
   await getFrameLabelTypes().then(types => {
     labeltypes.value = reverseDict(types)

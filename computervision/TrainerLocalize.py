@@ -58,7 +58,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
 
     # TODO : make jumpers.yml dynamic based on config
     model = YOLO(variant)
-    args = dict(model=variant, data="jumpers.yml", epochs=300, batch=32, patience=8, lr0=0.0001)
+    args = dict(model=variant, data="jumpers.yml", epochs=300, batch=8, patience=8, lr0=0.0001)
     results = model.train(**args)
 
     # 'ap_class_index', 'box', 'class_result', 'confusion_matrix', 'curves', 'curves_results', 
