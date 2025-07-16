@@ -406,10 +406,8 @@ function ontimeupdate(seconds) {
 // Mode is localization
 const setToNextFrame = () => {
   let minFrameNr = videoinfo.value.Frames
-    .filter(b => b.LabelType == labeltypes[selectedLabeltype.value])
     .reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
   let biggerFrameNr = videoinfo.value.Frames
-    .filter(b => b.LabelType == labeltypes[selectedLabeltype.value])
     .filter((frameinfo) => frameinfo.FrameNr > currentFrame.value)
     .reduce((previous, current) => Math.min(previous, current.FrameNr), Infinity)
   currentFrame.value = biggerFrameNr == Infinity ? minFrameNr : biggerFrameNr
@@ -418,10 +416,8 @@ const setToNextFrame = () => {
 
 const setToPreviousFrame = () => {
   let maxFrameNr = videoinfo.value.Frames
-    .filter(b => b.LabelType == labeltypes[selectedLabeltype.value])
     .reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
   let smallerFrameNr = videoinfo.value.Frames
-    .filter((frameinfo) => frameinfo.FrameNr < currentFrame.value)
     .filter(b => b.LabelType == labeltypes[selectedLabeltype.value])
     .reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
   currentFrame.value = smallerFrameNr == -Infinity ? maxFrameNr : smallerFrameNr

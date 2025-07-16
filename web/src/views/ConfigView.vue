@@ -69,7 +69,7 @@ const expandedRowGroups = ref([])
 
 onMounted(async () => {
   refreshTags()
-  getFrameLabelTypes().then(types => frameLabelTypes.value = types)
+  getFrameLabelTypes().then(types => frameLabelTypes.value = Object.values(types))
 })
 
 const refreshTags = async () => {

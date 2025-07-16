@@ -212,7 +212,7 @@ class VideoInfo:
     def __str__(self):
         substrings = []
         substrings.append(f"Id = {self.Id}, Name = {self.Name}, Folder = {self.Folder.get_relative_path()}")
-        for fi in self.Frames.values():
+        for fi in self.Frames:
             substrings.append(f"\t{str(fi)}")
         return "\n".join(substrings)
 

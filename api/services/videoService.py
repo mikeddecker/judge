@@ -513,10 +513,11 @@ class VideoService:
             raise ValueError(f"FrameNr out of bounds, max {video.FrameLength}, got {frameInfo.FrameNr}")
         # if frameInfo.Width < 0.3 or frameInfo
         video.add_framelabel(frameInfo)
-        if not frameInfo.LabelType == 2 and self.VideoRepo.exists_frameInfo(videoId=video.Id, frameNr=frameInfo.FrameNr):
-            self.VideoRepo.update_frameInfo(video=video, frameInfo=frameInfo)
-        else:
-            self.VideoRepo.add_frameInfo(video=video, frameInfo=frameInfo)
+
+        if self.VideoRepo.exists_frameInfo(video=video, frameInfo=frameInfo):
+            raise ValueError(f"Label already inserted")
+        self.VideoRepo.add_frameInfo(video=video, frameInfo=frameInfo)
+
         return video
 
     def update_skills_completed(self, video: VideoInfo, completed: bool):

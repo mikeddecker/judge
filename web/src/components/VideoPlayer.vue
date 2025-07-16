@@ -45,7 +45,7 @@ const canvasmodeIsDraw = computed(() => props.canvasMode == 'draw')
 const canvasmodeIsEdit = computed(() => props.canvasMode == 'edit')
 const canvasmodeIsDelete = computed(() => props.canvasMode == 'delete')
 const canvasmodeIsPredict = computed(() => props.canvasMode == 'predict')
-const boxes = computed(() => props.videoinfo.Frames.filter(b => b.LabelType == props.labeltype))
+const boxes = computed(() => props.videoinfo.Frames.filter(box => box.FrameNr == Math.round(props.currentFrameNr ? props.currentFrameNr : 0)))
 const boxesHovering = ref([])
 const selectedBox = ref(null)
 const paused = computed(() => videoElement.value?.paused)
@@ -127,10 +127,8 @@ const resetCanvasAndDrawBoxes = () => {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
   //   ctx.beginPath();
 
-  let boxes = filterBoxes(props.currentFrameNr)
-  Object.entries(boxes).forEach(([idx, box]) => {
-
-    ctx.strokeStyle = boxColors[Number(idx) + 1]
+  Object.entries(boxes.value).forEach(([idx, box]) => {
+    ctx.strokeStyle = boxColors[Number(box.LabelType) + 1]
     const xleft = (box.X - box.Width / 2) * videoWidth.value
     const yleft = (box.Y - box.Height / 2) * videoHeight.value
     const w = box.Width * videoWidth.value
@@ -202,10 +200,6 @@ const canvasMouseEndDrawing = (event) => {
     mouseXstart.value = 0
     mouseYstart.value = 0
   }
-}
-
-const filterBoxes = (frameNr) => {
-  return boxes.value.filter((box) => box.FrameNr == Math.round(frameNr))
 }
 </script>
 

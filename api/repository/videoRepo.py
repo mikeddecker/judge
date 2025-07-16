@@ -82,10 +82,17 @@ class VideoRepository:
             raise ValueError(f"folder must be provided")
         return self.db.session.query(VideoInfoDB).filter_by(name=name, folderId=folder.Id).scalar() is not None
     
-    def exists_frameInfo(self, videoId: int, frameNr: int):
-        ValueHelper.check_raise_id(videoId)
-        ValueHelper.check_raise_frameNr(frameNr)
-        return self.db.session.query(FrameLabel).filter_by(videoId=videoId, frameNr=frameNr).first() is not None
+    def exists_frameInfo(self, video: VideoInfo, frameInfo: FrameInfo):
+        ValueHelper.check_raise_id(video.Id)
+        ValueHelper.check_raise_frameNr(frameInfo.FrameNr)
+        return self.db.session.query(FrameLabel).filter_by(
+            videoId=video.Id, 
+            frameNr=frameInfo.FrameNr,
+            x=frameInfo.X,
+            y=frameInfo.Y,
+            width=frameInfo.Width,
+            height=frameInfo.Height,
+        ).first() is not None
   
     def delete(self, id: int):
         # TODO : check if no frames or skills are connected
