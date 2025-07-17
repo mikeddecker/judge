@@ -169,25 +169,14 @@ def calculate_smoothed_values(strat:str, params: dict, previous_values:dict, i:i
     
 
 def localize_jumpers(
-        model: YOLO, repo: DataRepository, modelname: str,
+        model: YOLO, repo: DataRepository,
         videoId: int, dim: int, strategies: list, stratparams: dict,
-        save_as_JSON=True, save_as_mp4=False, 
+        save_as_mp4=False, 
         padding=False
     ):
     """Returns df_coordinates containing x, y, width, height"""
-    start = time.time()
 
     videoPath = repo.get_video_path(videoId=videoId)
-    rawPredictedBoxesPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json")
-    strat_model_name = f"{videoId}_crop_d{dim}_{modelname}" # TODO : include strat
-    videoOutputPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{strat_model_name}.mp4")
-
-    # if os.path.exists(videoOutputPath):
-    #     return None
-
-    bad_results = [] # TODO : List containing videocrops deemed bad
-    if strat_model_name in bad_results:
-        return None
 
     cap = cv2.VideoCapture(videoPath)
 
@@ -312,6 +301,7 @@ def localize_jumpers(
         i += 1
         ret, frame = cap.read()
 
+    rawPredictedBoxesPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json")
     with open(rawPredictedBoxesPath, "w") as fp:
         json.dump(predicted_boxes, fp, indent=4)
 
@@ -319,15 +309,10 @@ def localize_jumpers(
     cv2.destroyAllWindows()
 
     if save_as_mp4:
-        strat_model_name = f"{videoId}_crop_d{dim}_{modelname}"
-        videoOutputPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{strat_model_name}.mp4")
+        videoOutputPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_cropped.mp4")
 
         clip = ImageSequenceClip(frames, fps=fps)
         clip.write_videofile(videoOutputPath)
-
-    if save_as_mp4 and save_as_JSON:
-        with open(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{strat_model_name}.json"), 'w') as f:
-            json.dump(smoothed_values, f, sort_keys=True, indent=4)    
 
     for s in strategies:
         # Transform absolute XYXY to relative xywh
@@ -350,8 +335,6 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
     print("Total frames", total_frames)
 
     model = YOLO(os.path.join(modeldir, "weights", "best.pt"))
-    saveAsMp4 = False
-    saveAsJSON = True
 
     full_team_relative_boxes_both = {
         'train': repo.get_framelabels(train_test_val='train', type=1),
@@ -385,14 +368,12 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
             # and relative x y w h
             df_coordinates = localize_jumpers(
                 model=model,
-                modelname=modelname,
                 repo=repo,
                 videoId=videoId,
                 dim=DIM,
                 strategies=strategies,
                 stratparams=strategyparams,
-                save_as_JSON=saveAsJSON,
-                save_as_mp4=saveAsMp4,
+                save_as_mp4=False,
                 padding=False
             )
 
@@ -461,12 +442,14 @@ def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
 
 
 
-def predict_and_save_locations(modeldir: str, repo: DataRepository, modelname: str, videoIds: int):
+def predict_and_save_locations(weights: str, repo: DataRepository, videoIds: int, recipe: str, saveAsVideo:bool):
     """Validates localize methods on a specific run"""
 
     strategies = ['smoothing']
-
-    model = YOLO(os.path.join(modeldir, "weights", "best.pt"))
+    if weights is None:
+        raise ValueError(f"Weights can not be None")
+    else:
+        model = YOLO(weights)
     valstart = time.time()
     completed_videoIds = []
     for videoId in videoIds:
@@ -476,14 +459,12 @@ def predict_and_save_locations(modeldir: str, repo: DataRepository, modelname: s
             # and relative x y w h
             df_coordinates = localize_jumpers(
                 model=model,
-                modelname=modelname,
                 repo=repo,
                 videoId=videoId,
                 dim=DIM,
                 strategies=strategies,
                 stratparams=strategyparams,
-                save_as_JSON=True,
-                save_as_mp4=True,
+                save_as_mp4=saveAsVideo,
                 padding=True
             )
 

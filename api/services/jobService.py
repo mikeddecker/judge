@@ -61,6 +61,11 @@ class JobService:
         if not self.JobRepo.exists_by_job_content(job):
             self.__add(job)
 
+    def launch_job(self, job:Job):
+        if not self.JobRepo.exists_by_job_content(job):
+            self.__add(job)
+
+
     def re_train_and_predict(self):
         trainjob = Job(
             type='TRAIN',

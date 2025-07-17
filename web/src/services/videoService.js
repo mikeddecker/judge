@@ -206,9 +206,9 @@ export const getVideoPredictions = async (videoId) => {
   }
 };
 
-export const predictSkills = async (videoId) => {
+export const launchJob = async (jobarguments) => {
   try {
-    return await api.get(`/job/predict/${videoId}`).then(response => response.data)
+    return await api.post('/job', jobarguments, { headers: { 'Content-Type': 'application/json' }}).then(response => response.data)
   } catch (error) {
     console.error('Error fetching data:', error);
     throw error;

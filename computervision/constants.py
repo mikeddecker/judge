@@ -11,6 +11,15 @@ from types import SimpleNamespace
 load_dotenv()
 
 ENVS = SimpleNamespace(
+    DATABASE = SimpleNamespace(
+        MYSQLDB_DATABASE = os.getenv('MYSQLDB_DATABASE'),
+        MYSQLDB_DATABASE_TEST = os.getenv('MYSQLDB_DATABASE_TEST'),
+        MYSQLDB_ROOT_PASSWORD = os.getenv('MYSQLDB_ROOT_PASSWORD'),
+        MYSQLDB_USERNAME = os.getenv('MYSQLDB_USERNAME'),
+        MYSQLDB_LOCAL_PORT = os.getenv('MYSQLDB_LOCAL_PORT'),
+        MYSQLDB_DOCKER_PORT = os.getenv('MYSQLDB_DOCKER_PORT'),
+        HOST = os.getenv('HOST'),
+    ),
     DIRS = SimpleNamespace(
         VIDEOS = os.getenv("STORAGE_DIR_VIDEOS"),
         GENERATED = os.getenv("STORAGE_DIR_GENERATED_DATA"),
@@ -36,8 +45,25 @@ PYTORCH_MODELS_SKILLS = {
 
 # TODO : modelparams -> extend this so more general and more different settings can be created
 DIM = 224 # TODO : transition to RECIPES
-RECIPES = SimpleNamespace(
-    MViT = SimpleNamespace(
-        DIM = 224
+RECIPES = {
+    'MViT' : SimpleNamespace(
+        model = 'MViT',
+        DIM = 224,
+        default_weights = 'DEFAULT',
+    ),
+    'yolo11n' : SimpleNamespace(
+        model = 'yolo11n',
+        base_model = 'YOLO',
+        default_weights = 'yolo11n.pt',
+    ),
+    'yolo11s' : SimpleNamespace(
+        model = 'yolo11s',
+        base_model = 'YOLO',
+        default_weights = 'yolo11s.pt',
+    ),
+    'yolo11m' : SimpleNamespace(
+        model = 'yolo11m',
+        base_model = 'YOLO',
+        default_weights = 'yolo11m.pt',
     )
-)
+}

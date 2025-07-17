@@ -19,11 +19,11 @@ class DataRepository:
         print("relative paths of framelabels loaded")
 
     def __get_connection(self):
-        HOST = '127.0.0.1'
-        PORT = '3377'
-        DATABASE = 'judge'
-        USERNAME = 'root'
-        PASSWORD = 'root'
+        HOST = ENVS.DATABASE.HOST
+        PORT = ENVS.DATABASE.MYSQLDB_LOCAL_PORT
+        DATABASE = ENVS.DATABASE.MYSQLDB_DATABASE
+        USERNAME = ENVS.DATABASE.MYSQLDB_USERNAME
+        PASSWORD = ENVS.DATABASE.MYSQLDB_ROOT_PASSWORD
         DATABASE_CONNECTION=f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
         engine = sqlal.create_engine(DATABASE_CONNECTION)#
         return engine.connect()
@@ -246,6 +246,12 @@ class DataRepository:
     def get_video_path(self, videoId):
         return os.path.join(ENVS.DIRS.VIDEOS, self.VideoNames.loc[videoId, "name"])
     
+    def get_frame_label_types(self):
+        with self.__get_connection() as connection:
+            qry = sqlal.text(f"""SELECT info FROM FrameLabelTypes""")
+            flts = pd.read_sql(qry, con=connection)
+            return flts['info'].to_list()
+
     def check_connection_reconnect_if_needed(self):
         if not self.check_connection():
             self.con = self.__get_connection()

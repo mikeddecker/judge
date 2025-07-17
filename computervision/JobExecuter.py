@@ -3,9 +3,10 @@
 import time
 import json
 from managers.DataRepository import DataRepository
-from Predictor import Predictor, modelparams
+from Predictor import Predictor
 from Trainer import Trainer, trainparams, max_rounds
 from TrainerLocalize import train_yolo_model, validate_localize
+from constants import RECIPES
 
 # Managers
 
@@ -30,13 +31,14 @@ while no_shutdown_job:
     if job["type"] == "PREDICT":
         print(job)
         job_arguments = json.loads(job["job_arguments"])
-        saveAsMp4 = False if "save_mp4" not in job_arguments.keys() else job_arguments["save_mp4"]
+        saveAsMp4 = False if "save_mp4" not in job_arguments.keys() else bool(job_arguments["save_mp4"])
         predictor.predict(
             type=job["step"],
             videoId=job_arguments["videoId"],
-            modelname=job_arguments["model"],
-            modelparams=modelparams[job_arguments["model"]],
+            recipe=job_arguments["model"],
+            modelparams=RECIPES[job_arguments["model"]],
             saveAsVideo=saveAsMp4,
+            weights=job_arguments["weights"] if job_arguments["weights"] is not None else 'best'
         )
         REPO.delete_job(job["id"])
     elif job["type"] == "TRAIN":
@@ -121,7 +123,7 @@ while no_shutdown_job:
                 predictor.predict(
                     type="FULL",
                     videoId=videoId,
-                    modelname=modelname,
+                    recipe=modelname,
                     modelparams=trainparams[modelname],
                     saveAsVideo=False,
                 )

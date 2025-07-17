@@ -22,8 +22,8 @@ TESTDIR = /tmp/judge
 
 # Connection strings for connecting with the database
 # They are based on the input data above, keep off.
-DATABASE_URL = mysql+pymysql://root:${MYSQLDB_ROOT_PASSWORD}@127.0.01:${MYSQLDB_LOCAL_PORT}/${MYSQLDB_DATABASE}
-DATABASE_URL_TEST =  mysql+pymysql://root:${MYSQLDB_ROOT_PASSWORD}@127.0.01:${MYSQLDB_LOCAL_PORT}/${MYSQLDB_DATABASE_TEST}
+DATABASE_URL = mysql+pymysql://root:${MYSQLDB_ROOT_PASSWORD}@127.0.0.1:${MYSQLDB_LOCAL_PORT}/${MYSQLDB_DATABASE}
+DATABASE_URL_TEST =  mysql+pymysql://root:${MYSQLDB_ROOT_PASSWORD}@127.0.0.1:${MYSQLDB_LOCAL_PORT}/${MYSQLDB_DATABASE_TEST}
 
 # Video data you want to support.
 SUPPORTED_VIDEO_FORMATS = ['.mov', '.mp4', '.MP4']

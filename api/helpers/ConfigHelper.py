@@ -41,6 +41,10 @@ def localize_get_best_modelpath():
     # TODO : update to take actual best
     folder_path = os.path.join('..', 'runs', 'detect')
     trainrounds = os.listdir(folder_path)
+
+    if len(trainrounds) == 0:
+        return None, None
+    
     nrs = [0 if s[5:] == '' else int(s[5:]) for s in trainrounds]
     maxround = max(nrs)
     if maxround == 0:
@@ -54,7 +58,7 @@ def localize_get_best_modelpath():
         with open(argpath, 'r') as file:
             modelname = yaml.safe_load(file)['model'].split('.')[0]
     
-    return modelname, modelpath
+    return modelname, os.path.join(modelpath, "weights", "best.pt") # modelname = yolo11n, modelpath = '../runs/detect/train7/weights/best.pt'
 
 
 def recognition_get_modelpaths():

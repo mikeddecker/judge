@@ -67,20 +67,21 @@
         <LocalizeInfo v-if="modeIsLocalize" :videoinfo="videoinfo"></LocalizeInfo>
         <div id="localize-controls" v-if="modeIsLocalize" class="my-2">
           <div class="flex gap-2">
-            <span class="mr-2">Labeltype</span>
+            <span class="my-auto">Labeltype</span>
             <Select v-model="selectedLabeltype" :options="Object.keys(labeltypes)"></Select>
             <InputNumber v-model="currentFrame" inputId="input-currentFrame" fluid></InputNumber>
           </div>
-          <div class="mt-2">
-            <span class="mr-2">Canvas modus</span>
+          <div class="mt-2 flex gap-2">
+            <span class="my-auto">Canvas modus</span>
             <Select v-model="canvasMode" :options="canvasModes"></Select>
           </div>
-          <div class="mt-2">
-            <span class="mr-2">Use</span>
+          <div class="mt-2 flex gap-2">
+            <span class="my-auto">Use</span>
             <Select v-model="selectedLocalizeModel" :options="Object.keys(localizeModelOptions)"></Select>
+            <Button v-if="selectedLocalizeModel" @click="predictBoxes" label="Launch job"></Button>
           </div>
         </div>
-        <Button v-if="modeIsPredict" @click="() => predictSkills(videoinfo.Id)">Launch job</Button>
+        <Button v-if="modeIsPredict" @click="() => predictSkills(videoinfo.Id)" disabled>Launch job</Button>
         
         <!--Skills -->
         <div id="skillinfo" v-if="modeIsSkills">
@@ -110,7 +111,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, predictSkills, getFrameLabelTypes, getJobOptions } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, getFrameLabelTypes, getJobOptions, launchJob } from '../services/videoService';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -139,7 +140,7 @@ const predictMode = ref('annotate')
 const modeIsAnnotate = computed(() => predictMode.value == 'annotate')
 const modeIsPredict = computed(() => predictMode.value == 'predict')
 
-const canvasModes = ['draw', 'edit', 'delete', 'predict']
+const canvasModes = ['draw', 'edit', 'delete']
 const labeltypes = ref([])
 const selectedLabeltype = ref(null)
 const canvasMode = ref('draw')
@@ -264,6 +265,7 @@ function generateCombinations(kwargs, model) {
   const result = {};
   for (const combo of combinations) {
     const key = model + '-' + Object.values(combo).join('-');
+    combo['model'] = model
     result[key] = combo;
   }
 
@@ -272,11 +274,7 @@ function generateCombinations(kwargs, model) {
 
 onMounted(async () => {
   getJobOptions('LOCALIZE').then(o => {
-    let shortModelNames = {}
-    Object.entries(o).forEach(([model, kwargs]) => {
-      Object.assign(shortModelNames, generateCombinations(kwargs, model))
-    })
-    localizeModelOptions.value = shortModelNames
+    localizeModelOptions.value = Object.fromEntries(Object.entries(o).filter(([model, details]) => details['base_model'] == 'YOLO'))
   })
   await loadVideo(videoId.value)
   await getFrameLabelTypes().then(types => {
@@ -652,6 +650,23 @@ const splitPrediction = async () => {
   predictions.value["skills"].push(copy)
   currentFrame.value = splitpoint
   skillbalkKey.value += 1
+}
+
+const predictSkills = async () => {
+  console.log("TODO") // TODO : launch job new router adaption
+}
+
+const predictBoxes = async () => {
+  let jobarguments = {
+    'type': 'PREDICT',
+    'step': 'LOCALIZE',
+    'videoId': videoinfo.value.Id,
+    'weights': localizeModelOptions.value[selectedLocalizeModel.value]['default_weights'],
+    'model': localizeModelOptions.value[selectedLocalizeModel.value]['model'],
+    'model_kwargs' : localizeModelOptions.value[selectedLocalizeModel.value]
+  }
+  console.log('launching job', jobarguments)
+  launchJob(jobarguments)
 }
 
 </script>
