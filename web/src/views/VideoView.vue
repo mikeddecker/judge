@@ -79,7 +79,7 @@
             <span class="my-auto">Use</span>
             <Select v-model="selectedLocalizeModel" :options="Object.keys(localizeModelOptions)"></Select>
             <Button v-if="selectedLocalizeModel && !localizeJobLaunched && !locationPredictions" @click="predictBoxes" label="Launch job"></Button>
-            <span v-if="localizeJobLaunched">Job in queue</span>
+            <span class="my-auto" v-if="localizeJobLaunched">Job in queue</span>
           </div>
         </div>
         <Button v-if="modeIsPredict" @click="() => predictSkills(videoinfo.Id)" disabled>Launch job</Button>

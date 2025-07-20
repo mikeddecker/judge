@@ -202,8 +202,11 @@ class StatsService:
     def getLocalizeResults(self):
         results = {
             'boxcounts': {
-                'total' : self.StatsRepo.localize_framelabels_total(),
-                'daily' : self.StatsRepo.localize_framelabels_daily(),
+                'total' : self.StatsRepo.localize_box_counts(),
+                'daily' : self.StatsRepo.localize_box_counts_daily(),
+            },
+            'framecounts': {
+                'total' : self.StatsRepo.localize_frame_counts(),
             },
             'general' : {},
         }

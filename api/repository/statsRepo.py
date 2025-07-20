@@ -1,28 +1,64 @@
 from flask_sqlalchemy import SQLAlchemy
 from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type, FrameLabelType
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, case
 from typing import List
 
 class StatsRepository:
     def __init__(self, db : SQLAlchemy):
         self.db = db
+        self.split_train_test = case(
+            (FrameLabel.videoId % 10 == 5, 'test'),
+            else_='train'
+        ).label("split")
 
-    def localize_framelabels_total(self):
+    def localize_box_counts(self):
         counts = self.db.session.query(
             FrameLabel.labeltype,
-            func.count().label("count")
+            func.count().label("count"),
+            self.split_train_test
         ).group_by(
-            FrameLabel.labeltype
+            FrameLabel.labeltype,
+            self.split_train_test
         ).all()
+
         return [
             {
                 "type": row.labeltype,
-                "count": row.count
+                "count": row.count,
+                "split": row.split
             }
             for row in counts
         ]
     
-    def localize_framelabels_daily(self) -> dict:
+    def localize_frame_counts(self):
+        # Step 1: Select distinct videoId + frameNr + split
+        subq = self.db.session.query(
+            FrameLabel.videoId,
+            FrameLabel.frameNr,
+            self.split_train_test
+        ).distinct(
+            FrameLabel.videoId,
+            FrameLabel.frameNr
+        ).subquery()
+
+        # Step 2: Count grouped by split in outer query
+        counts = self.db.session.query(
+            func.count().label("count"),
+            subq.c.split
+        ).group_by(
+            subq.c.split
+        ).all()
+    
+        return [
+            {
+                "count": row.count,
+                "split": row.split
+            }
+            for row in counts
+        ]
+    
+    
+    def localize_box_counts_daily(self) -> dict:
         labeltypes: dict[int, FrameLabelType] = {
             flt.id: flt 
             for flt in self.db.session.query(FrameLabelType).all()
@@ -35,7 +71,7 @@ class StatsRepository:
         ).group_by(
             FrameLabel.labeldate, FrameLabel.labeltype
         ).order_by(
-            FrameLabel.labeldate
+            FrameLabel.labeldate 
         ).all()
 
         # Zero counts

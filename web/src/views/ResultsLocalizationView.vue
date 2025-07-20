@@ -1,6 +1,6 @@
 <script setup>
 import { getColor } from '@/helpers/utils'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps({
   results: {
@@ -22,7 +22,6 @@ onMounted(async () => {
 })
 
 const transformBoxCounts = (typedDays, cummulative) => {
-  let labels = Object.values(props.results['boxcounts']['total']).map(total => props.frameLabelTypes[total['type']])
   let datapoints = Object.fromEntries(Object.keys(props.frameLabelTypes).map(flt => [flt, []]))
   let indiviualOrCumulative = cummulative ? 'cumulative' : 'individual'
 
@@ -37,7 +36,7 @@ const transformBoxCounts = (typedDays, cummulative) => {
 
   let datasets = Object.entries(datapoints).map(([flt, counts]) => {
     return {
-      label: flt,
+      label: props.frameLabelTypes[flt],
       data: counts,
       borderColor: getColor(flt),
       fill: false,
@@ -86,10 +85,40 @@ const getChartOptions = (title) => {
     }
   }
 }
+
+const barChartBoxesPerTypeData = computed(() => {
+  return {
+    'labels' : props.results['boxcounts']['total'].map(item => `${item.split}-${props.frameLabelTypes[item.type]}`),
+    'datasets': [
+      {
+        label: 'Box count by Type',
+        data: props.results['boxcounts']['total'].map(item => item.count),
+        backgroundColor: [getColor(1), getColor(2)]
+      }
+    ]
+  }
+})
+
+const barChartFramesTrainTest = computed(() => {
+  return {
+    'labels' : props.results['framecounts']['total'].map(item => `${item.split}`),
+    'datasets': [
+      {
+        label: 'Frame count',
+        data: props.results['framecounts']['total'].map(item => item.count),
+        backgroundColor: [getColor(1), getColor(2)]
+      }
+    ]
+  }
+})
 </script>
 
 <template>
   <h2>Localization results</h2>
+  <div class="flex justify-evenly">
+    <Chart type="bar" :data="barChartFramesTrainTest" class="w-45/100"/>
+    <Chart type="bar" :data="barChartBoxesPerTypeData" class="w-45/100"/>
+  </div>
   <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getChartOptions('Daily box count')" class="h-[25rem]" />
   <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getChartOptions('Daily box count (cumulative)')" class="h-[25rem]" />
 
