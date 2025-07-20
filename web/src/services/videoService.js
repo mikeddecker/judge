@@ -206,6 +206,23 @@ export const getVideoPredictions = async (videoId) => {
   }
 };
 
+export const hasLocalizePredictions = async (videoId) => {
+  try {
+    return await api.get(`/video/${videoId}/predictions/hasLocalizePredictions`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};
+export const getLocalizePredictions = async (videoId) => {
+  try {
+    return await api.get(`/video/${videoId}/predictions/getLocalizePredictions`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};
+
 export const launchJob = async (jobarguments) => {
   try {
     return await api.post('/job', jobarguments, { headers: { 'Content-Type': 'application/json' }}).then(response => response.data)

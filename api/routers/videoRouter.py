@@ -74,6 +74,32 @@ class VideoPredictionRouter(Resource):
         
         return self.videoService.getVideoPredictions(videoId), 200
 
+class VideoPredictionRouter_HasLocalizePredictions(Resource):
+    def __init__(self, **kwargs):
+        self.videoService = VideoService()
+        super().__init__(**kwargs)
+    
+    def get(self, videoId: int):
+        try:
+            ValueHelper.check_raise_id(videoId)
+        except ValueError as ve:
+            return ve, 404
+        
+        return self.videoService.has_predicted_boxes(videoId), 200
+
+class VideoPredictionRouter_GetLocalizePredictions(Resource):
+    def __init__(self, **kwargs):
+        self.videoService = VideoService()
+        super().__init__(**kwargs)
+    
+    def get(self, videoId: int):
+        try:
+            ValueHelper.check_raise_id(videoId)
+        except ValueError as ve:
+            return ve, 404
+        
+        return self.videoService.load_predicted_boxes(videoId), 200
+
 class VideoImageRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()

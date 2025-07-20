@@ -8,6 +8,7 @@ from domain.skill import Skill
 from domain.videoinfo import VideoInfo
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config, localize_get_best_modelpath
 from helpers.ValueHelper import ValueHelper
+from helpers.helpers import load_json_file
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
@@ -549,13 +550,7 @@ class VideoService:
         return []
 
     def load_predicted_boxes(self, videoId:int):
-        modelname, modelpath = localize_get_best_modelpath()
-        # TODO : update to get 'smoothing'
-        filepath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_crop_d224_{modelname}.json")
-        if os.path.exists(filepath):
-            with open(filepath, 'r') as f:
-                return json.load(f)
-        return []
+        return load_json_file(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json"))
     
     def getVideoPredictions(self, videoId: int):
         ValueHelper.check_raise_id(videoId)
@@ -574,3 +569,7 @@ class VideoService:
 
     def get_frame_label_types(self) -> list[str]:
         return self.VideoRepo.get_frame_label_types()
+    
+    def has_predicted_boxes(self, videoId: int):
+        ValueHelper.check_raise_id(videoId)
+        return os.path.exists(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json"))

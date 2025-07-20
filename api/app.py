@@ -10,7 +10,7 @@ from flask_migrate import Migrate
 from helpers.ValueHelper import ValueHelper
 from repository.db import db
 from routers.folderRouter import FolderRouter
-from routers.videoRouter import VideoRouter, VideoRouterCropped, VideoImageRouter, VideoInfoRouter, VideoPredictionRouter
+from routers.videoRouter import VideoRouter, VideoRouterCropped, VideoImageRouter, VideoInfoRouter, VideoPredictionRouter, VideoPredictionRouter_GetLocalizePredictions, VideoPredictionRouter_HasLocalizePredictions
 from routers.frameRouter import FrameRouter, FrameLabelTypeRouter
 from routers.jobRouter import JobTrainRouter, JobLaunchRouter, JobOptionsRouter
 from routers.storageRouter import StorageRouter, OrphanDeleterRouter
@@ -49,6 +49,8 @@ api.add_resource(VideoRouterCropped, '/video/<int:videoId>/cropped')
 api.add_resource(VideoInfoRouter, '/video/<int:videoId>/info')
 api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
 api.add_resource(VideoPredictionRouter, '/video/<int:videoId>/predictions')
+api.add_resource(VideoPredictionRouter_HasLocalizePredictions, '/video/<int:videoId>/predictions/hasLocalizePredictions')
+api.add_resource(VideoPredictionRouter_GetLocalizePredictions, '/video/<int:videoId>/predictions/getLocalizePredictions')
 api.add_resource(TagRouter, '/tags')
 api.add_resource(TagGroupRouter, '/tagGroups')
 

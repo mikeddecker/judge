@@ -176,6 +176,8 @@ def localize_jumpers(
     ):
     """Returns df_coordinates containing x, y, width, height"""
 
+    # TODO : make relative? => instead of calculating with 378, 326, 1080, 1920, make it 0 -> 1
+    
     videoPath = repo.get_video_path(videoId=videoId)
 
     cap = cv2.VideoCapture(videoPath)

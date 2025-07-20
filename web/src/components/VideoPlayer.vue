@@ -28,7 +28,7 @@
 import { onMounted, ref, computed, watch } from 'vue'
 
 // Watch out, frame numbers can get floated: e.g. 112.000000000000001
-const props = defineProps(['title', 'videoId', 'videoSrc', 'mode', 'canvasMode', 'currentFrameNr', 'videoinfo', 'labeltype'])
+const props = defineProps(['title', 'videoId', 'videoSrc', 'mode', 'canvasMode', 'currentFrameNr', 'videoinfo', 'labeltype', 'predictedBoxes'])
 const emit = defineEmits(['play', 'pause', 'seeked', 'timeupdate', 'loadeddata', 'deleteBox', 'addBox'])
 const videoElement = ref(null)
 const videoWidth = ref(0)
@@ -44,23 +44,27 @@ const modeIsSkills = computed(() => props.mode == 'SKILLS')
 const canvasmodeIsDraw = computed(() => props.canvasMode == 'draw')
 const canvasmodeIsEdit = computed(() => props.canvasMode == 'edit')
 const canvasmodeIsDelete = computed(() => props.canvasMode == 'delete')
-const canvasmodeIsPredict = computed(() => props.canvasMode == 'predict')
+const canvasmodeIsAcceptPredictedBox = computed(() => props.canvasMode == 'accept')
 const boxes = computed(() => props.videoinfo.Frames.filter(box => box.FrameNr == Math.round(props.currentFrameNr ? props.currentFrameNr : 0)))
+const predictedBoxesCurrentFrame = computed(() => props.predictedBoxes ? props.predictedBoxes[props.currentFrameNr] : [])
+
 const boxesHovering = ref([])
+const predictedBoxesHovering = ref([])
 const selectedBox = ref(null)
 const paused = computed(() => videoElement.value?.paused)
 
 const boxColors = [
   '#bfdbfe',
   '#fef9c3',
+  '#dc2626',
   '#fdba74',
   '#ec4899',
   '#bbf7d0',
   '#fee2e2',
   '#f3f4f6',
   '#67e8f9',
-  '#dc2626',
-  '#a8a29e'
+  '#ffffff',
+  '#000000',
 ]
 
 const mouseX = ref(0)
@@ -127,21 +131,34 @@ const resetCanvasAndDrawBoxes = () => {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
   //   ctx.beginPath();
 
+  // Draw predicted boxes
+  Object.entries(predictedBoxesCurrentFrame.value).forEach(([idx, box]) => {
+    // Received boxes are: array of 4 elements = array[xmin, ymin, xmax, ymax] but absolute values!
+    ctx.strokeStyle = boxColors[10]
+    const xleft = box[0] / props.videoinfo.Width * videoWidth.value
+    const yleft = box[1] / props.videoinfo.Height * videoHeight.value
+    const w = (box[2] - box[0]) / props.videoinfo.Width * videoWidth.value
+    const h = (box[3] - box[1]) / props.videoinfo.Height * videoHeight.value
+    ctx.strokeRect(xleft, yleft, w, h, 0.3);
+  })
+
+  // Draw labeled boxes
   Object.entries(boxes.value).forEach(([idx, box]) => {
-    ctx.strokeStyle = boxColors[Number(box.LabelType) + 1]
+    ctx.strokeStyle = boxColors[Number(box.LabelType)]
     const xleft = (box.X - box.Width / 2) * videoWidth.value
     const yleft = (box.Y - box.Height / 2) * videoHeight.value
     const w = box.Width * videoWidth.value
     const h = box.Height * videoHeight.value
     ctx.strokeRect(xleft, yleft, w, h);
   })
-  
+
   // Draw current drawing box
-  if (!canvasmodeIsDelete.value && !canvasmodeIsPredict.value) {
+  if (!canvasmodeIsDelete.value && !canvasmodeIsAcceptPredictedBox.value) {
     ctx.strokeStyle = boxColors[0]
     ctx.strokeRect(mouseXstart.value * videoWidth.value, mouseYstart.value * videoHeight.value, (mouseX.value - mouseXstart.value) * videoWidth.value, (mouseY.value - mouseYstart.value) * videoHeight.value);
   }
 }
+
 
 
 const canvasMouseDown = (event) => {
@@ -165,10 +182,18 @@ const canvasMouseMoves = (event) => {
       let maxYbox = box.Y + box.Height / 2
       return minXbox < mouseX.value && mouseX.value < maxXbox && minYbox < mouseY.value && mouseY.value < maxYbox
     })
-  }
-  mouse.value = boxesHovering.value.length ? 'cursor-pointer' : canvasmodeIsDraw.value ? 'cursor-crosshair' : 'cursor-auto'
 
-  // mouse.value = 'cursor-wait'
+    predictedBoxesHovering.value = props.predictedBoxes[props.currentFrameNr].filter(
+      (boxArray) => {
+        let minXbox = boxArray[0] / props.videoinfo.Width
+        let maxXbox = boxArray[2] / props.videoinfo.Width
+        let minYbox = boxArray[1] / props.videoinfo.Height
+        let maxYbox = boxArray[3] / props.videoinfo.Height
+        return minXbox < mouseX.value && mouseX.value < maxXbox && minYbox < mouseY.value && mouseY.value < maxYbox
+      }
+    )
+  }
+  mouse.value = (boxesHovering.value.length || predictedBoxesHovering.value.length) ? 'cursor-pointer' : canvasmodeIsDraw.value ? 'cursor-crosshair' : 'cursor-auto'
   
   resetCanvasAndDrawBoxes()
 }
@@ -181,6 +206,20 @@ const canvasMouseEndDrawing = (event) => {
     boxesHovering.value.forEach(box => emit("deleteBox", box))
   }
 
+  if (canvasmodeIsAcceptPredictedBox.value) {
+    predictedBoxesHovering.value.forEach(coordinates => {
+      let box = {
+        "frameNr" : Math.round(props.currentFrameNr),
+        "x" : (coordinates[2] + coordinates[0]) / 2 / props.videoinfo.Width,
+        "y" : (coordinates[3] + coordinates[1]) / 2 / props.videoinfo.Height,
+        "width" : (coordinates[2] - coordinates[0]) / props.videoinfo.Width,
+        "height" : (coordinates[3] - coordinates[1]) / props.videoinfo.Height,
+        "jumperVisible" : true,
+      }
+      emit('addBox', box)
+    })
+  }
+
   if (canvasmodeIsDraw.value && isDrawing.value) {
     isDrawing.value = false
     let box = {
@@ -190,7 +229,6 @@ const canvasMouseEndDrawing = (event) => {
       "width" : Math.abs(mouseXstart.value - mouseX.value),
       "height" : Math.abs(mouseYstart.value - mouseY.value),
       "jumperVisible" : true,
-      "labeltype" : 2
     }
 
     if (box['height'] > 0.03) {

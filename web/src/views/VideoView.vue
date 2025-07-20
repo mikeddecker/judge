@@ -10,7 +10,7 @@
 
         <VideoPlayer class=" relative" 
         v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
-        :current-frame-nr="currentFrame" :videoinfo="videoinfo" :labeltype="labeltypes[selectedLabeltype]"
+        :current-frame-nr="currentFrame" :videoinfo="videoinfo" :labeltype="labeltypes[selectedLabeltype]" :predicted-boxes="locationPredictions"
         @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
         @add-box="onAddBox" @delete-box="onDeleteBox">
         </VideoPlayer>
@@ -78,7 +78,8 @@
           <div class="mt-2 flex gap-2">
             <span class="my-auto">Use</span>
             <Select v-model="selectedLocalizeModel" :options="Object.keys(localizeModelOptions)"></Select>
-            <Button v-if="selectedLocalizeModel" @click="predictBoxes" label="Launch job"></Button>
+            <Button v-if="selectedLocalizeModel && !localizeJobLaunched && !locationPredictions" @click="predictBoxes" label="Launch job"></Button>
+            <span v-if="localizeJobLaunched">Job in queue</span>
           </div>
         </div>
         <Button v-if="modeIsPredict" @click="() => predictSkills(videoinfo.Id)" disabled>Launch job</Button>
@@ -111,7 +112,7 @@
 <script setup>
 import SkillBalk from '@/components/SkillBalk.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, getFrameLabelTypes, getJobOptions, launchJob } from '../services/videoService';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, getFrameLabelTypes, getJobOptions, launchJob, hasLocalizePredictions, getLocalizePredictions } from '../services/videoService';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
@@ -140,12 +141,14 @@ const predictMode = ref('annotate')
 const modeIsAnnotate = computed(() => predictMode.value == 'annotate')
 const modeIsPredict = computed(() => predictMode.value == 'predict')
 
-const canvasModes = ['draw', 'edit', 'delete']
+const canvasModes = ['draw', 'edit', 'delete', 'accept']
 const labeltypes = ref([])
 const selectedLabeltype = ref(null)
 const canvasMode = ref('draw')
 const localizeModelOptions = ref(null)
 const selectedLocalizeModel = ref(null)
+const localizeJobLaunched = ref(false)
+const locationPredictions = ref(null)
 
 const currentFrame = ref(0)
 const frameStart = ref(currentFrame.value)
@@ -282,6 +285,7 @@ onMounted(async () => {
     selectedLabeltype.value = types['1']
   })
   videoElement.value = document.getElementById("vid")
+  getLocalizePredictions(videoinfo.value.Id).then(boxes => locationPredictions.value = boxes)
 })
 
 async function loadVideo(id) {
@@ -667,6 +671,19 @@ const predictBoxes = async () => {
   }
   console.log('launching job', jobarguments)
   launchJob(jobarguments)
+  localizeJobLaunched.value = true
+  poll4Boxes()
+}
+
+const poll4Boxes = async () => {
+  let noBoxes = true
+  while (noBoxes) {
+    hasLocalizePredictions(videoinfo.value.Id).then(hasBoxes => noBoxes = !hasBoxes)
+    console.log('polling for boxes')
+    await sleep(2000)
+  }
+  getLocalizePredictions(videoinfo.value.Id).then(boxes => console.log('boxes', locationPredictions.value = boxes))
+  localizeJobLaunched.value = false
 }
 
 </script>
