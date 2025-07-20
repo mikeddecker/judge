@@ -59,3 +59,17 @@ Then start up the API and the web app.
 ```bash
 mysqldump -h 127.0.0.1 -P 3377 -u root -p judge > "/media/miked/Elements/Judge/FINISHED-DB-READY/$(date +\%Y\%m\%d)_judge_dump.sql"
 ```
+
+### Clean requirements & update
+
+(in api and computervision)
+The last install is run again to make sure there aren't to much packages deleted.
+```bash
+pip install --upgrade pip-chill
+pip-chill > requirements.txt
+pip install --upgrade -r requirements.txt
+comm -23 <(pip freeze | sort) <(pip-chill | sort) > unused.txt
+xargs pip uninstall -y < unused.txt
+pip install --upgrade -r requirements.txt
+rm unused.txt
+```
