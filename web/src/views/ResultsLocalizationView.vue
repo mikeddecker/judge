@@ -78,6 +78,7 @@ const getChartOptions = (title) => {
           display: true,
           text: 'box count'
         },
+        // type: 'logarithmic',
         suggestedMin: 0,
         suggestedMax: 1,
         position: 'right'
