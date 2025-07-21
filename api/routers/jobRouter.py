@@ -25,11 +25,7 @@ class JobOptionsRouter(Resource):
         super().__init__(**kwargs)
     
     def get(self, step):
-        match (step):
-            case 'LOCALIZE':
-                return { k: vars(sns) for k,sns in RECIPES.items() }
-                # TODO : add best model training
-        return "Ok", 200
+        return { k: vars(sns) for k,sns in RECIPES[step].items() }
 
 class JobLaunchRouter(Resource):
     def __init__(self, **kwargs):

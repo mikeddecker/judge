@@ -3,6 +3,7 @@ import json
 import numpy as np
 import os
 import pandas as pd
+import yaml
 
 from constants import ENVS
 from datetime import datetime 
@@ -19,6 +20,21 @@ def train_yolo_model(variant: str, repo: DataRepository):
     """modeldir: e.g. runs/detect/train5"""
     def get_video_path(repo, videoId):
         return os.path.join(ENVS.DIRS.VIDEOS, repo.VideoNames.loc[videoId, "name"])
+    
+    def __generate_yolo_yaml(repo: DataRepository):
+        # TODO : Should only be when training right?
+        data = {
+            'path': os.path.join(ENVS.DIRS.YOLO_LABELS),
+            'train': 'images/train',
+            'val': 'images/val',
+            'names': {i: name for i, name in enumerate(repo.get_frame_label_types())}
+        }
+
+        # Save to a YAML file
+        with open('jumpers.yml', 'w') as file:
+            yaml.dump(data, file, sort_keys=False)
+
+    __generate_yolo_yaml(repo)
 
     previous_frameNr = 0
     cap = None
@@ -56,9 +72,9 @@ def train_yolo_model(variant: str, repo: DataRepository):
 
     num_val_images = len(os.listdir(os.path.join(ENVS.DIRS.YOLO_LABELS, LABELS_FOLDER, 'val')))
 
-    # TODO : make jumpers.yml dynamic based on config
-    model = YOLO(variant)
-    args = dict(model=variant, data="jumpers.yml", epochs=300, batch=8, patience=8, lr0=0.0001)
+    variantWeightName = f'yolo11{variant}.pt'
+    model = YOLO(variantWeightName)
+    args = dict(model=variantWeightName, data="jumpers.yml", epochs=300, batch=8, patience=8, lr0=0.0001)
     results = model.train(**args)
 
     # 'ap_class_index', 'box', 'class_result', 'confusion_matrix', 'curves', 'curves_results', 
@@ -81,7 +97,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
     with open(os.path.join(save_dir, 'results.json'), 'w') as f:
         json.dump(simplified, f, sort_keys=True, default=str)
 
-    return save_dir
+    validate_localize(modeldir=save_dir, repo=repo)
 
 if __name__ == "__main__":
     repo = DataRepository()
@@ -89,6 +105,4 @@ if __name__ == "__main__":
     variant = f'yolo11{size}.pt'
     save_dir = '/home/miked/code/judge/runs/detect/train11'
     # save_dir = train_yolo_model(variant=variant, repo=repo)
-    # modelname = f"yolov11{size}_{save_dir.name}"
-    # validate_localize(modeldir=save_dir, repo=repo, modelname=modelname)
 

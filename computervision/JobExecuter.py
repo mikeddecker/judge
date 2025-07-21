@@ -5,13 +5,12 @@ import json
 from managers.DataRepository import DataRepository
 from Predictor import Predictor
 from Trainer import Trainer, trainparams, max_rounds
-from TrainerLocalize import train_yolo_model, validate_localize
+from managers.TrainerLocalize import train_yolo_model, validate_localize
 from constants import RECIPES
 
 # Managers
 
 REPO = DataRepository()
-
 
 # JobReader
 
@@ -27,10 +26,11 @@ while no_shutdown_job:
         print('Waiting for a job')
         time.sleep(3)
         continue
-
-    if job["type"] == "PREDICT":
+    else:
         print(job)
-        job_arguments = json.loads(job["job_arguments"])
+
+    job_arguments = json.loads(job["job_arguments"])
+    if job["type"] == "PREDICT":
         saveAsMp4 = False if "save_mp4" not in job_arguments.keys() else bool(job_arguments["save_mp4"])
         predictor.predict(
             type=job["step"],
@@ -42,40 +42,10 @@ while no_shutdown_job:
         )
         REPO.delete_job(job["id"])
     elif job["type"] == "TRAIN":
-        print(job)
 
-        # # LOCALIZE: TODO : wrap in trainer
-        # size = 'n'
-        # variant = f'yolo11{size}.pt'
-        # save_dir = train_yolo_model(variant=variant, repo=REPO)
-        # modelname = f"yolov11{size}_{save_dir.name}"
-        # validate_localize(modeldir=save_dir, repo=REPO, modelname=modelname)
-
-        # print("Cropping labeled videos to train segment and recognize")
-        # # Create videocrops TODO: move to datagenerators or remove freshly labeled videos
-        # for videoId in REPO.get_videoIds_of_videos_with_skills():
-        #     # TODO : include modelname in crop video, but also a sort of confidence score.
-        #     predictor.predict(
-        #         type="LOCALIZE",
-        #         videoId=videoId,
-        #         modelname=None,
-        #         saveAsVideo=True
-        #     )
-
-        print("Start training segments")
-
-        models = [
-            'MViT',
-            'Resnet_MC3',
-            'SA_Conv3D',
-            'Resnet_R2plus1',
-            'Resnet_R3D',
-            'MViT_extra_dense',
-        ]
-
-        modelname = 'MViT' # TODO : pick from job executor
+        modelname = job_arguments['model']
         trainer.train(
-            type="SEGMENT",
+            step=job['step'],
             modelname=modelname,
             from_scratch=True,
             epochs=max_rounds[0],
@@ -84,50 +54,8 @@ while no_shutdown_job:
             modelparams=trainparams[modelname],
             learning_rate=4e-5
         )
-        trainer.train(
-            type="SEGMENT",
-            modelname=modelname,
-            from_scratch=False,
-            epochs=max_rounds[1],
-            save_anyway=True,
-            unfreeze_all_layers=True,
-            modelparams=trainparams[modelname],
-            learning_rate=1e-6
-        )
 
-        for modelname in models:
-            trainer.train(
-                type="SKILL",
-                modelname=modelname,
-                from_scratch=True,
-                epochs=max_rounds[0],
-                save_anyway=True,
-                unfreeze_all_layers=False,
-                modelparams=trainparams[modelname],
-                learning_rate=4e-5
-            )
-
-            trainer.train(
-                type="SKILL",
-                modelname=modelname,
-                from_scratch=False,
-                epochs=max_rounds[1],
-                save_anyway=True,
-                unfreeze_all_layers=True,
-                modelparams=trainparams[modelname],
-                learning_rate=1e-6
-            )
-
-            # Judge score validation preparation
-            for videoId in range(2568, 2590):
-                predictor.predict(
-                    type="FULL",
-                    videoId=videoId,
-                    recipe=modelname,
-                    modelparams=trainparams[modelname],
-                    saveAsVideo=False,
-                )
-        
+    
         REPO.check_connection_reconnect_if_needed()
         REPO.delete_job(job["id"])
     else:

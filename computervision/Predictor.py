@@ -412,20 +412,6 @@ class Predictor:
         finally:
             torch.cuda.empty_cache()
             gc.collect()
-      
-
-    def __generate_yolo_yaml(self):
-        # TODO : Should only be when training right?
-        data = {
-            'path': os.path.join(ENVS.DIRS.YOLO_LABELS),
-            'train': 'images/train',
-            'val': 'images/val',
-            'names': {i: name for i, name in enumerate(self.repo.get_frame_label_types())}
-        }
-
-        # Save to a YAML file
-        with open('jumpers.yml', 'w') as file:
-            yaml.dump(data, file, sort_keys=False)
     
     def __predict_location(self, videoId, recipe:str, weights:str='best', saveAsVideo:bool=False):
         recipe, weightpath = ConfigHelper.localize_get_best_modelpath()

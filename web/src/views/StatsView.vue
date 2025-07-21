@@ -18,7 +18,8 @@
           <StatsGeneral v-if="generalStats" :stats="generalStats"></StatsGeneral>
         </TabPanel>        
         <TabPanel value="localization">
-          <ResultsLocalizationView v-if="localizeStats && frameLabelTypes" :results="localizeStats" :frame-label-types="frameLabelTypes"></ResultsLocalizationView>
+          <StatsLocalizationView v-if="localizeStats && frameLabelTypes" :results="localizeStats" :frame-label-types="frameLabelTypes"></StatsLocalizationView>
+          <ResultsLocalizationView></ResultsLocalizationView>
         </TabPanel>
         <TabPanel value="segmentation">
           <ResultsSegmentationView v-if="segmentationStats" :results="segmentationStats"></ResultsSegmentationView>
@@ -45,6 +46,7 @@ import ResultsRecognitionView from './ResultsRecognitionView.vue';
 import ResultsLocalizationView from '@/views/ResultsLocalizationView.vue';
 import ResultsJudgeScores from '@/views/ResultsJudgeScores.vue';
 import StatsGeneral from './StatsGeneral.vue';
+import StatsLocalizationView from './StatsLocalizationView.vue';
 
 const data = ref(null)
 const loading = ref(true)

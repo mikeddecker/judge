@@ -1,8 +1,6 @@
 from datetime import datetime
 from helpers.ValueHelper import ValueHelper
-
-JOB_TYPES = ['TRAIN', 'PREDICT']
-JOB_STEPS = ['LOCALIZE', 'SEGMENT', 'RECOGNIZE', 'FULL']
+from config import JOB_STEPS, JOB_TYPES
 
 class Job:
     def __init__(
@@ -22,8 +20,10 @@ class Job:
             assert 'videoId' in job_arguments.keys(), f"VideoId must be specified for predict jobs"
             assert job_arguments['videoId'] is not None, f"VideoId may not be None for predict jobs"
             ValueHelper.check_raise_id(job_arguments['videoId'])
-            assert 'model' in job_arguments.keys(), f"Model must be specified for predict jobs"
-            assert job_arguments['model'] is not None, f"Model may not be None for predict jobs"
+
+        if type == 'TRAIN' or type == 'PREDICT':
+            assert 'model' in job_arguments.keys(), f"Model must be specified for predict or train jobs"
+            assert job_arguments['model'] is not None, f"Model may not be None for predict or train jobs"
             ValueHelper.check_raise_string(job_arguments['model'])
 
         self.id = id

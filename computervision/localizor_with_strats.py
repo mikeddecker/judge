@@ -326,7 +326,7 @@ def localize_jumpers(
 
     return smoothed_values 
 
-def validate_localize(modeldir: str, repo: DataRepository, modelname: str):
+def validate_localize(modeldir: str, repo: DataRepository):
     """Validates localize methods on a specific run"""
     strategies = get_localize_strategy_list()
     strategies = ['raw', 'smoothing', 'smoothing_skip_small_iou']

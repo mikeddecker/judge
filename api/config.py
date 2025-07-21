@@ -37,24 +37,33 @@ ENVS = SimpleNamespace(
 )
 
 RECIPES = {
-    'MViT' : SimpleNamespace(
-        model = 'MViT',
-        DIM = 224,
-        default_weights = 'DEFAULT',
-    ),
-    'yolo11n' : SimpleNamespace(
-        model = 'yolo11n',
-        base_model = 'YOLO',
-        default_weights = 'yolo11n.pt',
-    ),
-    'yolo11s' : SimpleNamespace(
-        model = 'yolo11s',
-        base_model = 'YOLO',
-        default_weights = 'yolo11s.pt',
-    ),
-    'yolo11m' : SimpleNamespace(
-        model = 'yolo11m',
-        base_model = 'YOLO',
-        default_weights = 'yolo11m.pt',
-    )
+    'LOCALIZE' : {
+        'yolo11n' : SimpleNamespace(
+            model = 'yolo11n',
+            base_model = 'YOLO',
+            default_weights = 'yolo11n.pt',
+        ),
+        'yolo11s' : SimpleNamespace(
+            model = 'yolo11s',
+            base_model = 'YOLO',
+            default_weights = 'yolo11s.pt',
+        ),
+        'yolo11m' : SimpleNamespace(
+            model = 'yolo11m',
+            base_model = 'YOLO',
+            default_weights = 'yolo11m.pt',
+        )
+    },
+    'RECOGNIZE' : {
+        'MViT' : SimpleNamespace(
+            model = 'MViT',
+            base_model = 'MViT',
+            DIM = 224,
+            default_weights = 'DEFAULT',
+        ),
+    }
 }
+RECIPES['SEGMENT'] = RECIPES['RECOGNIZE']
+
+JOB_TYPES = ['TRAIN', 'PREDICT']
+JOB_STEPS = ['LOCALIZE', 'SEGMENT', 'RECOGNIZE', 'FULL']
