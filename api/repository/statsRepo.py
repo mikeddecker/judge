@@ -1,4 +1,7 @@
+import os
+from config import RECIPES, ENVS
 from flask_sqlalchemy import SQLAlchemy
+from helpers.helpers import load_json_file
 from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type, FrameLabelType
 from sqlalchemy import desc, func, case
 from typing import List
@@ -95,3 +98,20 @@ class StatsRepository:
             daily_data[current_date]['cumulative'][row.labeltype] += row.count
 
         return daily_data
+    
+    def localize_results(self) -> dict:
+        results = {}
+        for key, recipe in RECIPES['LOCALIZE'].items():
+            print(key, recipe.size)
+            resultdir = os.path.join(ENVS.DIRS.WEIGHTS, 'yolo', recipe.size)
+            subfolder = os.listdir(resultdir)[0]
+            resultdir = os.path.join(resultdir, subfolder)
+            ious_all = load_json_file(os.path.join(resultdir, 'localize_ious.json'))
+            recipe_results = load_json_file(os.path.join(resultdir, 'results.json'))
+            results[key] = {
+                'model': key,
+                'team_raw_avg' : ious_all['raw']['val']['avg'],
+                'team_smoothing_avg' : ious_all['smoothing']['val']['avg'],
+                **recipe_results['results_dict']
+            }
+        return results

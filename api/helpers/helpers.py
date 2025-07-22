@@ -9,4 +9,4 @@ def load_json_file(path) -> dict:
 
 def dump_json_file(jsondict, path):
     with open(path, 'w') as f:
-        json.dump(jsondict, f, sort_keys=True, indent=4)    
+        json.dump(jsondict, f, sort_keys=True, indent=4)

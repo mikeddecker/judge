@@ -1,5 +1,5 @@
 <script setup>
-import { getColor } from '@/helpers/utils'
+import { formatPercentage, getColor } from '@/helpers/utils'
 import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps({
@@ -122,6 +122,20 @@ const barChartFramesTrainTest = computed(() => {
   </div>
   <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getChartOptions('Daily box count')" class="h-[25rem]" />
   <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getChartOptions('Daily box count (cumulative)')" class="h-[25rem]" />
+
+  <DataTable :value="results['recipes']">
+    <Column
+      v-for="(value, prop) in Object.values(results['recipes'])[0]"
+      :key="prop"
+      sortable
+      :field="prop"
+      :header="prop"
+    >
+      <template #body="slotProps">
+        {{ ['model'].includes(prop) ? slotProps.data[prop] : formatPercentage(slotProps.data[prop]) }}
+      </template>
+    </Column>
+  </DataTable>
 </template>
 
 <style scoped>

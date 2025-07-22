@@ -208,33 +208,8 @@ class StatsService:
             'framecounts': {
                 'total' : self.StatsRepo.localize_frame_counts(),
             },
-            'general' : {},
+            'recipes' : self.StatsRepo.localize_results(),
         }
-
-        basepath = os.path.join('..', 'runs', 'detect')
-        results['models'] = os.listdir(basepath)
-
-        for traindir in os.listdir(basepath):
-            results[traindir] = {}
-            trainpath = os.path.join(basepath, traindir)
-            results[traindir]['content'] = os.listdir(trainpath)
-            argpath = os.path.join(trainpath, 'args.yaml')
-            if os.path.exists(argpath):
-                with open(argpath, 'r') as file:
-                    results[traindir]['args'] = yaml.safe_load(file)
-
-            # Process results
-            if 'weights' not in results[traindir]['content']:
-                continue
-
-            if 'results.csv' not in results[traindir]['content']:
-                continue
-
-            df_results = pd.read_csv(os.path.join(trainpath, 'results.csv'))
-
-
-        # checkpoint = torch.load(os.path.join('..', 'computervision', 'weights', f"{selectedModel}.checkpoint.pt"), weights_only=False)
-
 
         return results
 
