@@ -11,8 +11,9 @@ import os
 import torch
 import yaml
 
+from base_utils import load_json_file
 from constants import ENVS, PYTORCH_MODELS_SKILLS
-from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values, load_json_file
+from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values
 from localizor_with_strats import predict_and_save_locations
 from managers.DataRepository import DataRepository
 from managers.FrameLoader import FrameLoader

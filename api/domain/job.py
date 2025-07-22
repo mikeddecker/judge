@@ -20,11 +20,14 @@ class Job:
             assert 'videoId' in job_arguments.keys(), f"VideoId must be specified for predict jobs"
             assert job_arguments['videoId'] is not None, f"VideoId may not be None for predict jobs"
             ValueHelper.check_raise_id(job_arguments['videoId'])
-
-        if type == 'TRAIN' or type == 'PREDICT':
-            assert 'model' in job_arguments.keys(), f"Model must be specified for predict or train jobs"
-            assert job_arguments['model'] is not None, f"Model may not be None for predict or train jobs"
+            assert 'model' in job_arguments.keys(), f"Model must be specified for predict jobs"
+            assert job_arguments['model'] is not None, f"Model may not be None for predict jobs"
             ValueHelper.check_raise_string(job_arguments['model'])
+
+        if type == 'TRAIN':
+            assert 'recipe' in job_arguments.keys(), f"Recipe must be specified for predict jobs"
+            assert job_arguments['recipe'] is not None, f"Recipe may not be None for predict jobs"
+            ValueHelper.check_raise_string(job_arguments['recipe'])
 
         self.id = id
         self.type = type

@@ -6,7 +6,7 @@ import ConfigView from '@/views/ConfigView.vue'
 import DownloadView from '@/views/DownloadView.vue'
 import QuickLabelLocalize from '@/views/QuickLabelLocalize.vue'
 import StatsView from '@/views/StatsView.vue'
-import TestView from '@/views/TestView.vue'
+import TrainView from '@/views/TrainView.vue'
 import VideoView from '@/views/VideoView.vue'
 
 const router = createRouter({
@@ -16,7 +16,7 @@ const router = createRouter({
     { path: '/about', name: 'about', component: AboutView, },
     { path: '/browse', name: 'browse', component: BrowseView },    
     { path: '/config', name: 'config', component: ConfigView, },
-    { path: '/test', name: 'test', component: TestView },
+    { path: '/train', name: 'test', component: TrainView },
     { path: '/stats', name: 'stats', component: StatsView },
     { path: '/video/:id', name: 'video', component: VideoView },
     { path: '/download', name: 'download', component: DownloadView },

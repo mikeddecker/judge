@@ -46,7 +46,8 @@ const canvasmodeIsEdit = computed(() => props.canvasMode == 'edit')
 const canvasmodeIsDelete = computed(() => props.canvasMode == 'delete')
 const canvasmodeIsAcceptPredictedBox = computed(() => props.canvasMode == 'accept')
 const boxes = computed(() => props.videoinfo.Frames.filter(box => box.FrameNr == Math.round(props.currentFrameNr ? props.currentFrameNr : 0)))
-const predictedBoxesCurrentFrame = computed(() => props.predictedBoxes ? props.predictedBoxes[props.currentFrameNr] : [])
+const predictedBoxesCurrentFrame = computed(() => props.predictedBoxes && props.predictedBoxes['boxes'] ? props.predictedBoxes['boxes'][props.currentFrameNr] : [])
+const predictedBoxClassesCurrentFrame = computed(() => props.predictedBoxes && props.predictedBoxes['cls'] ? props.predictedBoxes['cls'][props.currentFrameNr] : [])
 
 const boxesHovering = ref([])
 const predictedBoxesHovering = ref([])
@@ -65,6 +66,7 @@ const boxColors = [
   '#67e8f9',
   '#ffffff',
   '#000000',
+  '#555555',
 ]
 
 const mouseX = ref(0)
@@ -134,12 +136,15 @@ const resetCanvasAndDrawBoxes = () => {
   // Draw predicted boxes
   Object.entries(predictedBoxesCurrentFrame.value).forEach(([idx, box]) => {
     // Received boxes are: array of 4 elements = array[xmin, ymin, xmax, ymax] but absolute values!
-    ctx.strokeStyle = boxColors[10]
-    const xleft = box[0] / props.videoinfo.Width * videoWidth.value
-    const yleft = box[1] / props.videoinfo.Height * videoHeight.value
-    const w = (box[2] - box[0]) / props.videoinfo.Width * videoWidth.value
-    const h = (box[3] - box[1]) / props.videoinfo.Height * videoHeight.value
-    ctx.strokeRect(xleft, yleft, w, h, 0.3);
+    let clsIdx = predictedBoxClassesCurrentFrame.value[idx]
+    if (clsIdx < 2) {
+      ctx.strokeStyle = boxColors[10 + clsIdx]
+      const xleft = box[0] / props.videoinfo.Width * videoWidth.value
+      const yleft = box[1] / props.videoinfo.Height * videoHeight.value
+      const w = (box[2] - box[0]) / props.videoinfo.Width * videoWidth.value
+      const h = (box[3] - box[1]) / props.videoinfo.Height * videoHeight.value
+      ctx.strokeRect(xleft, yleft, w, h, 0.3);
+    }
   })
 
   // Draw labeled boxes
@@ -183,7 +188,7 @@ const canvasMouseMoves = (event) => {
       return minXbox < mouseX.value && mouseX.value < maxXbox && minYbox < mouseY.value && mouseY.value < maxYbox
     })
 
-    predictedBoxesHovering.value = props.predictedBoxes[props.currentFrameNr].filter(
+    predictedBoxesHovering.value = props.predictedBoxes['boxes'][props.currentFrameNr].filter(
       (boxArray) => {
         let minXbox = boxArray[0] / props.videoinfo.Width
         let maxXbox = boxArray[2] / props.videoinfo.Width

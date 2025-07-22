@@ -3,33 +3,50 @@ from managers.TrainerSegments import TrainerSegments
 from managers.TrainerLocalize import train_yolo_model, validate_localize
 from managers.DataRepository import DataRepository
 from constants import PYTORCH_MODELS_SKILLS
+from constants import RECIPES
 
 class Trainer:
-    def train(self, step, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, modelparams: dict = None, learning_rate=1e-5):
+    def train(self, step, recipename, from_scratch, save_anyway):
         match step:
             case 'LOCALIZE':
-                train_yolo_model('m', repo=DataRepository())
+                train_yolo_model(RECIPES[step][recipename].size, repo=DataRepository())
             case 'SEGMENT':
                 segmentTrainer = TrainerSegments()
                 segmentTrainer.train(
-                    modelname=modelname,
+                    modelname=RECIPES[step][recipename].model,
                     from_scratch=from_scratch,
-                    epochs=epochs,
+                    epochs=1,
                     save_anyway=save_anyway,
-                    unfreeze_all_layers=unfreeze_all_layers,
-                    trainparams=modelparams,
-                    learning_rate=learning_rate
+                    unfreeze_all_layers=False,
+                    trainparams=RECIPES[step][recipename],
+                )
+                segmentTrainer.train(
+                    modelname=RECIPES[step][recipename].model,
+                    from_scratch=False,
+                    epochs=300,
+                    save_anyway=save_anyway,
+                    unfreeze_all_layers=True,
+                    trainparams=RECIPES[step][recipename],
                 )
             case 'SKILL':
                 if modelname in PYTORCH_MODELS_SKILLS.keys():
                     skillTrainer = TrainerSkills()
-                    skillTrainer.train(modelname=modelname,
-                                                   from_scratch=from_scratch,
-                                                   epochs=epochs,
-                                                   save_anyway=save_anyway,
-                                                   unfreeze_all_layers=unfreeze_all_layers,
-                                                   trainparams=modelparams,
-                                                   learning_rate=learning_rate)
+                    skillTrainer.train(
+                        modelname=RECIPES[step][recipename].model,
+                        from_scratch=from_scratch,
+                        epochs=1,
+                        save_anyway=save_anyway,
+                        unfreeze_all_layers=False,
+                        trainparams=RECIPES[step][recipename],
+                    )
+                    skillTrainer.train(
+                        modelname=RECIPES[step][recipename].model,
+                        from_scratch=False,
+                        epochs=300,
+                        save_anyway=save_anyway,
+                        unfreeze_all_layers=True,
+                        trainparams=RECIPES[step][recipename],
+                    )
                 else:
                     raise NotImplementedError()
             case _:

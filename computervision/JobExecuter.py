@@ -36,27 +36,21 @@ while no_shutdown_job:
             type=job["step"],
             videoId=job_arguments["videoId"],
             recipe=job_arguments["model"],
-            modelparams=RECIPES[job_arguments["model"]],
+            modelparams=RECIPES[job["step"]][job_arguments["model"]],
             saveAsVideo=saveAsMp4,
             weights=job_arguments["weights"] if job_arguments["weights"] is not None else 'best'
         )
         REPO.delete_job(job["id"])
     elif job["type"] == "TRAIN":
 
-        modelname = job_arguments['model']
         trainer.train(
             step=job['step'],
-            modelname=modelname,
+            recipename=job_arguments['recipe'],
             from_scratch=True,
-            epochs=max_rounds[0],
             save_anyway=True,
-            unfreeze_all_layers=False,
-            modelparams=trainparams[modelname],
-            learning_rate=4e-5
         )
 
     
-        REPO.check_connection_reconnect_if_needed()
         REPO.delete_job(job["id"])
     else:
         print('Unrecognized job?')

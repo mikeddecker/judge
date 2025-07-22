@@ -4,12 +4,14 @@ import math
 import numpy as np
 import os
 import pandas as pd
+from pprint import pprint
 import time
 
 from constants import ENVS, DIM
 from helpers import get_localize_strategy_list
 from managers.DataRepository import DataRepository
 from moviepy import ImageSequenceClip
+from tqdm import tqdm
 from ultralytics import YOLO
 
 strategyparams = {
@@ -204,6 +206,7 @@ def localize_jumpers(
     times_with_no_jumper = 0
     frames = []
     predicted_boxes = []
+    predicted_classes = []
 
     if save_as_mp4:
         # Parameter initialisation for mp4
@@ -213,14 +216,16 @@ def localize_jumpers(
         min_h = height
         max_wh = max(width, height)
     
-    print(f"Predicting video {videoId}")
-
     i = 0
     ret, frame = cap.read()
     while ret:
         result = model(frame, verbose=False)
-        xyxy_boxes = result[0].boxes.xyxy
-        predicted_boxes.append(xyxy_boxes.tolist())
+        predicted_boxes.append(result[0].boxes.xyxy.tolist())
+        predicted_classes.append(result[0].boxes.cls.tolist())
+
+        # Filter foreground jumpers
+        xyxy_boxes = result[0].boxes.xyxy[result[0].boxes.cls == 0]
+
         
         if xyxy_boxes.shape[0] > 0:
             xmin = max(0, int(xyxy_boxes[:, 0].min().item()) - padding_x)
@@ -305,7 +310,7 @@ def localize_jumpers(
 
     rawPredictedBoxesPath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json")
     with open(rawPredictedBoxesPath, "w") as fp:
-        json.dump(predicted_boxes, fp, indent=4)
+        json.dump({'boxes':predicted_boxes, 'cls': predicted_classes}, fp, indent=4)
 
     cap.release()
     cv2.destroyAllWindows()
@@ -328,27 +333,24 @@ def localize_jumpers(
 
 def validate_localize(modeldir: str, repo: DataRepository):
     """Validates localize methods on a specific run"""
+    print('Team box validation')
     strategies = get_localize_strategy_list()
     strategies = ['raw', 'smoothing', 'smoothing_skip_small_iou']
 
-    df_videos_with_boxes = repo.get_videos_having_boxes_of_type(type=1).sample(frac=1.0)
-    total_frames = df_videos_with_boxes['frameLength'].sum()
-    videoIds = df_videos_with_boxes['id'].tolist()
-    print("Total frames", total_frames)
+    df_team_boxes = repo.get_team_boxes().sort_values(['videoId', 'frameNr'])
+    print('df_team_boxes')
+    print(df_team_boxes.head(3))
+    videoIds = df_team_boxes['videoId'].unique()
 
+    print(modeldir)
     model = YOLO(os.path.join(modeldir, "weights", "best.pt"))
-
-    full_team_relative_boxes_both = {
-        'train': repo.get_framelabels(train_test_val='train', type=1),
-        'val' : repo.get_framelabels(train_test_val='val', type=1),
-    }
 
     ious_all = {
         s: { 
             tv: {
                 **{ 'sum': 0, 'min': 1, 'max': 0, 'avg': 0, 'total': 0 },
                 'videos' : {}
-            } for tv in ['train', 'val']
+            } for tv in ['val']
         } for s in strategies
     }
     invalid_frames = []
@@ -356,15 +358,10 @@ def validate_localize(modeldir: str, repo: DataRepository):
 
     valstart = time.time()
     completed_videoIds = []
-    for videoId in videoIds:
-        train_or_val = 'val' if videoId % 10 == 5 else 'train'
-        full_team_relative_boxes = full_team_relative_boxes_both[train_or_val]
-        full_team_relative_boxes_of_videoId = full_team_relative_boxes[full_team_relative_boxes['videoId'] == videoId]
-        if len(full_team_relative_boxes_of_videoId) == 0:
-            continue
+    for videoId in tqdm(videoIds):
+        train_or_val = 'val'
 
         try:
-
             # df_coordinates contains both:
             # Xmin Ymin Xmax Ymax
             # and relative x y w h
@@ -383,7 +380,8 @@ def validate_localize(modeldir: str, repo: DataRepository):
             # Validate localized coordinates #
             ##################################
             # Dict with relative boxes
-            frameNrs = full_team_relative_boxes_of_videoId['frameNr']
+            df_teamlabels = df_team_boxes[df_team_boxes['videoId'] == videoId]
+            frameNrs = df_teamlabels['frameNr']
             if max(frameNrs) >= len(df_coordinates['raw']):
                 print("Invalid framecounts... skipping videoId, maxFrameNr, count", videoId, max(frameNrs), len(df_coordinates['raw']))
                 invalid_frames.append({
@@ -397,17 +395,17 @@ def validate_localize(modeldir: str, repo: DataRepository):
             for s in strategies:
                 predicted_relative_boxes = df_coordinates[s].iloc[frameNrs]
 
-                full_team_relative_boxes_of_videoId.index = full_team_relative_boxes_of_videoId['frameNr']
-                assert predicted_relative_boxes.shape[0] == full_team_relative_boxes_of_videoId.shape[0]
+                df_teamlabels.index = df_teamlabels['frameNr']
+                assert predicted_relative_boxes.shape[0] == df_teamlabels.shape[0]
 
-                ious_video = calculate_iou_df(predicted_relative_boxes, full_team_relative_boxes_of_videoId)
+                ious_video = calculate_iou_df(predicted_relative_boxes, df_teamlabels)
                 
                 ious_all[s][train_or_val]['sum'] += ious_video.sum()
                 ious_all[s][train_or_val]['total'] += len(ious_video)
                 ious_all[s][train_or_val]['min'] = min(ious_all[s][train_or_val]['min'], ious_video.min())
                 ious_all[s][train_or_val]['max'] = max(ious_all[s][train_or_val]['max'], ious_video.max())
                 ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
-                ious_all[s][train_or_val]['videos'][videoId] = {
+                ious_all[s][train_or_val]['videos'][int(videoId)] = {
                     'ious': ious_video,
                     'min': ious_video.min(),
                     'max': ious_video.max(),
@@ -415,34 +413,26 @@ def validate_localize(modeldir: str, repo: DataRepository):
                 }
 
         except Exception as e:
+            print(e)
             raise e
-        finally:
-            print(f"Error count", len(invalid_frames))
 
-        completed_videoIds.append(videoId)
-        # ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
-        frames_predicted = df_videos_with_boxes[df_videos_with_boxes['id'].isin(completed_videoIds)]['frameLength'].sum()
-        expected_end = (time.time() - valstart) / frames_predicted * total_frames
-        seconds_left = (time.time() - valstart) / frames_predicted * (total_frames- frames_predicted)
-        print(f"Currently {frames_predicted} / {total_frames} frames ({frames_predicted/total_frames*100:.1f}%) - elapsed {time.time()-valstart:.2f}s - estimated total time target {expected_end:.0f}s ---> seconds left: {seconds_left:.0f}s")
     
     for e in errors:
         print(e)
     
-    print(f"Invalid frames")
-    print(pd.DataFrame(invalid_frames))
-    with open(os.path.join(modeldir, 'invalid_videos_framecount_and_effictive_frames_not_matching.json'), 'w') as f:
-        json.dump(invalid_frames, f, sort_keys=True, default=str)    
+    if len(invalid_frames) > 0:
+        print(f"Invalid frames")
+        print(pd.DataFrame(invalid_frames))
+        with open(os.path.join(modeldir, 'invalid_videos_framecount_and_effictive_frames_not_matching.json'), 'w') as f:
+            json.dump(invalid_frames, f, sort_keys=True, default=str)    
     
     print(f"Took {time.time()-valstart:.2f}s")
     
-
-
     # Save validation
     with open(os.path.join(modeldir, 'localize_ious.json'), 'w') as f:
         json.dump(ious_all, f, sort_keys=True, default=str)
 
-
+    return ious_all['raw'][train_or_val]['avg']
 
 def predict_and_save_locations(weights: str, repo: DataRepository, videoIds: int, recipe: str, saveAsVideo:bool):
     """Validates localize methods on a specific run"""
@@ -452,9 +442,8 @@ def predict_and_save_locations(weights: str, repo: DataRepository, videoIds: int
         raise ValueError(f"Weights can not be None")
     else:
         model = YOLO(weights)
-    valstart = time.time()
-    completed_videoIds = []
-    for videoId in videoIds:
+
+    for videoId in tqdm(videoIds):
         try:
             # df_coordinates contains both:
             # Xmin Ymin Xmax Ymax
@@ -472,8 +461,4 @@ def predict_and_save_locations(weights: str, repo: DataRepository, videoIds: int
 
         except Exception as e:
             raise e
-
-        completed_videoIds.append(videoId)
-        if len(videoIds) > 1:
-            print(f"Completed {len(completed_videoIds)}/{len(videoIds)} videos")    
     

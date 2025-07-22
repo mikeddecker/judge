@@ -50,8 +50,9 @@ class JobLaunchRouter(Resource):
             type = data.get('type'),
             step = data.get('step'),
             job_arguments = { 
-                "videoId": data.get('videoId'), 
-                "model": data.get('model'), 
+                "videoId": data.get('videoId'),
+                "recipe" : data.get('recipe'),
+                "model": data.get('model'), # TODO : modify predict using recipes
                 "weights": data.get('weights'),
                 "save_mp4": data.get('save_mp4'),
                 "model_kwargs" : data.get('model_kwargs'),

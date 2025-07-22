@@ -81,6 +81,13 @@ os.makedirs(ENVS.DIRS.GENERATED, exist_ok=True)
 os.makedirs(ENVS.DIRS.GENERATED_VIDEODATA, exist_ok=True)
 os.makedirs(ENVS.DIRS.WEIGHTS, exist_ok=True)
 os.makedirs(ENVS.DIRS.YOLO_LABELS, exist_ok=True)
+os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images'), exist_ok=True)
+os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'labels'), exist_ok=True)
+os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'train'), exist_ok=True)
+os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'test'), exist_ok=True)
+os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'val'), exist_ok=True)
+
+
 
 if __name__ == '__main__':
     with app.app_context():

@@ -310,17 +310,6 @@ def weighted_mse_loss(input, target, weight):
     "https://discuss.pytorch.org/t/how-to-implement-weighted-mean-square-error/2547"
     return torch.sum(weight * (input - target) ** 2)
 
-def load_json_file(path) -> dict:
-    if os.path.exists(path):
-        with open(path, 'r') as f:
-            return json.load(f)
-    return None
-
-def dump_json_file(jsondict, path):
-    with open(path, 'w') as f:
-        json.dump(jsondict, f, sort_keys=True, indent=4)    
-
-
 def calculate_angle(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y_min, old_x_max, old_y_max):
     new_center_x = (new_x_min + new_x_max) / 2
     new_center_y = (new_y_min + new_y_max) / 2

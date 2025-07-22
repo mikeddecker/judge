@@ -78,7 +78,7 @@
           <div class="mt-2 flex gap-2">
             <span class="my-auto">Use</span>
             <Select v-model="selectedLocalizeModel" :options="Object.keys(localizeModelOptions)"></Select>
-            <Button v-if="selectedLocalizeModel && !localizeJobLaunched && !locationPredictions" @click="predictBoxes" label="Launch job"></Button>
+            <Button v-if="selectedLocalizeModel && !localizeJobLaunched" @click="predictBoxes" label="Launch job"></Button>
             <span class="my-auto" v-if="localizeJobLaunched">Job in queue</span>
           </div>
         </div>
