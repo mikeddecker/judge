@@ -217,8 +217,7 @@ class VideoInfo:
         return "\n".join(substrings)
 
     def to_dict(self, include_frames=True):
-        framecountT1 = [f for f in self.Frames if f.LabelType == 1]
-        framecountT2 = [f for f in self.Frames if f.LabelType == 2]
+        print(set(map(lambda f: f.FrameNr, self.Frames)))
         return {
             "Id" : self.Id,
             "Name" : self.Name, 
@@ -229,8 +228,8 @@ class VideoInfo:
             "Duration" : self.get_duration(),
             "FramesLabeledPerSecond" : len(self.Frames) / self.get_duration(),
             "Skills" : [s.to_dict() for s in self.Skills],
-            "LabeledFrameCount" : len(framecountT1),
-            "LabeledFrameCount2": len(framecountT2),
+            "LabeledFrameCount" : len(set(map(lambda f: f.FrameNr, self.Frames))),
+            "BoxCount": len(self.Frames),
             "RelativePath" : self.get_relative_video_path(),
             "Completed_Skill_Labels" : self.Completed_Skill_Labels,
             "Width" : self.Width,

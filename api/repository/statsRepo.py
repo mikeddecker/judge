@@ -107,10 +107,11 @@ class StatsRepository:
             resultdir = os.path.join(resultdir, subfolder)
             ious_all = load_json_file(os.path.join(resultdir, 'localize_ious.json'))
             recipe_results = load_json_file(os.path.join(resultdir, 'results.json'))
-            results[key] = {
-                'model': key,
-                'team_raw_avg' : ious_all['raw']['val']['avg'],
-                'team_smoothing_avg' : ious_all['smoothing']['val']['avg'],
-                **recipe_results['results_dict']
-            }
+            if ious_all:
+                results[key] = {
+                    'model': key,
+                    'team_raw_avg' : ious_all['raw']['val']['avg'],
+                    'team_smoothing_avg' : ious_all['smoothing']['val']['avg'],
+                    **recipe_results['results_dict']
+                }
         return results

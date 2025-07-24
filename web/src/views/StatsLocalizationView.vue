@@ -123,7 +123,7 @@ const barChartFramesTrainTest = computed(() => {
   <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getChartOptions('Daily box count')" class="h-[25rem]" />
   <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getChartOptions('Daily box count (cumulative)')" class="h-[25rem]" />
 
-  <DataTable :value="results['recipes']">
+  <DataTable :value="Object.values(results['recipes'])">
     <Column
       v-for="(value, prop) in Object.values(results['recipes'])[0]"
       :key="prop"

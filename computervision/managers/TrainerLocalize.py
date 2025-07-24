@@ -148,8 +148,6 @@ def train_yolo_model(variant: str, repo: DataRepository):
     
     # Post validation, keep best weights
     for previous_round_dir in os.listdir(weightdir):
-        print(previous_round_dir)
-        
         previous_folder = os.path.join(weightdir, previous_round_dir)
         if os.path.abspath(previous_folder) == os.path.abspath(save_dir):
             # Skip last trained one

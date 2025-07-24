@@ -13,7 +13,7 @@ const cssColorClass = computed(() => { return props.videoId % 10 == 5 ? 'testvid
 // completed target 10% of frames labeled
 // const labelthreshold = 0.1 // Minimun % to be labeled to reach 100%
 // const completed = computed(() => Math.min(100, Math.floor(props.info.LabeledFrameCount / props.info.FrameLength / labelthreshold * 100)))
-const completed = computed(() => props.info.LabeledFrameCount2)
+const completed = computed(() => props.info.BoxCount)
 
 onMounted(async () => {
   try {
@@ -38,7 +38,7 @@ onMounted(async () => {
       <img v-if="info.Completed_Skill_Labels" class="completed" src="@/assets/checked.png" alt="folder image" />
     </div>
     <ProgressBar :bgcolor="'#29ab87'" :completed="completed" />
-  </div>
+</div>
 </template>
 
 <style scoped>

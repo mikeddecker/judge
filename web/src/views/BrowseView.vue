@@ -11,10 +11,8 @@ const folderName = ref("Storage drive")
 const parentId = ref(0)
 const videos = ref([])
 const totalLabels1 = ref(0)
-const totalLabels2 = ref(0)
 const totalFrames = ref(0)
 const testLabels1 = ref(0)
-const testLabels2 = ref(0)
 const testPercentage = ref(0)
 const currentLabelType = ref(2)
 const completed = ref(0)
@@ -28,10 +26,8 @@ const changeFolder = (newFolderId) => {
     count.value = response.VideoCount;
     parentId.value = response.Parent ? response.Parent.Id : 0;
     totalLabels1.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
-    totalLabels2.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount2, 0)
     totalFrames.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.FrameLength, 0)
     testLabels1.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount : 0), 0)
-    testLabels2.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount2 : 0), 0)
 
     completed.value = Object.values(response.Videos).filter((v) => v.Completed_Skill_Labels).length
   })
