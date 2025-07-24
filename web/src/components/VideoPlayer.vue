@@ -17,7 +17,7 @@
       @mousedown="canvasMouseDown" 
       @mousemove="canvasMouseMoves" 
       @mouseup="canvasMouseEndDrawing"
-      @mouseleave="canvasMouseEndDrawing"
+      @mouseleave="canvasMouseLeave"
       >
         Your browser does not support the HTML canvas tag.
     </canvas>
@@ -202,8 +202,13 @@ const canvasMouseMoves = (event) => {
   
   resetCanvasAndDrawBoxes()
 }
-const canvasMouseEndDrawing = (event) => {
+
+const canvasMouseLeave = (event) => {
   if (canvasmodeIsAcceptPredictedBox.value) { return }
+  canvasMouseEndDrawing(event)
+}
+
+const canvasMouseEndDrawing = (event) => {
   mouse.value = ''
   mouseX.value = event.offsetX / videoWidth.value;
   mouseY.value = event.offsetY / videoHeight.value;
