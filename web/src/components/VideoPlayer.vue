@@ -203,6 +203,7 @@ const canvasMouseMoves = (event) => {
   resetCanvasAndDrawBoxes()
 }
 const canvasMouseEndDrawing = (event) => {
+  if (canvasmodeIsAcceptPredictedBox.value) { return }
   mouse.value = ''
   mouseX.value = event.offsetX / videoWidth.value;
   mouseY.value = event.offsetY / videoHeight.value;
