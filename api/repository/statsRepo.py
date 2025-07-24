@@ -102,7 +102,6 @@ class StatsRepository:
     def localize_results(self) -> dict:
         results = {}
         for key, recipe in RECIPES['LOCALIZE'].items():
-            print(key, recipe.size)
             resultdir = os.path.join(ENVS.DIRS.WEIGHTS, 'yolo', recipe.size)
             subfolder = os.listdir(resultdir)[0]
             resultdir = os.path.join(resultdir, subfolder)

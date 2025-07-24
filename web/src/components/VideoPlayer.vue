@@ -5,7 +5,7 @@
       @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @ontimeupdate="ontimeupdate" @loadeddata="onLoadedData"
     /> -->
     <video
-      id="vid" ref="videoPlayer" :src="videoSrc" loop controls
+      id="vid" ref="videoPlayer" :src="videoSrc" loop controls class="max-h-[75vh]"
       @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate" @loadeddata="onLoadedData"
     />
     <canvas

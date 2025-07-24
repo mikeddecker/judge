@@ -8,7 +8,7 @@
     <div id="videoview-content" v-if="!loading" class="flex gap-2">
       <div id="column-1" class="w-[75vw]">
 
-        <VideoPlayer class=" relative" 
+        <VideoPlayer class="relative" 
         v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
         :current-frame-nr="currentFrame" :videoinfo="videoinfo" :labeltype="labeltypes[selectedLabeltype]" :predicted-boxes="locationPredictions"
         @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
