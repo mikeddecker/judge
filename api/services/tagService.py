@@ -61,3 +61,8 @@ class TagService:
         assert self.TagRepo.has_tag(tag_id), f"Tag with id {tag_id} does not exist"
         return self.TagRepo.update_tag_name(tag_id, new_name)
 
+    def update_tag_keywords(self, tag_id: int, keywords: str):
+        ValueHelper.check_raise_id(tag_id)
+        ValueHelper.check_raise_string_keywords_comma_separated(keywords)
+        assert self.TagRepo.has_tag(tag_id), f"Tag with id {tag_id} does not exist"
+        return self.TagRepo.update_tag_keywords(tag_id, keywords)

@@ -279,8 +279,8 @@ export const addTagGroup = async (name) => {
   });
 };
 
-export const updateTag = async (id, name) => {
-  return await api.put('/tags', { 'id': id, 'name': name}, { headers: { 'Content-Type': 'application/json' }})
+export const updateTag = async (id, name, keywords) => {
+  return await api.put('/tags', { 'id': id, 'name': name, 'keywords': keywords}, { headers: { 'Content-Type': 'application/json' }})
   .then(function (response) {
     return response;
   })

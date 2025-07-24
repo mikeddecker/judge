@@ -41,13 +41,15 @@ class TagGroup(db.Model):
     __tablename__ = 'TagGroups'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(127), nullable=False, unique=True)
-
+    parentId = db.Column(db.Integer, db.ForeignKey('TagGroups.id'), nullable=True)
+    parent = db.relationship('TagGroup', remote_side=[id], backref='children', lazy='joined')
     tags = db.relationship('Tag', backref='group', lazy=True)
 
 class Tag(db.Model):
     __tablename__ = 'Tags'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(127), nullable=False)
+    keywords = db.Column(db.String(511), nullable=True)
 
     tagGroupId = db.Column(db.Integer, db.ForeignKey('TagGroups.id'), nullable=True)
 

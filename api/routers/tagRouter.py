@@ -29,13 +29,14 @@ class TagRouter(Resource):
         data = request.get_json()
         id = data.get('id')
         name = data.get('name')
+        keywords = data.get('keywords')
         group = data.get('group')
         
         ValueHelper.check_raise_id(id)
         if not self.tagService.has_tag(id):
             raise ValueError(f"Tag with id {id} does not exist")
         
-        if name is None:
+        if name is None and keywords is None:
             if not self.tagService.has_tag_group(group):
                 raise ValueError(f"TagGroup {group} does not exist")
             else:
@@ -43,8 +44,12 @@ class TagRouter(Resource):
                     ValueHelper.check_raise_string_only_abc123(group)
                 self.tagService.update_tag_group(tag_id=id, group_name=group)
         else:
-            ValueHelper.check_raise_string_only_abc123(name)
-            self.tagService.update_tag_name(tag_id=id, new_name=name)
+            if name is None:
+                ValueHelper.check_raise_string_keywords_comma_separated(keywords)
+                self.tagService.update_tag_keywords(tag_id=id, keywords=keywords)
+            else:
+                ValueHelper.check_raise_string_only_abc123(name)
+                self.tagService.update_tag_name(tag_id=id, new_name=name)
 
 class TagGroupRouter(Resource):
     def __init__(self, **kwargs):

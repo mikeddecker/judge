@@ -23,7 +23,22 @@ class ValueHelper:
             raise ValueError(f"String may not be none")
         if val.isspace() or val == "":
             raise ValueError(f"String may not be empty")
-    
+
+    def check_raise_string_keywords_comma_separated(val: str):
+        """Checks the strings to only allow examples below
+        words
+        digits
+        2024
+        word,digits,and,numbers123
+        words,
+        """
+        keywords = val.split(',')
+        for w in keywords:
+            ValueHelper.check_raise_string(val)
+            reg = re.compile(r'^[A-Za-z0-9,]*$')
+            if not reg.match(val):
+                raise ValueError(f"String must be keywords comma seperated, got {val}")
+
     def check_raise_string_only_abc123(val: str):
         """Checks the strings to only allow examples below
         words

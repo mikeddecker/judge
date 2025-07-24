@@ -13,7 +13,7 @@ class TagRepository:
     def add(self, name: str, group: str | None) -> Tag:
         if group:
             groupDB = self.db.session.query(TagGroupDB).filter_by(name=group).first()
-            new_tag = TagDB(name=name, group=groupDB)
+            new_tag = TagDB(name=name, keywords=f"{name.lower()},{name.upper()}", group=groupDB)
         else:
             new_tag = TagDB(name = name)
         
@@ -50,7 +50,7 @@ class TagRepository:
         """
         Returns all tags
         """
-        return [MapToDomain.map_tag(t) for t in self.db.session.query(TagDB).all()]
+        return [MapToDomain.map_tag(t) for t in self.db.session.query(TagDB).order_by(TagDB.name).all()]
 
     def get_tag_groups(self) -> List[TagGroup]:
         """
@@ -80,4 +80,9 @@ class TagRepository:
     def update_tag_name(self, tag_id: int, name: str):
         tagdb : TagDB = self.db.session.get(TagDB, ident=tag_id)
         tagdb.name = name
+        self.db.session.commit()
+
+    def update_tag_keywords(self, tag_id: int, keywords: str):
+        tagdb : TagDB = self.db.session.get(TagDB, ident=tag_id)
+        tagdb.keywords = keywords
         self.db.session.commit()

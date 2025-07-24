@@ -81,6 +81,7 @@ class MapToDomain:
         return Tag(
             id = tagDB.id,
             name = tagDB.name,
+            keywords= tagDB.keywords,
             tagGroup = None if not tagDB.tagGroupId else TagGroup(
                 id = tagDB.tagGroupId,
                 name = tagDB.group.name, # Add tags if necessairy
