@@ -66,7 +66,7 @@ class ValueHelper:
         if not reg.match(val):
             raise ValueError(f"String may oncly consist of digits, underscore_ or word chars or file_extensions got {val}")
         
-    def check_float_between_0_and_1_inclusive(val: float):
+    def check_raise_float_between_0_and_1_inclusive(val: float):
         """
         Checks if the value is in the interval [0, 1]
         """
@@ -74,6 +74,13 @@ class ValueHelper:
             raise ValueError(f"val is not an int or float, got {type(val)}")
         if val < 0 or val > 1:
             raise ValueError(f"Value must in interval [0,1], got {val}")
+    
+    def check_raise_float(val: float):
+        """
+        Checks if the value is a float
+        """
+        if not isinstance(val, (int, float)):
+            raise ValueError(f"val is not an int or float, got {type(val)}")
         
     def check_raise_yt_url(val: str):
         """Checks if a given url is formatted as a yt url"""

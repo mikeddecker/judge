@@ -34,8 +34,8 @@ const displayLogo = computed(() => route.name ? ['browse', 'about', 'stats', 'ho
       <!-- <RouterLink to="/quick-localize">QuickLocalize</RouterLink> -->
     </nav>
   </header>
-  <main>
-    <RouterView />
+  <main class="mb-32">
+    <RouterView/>
   </main>
 </template>
 

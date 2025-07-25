@@ -316,3 +316,42 @@ export const getJobOptions = async (step) => {
     throw error;
   }
 }
+
+export const getLayers = async () => {
+  try {
+    return await api.get(`/layers`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};
+
+export const getLayerTypes = async () => {
+  try {
+    return await api.get(`/layers/types`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};
+
+export const addLayer = async (name, layerId, type, min, max, step) => {
+  return await api.post('/layers', { name, layerId, type, min, max, step }, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response.data;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+};
+
+
+export const updateLayer = async (id, name, layerId, min, max, step) => {
+  return await api.post('/layers', { id, name, layerId, min, max, step }, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response.data;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+};

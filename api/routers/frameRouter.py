@@ -25,10 +25,10 @@ class FrameRouter(Resource):
         try:
             ValueHelper.check_raise_id(videoId)
             ValueHelper.check_raise_frameNr(frameNr)
-            ValueHelper.check_float_between_0_and_1_inclusive(x)
-            ValueHelper.check_float_between_0_and_1_inclusive(y)
-            ValueHelper.check_float_between_0_and_1_inclusive(width)
-            ValueHelper.check_float_between_0_and_1_inclusive(height)
+            ValueHelper.check_raise_float_between_0_and_1_inclusive(x)
+            ValueHelper.check_raise_float_between_0_and_1_inclusive(y)
+            ValueHelper.check_raise_float_between_0_and_1_inclusive(width)
+            ValueHelper.check_raise_float_between_0_and_1_inclusive(height)
         except ValueError as ve:
             return str(ve), 404
         frameinfo = FrameInfo(frameNr=frameNr, x=x, y=y, width=width, height=height, jumperVisible=jumperVisible, labeltype=labeltype)

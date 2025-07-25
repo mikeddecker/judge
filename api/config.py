@@ -47,3 +47,4 @@ RECIPES = {
 
 JOB_TYPES = ['TRAIN', 'PREDICT']
 JOB_STEPS = ['LOCALIZE', 'SEGMENT', 'RECOGNIZE', 'FULL']
+LAYER_TYPES = ['boolean', 'categorical', 'numerical']

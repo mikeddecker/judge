@@ -12,6 +12,7 @@ import Card from 'primevue/card';
 import Chart from 'primevue/chart';
 import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
+import Divider from 'primevue/divider';
 import InputNumber from 'primevue/inputnumber';
 import InputText from 'primevue/inputtext';
 import { IftaLabel } from 'primevue';
@@ -46,6 +47,7 @@ app.component('Card', Card);
 app.component('Chart', Chart);
 app.component('Column', Column);
 app.component('DataTable', DataTable);
+app.component('Divider', Divider);
 app.component('InputNumber', InputNumber)
 app.component('InputText', InputText)
 app.component('IftaLabel', IftaLabel)

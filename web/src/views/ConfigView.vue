@@ -8,9 +8,11 @@
   <Listbox :options="frameLabelTypes" disabled class="w-full md:w-56"></Listbox>
   
   <h2>Recognition</h2>
+  <LayerConfig/>
 </template>
 
 <script setup>
+import LayerConfig from '@/components/LayerConfig.vue';
 import TagConfig from '@/components/TagConfig.vue';
 import { getFrameLabelTypes } from '@/services/videoService';
 import { computed, onMounted, ref } from 'vue';

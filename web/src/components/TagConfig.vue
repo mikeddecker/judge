@@ -74,16 +74,6 @@ const refreshTags = async () => {
   })
 }
 
-// For collapsable groups
-function toggleRowGroup(groupName) {
-  const index = expandedRowGroups.value.indexOf(groupName)
-  if (index >= 0) {
-    expandedRowGroups.value.splice(index, 1)
-  } else {
-    expandedRowGroups.value.push(groupName)
-  }
-}
-
 const onTagGroupChanged = (id, newGroup) => {
   updateTagGroup(id, newGroup == 'Ungrouped' ? undefined : newGroup)
 }

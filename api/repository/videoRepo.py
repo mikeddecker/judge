@@ -13,6 +13,7 @@ from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLab
 from sqlalchemy import desc
 from typing import List
 
+
 class VideoRepository:
     def __init__(self, db : SQLAlchemy):
         self.db = db

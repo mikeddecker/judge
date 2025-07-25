@@ -233,3 +233,43 @@ class Jobs(db.Model):
     request_time = db.Column(db.DateTime, default=datetime.now)
     status = db.Column(db.String(30), nullable=False)
     status_details = db.Column(db.String(127))
+
+class LayerProperty(db.Model):
+    __tablename__ = 'LayerProperties'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(50), nullable=False)
+    type = db.Column(db.String(15), nullable=False)
+    min = db.Column(db.Float, nullable=True)
+    max = db.Column(db.Float, nullable=True)
+    step = db.Column(db.Float, nullable=True)
+    creationDate = db.Column(db.DateTime, default=datetime.now)
+    lastUpdated = db.Column(db.DateTime, default=datetime.now)
+
+    # categories = db.relationship('LayerPropertyValue', backref='property', lazy='dynamic')
+    categories = db.relationship('LayerPropertyValue', backref='property', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name' : self.name,
+            'type' : self.type,
+            'min' : self.min,
+            'max' : self.max,
+            'step' : self.step,
+            'categories' : [c.to_dict() for c in self.categories]
+        }
+
+class LayerPropertyValue(db.Model):
+    __tablename__ = 'LayerPropertyValues'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    propertyId = db.Column(db.Integer, db.ForeignKey('LayerProperties.id'), nullable=False)
+    name = db.Column(db.String(50), nullable=False)
+    creationDate = db.Column(db.DateTime, default=datetime.now)
+    lastUpdated = db.Column(db.DateTime, default=datetime.now)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
