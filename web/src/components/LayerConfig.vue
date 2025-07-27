@@ -1,5 +1,6 @@
 <template>
   <h3>Configure layers</h3>
+  <span>Keep in mind that the reactivity always lags one behind upon adding values.</span>
   <DataTable v-model:expandedRows="expandedRows" :value="layers" dataKey="id"
   @rowExpand="onRowExpand" @rowCollapse="onRowCollapse" tableStyle="min-width: 60rem">
     <Column expander style="width: 5rem" />
@@ -19,7 +20,7 @@
           <span>{{ slotProps.option.name }}</span>
         </template>
       </Listbox>
-      <IftaLabel v-if="slotProps.data.type == 'categorical'">
+      <IftaLabel v-if="slotProps.data.type == 'categorical'" class="my-2">
         <InputText id="new_layer_value" v-model="new_layer_value" variant="filled"/>
         <label for="new_layer_value">Add value</label>
       </IftaLabel>
