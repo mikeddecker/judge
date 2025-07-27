@@ -20,6 +20,7 @@ class VideoInfo:
         "Width",
         "Height",
         "JudgeDiffScore",
+        "TeamBoxes",
     ]
     # Frame does not 
     Frames: List[FrameInfo] # Key = frameId, value is Frame
@@ -234,6 +235,7 @@ class VideoInfo:
             "Completed_Skill_Labels" : self.Completed_Skill_Labels,
             "Width" : self.Width,
             "Height" : self.Height,
+            "TeamBoxes": getattr(self, "TeamBoxes", []),
         }
 
     

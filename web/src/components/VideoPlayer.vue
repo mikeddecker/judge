@@ -48,6 +48,8 @@ const canvasmodeIsAcceptPredictedBox = computed(() => props.canvasMode == 'accep
 const boxes = computed(() => props.videoinfo.Frames.filter(box => box.FrameNr == Math.round(props.currentFrameNr ? props.currentFrameNr : 0)))
 const predictedBoxesCurrentFrame = computed(() => props.predictedBoxes && props.predictedBoxes['boxes'] ? props.predictedBoxes['boxes'][props.currentFrameNr] : [])
 const predictedBoxClassesCurrentFrame = computed(() => props.predictedBoxes && props.predictedBoxes['cls'] ? props.predictedBoxes['cls'][props.currentFrameNr] : [])
+const teamBoxes = computed(() => 'c')
+
 
 const boxesHovering = ref([])
 const predictedBoxesHovering = ref([])
@@ -67,6 +69,7 @@ const boxColors = [
   '#ffffff',
   '#000000',
   '#555555',
+  '#ee2299',
 ]
 
 const mouseX = ref(0)
@@ -156,6 +159,19 @@ const resetCanvasAndDrawBoxes = () => {
     const h = box.Height * videoHeight.value
     ctx.strokeRect(xleft, yleft, w, h);
   })
+
+  let cfnr = String(Math.round(props.currentFrameNr ? props.currentFrameNr : 0))
+  let teambox = props.videoinfo.TeamBoxes && Object.keys(props.videoinfo.TeamBoxes).includes(cfnr) ? props.videoinfo.TeamBoxes[cfnr] : null
+  if (teambox) {
+    ctx.strokeStyle = boxColors[12]
+    const xleft = teambox['xmin'] * videoWidth.value
+    const yleft = teambox['ymin'] * videoHeight.value
+    const w = teambox['width'] * videoWidth.value
+    const h = teambox['height'] * videoHeight.value
+    ctx.strokeRect(xleft, yleft, w, h);
+  }
+
+
 
   // Draw current drawing box
   if (!canvasmodeIsDelete.value && !canvasmodeIsAcceptPredictedBox.value) {

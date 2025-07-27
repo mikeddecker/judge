@@ -10,7 +10,7 @@ from helpers.ValueHelper import ValueHelper
 from repository.MapToDomain import MapToDomain
 from repository.MapToDB import MapToDB
 from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type, FrameLabelType
-from sqlalchemy import desc
+from sqlalchemy import desc, func, and_
 from typing import List
 
 
@@ -144,6 +144,62 @@ class VideoRepository:
         frame_label_DB.height = frameInfo.Height
         frame_label_DB.jumperVisible = frameInfo.JumperVisible
         self.db.session.commit()
+
+    def get_team_boxes(self, video_id: int = None):
+        xmin = func.min(FrameLabel.x - FrameLabel.width / 2).label("xmin")
+        xmax = func.max(FrameLabel.x + FrameLabel.width / 2).label("xmax")
+        ymin = func.min(FrameLabel.y - FrameLabel.height / 2).label("ymin")
+        ymax = func.max(FrameLabel.y + FrameLabel.height / 2).label("ymax")
+
+        width = (func.max(FrameLabel.x + FrameLabel.width / 2) -
+                func.min(FrameLabel.x - FrameLabel.width / 2)).label("width")
+        x = ((func.max(FrameLabel.x + FrameLabel.width / 2) +
+            func.min(FrameLabel.x - FrameLabel.width / 2)) / 2).label("x")
+        height = (func.max(FrameLabel.y + FrameLabel.height / 2) -
+                func.min(FrameLabel.y - FrameLabel.height / 2)).label("height")
+        y = ((func.max(FrameLabel.y + FrameLabel.height / 2) +
+            func.min(FrameLabel.y - FrameLabel.height / 2)) / 2).label("y")
+
+        # Base filters
+        filters = [FrameLabel.labeltype == 1]
+        
+        # Add conditional filter
+        if video_id is not None:
+            filters.append(FrameLabel.videoId == video_id)
+        else:
+            filters.append(FrameLabel.videoId % 10 == 5)
+
+        query = (
+            self.db.session.query(
+                FrameLabel.videoId,
+                FrameLabel.frameNr,
+                xmin,
+                xmax,
+                ymin,
+                ymax,
+                width,
+                x,
+                height,
+                y
+            )
+            .filter(and_(*filters))
+            .group_by(FrameLabel.videoId, FrameLabel.frameNr)
+            .order_by(FrameLabel.videoId, FrameLabel.frameNr)
+        )
+
+        return {
+            row.frameNr: {
+                'xmin': row.xmin,
+                'xmax': row.xmax,
+                'ymin': row.ymin,
+                'ymax': row.ymax,
+                'x': row.x,
+                'y': row.y,
+                'width': row.width,
+                'height': row.height,
+            }
+            for row in query.all()
+        }
 
     ##########
     # Skills #

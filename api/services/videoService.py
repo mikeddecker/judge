@@ -448,6 +448,7 @@ class VideoService:
         video = self.VideoRepo.get(id=id)
         for skill in self.VideoRepo.get_skills(videoId=id):
             video.add_skill(skill)
+        video.TeamBoxes = self.VideoRepo.get_team_boxes(video.Id)
         return video
     
     def get_videoId(self, name: str = None, folder: Folder = None) -> int:
