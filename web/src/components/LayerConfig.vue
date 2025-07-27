@@ -24,6 +24,7 @@
         <label for="new_layer_value">Add value</label>
       </IftaLabel>
       <Button v-if="!new_layer_value_is_empty" class="" icon="pi pi-database" @click="() => createNewLayerValue(slotProps.data.id)" label="Add layer value" aria-label="Add layer value"></Button>
+      <span v-if="slotProps.data.type == 'boolean'">True or False</span>
     </template>
 
     <template #footer>
