@@ -152,9 +152,13 @@ def train_yolo_model(variant: str, repo: DataRepository):
         if os.path.abspath(previous_folder) == os.path.abspath(save_dir):
             # Skip last trained one
             continue
-
-        # Re-validate previous trained model
-        previous_raw_avg_team_box_io = validate_localize(modeldir=previous_folder, repo=repo)
+        
+        if not os.path.exists(os.path.join(previous_folder, 'weights', 'best.pt')):
+            # The path if a training failed, and no weights exist.
+            previous_raw_avg_team_box_io = 0
+        else:
+            # Re-validate previous trained model
+            previous_raw_avg_team_box_io = validate_localize(modeldir=previous_folder, repo=repo)
         
         if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou:
             shutil.rmtree(previous_folder)
