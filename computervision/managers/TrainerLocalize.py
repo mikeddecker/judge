@@ -63,13 +63,13 @@ def train_yolo_model(variant: str, repo: DataRepository):
             patience = 30
             lr = 0.0001
             batch_size = 1
-        elif len(imagecount) < 150:
+        elif len(imagecount) < 200:
             patience = 15
-            lr = 0.0001 / 2
+            lr = 0.0001
             batch_size = 2
-        elif len(imagecount) < 300:
+        elif len(imagecount) < 500:
             patience = 8
-            lr = 0.0001 / 4
+            lr = 0.0001 / 2
             batch_size = 4
         else:
             patience = 5
