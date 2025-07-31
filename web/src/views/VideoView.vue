@@ -78,6 +78,7 @@
           <div class="mt-2 flex gap-2">
             <span class="my-auto">Use</span>
             <Select v-model="selectedLocalizeModel" :options="Object.keys(localizeModelOptions)"></Select>
+            <Select v-model="selectedWeights" :options="predictionWeightOptions"></Select>
             <Button v-if="selectedLocalizeModel && !localizeJobLaunched" @click="predictBoxes" label="Launch job"></Button>
             <span class="my-auto" v-if="localizeJobLaunched">Job in queue</span>
           </div>
@@ -155,6 +156,9 @@ const frameStart = ref(currentFrame.value)
 const frameEnd = ref(undefined)
 
 const predictions = ref({'boxes': [], 'skills': []})
+const predictionWeightOptions = ['best', 'default']
+const selectedWeights = ref('best')
+
 const skills = computed(() => {
   if (!videoinfo.value) { return [] }
   if (!videoinfo.value.Skills) { return [] }
@@ -665,7 +669,7 @@ const predictBoxes = async () => {
     'type': 'PREDICT',
     'step': 'LOCALIZE',
     'videoId': videoinfo.value.Id,
-    'weights': localizeModelOptions.value[selectedLocalizeModel.value]['default_weights'],
+    'weights': selectedWeights.value == 'default' ? localizeModelOptions.value[selectedLocalizeModel.value]['default_weights'] : 'best',
     'model': localizeModelOptions.value[selectedLocalizeModel.value]['model'],
     'model_kwargs' : localizeModelOptions.value[selectedLocalizeModel.value]
   }

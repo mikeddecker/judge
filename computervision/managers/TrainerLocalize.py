@@ -30,7 +30,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
             'train': 'images/train',
             'val': 'images/val',
             'names': {i: name for i, name in enumerate(repo.get_frame_label_types())},
-            'weights': [2,1]
+            'weights': [3,2]
         }
 
         # Save to a YAML file
@@ -39,6 +39,10 @@ def train_yolo_model(variant: str, repo: DataRepository):
 
     __generate_yolo_yaml(repo)
 
+    os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images'), exist_ok=True)
+    os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'train'), exist_ok=True)
+    os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'test'), exist_ok=True)
+    os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'val'), exist_ok=True)
     shutil.rmtree(os.path.join(ENVS.DIRS.YOLO_LABELS, 'labels'))
     os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'labels'), exist_ok=True)
     os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'labels', 'train'), exist_ok=True)
@@ -93,8 +97,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
             if not os.path.exists(image_name):
                 print(f"creating {image_name}")
             
-                if cap is None or previous_videoId != videoId:
-                    cap = cv2.VideoCapture(video_path)
+                cap = cv2.VideoCapture(video_path)
                 
                 cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
                 _, frame = cap.read()
@@ -103,10 +106,6 @@ def train_yolo_model(variant: str, repo: DataRepository):
 
             with open(label_name, 'a') as f:
                 f.write(f"{classIdx} {x} {y} {w} {h}\n")
-
-            previous_frameNr = frameNr
-            previous_videoId = videoId
-
 
     num_val_images = len(os.listdir(os.path.join(ENVS.DIRS.YOLO_LABELS, LABELS_FOLDER, 'val')))
 

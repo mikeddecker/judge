@@ -5,5 +5,5 @@ names:
   0: foreground-person
   1: background-person
 weights:
+- 3
 - 2
-- 1
