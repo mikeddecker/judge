@@ -1,9 +1,10 @@
 import json
 
+from domain.layerComposition import LayerComposition
 from datetime import datetime, date
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, func
-from repository.models import LayerProperty, LayerPropertyValue
+from repository.models import LayerProperty, LayerPropertyValue, LayerComposition as LayerCompositionDB
 from repository.MapToDomain import MapToDomain
 from typing import List
 
@@ -50,7 +51,7 @@ class MLLayerRepository:
         """
         Returns all jobs
         """
-        return [lp.to_dict() for lp in self.db.session.query(LayerProperty).all()]
+        return [lp.to_dict() for lp in self.db.session.query(LayerProperty).order_by(LayerProperty.name).all()]
 
     def update_layer(self, layerId: int, name: str, min: float = None, max: float = None, step: float = None) -> dict:
         layer = self.db.session.get(LayerProperty, ident=layerId)
@@ -69,16 +70,52 @@ class MLLayerRepository:
         self.db.session.commit()
         return layervalue.property.to_dict()
 
-    # def delete(self, id: int) -> None:
-    #     """
-    #     Hard deletes the job from the database.
-    #     """
-    #     if not self.exists(id):
-    #         raise LookupError(f"Folder {id} doesn't exist")
-    #     jobdb = self.db.session.get(JobDB, ident=id)
-    #     self.db.session.delete(jobdb)
-    #     self.db.session.commit()
+    def get_layer_compositions(self) -> dict[str, LayerComposition]:
+        compositionValuesDB : list[LayerCompositionDB] = self.db.session.query(
+            LayerCompositionDB
+        ).join(
+            LayerCompositionDB.property
+        ).order_by(
+            LayerCompositionDB.name,
+            LayerProperty.name
+        ).all()
 
+        compositions : dict[str, list[LayerCompositionDB]] = dict()
+        for comValue in compositionValuesDB:
+            if comValue.compositionName in compositions.keys():
+                compositions[comValue.compositionName].append(comValue)
+            else:
+                compositions[comValue.compositionName] = [comValue]
+        
+        return {compositionName: MapToDomain.map_layercomposition(compositionValues) for compositionName, compositionValues in compositions.items()}
 
-    # def count(self) -> int:
-    #     return self.db.session.query(JobDB).count()
+    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, propertyId: int, name: str | None) -> dict[str, LayerComposition]:
+        """Return all layer compositions"""
+        newLayerCompositionDB = LayerCompositionDB(
+            compositionName=compositionName,
+            stage=stage,
+            propertyId=propertyId,
+            name=name
+        )
+
+        self.db.session.add(newLayerCompositionDB)
+        self.db.session.commit()
+
+        return self.get_layer_compositions()
+
+    # def get_composition(self, compositionName) -> LayerComposition:
+    #     compositionValuesDB : list[LayerCompositionDB] = self.db.session.get(
+    #         LayerCompositionDB
+    #     ).order_by(
+    #         LayerCompositionDB.name
+    #     ).all()
+
+    #     compositions : dict[str, list[LayerCompositionDB]] = dict()
+    #     for comValue in compositionValuesDB:
+    #         if comValue.compositionName in compositions.keys():
+    #             compositions[comValue.compositionName].add(comValue)
+    #         else:
+    #             compositions[comValue.compositionName] = [comValue]
+        
+    #     return {compositionName: MapToDomain.map_layercomposition(compositionValues) for compositionName, compositionValues in compositions.items()}
+

@@ -218,7 +218,6 @@ class VideoInfo:
         return "\n".join(substrings)
 
     def to_dict(self, include_frames=True):
-        print(set(map(lambda f: f.FrameNr, self.Frames)))
         return {
             "Id" : self.Id,
             "Name" : self.Name, 
@@ -238,6 +237,6 @@ class VideoInfo:
             "TeamBoxes": getattr(self, "TeamBoxes", []),
         }
 
-    
     def __repr__(self):
         return str(self.to_dict())
+

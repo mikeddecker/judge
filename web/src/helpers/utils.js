@@ -32,3 +32,5 @@ export function getColor(skillprop) {
       return `rgb(${getRandomInt(255)}, ${getRandomInt(255)}, ${getRandomInt(255)})`
   }
 }
+
+export async function sleep(ms) { new Promise(r => setTimeout(r, ms)); }

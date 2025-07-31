@@ -1,13 +1,13 @@
 <template>
   <h1>Config</h1>
   
-  <h2>Tags</h2>
+  <h2 class="mt-6 mb-2">Tags</h2>
   <TagConfig/>
 
-  <h2>Localization</h2>
+  <h2 class="mt-6 mb-2">Localization</h2>
   <Listbox :options="frameLabelTypes" disabled class="w-full md:w-56"></Listbox>
   
-  <h2>Recognition</h2>
+  <h2 class="mt-6 mb-2">Recognition</h2>
   <LayerConfig/>
 </template>
 
@@ -28,3 +28,4 @@ onMounted(async () => {
 <style>
 
 </style>
+

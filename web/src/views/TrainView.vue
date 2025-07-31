@@ -2,17 +2,17 @@
     <h1>Train page</h1>
     
     <h2>Localize</h2>
-    <div class="flex flex-wrap gap-6 my-4">
+    <div class="flex wrap gap-6 my-4">
         <CardRecipe v-for="(recipe, modelname) in recipesLocalize" :title="modelname" step="LOCALIZE" :recipe="recipe"></CardRecipe>
     </div>
     
     <h2>Segment</h2>
-    <div class="flex flex-wrap gap-6 my-4">
+    <div class="flex wrap gap-6 my-4">
         <CardRecipe v-for="(recipe, modelname) in recipesSegment" :title="modelname" step="SEGMENT" :recipe="recipe"></CardRecipe>
     </div>
     
     <h2>Recognize</h2>
-    <div class="flex flex-wrap gap-6 my-4">
+    <div class="flex wrap gap-6 my-4">
         <CardRecipe v-for="(recipe, modelname) in recipesRecognize" :title="modelname" step="RECOGNIZE" :recipe="recipe"></CardRecipe>
     </div>
 </template>

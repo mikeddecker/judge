@@ -196,7 +196,6 @@ export const getLocalizeStats = async (selectedHar) => {
   }
 };
 
-
 export const getVideoPredictions = async (videoId) => {
   try {
     return await api.get(`/video/${videoId}/predictions`).then(response => response.data)
@@ -345,7 +344,6 @@ export const addLayer = async (name, layerId, type, min, max, step) => {
   });
 };
 
-
 export const updateLayer = async (id, name, layerId, min, max, step) => {
   return await api.post('/layers', { id, name, layerId, min, max, step }, { headers: { 'Content-Type': 'application/json' }})
   .then(function (response) {
@@ -355,3 +353,23 @@ export const updateLayer = async (id, name, layerId, min, max, step) => {
     console.error(error);
   });
 };
+
+export const getLayerCompositions = async () => {
+  try {
+    return await api.get(`/layercompositions`).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+};
+
+export const addLayerComposition = async (compositionName, stage, propertyId, name) => {
+  return await api.post('/layercompositions', { compositionName, stage, propertyId, name }, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response.data;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+};
+

@@ -1,5 +1,6 @@
 # from flask_sqlalchemy import SQLAlchemy
 from repository.db import db
+from sqlalchemy import CheckConstraint
 from sqlalchemy.dialects.mysql import TINYINT, SMALLINT, JSON
 from sqlalchemy.ext.mutable import MutableDict
 from datetime import datetime, date
@@ -256,7 +257,7 @@ class LayerProperty(db.Model):
             'min' : self.min,
             'max' : self.max,
             'step' : self.step,
-            'categories' : [c.to_dict() for c in self.categories]
+            'categories': [c.to_dict() for c in sorted(self.categories, key=lambda c: c.name)]
         }
 
 class LayerPropertyValue(db.Model):
@@ -271,5 +272,25 @@ class LayerPropertyValue(db.Model):
         return {
             'id': self.id,
             'name': self.name
+        }
+
+class LayerComposition(db.Model):
+    __tablename__ = 'LayerComposition'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    compositionName = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), nullable=True)
+    stage = db.Column(db.Integer, CheckConstraint('stage >= -1'), nullable=True)
+    propertyId = db.Column(db.Integer, db.ForeignKey('LayerProperties.id'), nullable=False)
+    property = db.relationship('LayerProperty', backref='compositions', lazy='joined')
+    creationDate = db.Column(db.DateTime, default=datetime.now)
+    lastUpdated = db.Column(db.DateTime, default=datetime.now)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'compositionName' : self.compositionName,
+            'name': self.name,
+            'stage' : self.stage,
+            'property' : self.property.to_dict(),
         }
 

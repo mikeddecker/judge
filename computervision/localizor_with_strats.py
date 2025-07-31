@@ -33,7 +33,6 @@ strategyparams = {
     }
 }
 
-
 def calculate_iou(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y_min, old_x_max, old_y_max):
     intersection_width = max(0, min(new_x_max, old_x_max) - max(new_x_min, old_x_min))
     intersection_height = max(0, min(new_y_max, old_y_max) - max(new_y_min, old_y_min))
@@ -78,7 +77,6 @@ def calculate_iou_df(df_a, df_b):
 
     # IoU calculation
     return np.where(union > 0, intersection / union, 0)
-
 
 def calculate_angle(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y_min, old_x_max, old_y_max):
     new_center_x = (new_x_min + new_x_max) / 2
@@ -169,7 +167,6 @@ def calculate_smoothed_values(strat:str, params: dict, previous_values:dict, i:i
         case _:
             raise NotImplementedError(f"Unrecognized strat ({strat})")
     
-
 def localize_jumpers(
         model: YOLO, repo: DataRepository,
         videoId: int, dim: int, strategies: list, stratparams: dict,
@@ -226,7 +223,6 @@ def localize_jumpers(
         # Filter foreground jumpers
         xyxy_boxes = result[0].boxes.xyxy[result[0].boxes.cls == 0]
 
-        
         if xyxy_boxes.shape[0] > 0:
             xmin = max(0, int(xyxy_boxes[:, 0].min().item()) - padding_x)
             ymin = max(0, int(xyxy_boxes[:, 1].min().item()) - padding_y)
@@ -269,7 +265,6 @@ def localize_jumpers(
             max_h = max(max_h, h_jumpers)
             min_w = min(min_w, w_jumpers)
             min_h = min(min_h, h_jumpers)
-
 
             max_wh_jumpers = max(w_jumpers, h_jumpers)
             offset_x = (max_wh_jumpers - w_jumpers) // 2
@@ -338,8 +333,6 @@ def validate_localize(modeldir: str, repo: DataRepository):
     strategies = ['raw', 'smoothing', 'smoothing_skip_small_iou']
 
     df_team_boxes = repo.get_team_boxes().sort_values(['videoId', 'frameNr'])
-    print('df_team_boxes')
-    print(df_team_boxes.head(3))
     videoIds = df_team_boxes['videoId'].unique()
 
     print(modeldir)
@@ -416,7 +409,6 @@ def validate_localize(modeldir: str, repo: DataRepository):
             print(e)
             raise e
 
-    
     for e in errors:
         print(e)
     
@@ -461,4 +453,4 @@ def predict_and_save_locations(weights: str, repo: DataRepository, videoIds: int
 
         except Exception as e:
             raise e
-    
+

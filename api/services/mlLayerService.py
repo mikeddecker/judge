@@ -1,5 +1,6 @@
 from domain.tag import Tag
 from domain.tagGroup import TagGroup
+from domain.layerComposition import LayerComposition
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
@@ -22,7 +23,6 @@ class MLLayerService:
         
     def get_layers(self) -> dict:
         """Return user defined layers"""
-        pprint(self.MlLayerRepo.get_all())
         return self.MlLayerRepo.get_all()
 
     def get_types(self) -> list:
@@ -87,3 +87,25 @@ class MLLayerService:
         ValueHelper.check_raise_string_only_abc123(new_name)
         assert self.MlLayerRepo.has_value(layervalueId), f"Layervalue with id {layervalueId} does not exist"
         return self.MlLayerRepo.update_value_name(layervalueId, new_name)
+
+    def get_layer_compositions(self) -> dict[str, LayerComposition]:
+        return self.MlLayerRepo.get_layer_compositions()
+    
+    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, propertyId: int, name: str | None) -> dict[str, LayerComposition]:
+        ValueHelper.check_raise_string_only_abc123(compositionName)
+        ValueHelper.check_raise_id(propertyId)
+        if stage is not None:
+            assert isinstance(stage, int), f"Stage must be an integer"
+            assert stage >= -1, f"Stage must be an integer >= -1"
+        if name is not None:
+            ValueHelper.check_raise_string_only_abc123(name)
+        
+        assert self.MlLayerRepo.has_layer(propertyId), f"LayerPropertyId {propertyId} does not exist"
+        
+        return self.MlLayerRepo.add_layer_compostion_stage(
+            compositionName=compositionName, 
+            stage=stage, 
+            propertyId=propertyId, 
+            name=name
+        )
+

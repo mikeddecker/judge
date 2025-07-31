@@ -13,7 +13,6 @@ from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLab
 from sqlalchemy import desc, func, and_
 from typing import List
 
-
 class VideoRepository:
     def __init__(self, db : SQLAlchemy):
         self.db = db
@@ -56,7 +55,6 @@ class VideoRepository:
         frame_label_DB = MapToDB.map_frameInfo(video=video, frameInfo=frameInfo)
         self.db.session.add(frame_label_DB)
         self.db.session.commit()
-
 
     def count(self) -> int:
         return self.db.session.query(VideoInfoDB).count()
@@ -270,7 +268,6 @@ class VideoRepository:
         skill.hard2see = skillinfo["Hard2see"]
         skill.fault = skillinfo["Fault"]
 
-
         self.db.session.commit()
     
     def get_skills(self, videoId: int) -> List[Skill]:
@@ -347,3 +344,4 @@ class VideoRepository:
 
     def get_frame_label_types(self) -> dict:
         return {t.id: t.info for t in FrameLabelType.query.all()}
+

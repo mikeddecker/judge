@@ -1,13 +1,14 @@
 from domain.folder import Folder
 from domain.frameinfo import FrameInfo
 from domain.job import Job
+from domain.layerComposition import LayerComposition
 from domain.tag import Tag
 from domain.tagGroup import TagGroup
 from domain.skill import Skill
 from domain.videoinfo import VideoInfo
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 from repository.models import Folder as FolderDB, Video as VideoDB, FrameLabel, Skillinfo_DoubleDutch, Jobs as JobDB
-from repository.models import Tag as TagDB, TagGroup as TagGroupDB 
+from repository.models import Tag as TagDB, TagGroup as TagGroupDB, LayerComposition as LayerCompositionDB, LayerProperty
 from typing import List
 
 class MapToDomain:
@@ -94,3 +95,36 @@ class MapToDomain:
             name = tagGroupDB.name,
             tags = [Tag(id = t.id, name = t.name) for t in tagGroupDB.tags]
         )
+    
+    def map_layercomposition(compositionValuesDB: list[LayerCompositionDB]) -> LayerComposition:
+        if len(compositionValuesDB) == 0:
+            return None
+        
+        genProps = dict()
+        startProps = dict()
+        endProps = dict()
+        stageProps = dict()
+        for cDB in compositionValuesDB:
+            cName = cDB.name if cDB.name else cDB.property.name
+            c = cDB.to_dict()
+            match cDB.stage:
+                case None:
+                    genProps[cName] = c
+                case 0:
+                    startProps[cName] = c
+                case -1:
+                    endProps[cName] = c
+                case _:
+                    if cDB.stage in stageProps.keys():
+                        stageProps[cDB.stage][cName] = c
+                    else:
+                        stageProps[cDB.stage] = { cName: c }
+
+        return LayerComposition(
+            compositionName=compositionValuesDB[0].compositionName,
+            generalProperties=genProps,
+            startProperties=startProps,
+            endProperties=endProps,
+            stageProperties=stageProps
+        )
+

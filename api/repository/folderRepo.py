@@ -47,7 +47,6 @@ class FolderRepository:
         
         Example:
             >>> folder = get_folder_by_id(1)
-            >>> print(folder.path)
             "competition"
         """
         if not self.exists(id):
@@ -93,3 +92,4 @@ class FolderRepository:
     
     def count(self):
         return self.db.session.query(FolderDB).count()
+

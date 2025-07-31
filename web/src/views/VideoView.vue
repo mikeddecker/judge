@@ -117,6 +117,7 @@ import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, post
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useRoute } from 'vue-router';
 import LocalizeInfo from '@/components/LocalizeInfo.vue';
+import { sleep } from '@/helpers/utils';
 
 const route = useRoute()
 
@@ -196,8 +197,6 @@ const defaultOptions = ref({
 })
 const selectedSkillIsPrediction = computed(() => selectedSkill.value.hasOwnProperty('IsPrediction') && selectedSkill.value.IsPrediction) 
 
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
 watch(
   () => route.params.id,
   (newId) => (

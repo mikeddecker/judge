@@ -16,7 +16,7 @@ from routers.jobRouter import JobTrainRouter, JobLaunchRouter, JobOptionsRouter
 from routers.storageRouter import StorageRouter, OrphanDeleterRouter
 from routers.skillRouter import SkillRouter, OptionRouter, SkillLevel, SkillLabelingCompletedRouter, DiffScoreComparison
 from routers.downloadRouter import DownloadRouter
-from routers.mlLayerRouter import MLLayerRouter, MLLayerTypesRouter
+from routers.mlLayerRouter import MLLayerRouter, MLLayerTypesRouter, MLLayerCompositionRouter
 from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
 from services.videoService import VideoService
@@ -56,7 +56,7 @@ api.add_resource(TagRouter, '/tags')
 api.add_resource(TagGroupRouter, '/tagGroups')
 api.add_resource(MLLayerRouter, '/layers')
 api.add_resource(MLLayerTypesRouter, '/layers/types')
-
+api.add_resource(MLLayerCompositionRouter, '/layercompositions')
 api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
 api.add_resource(FrameLabelTypeRouter, '/frameLabelTypes')
 api.add_resource(OptionRouter, '/skilloptions/<skilltype>/<tableinfo>')
@@ -90,11 +90,10 @@ os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'train'), exist_ok=Tru
 os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'test'), exist_ok=True)
 os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'val'), exist_ok=True)
 
-
-
 if __name__ == '__main__':
     with app.app_context():
         videoservice = VideoService()
         videoservice.initiate()
         del videoservice
     app.run(port=5555, debug=True)
+
