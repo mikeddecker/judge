@@ -11,7 +11,7 @@
     <template #footer>
       <Divider/>
       <h4>Add a new composition:</h4>
-      <div class="flex wrap gap-2 mb-2">
+      <div class="flex flex-wrap gap-2 mb-2">
         <IftaLabel>
           <InputText id="new_composition" v-model="new_composition" variant="filled" />
           <label for="new_composition">New composition</label>

@@ -29,7 +29,7 @@
     <template #footer>
       <Divider/>
       <h4>Add a new layer:</h4>
-      <div class="flex wrap gap-2 mb-2">
+      <div class="flex flex-wrap gap-2 mb-2">
         <IftaLabel v-if="new_layer_value_is_empty">
           <InputText id="new_layer" v-model="new_layer" variant="filled" :disabled="!new_layer_value_is_empty" />
           <label for="new_layer">New layer</label>
