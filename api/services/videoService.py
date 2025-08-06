@@ -101,7 +101,7 @@ class VideoService:
 
         ValueHelper.check_raise_skillinfo_values(config, skillinfo, repo=self.VideoRepo)
 
-        self.VideoRepo.update_skill(id=id, videoId=videoinfo.Id, disciplineConfig=config, skillinfo=skillinfo, start=frameStart, end=frameEnd)
+        self.VideoRepo.update_skill(id=id, videoId=videoinfo.Id, skillinfo=skillinfo, start=frameStart, end=frameEnd)
         video = self.VideoRepo.get(videoinfo.Id)
         for s in self.VideoRepo.get_skills(video.Id):
             video.add_skill(s)

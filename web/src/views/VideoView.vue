@@ -369,7 +369,6 @@ const onSkillClicked = (skillId, isPrediction) => {
 
   let skill = skillsToFilter.filter(s => s.Id == skillId)[0]
   
-  console.log('onSkillClicked', skill)
   skillStore.setSelectedSkill(skill)
   if (!paused.value) {
     videoElement.value.pause()

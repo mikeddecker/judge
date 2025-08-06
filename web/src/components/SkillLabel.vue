@@ -11,14 +11,13 @@
         :aria-label="compositionName" :label="compositionName" icon="pi pi-plus"
         severity="secondary" @click="() => skillStore.addComposition(compositionName)" size="small"></Button>
     </div>
-    <!-- <Tabs v-if="frameStart && frameEnd" :key="tabKey" class="mt-4"> -->
-    <Tabs :key="tabKey" class="mt-4">
+    <Tabs class="mt-4">
       <TabList>
         <Tab v-if="!skillStore.selectedSkillIsEmpty" v-for="(compositionLabelValues, compositionName) in skillStore.selectedSkill.Skillinfo" :key="`General-${compositionName}`" :value="`tab-${compositionName}`">{{ compositionName }}</Tab>
       </TabList>
       <TabPanels>
-        <TabPanel v-for="(compositionLabelValues, compositionName) in skillStore.selectedSkill.Skillinfo" :key="`General-${compositionName}`" :value="`tab-${compositionName}`">
-            <Tabs :key="subTabsKey">
+        <TabPanel v-if="layercomposition" v-for="(compositionLabelValues, compositionName) in skillStore.selectedSkill.Skillinfo" :key="`General-${compositionName}`" :value="`tab-${compositionName}`">
+            <Tabs>
                 <TabList>
                     <Tab v-for="(label, idx) in compositionLabelValues" :key="`item-${compositionName}-${idx}`" :value="`item-${compositionName}-${idx}`">{{ idx }}</Tab>
                 </TabList>
@@ -27,7 +26,7 @@
                         <Card v-for="(upperStage, i) in ['GeneralProperties', 'StartProperties', 'EndProperties']" class="m-2">
                             <template #header>{{ upperStage }}</template>
                             <template #content>
-                                <LayerPropertyValueSelector v-for="(layerValue, layerKey) in label[upperStage]" :composition-name="compositionName" :composition-index="idx" :name="layerKey" :stage="upperStage" :property="layercomposition[compositionName][upperStage][layerKey]['property']"></LayerPropertyValueSelector>
+                                <LayerPropertyValueSelector v-for="(layerValue, layerKey) in layercomposition[compositionName][upperStage]" :composition-name="compositionName" :composition-index="idx" :name="layerKey" :stage="upperStage" :property="layercomposition[compositionName][upperStage][layerKey]['property']"></LayerPropertyValueSelector>
                             </template>
                         </Card>
                         <Card>
@@ -36,7 +35,7 @@
                                 <Card v-for="(stageLabel, stageNr) in label['StageProperties']" class="m-2">
                                     <template #header>{{ stageNr }}</template>
                                     <template #content>
-                                        <LayerPropertyValueSelector v-for="(layerValue, layerKey) in stageLabel" :composition-name="compositionName" :composition-index="idx" :name="layerKey" stage="StageProperties" :stage-nr="stageNr" :property="layercomposition[compositionName]['StageProperties'][stageNr][layerKey]['property']"></LayerPropertyValueSelector>
+                                        <LayerPropertyValueSelector v-for="(layerValue, layerKey) in layercomposition[compositionName]['StageProperties'][stageNr]" :composition-name="compositionName" :composition-index="idx" :name="layerKey" stage="StageProperties" :stage-nr="stageNr" :property="layercomposition[compositionName]['StageProperties'][stageNr][layerKey]['property']"></LayerPropertyValueSelector>
                                     </template>
                                 </Card>
                             </template>
@@ -75,16 +74,10 @@ const props = defineProps({
 // a skill in edit can be the selected skill, or it can be a new skill.
 
 const layercomposition = ref(null)
-const tabKey = ref(0)
-const subTabsKey = ref(0)
 
 onMounted(async () => {
     await getLayerCompositions().then(l => layercomposition.value = l)
-    console.log('layercomposition', layercomposition.value)
 })
 
-watch(() => skillStore.selectedSkill, (newval, oldval) => {
-    console.log("New selected skill", newval)
-})
 </script>
 

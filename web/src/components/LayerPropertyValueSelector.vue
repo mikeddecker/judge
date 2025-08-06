@@ -5,11 +5,12 @@
             v-model="value" 
             :options="categoryOptions" 
             option-label="name" option-value="id"
+            :invalid="value == null"
         ></Select>
         <div v-if="isBoolean" class="flex flex-wrap gap-1">
-            <RadioButton v-model="value" input-id="true" :value="true"></RadioButton>
+            <RadioButton v-model="value" input-id="true" :value="true" :invalid="value == null"></RadioButton>
             <label for="true">True</label>
-            <RadioButton v-model="value" input-id="false" :value="false"></RadioButton>
+            <RadioButton v-model="value" input-id="false" :value="false" :invalid="value == null"></RadioButton>
             <label for="false">False</label>
         </div>
         <InputNumber v-if="isNumerical" class="w-20" inputClass="w-full" v-model="value" 
@@ -19,7 +20,7 @@
             :minFractionDigits="0" 
             :maxFractionDigits="2" 
             show-buttons 
-            :invalid="value % property['step'] !== 0" 
+            :invalid="value == null" 
             :readonlyInput="true"
         ></InputNumber>
     </div>
