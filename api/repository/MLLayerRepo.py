@@ -47,9 +47,12 @@ class MLLayerRepository:
     def has_value(self, layerValueId: int) -> bool:
         return self.db.session.query(LayerPropertyValue).filter_by(id=layerValueId).scalar() is not None
     
+    def get(self, layerId: int) -> LayerProperty:
+        return self.db.session.get(LayerProperty, ident=layerId)
+
     def get_all(self) -> dict:
         """
-        Returns all jobs
+        Returns all layerproperties
         """
         return [lp.to_dict() for lp in self.db.session.query(LayerProperty).order_by(LayerProperty.name).all()]
 

@@ -1,5 +1,6 @@
 import math
 
+from datetime import datetime
 from domain.videoinfo import VideoInfo
 from domain.folder import Folder
 from domain.skill import Skill
@@ -9,7 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from helpers.ValueHelper import ValueHelper
 from repository.MapToDomain import MapToDomain
 from repository.MapToDB import MapToDB
-from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skill, FrameLabelType
+from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skill as SkillDB, FrameLabelType
 from sqlalchemy import desc, func, and_
 from typing import List
 
@@ -199,7 +200,7 @@ class VideoRepository:
         # Likewise checks can be done, to check whether values of layerproperties exist
         assert self.db.session.query(VideoInfoDB).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"        
 
-        skill = Skill(
+        skill = SkillDB(
             videoId = videoId,
             frameStart = start,
             frameEnd = end,
@@ -217,28 +218,29 @@ class VideoRepository:
         ValueHelper.check_raise_frameNr(start)
         ValueHelper.check_raise_frameNr(end)
 
-        skill = self.db.session.query(Skill).filter_by(id=id).first()
+        skill : SkillDB = self.db.session.query(SkillDB).filter_by(id=id).first()
         assert skill is not None, f"Skill {id} does not exist"
         assert self.db.session.query(VideoInfoDB).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"        
 
         skill.frameStart = start
         skill.frameEnd = end
         skill.skillinfo = skillinfo
+        skill.updated = datetime.now()
 
         self.db.session.commit()
     
     def get_skills(self, videoId: int) -> List[Skill]:
-        skillsDB = self.db.session.query(Skill).filter_by(videoId=videoId).all()
+        skillsDB = self.db.session.query(SkillDB).filter_by(videoId=videoId).all()
         return [MapToDomain.map_skill(s) for s in skillsDB]
     
     def get_previous_skill(self, videoId: int, frameEnd: int) -> tuple[dict, str, int]:
         """Returns prev_skillinfo, prev_skillname, base_level"""
         ValueHelper.check_raise_id(videoId)
         ValueHelper.check_raise_frameNr(frameEnd)
-        DDskillDB = self.db.session.query(Skill).filter(Skill.videoId==videoId).filter(Skill.frameEnd <= frameEnd).order_by(desc(Skill.frameEnd)).first()
+        DDskillDB = self.db.session.query(SkillDB).filter(SkillDB.videoId==videoId).filter(SkillDB.frameEnd <= frameEnd).order_by(desc(SkillDB.frameEnd)).first()
         if DDskillDB is None:
             return None, None, 0
-        skillDB = self.db.session.query(Skill).filter_by(id=DDskillDB.skill).first()
+        skillDB = self.db.session.query(SkillDB).filter_by(id=DDskillDB.skill).first()
         return MapToDomain.map_skill(DDskillDB), skillDB.name, 0 if skillDB.level_dd == "/" else int(str.split(skillDB.level_dd, '-')[-1])
 
     def remove_skill(self, videoId, start: int, end: int):
@@ -246,7 +248,7 @@ class VideoRepository:
         ValueHelper.check_raise_frameNr(start)
         ValueHelper.check_raise_frameNr(end)
 
-        skillDB = self.db.session.query(Skill).filter_by(frameStart=start, frameEnd=end).first()
+        skillDB = self.db.session.query(SkillDB).filter_by(frameStart=start, frameEnd=end).first()
         self.db.session.delete(skillDB)
         self.db.session.commit()
 

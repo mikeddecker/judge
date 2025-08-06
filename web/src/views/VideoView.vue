@@ -395,11 +395,14 @@ async function playJustALittleFurther(framesToSkip) {
   if (frameStart.value && currentFrame.value != frameStart.value) {
     frameEnd.value = currentFrame.value
   }
+  setFrameEnd()
 }
 
 function deselectSkill() {
-  frameStart.value = frameEnd.value
-  frameEnd.value = undefined
+  if (frameEnd.value) {
+    frameStart.value = frameEnd.value
+    frameEnd.value = undefined
+  }
   if (!paused.value) {
     videoElement.value.pause()
   }
@@ -445,6 +448,7 @@ function prepareNextLabel(fs) {
   for (let skillIdx in skills.value) {
     skills.value[skillIdx].inCreation = false
   }
+  deselectSkill()
 }
 
 async function addSkill() {
@@ -454,7 +458,6 @@ async function addSkill() {
 
 async function updateSkill() {
   videoinfo.value = await putSkill(videoinfo.value.Id, skillStore.selectedSkill)
-  deselectSkill()
   prepareNextLabel(skillStore.selectedSkill.FrameEnd)
 }
 

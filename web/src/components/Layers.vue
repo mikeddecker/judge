@@ -1,5 +1,5 @@
 <template>
-  <DataTable v-model:expandedRows="expandedRows" :value="layers" dataKey="id"
+  <DataTable :key="tableKey" v-model:expandedRows="expandedRows" :value="layers" dataKey="id"
   @rowExpand="onRowExpand" @rowCollapse="onRowCollapse" tableStyle="min-width: 60rem">
     <Column expander style="width: 5rem" />
     <Column field="name" header="Name">
@@ -78,6 +78,7 @@ const new_layer_min = ref(null)
 const new_layer_max = ref(null)
 const new_layer_step = ref(null)
 const expandedRows = ref([])
+const tableKey = ref(0)
 
 const layerCompositions = ref(null)
 
@@ -101,10 +102,11 @@ const createNewLayer = async () => {
 }
 
 const createNewLayerValue = async (layerId, categories) => {
-  addLayer(new_layer_value.value, layerId)
-  refreshLayers()
+  await addLayer(new_layer_value.value, layerId)
+  await refreshLayers()
   new_layer.value = null
   new_layer_value.value = null
+  tableKey.value = tableKey.value + 1
 }
 
 const onRowExpand = (args) => {

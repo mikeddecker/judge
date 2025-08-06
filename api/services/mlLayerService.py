@@ -52,7 +52,7 @@ class MLLayerService:
     def add_layer_value(self, layerId: int, name: str) -> dict:
         """Returns the full layer"""
         ValueHelper.check_raise_id(layerId)
-        ValueHelper.check_raise_string_only_abc123(name)
+        ValueHelper.check_raise_string_only_abc123space(name)
         if not self.MlLayerRepo.has_layer(layerId):
             raise ValueError(f"Layer with id {layerId} does not exist")
         return self.MlLayerRepo.add_value(layerId=layerId, valueName=name)
@@ -64,12 +64,12 @@ class MLLayerService:
     def update_layer(self, layerId: int, name: str, min: float = None, max: float = None, step: float = None) -> dict:
         """update a layer: can not update type, returns layer"""
         ValueHelper.check_raise_id(layerId)
-        ValueHelper.check_raise_string_only_abc123(name)
-        ValueHelper.check_raise_string_only_abc123(type)
-        assert type in LAYER_TYPES, f"Unknown type {type}"
+        ValueHelper.check_raise_string_only_abc123space(name)
         assert self.MlLayerRepo.has_layer(layerId), f"Layer ({layerId}) does not exist"
 
-        if type == 'numerical':
+        layerproperty = self.MlLayerRepo.get(layerId)
+
+        if layerproperty.type == 'numerical':
             assert min is not None, f"Min value for numerical values must be filled in"
             assert max is not None, f"Max value for numerical values must be filled in"
             ValueHelper.check_raise_float(min)
