@@ -14,7 +14,6 @@ from localizor_with_strats import validate_localize
 from managers.DataRepository import DataRepository
 from ultralytics import YOLO
 
-
 IMAGES_FOLDER = "images"
 LABELS_FOLDER = "labels"
 
@@ -159,7 +158,9 @@ def train_yolo_model(variant: str, repo: DataRepository):
             # Re-validate previous trained model
             previous_raw_avg_team_box_io = validate_localize(modeldir=previous_folder, repo=repo)
         
+        print(f"Training increased/decreased from {previous_raw_avg_team_box_io} to {trained_raw_avg_team_box_iou} ({previous_raw_avg_team_box_io - trained_raw_avg_team_box_iou})")
         if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou:
             shutil.rmtree(previous_folder)
         else:
             shutil.rmtree(save_dir)
+
