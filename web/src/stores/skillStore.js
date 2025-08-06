@@ -41,6 +41,12 @@ export const useSkillStore = defineStore("skill", {
     async loadData() {
       getLayerCompositions().then(l => this.layercomposition = l)
     },
+    duplicateCompositionValues(compositionName, index) {
+      const valuesToCopy = this.selectedSkill.Skillinfo[compositionName][index]
+      for (let i = 0; i < this.selectedSkill.Skillinfo[compositionName].length; i++) {
+        this.selectedSkill.Skillinfo[compositionName][i] = valuesToCopy
+      }
+    }
   },
   getters: {
     isNewSkill: (state) => {

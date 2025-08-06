@@ -27,6 +27,7 @@ import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
+import Tooltip from 'primevue/tooltip'
 import { useSkillStore } from './stores/skillStore';
 
 const app = createApp(App)
@@ -66,6 +67,8 @@ app.component('TabList', TabList);
 app.component('Tab', Tab);
 app.component('TabPanels', TabPanels);
 app.component('TabPanel', TabPanel);
+
+app.directive('tooltip', Tooltip)
 
 app.mount('#app')
 

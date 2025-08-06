@@ -88,7 +88,7 @@
         <!--Skills -->
         <ConfirmPopup></ConfirmPopup>
         <SkillLabel v-if="modeIsSkills" :video-id="videoinfo.Id" :frame-start="frameStart" :frame-end="frameEnd"></SkillLabel>
-        <div class="flex flex-wrap gap-2">
+        <div v-if="modeIsSkills" class="flex flex-wrap gap-2">
           <Button v-if="!skillStore.selectedSkillIsEmpty && skillStore.isNewSkill && frameStart && frameEnd" @click="addSkill" aria-label="Add skill" label="Add skill" icon="pi pi-plus-circle" class="my-2"></Button>
           <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" @click="updateSkill" aria-label="Update skill" label="Update skill" icon="pi pi-pencil" class="my-2"></Button>
           <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" @click="confirmRemoveSkill($event)" severity="danger" aria-label="Delete skill" label="Delete skill" icon="pi pi-pencil" class="my-2"></Button>

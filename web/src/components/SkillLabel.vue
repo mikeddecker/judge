@@ -21,8 +21,13 @@
                 <TabList>
                     <Tab v-for="(label, idx) in compositionLabelValues" :key="`item-${compositionName}-${idx}`" :value="`item-${compositionName}-${idx}`">{{ idx }}</Tab>
                 </TabList>
-                <TabPanels>
+                <TabPanels class="px-0">
                     <TabPanel v-for="(label, idx) in compositionLabelValues" :key="`item-panel-${compositionName}-${idx}`" :value="`item-${compositionName}-${idx}`" class="flex flex-wrap">
+                        <Button 
+                            class="mx-2" aria-label="Duplicate" label="Duplicate" size="small"
+                            v-tooltip="`Duplicate current label of ${compositionName} to all other instances`" 
+                            @click="skillStore.duplicateCompositionValues(compositionName, idx)"
+                        ></Button>
                         <Card v-for="(upperStage, i) in ['GeneralProperties', 'StartProperties', 'EndProperties']" class="m-2">
                             <template #header>{{ upperStage }}</template>
                             <template #content>
