@@ -60,7 +60,6 @@ const stages = computed(() => {
     for (let i = 1; i <= maxStage + 1; i++) {
         s.push({ label: `stage ${i}`, value: i })
     }
-    console.log('max stage is', maxStage)
     return s
 })
 

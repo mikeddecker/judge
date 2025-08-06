@@ -36,8 +36,8 @@ const onButtonTrain = () => {
     'step': props.step,
     'recipe': props.title,
   }
-  console.log('launching job', jobarguments)
   launchJob(jobarguments)
 }
 
 </script>
+

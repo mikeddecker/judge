@@ -11,15 +11,6 @@ export const useSkillStore = defineStore("skill", {
   },
   actions: {
     setSelectedSkill(skill) { this.selectedSkill = skill },
-    updateSelectedSkill(compositionName, compositionIndex, propertyName, newValue, stage, stageNr=undefined) {
-      if (stage == 'StageProperties') {
-        this.selectedSkill['Skillinfo'][compositionName][compositionIndex][stage][stageNr][propertyName] = newValue
-      } else {
-        this.selectedSkill['Skillinfo'][compositionName][compositionIndex][stage][propertyName] = newValue
-      }
-
-      console.log('api call update!!')  
-    },
     async addComposition(selectedCompositionName) {
       const getDefaultValue = (layerproperty) => {
         return Object.fromEntries(Object.entries(layerproperty).map(([propertyname, propertyinfo]) => {
@@ -45,10 +36,7 @@ export const useSkillStore = defineStore("skill", {
         }
       }));
       
-      console.log('label', label);
       (this.selectedSkill['Skillinfo'][selectedCompositionName] ??= []).push(label); // Create or push to the array
-      console.log('updated selected skill', this.selectedSkill)
-      // subTabsKey.value = tabKey.value = tabKey.value + 1
     },
     async loadData() {
       getLayerCompositions().then(l => this.layercomposition = l)

@@ -115,11 +115,5 @@ const onRowCollapse = (args) => {
   console.log(args)
 }
 
-const onLayerNameChanged = (id, newName) => {
-  console.log('update', newName)
-  // updateLayer(id, newName, null)
-  // tags.value.filter(t => t.Id == id)[0].Name = newName
-}
-
 </script>
 

@@ -30,12 +30,8 @@ import { computed, onMounted, ref } from 'vue';
 
 const layerCompositions = ref(null)
 const layerCompositionsMapped = ref(null)
-const tableRefreshKey = ref(0)
-const selectedLayerComposition = ref(null)
-const selectedCategoricalValue = ref(null)
 const selectedType = ref('')
 const selectedTypeIsNumeric = computed(() => selectedType.value == 'numerical')
-const selectedTypeIsNumericAndFilledIn = computed(() => selectedTypeIsNumeric.value && new_composition_min.value != null && new_composition_max.value != null)
 const new_composition = ref('')
 const new_composition_is_empty = computed(() => isNullOrWhiteSpace(new_composition.value))
 const expandedRows = ref([])
@@ -51,25 +47,12 @@ const refreshLayers = async () => {
   })
 }
 
-const createNewComposition = async () => {
-  layerCompositions.value[new_composition.value] = {}
-  new_composition.value = null
-  tableRefreshKey.value += 1
-  console.log(tableRefreshKey.value)
-}
-
 const onRowExpand = (args) => {
   console.log(args.data)
 }
 
 const onRowCollapse = (args) => {
   console.log(args)
-}
-
-const onLayerNameChanged = (id, newName) => {
-  console.log('update', newName)
-  // updateLayer(id, newName, null)
-  // tags.value.filter(t => t.Id == id)[0].Name = newName
 }
 
 </script>

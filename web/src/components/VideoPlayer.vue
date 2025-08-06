@@ -1,9 +1,5 @@
 <template>
   <div>
-    <!-- <video v-if="mode == 'LOCALIZE'"
-      id="vid" ref="videoPlayer" :src="videoSrc" loop
-      @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @ontimeupdate="ontimeupdate" @loadeddata="onLoadedData"
-    /> -->
     <video
       id="vid" ref="videoPlayer" :src="videoSrc" loop controls class="max-h-[75vh]"
       @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate" @loadeddata="onLoadedData"
@@ -34,7 +30,6 @@ const videoElement = ref(null)
 const videoWidth = ref(0)
 const videoHeight = ref(0)
 
-const ctx = ref(null)
 const canvas = ref(null)
 const mouse = ref('')
 
@@ -48,13 +43,9 @@ const canvasmodeIsAcceptPredictedBox = computed(() => props.canvasMode == 'accep
 const boxes = computed(() => props.videoinfo.Frames.filter(box => box.FrameNr == Math.round(props.currentFrameNr ? props.currentFrameNr : 0)))
 const predictedBoxesCurrentFrame = computed(() => props.predictedBoxes && props.predictedBoxes['boxes'] ? props.predictedBoxes['boxes'][props.currentFrameNr] : [])
 const predictedBoxClassesCurrentFrame = computed(() => props.predictedBoxes && props.predictedBoxes['cls'] ? props.predictedBoxes['cls'][props.currentFrameNr] : [])
-const teamBoxes = computed(() => 'c')
-
 
 const boxesHovering = ref([])
 const predictedBoxesHovering = ref([])
-const selectedBox = ref(null)
-const paused = computed(() => videoElement.value?.paused)
 
 const boxColors = [
   '#bfdbfe',
@@ -77,7 +68,6 @@ const mouseY = ref(0)
 const mouseXstart = ref(0)
 const mouseYstart = ref(0)
 const isDrawing = ref(false)
-
 
 onMounted(async () => {
   videoElement.value = document.getElementById("vid")
@@ -107,9 +97,6 @@ onMounted(async () => {
 ** Functions
 ========= */
 
-function updatePlaying(event) {
-  // console.log("updatePlaying", event)
-}
 function updatePaused(event) {
   emit('pause', event.target.currentTime)
 }
@@ -171,16 +158,12 @@ const resetCanvasAndDrawBoxes = () => {
     ctx.strokeRect(xleft, yleft, w, h);
   }
 
-
-
   // Draw current drawing box
   if (!canvasmodeIsDelete.value && !canvasmodeIsAcceptPredictedBox.value) {
     ctx.strokeStyle = boxColors[0]
     ctx.strokeRect(mouseXstart.value * videoWidth.value, mouseYstart.value * videoHeight.value, (mouseX.value - mouseXstart.value) * videoWidth.value, (mouseY.value - mouseYstart.value) * videoHeight.value);
   }
 }
-
-
 
 const canvasMouseDown = (event) => {
   if (canvasmodeIsDraw.value) { 
@@ -278,3 +261,4 @@ canvas {
 @media (min-width: 1024px) {
 }
 </style>
+
