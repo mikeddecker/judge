@@ -99,16 +99,6 @@ export const downloadVideo = async (downloadinfo) => {
     });
 };
 
-export const getSkilloptions = async (skilltype, tablepart) => {
-  try {
-    const response = await api.get(`/skilloptions/${skilltype}/${tablepart}`)
-    return response.data
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    throw error;
-  }
-}
-
 export const postSkill = async (videoId, skillinfo) => {
   return await api.post(`/skill/${videoId}`, skillinfo, { headers: { 'Content-Type': 'application/json' }})
     .then(function (response) {

@@ -14,7 +14,7 @@ from routers.videoRouter import VideoRouter, VideoRouterCropped, VideoImageRoute
 from routers.frameRouter import FrameRouter, FrameLabelTypeRouter
 from routers.jobRouter import JobTrainRouter, JobLaunchRouter, JobOptionsRouter
 from routers.storageRouter import StorageRouter, OrphanDeleterRouter
-from routers.skillRouter import SkillRouter, OptionRouter, SkillLevel, SkillLabelingCompletedRouter, DiffScoreComparison
+from routers.skillRouter import SkillRouter, SkillLevel, SkillLabelingCompletedRouter, DiffScoreComparison
 from routers.downloadRouter import DownloadRouter
 from routers.mlLayerRouter import MLLayerRouter, MLLayerTypesRouter, MLLayerCompositionRouter
 from routers.statsRouter import StatsRouter
@@ -59,7 +59,6 @@ api.add_resource(MLLayerTypesRouter, '/layers/types')
 api.add_resource(MLLayerCompositionRouter, '/layercompositions')
 api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
 api.add_resource(FrameLabelTypeRouter, '/frameLabelTypes')
-api.add_resource(OptionRouter, '/skilloptions/<skilltype>/<tableinfo>')
 api.add_resource(SkillRouter, '/skill/<int:videoId>')
 api.add_resource(SkillLevel, '/skilllevel')
 api.add_resource(DiffScoreComparison, '/diff-score-comparison')

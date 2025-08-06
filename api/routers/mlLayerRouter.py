@@ -23,7 +23,7 @@ class MLLayerRouter(Resource):
         layerId = data.get('layerId')
         type = data.get('type')
         
-        ValueHelper.check_raise_string_only_abc123(name)
+        ValueHelper.check_raise_string_only_abc123space(name)
         if layerId is None:
             # Layer
             assert type in LAYER_TYPES, f"Type does not exist"

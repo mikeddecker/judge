@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from helpers.ValueHelper import ValueHelper
 from repository.MapToDomain import MapToDomain
 from repository.MapToDB import MapToDB
-from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type, FrameLabelType
+from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skill, FrameLabelType
 from sqlalchemy import desc, func, and_
 from typing import List
 
@@ -62,19 +62,7 @@ class VideoRepository:
     def exists(self, id: int) -> bool:
         ValueHelper.check_raise_id(id)
         return self.db.session.query(VideoInfoDB).filter_by(id=id).scalar() is not None
-    
-    def exists_skillinfo(self, discipline: str, table_name_part: str, uc: int) -> bool:
-        ValueHelper.check_raise_id(uc)
-        match (table_name_part):
-            case 'Type':
-                return self.db.session.query(Skillinfo_DoubleDutch_Type).filter_by(id=uc).first() is not None
-            case 'Turner':
-                return self.db.session.query(Skillinfo_DoubleDutch_Turner).filter_by(id=uc).first() is not None
-            case 'Skill':
-                return self.db.session.query(Skillinfo_DoubleDutch_Skill).filter_by(id=uc).first() is not None
-            case _:
-                raise ValueError(f"tablenamepart {table_name_part} does not exist")
-    
+        
     def exists_by_name(self, name: str, folder: Folder) -> bool:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
@@ -202,128 +190,63 @@ class VideoRepository:
     ##########
     # Skills #
     ##########
-    def add_skill(self, videoId: int, disciplineConfig: dict, skillinfo: dict, start: int, end: int) -> int:
+    def add_skill(self, videoId: int, skillinfo: dict, start: int, end: int) -> int:
         """Let the service be responsible for good values in the dicts"""
         ValueHelper.check_raise_id(videoId)
         ValueHelper.check_raise_frameNr(start)
         ValueHelper.check_raise_frameNr(end)
 
+        # Likewise checks can be done, to check whether values of layerproperties exist
         assert self.db.session.query(VideoInfoDB).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"        
-        assert self.db.session.query(Skillinfo_DoubleDutch_Type).filter_by(id=skillinfo["Type"]).count() > 0, f"Skillinfo_DoubleDutch_Type {skillinfo["Type"]} does not exist"
-        assert self.db.session.query(Skillinfo_DoubleDutch_Turner).filter_by(id=skillinfo["Turner1"]).count() > 0, f"Skillinfo_DoubleDutch_Turner {skillinfo["Turner1"]} does not exist"
-        assert self.db.session.query(Skillinfo_DoubleDutch_Turner).filter_by(id=skillinfo["Turner2"]).count() > 0, f"Skillinfo_DoubleDutch_Turner {skillinfo["Turner2"]} does not exist"
-        assert self.db.session.query(Skillinfo_DoubleDutch_Skill).filter_by(id=skillinfo["Skill"]).count() > 0, f"Skillinfo_DoubleDutch_Skill {skillinfo["Skill"]} does not exist"
 
-        skill = Skillinfo_DoubleDutch(
+        skill = Skill(
             videoId = videoId,
             frameStart = start,
             frameEnd = end,
-            type = skillinfo["Type"],
-            rotations = skillinfo["Rotations"],
-            turner1 = skillinfo["Turner1"],
-            turner2 = skillinfo["Turner2"],
-            skill = skillinfo["Skill"],
-            hands = skillinfo["Hands"],
-            feet = skillinfo["Feet"],
-            turntable = skillinfo["Turntable"],
-            bodyRotations = skillinfo["BodyRotations"],
-            backwards = skillinfo["Backwards"],
-            sloppy = skillinfo["Sloppy"],
-            hard2see = skillinfo["Hard2see"],
-            fault = skillinfo["Fault"]
+            skillinfo = skillinfo,
         )
 
         self.db.session.add(skill)
         self.db.session.commit()
         return skill.id
     
-    def update_skill(self, id: int, videoId: int, disciplineConfig: dict, skillinfo: dict, start: int, end: int) -> int:
+    def update_skill(self, id: int, videoId: int, skillinfo: dict, start: int, end: int) -> int:
         """Let the service be responsible for good values in the dicts"""
         ValueHelper.check_raise_id(id)
         ValueHelper.check_raise_id(videoId)
         ValueHelper.check_raise_frameNr(start)
         ValueHelper.check_raise_frameNr(end)
 
-        skill = self.db.session.query(Skillinfo_DoubleDutch).filter_by(id=id).first()
+        skill = self.db.session.query(Skill).filter_by(id=id).first()
         assert skill is not None, f"Skill {id} does not exist"
         assert self.db.session.query(VideoInfoDB).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"        
-        assert self.db.session.query(Skillinfo_DoubleDutch_Type).filter_by(id=skillinfo["Type"]).count() > 0, f"Skillinfo_DoubleDutch_Type {skillinfo["Type"]} does not exist"
-        assert self.db.session.query(Skillinfo_DoubleDutch_Turner).filter_by(id=skillinfo["Turner1"]).count() > 0, f"Skillinfo_DoubleDutch_Turner {skillinfo["Turner1"]} does not exist"
-        assert self.db.session.query(Skillinfo_DoubleDutch_Turner).filter_by(id=skillinfo["Turner2"]).count() > 0, f"Skillinfo_DoubleDutch_Turner {skillinfo["Turner2"]} does not exist"
-        assert self.db.session.query(Skillinfo_DoubleDutch_Skill).filter_by(id=skillinfo["Skill"]).count() > 0, f"Skillinfo_DoubleDutch_Skill {skillinfo["Skill"]} does not exist"
 
         skill.frameStart = start
         skill.frameEnd = end
-        skill.type = skillinfo["Type"]
-        skill.rotations = skillinfo["Rotations"]
-        skill.turner1 = skillinfo["Turner1"]
-        skill.turner2 = skillinfo["Turner2"]
-        skill.skill = skillinfo["Skill"]
-        skill.hands = skillinfo["Hands"]
-        skill.feet = skillinfo["Feet"]
-        skill.turntable = skillinfo["Turntable"]
-        skill.bodyRotations = skillinfo["BodyRotations"]
-        skill.backwards = skillinfo["Backwards"]
-        skill.sloppy = skillinfo["Sloppy"]
-        skill.hard2see = skillinfo["Hard2see"]
-        skill.fault = skillinfo["Fault"]
+        skill.skillinfo = skillinfo
 
         self.db.session.commit()
     
     def get_skills(self, videoId: int) -> List[Skill]:
-        skillsDB = self.db.session.query(Skillinfo_DoubleDutch).filter_by(videoId=videoId).all()
-        return MapToDomain.map_skills(skillsDB)
+        skillsDB = self.db.session.query(Skill).filter_by(videoId=videoId).all()
+        return [MapToDomain.map_skill(s) for s in skillsDB]
     
-    def get_skilloptions(self, skilltype: str, tablepart: str, include_levels=False) -> dict[int, str]:
-        if not include_levels:
-            match (tablepart):
-                case 'Type':
-                    return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Type).all()}
-                case 'Turner':
-                    return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Turner).all()}
-                case 'Skill':
-                    return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Skill).all()}
-                case _:
-                    raise ValueError(f"{tablepart} does not exist")
-        else:
-            match (tablepart):
-                case 'Type':
-                    return { so.id : so.name for so in self.db.session.query(Skillinfo_DoubleDutch_Type).all()}
-                case 'Turner':
-                    return { so.id : { 
-                        "name" : so.name, 
-                        "dd" : so.level_dd, 
-                        "cw" : so.level_cw,
-                        "dd_requires_both" : so.dd_requires_both,
-                        "cw_requires_both" : so.cw_requires_both,
-                    } for so in self.db.session.query(Skillinfo_DoubleDutch_Turner).all()}
-                case 'Skill':
-                    return { so.id : { 
-                        "name" : so.name, 
-                        "dd" : so.level_dd, 
-                        "cw" : so.level_cw,
-                    } for so in self.db.session.query(Skillinfo_DoubleDutch_Skill).all()}
-                case _:
-                    raise ValueError(f"{tablepart} does not exist")
-
-        return None
-
     def get_previous_skill(self, videoId: int, frameEnd: int) -> tuple[dict, str, int]:
         """Returns prev_skillinfo, prev_skillname, base_level"""
         ValueHelper.check_raise_id(videoId)
         ValueHelper.check_raise_frameNr(frameEnd)
-        DDskillDB = self.db.session.query(Skillinfo_DoubleDutch).filter(Skillinfo_DoubleDutch.videoId==videoId).filter(Skillinfo_DoubleDutch.frameEnd <= frameEnd).order_by(desc(Skillinfo_DoubleDutch.frameEnd)).first()
+        DDskillDB = self.db.session.query(Skill).filter(Skill.videoId==videoId).filter(Skill.frameEnd <= frameEnd).order_by(desc(Skill.frameEnd)).first()
         if DDskillDB is None:
             return None, None, 0
-        skillDB = self.db.session.query(Skillinfo_DoubleDutch_Skill).filter_by(id=DDskillDB.skill).first()
-        return MapToDomain.map_skills([DDskillDB])[0], skillDB.name, 0 if skillDB.level_dd == "/" else int(str.split(skillDB.level_dd, '-')[-1])
+        skillDB = self.db.session.query(Skill).filter_by(id=DDskillDB.skill).first()
+        return MapToDomain.map_skill(DDskillDB), skillDB.name, 0 if skillDB.level_dd == "/" else int(str.split(skillDB.level_dd, '-')[-1])
 
-    def remove_skill(self, disciplineconfig: dict, videoId, start: int, end: int):
+    def remove_skill(self, videoId, start: int, end: int):
         ValueHelper.check_raise_id(videoId)
         ValueHelper.check_raise_frameNr(start)
         ValueHelper.check_raise_frameNr(end)
 
-        skillDB = self.db.session.query(Skillinfo_DoubleDutch).filter_by(frameStart=start, frameEnd=end).first()
+        skillDB = self.db.session.query(Skill).filter_by(frameStart=start, frameEnd=end).first()
         self.db.session.delete(skillDB)
         self.db.session.commit()
 

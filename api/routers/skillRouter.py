@@ -5,17 +5,6 @@ from helpers.ValueHelper import ValueHelper
 from services.folderService import FolderService
 from services.videoService import VideoService
 
-class OptionRouter(Resource):
-    def __init__(self, **kwargs):
-        self.folderService = FolderService()
-        self.videoService = VideoService()
-        super().__init__(**kwargs)
-
-    def get(self, skilltype: str, tableinfo: str):
-        if skilltype != "DoubleDutch":
-            raise ValueError(f"Skilltype is not DoubleDutch")
-        return self.videoService.get_skilloptions(skilltype, tableinfo)
-
 class SkillLabelingCompletedRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
@@ -108,7 +97,6 @@ class SkillRouter(Resource):
             return str(ve), 404
         video = self.videoService.get(videoId)
         return self.videoService.remove_skill(
-            disciplineconfig=get_discipline_DoubleDutch_config(),
             videoinfo=video,
             frameStart=start,
             frameEnd=end,
@@ -152,3 +140,4 @@ class DiffScoreComparison(Resource):
         # return self.videoService.calculate_skill_level(config, skillinfo=skillinfo, frameStart=frameStart, videoId=videoId)
 
         return [], 200
+

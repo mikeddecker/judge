@@ -7,54 +7,54 @@
     
     <div id="videoview-content" v-if="!loading" class="flex gap-2">
       <div id="column-1" class="w-[75vw]">
-
+        
         <VideoPlayer class="relative" 
         v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
         :current-frame-nr="currentFrame" :videoinfo="videoinfo" :labeltype="labeltypes[selectedLabeltype]" :predicted-boxes="locationPredictions"
         @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
         @add-box="onAddBox" @delete-box="onDeleteBox">
-        </VideoPlayer>
-        <SkillBalk :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
-        <SkillBalk :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2" :key="skillbalkKey"/>
-        <div id="skill-controls" class="flex gap-2 my-2 wrap" v-show="modeIsSkills">
-          <Button v-show="paused && !selectedSkill.Id" @click="setFrameStart()">set frame Start</Button>
-          <Button v-show="paused && !selectedSkill.Id" @click="setFrameEnd()">set frame End</Button>
-          <Button @click="playJustALittleFurther(-25)" class="bg-teal-600">-25</Button>
-          <Button @click="playJustALittleFurther(-15)" class="bg-teal-600">-15</Button>
-          <Button @click="playJustALittleFurther(-10)" class="bg-teal-600">-10</Button>
-          <Button @click="playJustALittleFurther(-5)" class="bg-teal-600">-5</Button>
-          <Button @click="playJustALittleFurther(-2)" class="bg-teal-600">-2</Button>
-          <Button @click="playJustALittleFurther(-1)" class="bg-teal-600">-1</Button>
-          <Button @click="playJustALittleFurther(+1)" class="bg-teal-600">+1</Button>
-          <Button @click="playJustALittleFurther(+2)" class="bg-teal-600">+2</Button>
-          <Button @click="playJustALittleFurther(+5)" class="bg-teal-600">+5</Button>
-          <Button @click="playJustALittleFurther(+10)" class="bg-teal-600" ref="focusBtn">+10</Button>
-          <Button @click="playJustALittleFurther(+15)" class="bg-teal-600">+15</Button>
-          <Button @click="playJustALittleFurther(+25)" class="bg-teal-600">+25</Button>
-          <Button v-show="selectedSkill.Id" @click="deselectSkill">Deselect skill</Button>
-          <Button v-show="selectedSkill.Id && selectedSkill.FrameEnd != currentFrame" @click="frameToEndOfSkill">Frame to END of selected skill</Button>
-          <Button v-show="selectedSkill.Id && selectedSkill.FrameEnd == currentFrame" @click="frameToStartOfSkill">Frame to START of selected skill</Button>
-          <Button v-show="frameStart && frameEnd" @click="replaySection">Replay section</Button>
-          <Button v-show="selectedSkill.Id" @click="playNextSection">Play next section</Button>
-        </div>
-        <div id="prediction-controls" class="flex gap-2 my-2 wrap" v-if="selectedSkillIsPrediction">
-          <Button @click="splitPrediction">Split prediction</Button>
-          <Button @click="mergeSplits">Merge</Button>
-          <Button @click="() => shifPredictedSplitpoint(-1)">Shift splitpoint<i class="pi pi-arrow-left"></i></Button>
-          <Button @click="() => shifPredictedSplitpoint(+1)">Shift splitpoint<i class="pi pi-arrow-right"></i></Button>
-          <Button @click="acceptPredictedSkill">Accept<i class="pi pi-check"></i></Button>
-        </div>
+      </VideoPlayer>
+      <SkillBalk :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
+      <SkillBalk :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2" :key="skillbalkKey"/>
+      <div id="skill-controls" class="flex gap-2 my-2 wrap" v-show="modeIsSkills">
+        <Button v-show="paused && !skillStore.selectedSkill.Id" @click="setFrameStart()">set frame Start</Button>
+        <Button v-show="paused && !skillStore.selectedSkill.Id" @click="setFrameEnd()">set frame End</Button>
+        <Button @click="playJustALittleFurther(-25)" class="bg-teal-600">-25</Button>
+        <Button @click="playJustALittleFurther(-15)" class="bg-teal-600">-15</Button>
+        <Button @click="playJustALittleFurther(-10)" class="bg-teal-600">-10</Button>
+        <Button @click="playJustALittleFurther(-5)" class="bg-teal-600">-5</Button>
+        <Button @click="playJustALittleFurther(-2)" class="bg-teal-600">-2</Button>
+        <Button @click="playJustALittleFurther(-1)" class="bg-teal-600">-1</Button>
+        <Button @click="playJustALittleFurther(+1)" class="bg-teal-600">+1</Button>
+        <Button @click="playJustALittleFurther(+2)" class="bg-teal-600">+2</Button>
+        <Button @click="playJustALittleFurther(+5)" class="bg-teal-600">+5</Button>
+        <Button @click="playJustALittleFurther(+10)" class="bg-teal-600" ref="focusBtn">+10</Button>
+        <Button @click="playJustALittleFurther(+15)" class="bg-teal-600">+15</Button>
+        <Button @click="playJustALittleFurther(+25)" class="bg-teal-600">+25</Button>
+        <Button v-show="skillStore.selectedSkill.Id" @click="deselectSkill">Deselect skill</Button>
+        <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd != currentFrame" @click="frameToEndOfSkill">Frame to END of selected skill</Button>
+        <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd == currentFrame" @click="frameToStartOfSkill">Frame to START of selected skill</Button>
+        <Button v-show="frameStart && frameEnd" @click="replaySection">Replay section</Button>
+        <Button v-show="skillStore.selectedSkill.Id" @click="playNextSection">Play next section</Button>
       </div>
-
-      <div id="column-2" class="w-[25vw]">
-        <div id="type-selection" class="flex h-fit gap-2 stretch">
+      <div id="prediction-controls" class="flex gap-2 my-2 wrap" v-if="selectedSkillIsPrediction">
+        <Button @click="splitPrediction">Split prediction</Button>
+        <Button @click="mergeSplits">Merge</Button>
+        <Button @click="() => shifPredictedSplitpoint(-1)">Shift splitpoint<i class="pi pi-arrow-left"></i></Button>
+        <Button @click="() => shifPredictedSplitpoint(+1)">Shift splitpoint<i class="pi pi-arrow-right"></i></Button>
+        <Button @click="acceptPredictedSkill">Accept<i class="pi pi-check"></i></Button>
+      </div>
+    </div>
+    
+    <div id="column-2" class="w-[25vw]">
+      <div id="type-selection" class="flex h-fit gap-2 stretch">
           <Button :class="modeIsWatch ? 'p-button-highlight' : ''" @click="() => mode = 'WATCH'">Watch</Button>
           <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
           <Button :class="modeIsSegment ? 'p-button-highlight' : ''" @click="() => mode = 'SEGMENT'">Segment</Button>
           <Button :class="modeIsSkills ? 'p-button-highlight' : ''" @click="() => mode = 'SKILLS'">Skills</Button>
           <Button v-show="modeIsAnnotate" :class="modeIsAnnotate ? 'p-button-highlight' : ''" @click="() => predictMode = 'predict'">Annotate</Button>
           <Button v-show="modeIsPredict" :class="modeIsPredict ? 'p-button-highlight' : ''" @click="() => predictMode = 'annotate'">Predict</Button>
-
+          
         </div>
         <div class="my-2 flex gap-2">
           currentFrame: {{ currentFrame }}
@@ -86,24 +86,18 @@
         <Button v-if="modeIsPredict" @click="() => predictSkills(videoinfo.Id)" disabled>Launch job</Button>
         
         <!--Skills -->
-        <div id="skillinfo" v-if="modeIsSkills">
-          <span>Start = {{ frameStart }}<br></span>
-          <span>End = {{ frameEnd }}</span>
-        </div>
-        <div v-if="modeIsSkills" class="mx-2">
-          <div v-for="(skillPropOptions, skillProp) in reversedSkillOptions" class="my-1">
-            {{ skillProp }} <Select v-model="selectedSkill.ReversedSkillinfo[skillProp]" :options="Object.keys(skillPropOptions)" @update:model-value="updateLevel"></Select>
-          </div>
-          <Button v-show="frameStart && frameEnd && !selectedSkill.Id" @click="addSkill">Submit</Button>
-          <Button v-show="selectedSkill.Id && !selectedSkillIsPrediction" @click="updateSkill">Update</Button>
-          Level = {{ selectedSkillLevel }}
+        <ConfirmPopup></ConfirmPopup>
+        <SkillLabel v-if="modeIsSkills" :video-id="videoinfo.Id" :frame-start="frameStart" :frame-end="frameEnd"></SkillLabel>
+        <div class="flex flex-wrap gap-2">
+          <Button v-if="!skillStore.selectedSkillIsEmpty && skillStore.isNewSkill && frameStart && frameEnd" @click="addSkill" aria-label="Add skill" label="Add skill" icon="pi pi-plus-circle" class="my-2"></Button>
+          <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" @click="updateSkill" aria-label="Update skill" label="Update skill" icon="pi pi-pencil" class="my-2"></Button>
+          <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" @click="confirmRemoveSkill($event)" severity="danger" aria-label="Delete skill" label="Delete skill" icon="pi pi-pencil" class="my-2"></Button>
         </div>
       </div>
       
     </div>
     <pre>{{ videoinfo }}</pre>
     <Button v-if="modeIsSkills" class="mb-8" @click="toggleSkillsCompleted">Toggle skills completed, now = {{ videoinfo.Completed_Skill_Labels }}</button>
-      
   </div>
   <div v-else>
     Loading...
@@ -111,15 +105,20 @@
 </template>
 
 <script setup>
-import SkillBalk from '@/components/SkillBalk.vue';
-import VideoPlayer from '@/components/VideoPlayer.vue';
-import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, getSkilloptions, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, getFrameLabelTypes, getJobOptions, launchJob, hasLocalizePredictions, getLocalizePredictions } from '../services/videoService';
-import { onMounted, ref, watch, computed, toRaw } from 'vue'
-import { useRoute } from 'vue-router';
-import LocalizeInfo from '@/components/LocalizeInfo.vue';
+import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, getFrameLabelTypes, getJobOptions, launchJob, hasLocalizePredictions, getLocalizePredictions, deleteSkill } from '../services/videoService';
 import { sleep } from '@/helpers/utils';
+import { onMounted, ref, watch, computed, toRaw } from 'vue'
+import { useConfirm } from "primevue/useconfirm";
+import { useRoute } from 'vue-router';
+import { useSkillStore } from '@/stores/skillStore';
+import LocalizeInfo from '@/components/LocalizeInfo.vue';
+import SkillBalk from '@/components/SkillBalk.vue';
+import SkillLabel from '@/components/SkillLabel.vue';
+import VideoPlayer from '@/components/VideoPlayer.vue';
 
+const confirm = useConfirm();
 const route = useRoute()
+const skillStore = useSkillStore()
 
 // Loading
 const loading = ref(false)
@@ -178,24 +177,8 @@ const skills = computed(() => {
 
 const skillOptions = ref({})
 const reversedSkillOptions = ref({})
-const selectedSkill = ref({})
 const selectedSkillLevel = ref(0)
-const defaultOptions = ref({
-  "Type" : "Double Dutch",
-  "Rotations" : "1 rotation",
-  "Turner1":  "normal",
-  "Turner2":  "normal",
-  "Skill" : "jump",
-  "Hands" : "0",
-  "Feet" : "2",
-  "Turntable" : "0 roations",
-  "BodyRotations" : "0 roations",
-  "Backwards" : "False",
-  "Sloppy" : "False",
-  "Hard2see" : "False",
-  "Fault" : "False",
-})
-const selectedSkillIsPrediction = computed(() => selectedSkill.value.hasOwnProperty('IsPrediction') && selectedSkill.value.IsPrediction) 
+const selectedSkillIsPrediction = computed(() => skillStore.selectedSkill.hasOwnProperty('IsPrediction') && skillStore.selectedSkill.IsPrediction) 
 
 watch(
   () => route.params.id,
@@ -213,23 +196,23 @@ function guidGenerator() {
 
 const getPreviousPredictedSkill = (adjacent) => {
   if (adjacent) {
-    return predictions.value['skills'].filter(s => s.FrameEnd == selectedSkill.value.FrameStart)[0]
+    return predictions.value['skills'].filter(s => s.FrameEnd == skillStore.selectedSkill.FrameStart)[0]
   } else {
-    return predictions.value['skills'].filter(s => s.FrameEnd <= selectedSkill.value.FrameStart).reduce((acc, current) => acc ? (current.FrameEnd > acc.FrameEnd && current.FrameEnd <= selectedSkill.value.FrameStart ? current : acc) : current, null)
+    return predictions.value['skills'].filter(s => s.FrameEnd <= skillStore.selectedSkill.FrameStart).reduce((acc, current) => acc ? (current.FrameEnd > acc.FrameEnd && current.FrameEnd <= skillStore.selectedSkill.FrameStart ? current : acc) : current, null)
   }
 }
 
 const getNextPredictedSkill = (adjacent) => {
   if (adjacent) {
-    return predictions.value['skills'].filter(s => s.FrameStart == selectedSkill.value.FrameEnd)[0]
+    return predictions.value['skills'].filter(s => s.FrameStart == skillStore.selectedSkill.FrameEnd)[0]
   } else {
-    return predictions.value['skills'].filter(s => s.FrameStart >= selectedSkill.value.FrameEnd).reduce((acc, current) => acc ? (current.FrameStart < acc.FrameStart && current.FrameStart >= selectedSkill.value.FrameEnd ? current : acc) : current, null)
+    return predictions.value['skills'].filter(s => s.FrameStart >= skillStore.selectedSkill.FrameEnd).reduce((acc, current) => acc ? (current.FrameStart < acc.FrameStart && current.FrameStart >= skillStore.selectedSkill.FrameEnd ? current : acc) : current, null)
   }
 }
 
 const updateLevel = async () => {
   if (frameStart.value) {
-    let currentSkillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
+    // let currentSkillinfo = normal2Reverse(skillStore.selectedSkill.ReversedSkillinfo)
     let previousSkillinfo = null
     let previousSkillname = null
     if (selectedSkillIsPrediction.value) {
@@ -239,7 +222,9 @@ const updateLevel = async () => {
         previousSkillname = previousSkill['ReversedSkillinfo']['Skill']
       }
     }
-    selectedSkillLevel.value = await getSkillLevel(currentSkillinfo, previousSkillinfo, previousSkillname, frameStart.value, videoinfo.value.Id)
+    selectedSkillLevel.value = 0
+    // TODO
+    // await getSkillLevel(currentSkillinfo, previousSkillinfo, previousSkillname, frameStart.value, videoinfo.value.Id)
   }
 }
 
@@ -253,29 +238,6 @@ const reverse2Normal = (rs) => {
 
 const normal2Reverse = (ns) => {
   return Object.fromEntries(Object.entries(ns).map(([skillProp, reversedValue]) => [skillProp, reversedSkillOptions.value[skillProp][reversedValue]]))
-}
-
-const dictValueStringToInt = (d) => {
-  return Object.fromEntries(Object.entries(d).map(([key, value]) => [key, Number(value)]))
-}
-
-function generateCombinations(kwargs, model) {
-  let combinations = [{}];
-
-  for (const [key, values] of Object.entries(kwargs)) {
-    combinations = combinations.flatMap(combo =>
-      values.map(value => ({ ...combo, [key]: value }))
-    );
-  }
-
-  const result = {};
-  for (const combo of combinations) {
-    const key = model + '-' + Object.values(combo).join('-');
-    combo['model'] = model
-    result[key] = combo;
-  }
-
-  return result;
 }
 
 onMounted(async () => {
@@ -296,90 +258,10 @@ async function loadVideo(id) {
   try {
     videoPath.value = await getVideoPath(id)
     videoinfo.value = await getVideoInfo(id)
-    let optionsLimbs = {"0": 0, "1": 1, "2": 2}
-    let optionsBoolean = {"True": true, "False": false}
-    reversedSkillOptions.value = {
-      "Type" : await getSkilloptions("DoubleDutch", "Type").then(options => dictValueStringToInt(reverseDict(options))),
-      "Rotations" : {
-        "0 roations" : 0,
-        "1 rotation" : 1,
-        "2 rotation" : 2,
-        "3 rotations" : 3,
-        "4 rotations" : 4,
-        "5 rotations" : 5,
-        "6 rotations" : 6,
-        "7 rotations" : 7,
-        "8 rotations" : 8,
-      }, 
-      "Turner1":  await getSkilloptions("DoubleDutch", "Turner").then(options => dictValueStringToInt(reverseDict(options))),
-      "Turner2":  await getSkilloptions("DoubleDutch", "Turner").then(options => dictValueStringToInt(reverseDict(options))),
-      "Skill" : await getSkilloptions("DoubleDutch", "Skill").then(options => dictValueStringToInt(reverseDict(options))), 
-      "Hands" : optionsLimbs,
-      "Feet" : optionsLimbs, 
-      "Turntable" : {
-        "0 roations"     : 0,
-        "0.25 rotations" : 1,
-        "0.50 rotations" : 2,
-        "0.75 rotations" : 3,
-        "1 rotations"    : 4,
-      }, 
-      "BodyRotations" : {
-        "0 roations" : 0,
-        "0.5 rotations" : 1,
-        "1 rotation" : 2,
-      }, 
-      "Backwards" : optionsBoolean, 
-      "Sloppy" : optionsBoolean, 
-      "Hard2see" : optionsBoolean, 
-      "Fault" : optionsBoolean, 
-    }
-
-    optionsLimbs = {0: "0", 1: "1", 2: "2"}
-    optionsBoolean = { true: "True", false: "False"}
-    skillOptions.value = {
-      "Type" : await getSkilloptions("DoubleDutch", "Type"),
-      "Rotations" : {
-        0: "0 roations",
-        1: "1 rotation",
-        2: "2 rotation",
-        3: "3 rotations",
-        4: "4 rotations",
-        5: "5 rotations",
-        6: "6 rotations",
-        7: "7 rotations",
-        8: "8 rotations",
-      }, 
-      "Turner2":  await getSkilloptions("DoubleDutch", "Turner"),
-      "Turner1":  await getSkilloptions("DoubleDutch", "Turner"),
-      "Skill" : await getSkilloptions("DoubleDutch", "Skill"), 
-      "Hands" : optionsLimbs,
-      "Feet" : optionsLimbs, 
-      "Turntable" : {
-        0: "0 roations"    ,
-        1: "0.25 rotations",
-        2: "0.50 rotations",
-        3: "0.75 rotations",
-        4: "1 rotations"   ,
-      }, 
-      "BodyRotations" : {
-        0 : "0 roations",
-        1 : "0.5 rotations",
-        2 : "1 rotation",
-      }, 
-      "Backwards" : optionsBoolean, 
-      "Sloppy" : optionsBoolean, 
-      "Hard2see" : optionsBoolean, 
-      "Fault" : optionsBoolean, 
-    }
-
-    videoinfo.value.Skills.forEach(s => {
-      s["ReversedSkillinfo"] = reverse2Normal(s.Skillinfo)
-    })
-    
-    selectedSkill.value["ReversedSkillinfo"] = Object.fromEntries(Object.entries(reversedSkillOptions.value).map(([skillprop, options]) => [skillprop, defaultOptions.value[skillprop]]))
     
     predictions.value = await getVideoPredictions(id).then(
       p => {
+        console.log('skill predictions', p)
         p['skills'] = Object.entries(p['skills']).map(
           ([fs, pred]) => {
             let frameStart = Number(fs)
@@ -474,8 +356,8 @@ const onDeleteBox = async (box) => {
   await removeVideoFrame(videoinfo.value.Id, Math.round(currentFrame.value), box).then(vi => videoinfo.value = vi).catch(err => error.value = err)
 }
 
-const setFrameStart = () => { frameStart.value = currentFrame.value }
-const setFrameEnd = () => { frameEnd.value = currentFrame.value }
+const setFrameStart = () => { frameStart.value = skillStore.selectedSkill.FrameStart = currentFrame.value }
+const setFrameEnd = () => { frameEnd.value = skillStore.selectedSkill.FrameEnd = currentFrame.value }
 
 const play = () => {
   paused.value = false
@@ -486,10 +368,9 @@ const onSkillClicked = (skillId, isPrediction) => {
   let skillsToFilter = isPrediction ? predictions.value['skills'] : skills.value
 
   let skill = skillsToFilter.filter(s => s.Id == skillId)[0]
-  let skillinfo = skill['Skillinfo']
-  skill['ReversedSkillinfo'] = reverse2Normal(skillinfo)
   
-  selectedSkill.value = skill
+  console.log('onSkillClicked', skill)
+  skillStore.setSelectedSkill(skill)
   if (!paused.value) {
     videoElement.value.pause()
   }
@@ -524,16 +405,16 @@ function deselectSkill() {
     videoElement.value.pause()
   }
   currentFrame.value = frameStart.value
-  selectedSkill.value = { "FrameStart": frameStart, "Skillinfo": normal2Reverse(defaultOptions.value), "ReversedSkillinfo": defaultOptions.value }
+  skillStore.setSelectedSkill({ "FrameStart": frameStart.value, "Skillinfo": {} })
   videoElement.value.currentTime = frameStart.value / videoinfo.value.FPS
 }
 
 function frameToEndOfSkill() {
-  currentFrame.value = selectedSkill.value.FrameEnd
+  currentFrame.value = skillStore.selectedSkill.FrameEnd
 }
 
 function frameToStartOfSkill() {
-  currentFrame.value = selectedSkill.value.FrameStart
+  currentFrame.value = skillStore.selectedSkill.FrameStart
 }
 
 async function replaySection() {
@@ -551,22 +432,12 @@ async function replaySection() {
 async function playNextSection() {
   let skills = selectedSkillIsPrediction.value ? predictions.value['skills'] : videoinfo.value.Skills
   let nextSkill = skills
-    .filter(skill => skill.FrameStart >= selectedSkill.value.FrameEnd)
+    .filter(skill => skill.FrameStart >= skillStore.selectedSkill.FrameEnd)
     .sort((a,b) => a.FrameEnd - b.FrameEnd)[0]
   if (nextSkill) {
     onSkillClicked(nextSkill.Id, selectedSkillIsPrediction.value)
     replaySection()
   }
-}
-
-async function addSkill() {
-  let newSkill = {
-    "FrameStart": frameStart.value,
-    "FrameEnd" : frameEnd.value,
-    "Skillinfo" : normal2Reverse(selectedSkill.value.ReversedSkillinfo)
-  }
-  videoinfo.value = await postSkill(videoinfo.value.Id, newSkill)
-  prepareNextLabel(frameEnd.value)
 }
 
 function prepareNextLabel(fs) {
@@ -577,12 +448,15 @@ function prepareNextLabel(fs) {
   }
 }
 
+async function addSkill() {
+  videoinfo.value = await postSkill(videoinfo.value.Id, skillStore.selectedSkill)
+  prepareNextLabel(frameEnd.value)
+}
+
 async function updateSkill() {
-  let copy = structuredClone(toRaw(selectedSkill.value))
-  copy.Skillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
-  videoinfo.value = await putSkill(videoinfo.value.Id, copy)
+  videoinfo.value = await putSkill(videoinfo.value.Id, skillStore.selectedSkill)
   deselectSkill()
-  prepareNextLabel(copy.FrameEnd)
+  prepareNextLabel(skillStore.selectedSkill.FrameEnd)
 }
 
 async function toggleSkillsCompleted() {
@@ -591,66 +465,67 @@ async function toggleSkillsCompleted() {
 
 function shifPredictedSplitpoint(addFrames) {
   if (!selectedSkillIsPrediction.value) { return }
-  if (currentFrame.value != selectedSkill.value.FrameStart && currentFrame.value != selectedSkill.value.FrameEnd) { return }
+  if (currentFrame.value != skillStore.selectedSkill.FrameStart && currentFrame.value != skillStore.selectedSkill.FrameEnd) { return }
   
   let shiftedFrameNr = Math.round(currentFrame.value + addFrames)
-  if (currentFrame.value == selectedSkill.value.FrameEnd) {
+  if (currentFrame.value == skillStore.selectedSkill.FrameEnd) {
     let nexSkill = getNextPredictedSkill(true)
     nexSkill.FrameStart = shiftedFrameNr
-    selectedSkill.value.FrameEnd = shiftedFrameNr
+    skillStore.selectedSkill.FrameEnd = shiftedFrameNr
     frameEnd.value = shiftedFrameNr
   }
 
-  if (currentFrame.value == selectedSkill.value.FrameStart) {
+  if (currentFrame.value == skillStore.selectedSkill.FrameStart) {
     let previousSkill = getPreviousPredictedSkill(true)
     previousSkill.FrameEnd = shiftedFrameNr
-    selectedSkill.value.FrameStart = shiftedFrameNr
+    skillStore.selectedSkill.FrameStart = shiftedFrameNr
     frameStart.value = shiftedFrameNr
   }
   currentFrame.value = shiftedFrameNr
 }
 
 const acceptPredictedSkill = async () => {
-  selectedSkill.value.Skillinfo = normal2Reverse(selectedSkill.value.ReversedSkillinfo)
-  videoinfo.value = await postSkill(videoinfo.value.Id, {
-    'FrameStart' : selectedSkill.value.FrameStart,
-    'FrameEnd' : selectedSkill.value.FrameEnd,
-    'Skillinfo' : selectedSkill.value.Skillinfo
-  })
-  prepareNextLabel(frameEnd.value)
-  playNextSection()
+  // skillStore.selectedSkill.Skillinfo = normal2Reverse(skillStore.selectedSkill.ReversedSkillinfo)
+  // videoinfo.value = await postSkill(videoinfo.value.Id, {
+  //   'FrameStart' : skillStore.selectedSkill.FrameStart,
+  //   'FrameEnd' : skillStore.selectedSkill.FrameEnd,
+  //   'Skillinfo' : skillStore.selectedSkill.Skillinfo
+  // })
+  // prepareNextLabel(frameEnd.value)
+  // playNextSection()
+  console.log('TODO : check')
 }
 
 const mergeSplits = () => {
 
-  if (currentFrame.value == selectedSkill.value.FrameEnd) {
+  if (currentFrame.value == skillStore.selectedSkill.FrameEnd) {
     let nexSkill = getNextPredictedSkill(true)
     let nextFrameEnd = nexSkill.FrameEnd
     let idx = predictions.value["skills"].indexOf(nexSkill)
     predictions.value["skills"].splice(idx, 1)
 
-    selectedSkill.value.FrameEnd = nextFrameEnd
+    skillStore.selectedSkill.FrameEnd = nextFrameEnd
     frameEnd.value = nextFrameEnd
     currentFrame.value = nextFrameEnd
   }
 
-  if (currentFrame.value == selectedSkill.value.FrameStart) {
+  if (currentFrame.value == skillStore.selectedSkill.FrameStart) {
     let previousSkill = getPreviousPredictedSkill(true)
     let previsousFrameStart = previousSkill.FrameStart
     let idx = predictions.value["skills"].indexOf(previousSkill)
     predictions.value["skills"].splice(idx, 1)
 
-    selectedSkill.value.FrameStart = previsousFrameStart
+    skillStore.selectedSkill.FrameStart = previsousFrameStart
     frameStart.value = previsousFrameStart
     currentFrame.value = previsousFrameStart
   }
 }
 
 const splitPrediction = async () => {
-  let copy = structuredClone(toRaw(selectedSkill.value))
+  let copy = structuredClone(toRaw(skillStore.selectedSkill))
   let splitpoint = Math.round((copy.FrameEnd + copy.FrameStart) / 2)
   
-  selectedSkill.value.FrameEnd = splitpoint
+  skillStore.selectedSkill.FrameEnd = splitpoint
   frameEnd.value = splitpoint
   copy.FrameStart = splitpoint
   copy.Id = `${copy.Id}${splitpoint}`
@@ -689,6 +564,27 @@ const poll4Boxes = async () => {
   localizeJobLaunched.value = false
 }
 
+const confirmRemoveSkill = (event) => {
+  confirm.require({
+    target: event.currentTarget,
+    message: 'Are you sure you want to proceed?',
+    icon: 'pi pi-exclamation-triangle',
+    rejectProps: {
+      label: 'Cancel',
+      severity: 'secondary',
+      outlined: true
+    },
+    acceptProps: {
+      label: 'Delete'
+    },
+    accept: () => {
+      deleteSkill(videoId.value, frameStart.value, frameEnd.value)
+      getVideoInfo(videoId.value).then(v => videoinfo.value = v)
+      skillStore.setSelectedSkill({ "FrameStart": frameStart.value, "Skillinfo": {} })
+    },
+  });
+};
+
 </script>
 
 <style scoped>
@@ -705,3 +601,4 @@ button:focus {
   outline: none;
 }
 </style>
+

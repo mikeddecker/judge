@@ -50,7 +50,19 @@ class ValueHelper:
         reg = re.compile(r'^[A-Za-z0-9_\-]*$')
         if not reg.match(val):
             raise ValueError(f"String may oncly consist of digits, underscore_ or word chars, got {val}")
-        
+
+    def check_raise_string_only_abc123space(val: str):
+        """Checks the strings to only allow examples below
+        words
+        digits
+        2024
+        word_digits_and_underscores_1999
+        """
+        ValueHelper.check_raise_string(val)
+        reg = re.compile(r'^[A-Za-z0-9_ +\-]*$')
+        if not reg.match(val):
+            raise ValueError(f"String may oncly consist of digits, underscore_ or word chars, got {val}")
+
     def check_raise_string_only_abc123_extentions(val: str):
         """Checks the strings to only allow examples below
         words
@@ -95,18 +107,5 @@ class ValueHelper:
         assert len(config) > 0, f"Config can not be empty, got {config}"
         assert len(skillinfo) > 0, f"Skillinfo can not be empty, got {skillinfo}"
 
-        # Check skillinfo values
-        for key, value in config.items():
-            if key != 'Tablename':
-                assert key in skillinfo.keys(), f"Skillinfo does not provide info for {key}"
-            if value[0] == "Numerical":
-                min = value[1]
-                max = value[2]
-                assert isinstance(skillinfo[key], int), f"Skillspecification of {key} must be in integer, got {skillinfo[key]}"
-                assert skillinfo[key] >= min and skillinfo[key] <= max, f"Skillinfo {key} must be between {min} and {max}, got {skillinfo[key]}"
-            elif value[0] == "Categorical":
-                assert isinstance(skillinfo[key], int), f"Skillspecification of {key} must be in integer, got {skillinfo[key]}"
-                repo.exists_skillinfo(discipline=config["Tablename"], table_name_part=config[key][1], uc=skillinfo[key])
-            elif value[0] == "Boolean":
-                assert isinstance(skillinfo[key], bool), f"Boolean value {key} must be a boolean, got {skillinfo[key]}"
+        # TODO ?
 

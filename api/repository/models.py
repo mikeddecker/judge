@@ -202,6 +202,16 @@ class Skillinfo_DoubleDutch(db.Model):
     fault = db.Column(db.Boolean, nullable=False, default=False)
     labeldate = db.Column(db.DateTime, default=datetime.now)
 
+class Skill(db.Model):
+    __tablename__ = 'Skills'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
+    frameStart = db.Column(db.Integer, nullable=False)
+    frameEnd = db.Column(db.Integer, nullable=False)
+    skillinfo = db.Column(MutableDict.as_mutable(JSON), nullable=False)
+    labeldate = db.Column(db.DateTime, default=datetime.now)
+    updated = db.Column(db.DateTime, default=datetime.now)
+
 class Prediction_Frames(db.Model):
     __tablename__ = 'Predictions_Localization'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
