@@ -107,30 +107,38 @@ class MLLayerCompositionRouter(Resource):
             ).items()
         }, 200 
     
-    # def put(self):
-    #     data = request.get_json()
-    #     id = data.get('id')
-    #     name = data.get('name')
-    #     layerId = data.get('layerId')
+class MLLayerCompositionMovePropertyRouter(Resource):
+    def __init__(self, **kwargs):
+        self.mlLayerService = MLLayerService()
+        super().__init__(**kwargs)
         
-    #     ValueHelper.check_raise_string_only_abc123(name)
-    #     if id is not None:
-    #         # Layer
-    #         return self.mlLayerService.update_layer(
-    #             layerId = id,
-    #             name = name,
-    #             min = data.get('min'),
-    #             max = data.get('max'),
-    #             step = data.get('step'),
-    #         ), 200
-    #     elif layerId is not None:
-    #         # Value
-    #         ValueHelper.check_raise_id(layerId)
-    #         assert self.mlLayerService.has_layer(layerId), f"Layer does not exist"
-    #         return self.mlLayerService.update_value_name(layervalueId=layerId, new_name=name), 200
-    #     else:
-    #         return 'Invalid layer (value) update', 404
+    def post(self):
+        data = request.get_json()
 
+        compositionName = data.get('compositionName')
+        source_stage = data.get('sourceStage')
+        dest_stage = data.get('destStage')
+        stageNr = data.get('stageNr')
+        key = data.get('key')
+            
+        try:
+            ValueHelper.check_raise_string_only_abc123space(compositionName)
+            ValueHelper.check_raise_string_only_abc123space(source_stage)
+            ValueHelper.check_raise_string_only_abc123space(dest_stage)
+            ValueHelper.check_raise_string_only_abc123space(key)
+        
+            self.mlLayerService.move_skill_property(
+                composition_name=compositionName,
+                source=source_stage,
+                dest=dest_stage,
+                key=key,
+                stage=stageNr
+            )
+        except Exception as e:
+            print(e)
+
+        return 'ok', 200 
+    
 class MLLayerTypesRouter(Resource):
     def __init__(self, **kwargs):
         self.mlLayerService = MLLayerService()

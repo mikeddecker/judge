@@ -48,3 +48,10 @@ RECIPES = {
 JOB_TYPES = ['TRAIN', 'PREDICT']
 JOB_STEPS = ['LOCALIZE', 'SEGMENT', 'RECOGNIZE', 'FULL']
 LAYER_TYPES = ['boolean', 'categorical', 'numerical']
+
+STAGE_MAP = {
+    'GeneralProperties' : None,
+    'StartProperties' : 0,
+    'EndProperties' : -1
+}
+

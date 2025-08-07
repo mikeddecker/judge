@@ -324,6 +324,16 @@ export const getLayerTypes = async () => {
   }
 };
 
+export const moveLayerProperty = async (compositionName, key, sourceStage, destStage, stageNr) => {
+  return await api.post('/layers/move', { compositionName, key, sourceStage, destStage, stageNr }, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response.data;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+};
+
 export const addLayer = async (name, layerId, type, min, max, step) => {
   return await api.post('/layers', { name, layerId, type, min, max, step }, { headers: { 'Content-Type': 'application/json' }})
   .then(function (response) {

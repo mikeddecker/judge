@@ -1,12 +1,12 @@
 import json
 
+from config import STAGE_MAP
+from datetime import datetime
 from domain.layerComposition import LayerComposition
-from datetime import datetime, date
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_, func
-from repository.models import LayerProperty, LayerPropertyValue, LayerComposition as LayerCompositionDB
+from repository.models import LayerProperty, LayerPropertyValue, LayerComposition as LayerCompositionDB, Skill as SkillDB
 from repository.MapToDomain import MapToDomain
-from typing import List
+from sqlalchemy import and_, func
 
 class MLLayerRepository:
     def __init__(self, db : SQLAlchemy):
@@ -106,19 +106,78 @@ class MLLayerRepository:
 
         return self.get_layer_compositions()
 
-    # def get_composition(self, compositionName) -> LayerComposition:
-    #     compositionValuesDB : list[LayerCompositionDB] = self.db.session.get(
-    #         LayerCompositionDB
-    #     ).order_by(
-    #         LayerCompositionDB.name
-    #     ).all()
+    def move_skill_property(self, composition_name:str, source:str, dest:str, key:str, stage:str|int=None):
+        """
+        Moves a key-value pair from one section to another within a given composition and entry.
 
-    #     compositions : dict[str, list[LayerCompositionDB]] = dict()
-    #     for comValue in compositionValuesDB:
-    #         if comValue.compositionName in compositions.keys():
-    #             compositions[comValue.compositionName].add(comValue)
-    #         else:
-    #             compositions[comValue.compositionName] = [comValue]
-        
-    #     return {compositionName: MapToDomain.map_layercomposition(compositionValues) for compositionName, compositionValues in compositions.items()}
+        Parameters:
+            composition_name (str): The name of the composition (e.g., 'composition1').
+            source (str): The source section: 'GeneralProperties', 'StartProperties', 'EndProperties', or 'StageProperties'.
+            dest (str): The destination section. idem source
+            key (str): The key to move.
+            stage (str|int|None): Required if source or dest is 'StageProperties'.
+        """
+        assert self.db.session.query(LayerCompositionDB).filter_by(compositionName=composition_name).first() is not None
+        assert source in {'GeneralProperties', 'StartProperties', 'EndProperties', 'StageProperties'}
+        assert dest in {'GeneralProperties', 'StartProperties', 'EndProperties', 'StageProperties'}
+
+        movingTime = datetime.now()
+        try:
+            skills : list[SkillDB] = self.db.session.query(SkillDB).all()
+            for skillDB in skills:
+                print(skillDB.id)
+                if composition_name not in skillDB.skillinfo.keys():
+                    continue
+
+                for composition_entry in skillDB.skillinfo[composition_name]:
+                    # Determine source dictionary
+                    if source == "StageProperties":
+                        if stage is None:
+                            raise ValueError("Stage number required for StageProperties source.")
+                        source_dict = composition_entry["StageProperties"].get(str(stage), {})
+                    else:
+                        source_dict = composition_entry.get(source, {})
+
+                    # Determine destination dictionary
+                    if dest == "StageProperties":
+                        if stage is None:
+                            raise ValueError("Stage number required for StageProperties destination.")
+                        dest_dict = composition_entry["StageProperties"].setdefault(str(stage), {})
+                    else:
+                        dest_dict = composition_entry.setdefault(dest, {})
+
+                    if key not in source_dict:
+                        raise KeyError(f"Key '{key}' not found in {source}.")
+
+                    # Move the key-value pair
+                    dest_dict[key] = source_dict.pop(key)
+                skillDB.updated = movingTime
+
+            print('try', stage)
+            try:
+                print(stage is not None)
+                source_stage_nr = STAGE_MAP[source] if stage is None else stage
+                dest_stage_nr = STAGE_MAP[dest] if stage is None else stage
+                layer_composition_part: LayerCompositionDB = self.db.session.query(LayerCompositionDB).filter_by(compositionName=composition_name, stage=source_stage_nr, name=key).first()
+                if layer_composition_part is None:
+                    # Meaning, no custom name
+                    layerprop : LayerProperty = self.db.session.query(LayerProperty).filter_by(name=key).first()
+                    if layerprop is None:
+                        raise ValueError(f"Layer (Key) {key} does not exist")
+                    layer_composition_part: LayerCompositionDB = self.db.session.query(LayerCompositionDB).filter_by(compositionName=composition_name, stage=source_stage_nr, propertyId=layerprop.id).first()
+                    if layer_composition_part is None:
+                        raise ValueError(f"Unknown error: could not find composition {composition_name} - stage {source_stage_nr} - property {key} - {layerprop.id}")
+
+                print(f"composition {composition_name} with key {key} from source {source_stage_nr} to {dest_stage_nr}")
+                layer_composition_part.stage = dest_stage_nr
+                
+                self.db.session.commit()
+            except Exception as e:
+                self.db.session.rollback()
+                print(str(e))
+
+        except Exception as e:
+            skill_id = skillDB.id if 'skillDB' in locals() else 'Unknown'
+            print(f"Error moving key '{key}': {e} in skillDB with Id {skill_id}")
+            self.db.session.rollback()
 

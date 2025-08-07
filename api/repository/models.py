@@ -212,6 +212,19 @@ class Skill(db.Model):
     labeldate = db.Column(db.DateTime, default=datetime.now)
     updated = db.Column(db.DateTime, default=datetime.now)
 
+# skillinfo_example = {
+#     "composition1": [
+#         {
+#             "GeneralProperties": {"foo": "bar"},
+#             "StartProperties": {},
+#             "StageProperties": {
+#                 "1": {"temp": 100, "pressure": 5},
+#                 "2": {"humidity": 50}
+#             }
+#         }
+#     ]
+# }
+
 class Prediction_Frames(db.Model):
     __tablename__ = 'Predictions_Localization'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

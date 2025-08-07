@@ -17,7 +17,7 @@
         
     <h4>Add properties for {{ compositionName }}</h4>
     <div class="flex gap-2 mb-2">
-        <Select v-model="selectedStage" :options="stages" option-label="label" option-value="value" placeholder="general"></Select>
+        <Select v-model="selectedStage" :options="numericStages" option-label="label" option-value="value" placeholder="general"></Select>
         <Select v-model="selectedLayer" :options="layers" option-label="name" option-value="id" placeholder="select layer"></Select>
         <IftaLabel>
             <InputText :id="`customName-${compositionName}`" v-model="customName" variant="filled" :placeholder="selectedLayerName" />
@@ -25,10 +25,23 @@
         </IftaLabel>
         <Button v-if="selectedLayer" aria-label="Add composition" label="Add composition" icon="pi pi-database" @click="saveComposition"></Button>
     </div>
+        
+    <h4>Move properties for {{ compositionName }}</h4>
+    <div class="flex gap-2 mb-2">
+        <Select v-model="selectedSourceStage" :options="stages" placeholder="source"></Select>
+        <Select v-model="selectedDestStage" :options="stages" placeholder="destination"></Select>
+        <Select v-if="selectedSourceOrDestIsStageProperties" v-model="selectedStageNr" :options="possibleStageNrsToMoveToOrFrom" placeholder="select stageNr"></Select>
+        <Select v-if="sourceFilterVisible" v-model="selectedLayerToMove" :options="sourceFilterdLayers" placeholder="select layer"></Select>
+        <Button 
+            v-if="selectedSourceStage && selectedDestStage && selectedLayerToMove && ((selectedSourceOrDestIsStageProperties && selectedStageNr) || !selectedSourceOrDestIsStageProperties)" 
+            aria-label="Move property" label="Move property" icon="pi pi-move" 
+            @click="() => moveLayerProperty(compositionName, selectedLayerToMove, selectedSourceStage, selectedDestStage, selectedSourceOrDestIsStageProperties ? selectedStageNr : null)"
+        ></Button>
+    </div>
 </template>
 
 <script setup>
-import { addLayerComposition, getLayers } from '@/services/videoService';
+import { addLayerComposition, getLayers, moveLayerProperty } from '@/services/videoService';
 import { computed, onMounted, ref } from 'vue';
 import LayerCompositionElementCard from './LayerCompositionElementCard.vue';
 
@@ -45,16 +58,33 @@ const props = defineProps({
 
 const emit = defineEmits(['composition-saved'])
 
+// Add
 const selectedStage = ref(null)
 const selectedLayer = ref(null)
+
+// Move
+const selectedSourceStage = ref(null)
+const selectedDestStage = ref(null)
+const selectedLayerToMove = ref(null)
+const selectedStageNr = ref(null)
+
 const customName = ref(null)
 const layers = ref(null)
+const sourceFilterVisible = computed(() => (selectedSourceStage.value == 'StageProperties' && selectedStageNr.value) || (selectedSourceStage.value && selectedSourceStage.value != 'StageProperties'))
+const sourceFilterdLayers = computed(() => {
+    console.log(selectedSourceStage.value == 'StageProperties' ? Object.keys(props.composition[selectedSourceStage.value][selectedStageNr]) : Object.keys(props.composition[selectedSourceStage.value]))
+    return selectedSourceStage.value == 'StageProperties' ? Object.keys(props.composition[selectedSourceStage.value][selectedStageNr]) : Object.keys(props.composition[selectedSourceStage.value])
+})
+const selectedSourceOrDestIsStageProperties = computed(() => selectedDestStage.value == 'StageProperties' || selectedSourceStage.value == 'StageProperties')
+const possibleStageNrsToMoveToOrFrom = computed(() => {
 
-const stages = computed(() => {
-    let s = [
-        { label: 'general', value: null },
-        { label: 'start', value: 0 },
-        { label: 'end', value: -1 },
+})
+const stages = ['GeneralProperties', 'StartProperties', 'EndProperties', 'StageProperties']
+const numericStages = computed(() => {
+    let s =  [
+        { label: 'GeneralProperties', value: null },
+        { label: 'StartProperties', value: 0 },
+        { label: 'EndProperties', value: -1 },
     ]
     let maxStage = props.composition ? Object.keys(props.composition['StageProperties']).length : 0
     for (let i = 1; i <= maxStage + 1; i++) {

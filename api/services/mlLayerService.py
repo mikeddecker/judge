@@ -109,3 +109,27 @@ class MLLayerService:
             name=name
         )
 
+    def move_skill_property(self, composition_name:str, source:str, dest:str, key:str, stage:str|int=None):
+        """
+        Moves a key-value pair from one section to another within a given composition and entry.
+
+        Parameters:
+            composition_name (str): The name of the composition (e.g., 'composition1').
+            source (str): The source section: 'GeneralProperties', 'StartProperties', 'EndProperties', or 'StageProperties'.
+            dest (str): The destination section. idem source
+            key (str): The key to move.
+            stage (str|int|None): Required if source or dest is 'StageProperties'.
+        """
+        assert composition_name is not None
+        assert source is not None
+        assert dest is not None
+        assert key is not None
+        assert isinstance(composition_name, str)
+        assert isinstance(source, str)
+        assert isinstance(dest, str)
+        assert isinstance(key, str)
+
+        # TODO : assert exists
+
+        self.MlLayerRepo.move_skill_property(composition_name=composition_name, source=source, dest=dest, key=key, stage=stage)
+
