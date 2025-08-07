@@ -26,8 +26,8 @@
         <Button v-if="selectedLayer" aria-label="Add composition" label="Add composition" icon="pi pi-database" @click="saveComposition"></Button>
     </div>
         
-    <h4>Move properties for {{ compositionName }}</h4>
-    <div class="flex gap-2 mb-2">
+    <h4 v-if="composition">Move properties for {{ compositionName }}</h4>
+    <div v-if="composition" class="flex gap-2 mb-2">
         <Select v-model="selectedSourceStage" :options="stages" placeholder="source"></Select>
         <Select v-model="selectedDestStage" :options="stages" placeholder="destination"></Select>
         <Select v-if="selectedSourceOrDestIsStageProperties" v-model="selectedStageNr" :options="possibleStageNrsToMoveToOrFrom" placeholder="select stageNr"></Select>
@@ -35,7 +35,7 @@
         <Button 
             v-if="selectedSourceStage && selectedDestStage && selectedLayerToMove && ((selectedSourceOrDestIsStageProperties && selectedStageNr) || !selectedSourceOrDestIsStageProperties)" 
             aria-label="Move property" label="Move property" icon="pi pi-move" 
-            @click="() => moveLayerProperty(compositionName, selectedLayerToMove, selectedSourceStage, selectedDestStage, selectedSourceOrDestIsStageProperties ? selectedStageNr : null)"
+            @click="moveProperty"
         ></Button>
     </div>
 </template>
@@ -56,7 +56,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['composition-saved'])
+const emit = defineEmits(['composition-saved', 'moved:property'])
 
 // Add
 const selectedStage = ref(null)
@@ -109,6 +109,21 @@ const saveComposition = async () => {
     
     selectedLayer.value = null
     emit('composition-saved')
+}
+
+const moveProperty = async () => {
+    await moveLayerProperty(
+        props.compositionName, 
+        selectedLayerToMove.value, 
+        selectedSourceStage.value, 
+        selectedDestStage.value, 
+        selectedSourceOrDestIsStageProperties.value ? selectedStageNr.value : null
+    )
+    selectedLayerToMove.value = null
+    selectedSourceStage.value = null
+    selectedDestStage.value = null
+    selectedStageNr.value = null
+    emit('moved:property')
 }
 </script>
 

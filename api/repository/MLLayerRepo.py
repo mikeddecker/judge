@@ -7,6 +7,8 @@ from flask_sqlalchemy import SQLAlchemy
 from repository.models import LayerProperty, LayerPropertyValue, LayerComposition as LayerCompositionDB, Skill as SkillDB
 from repository.MapToDomain import MapToDomain
 from sqlalchemy import and_, func
+from sqlalchemy.orm.attributes import flag_modified
+from pprint import pprint
 
 class MLLayerRepository:
     def __init__(self, db : SQLAlchemy):
@@ -129,33 +131,41 @@ class MLLayerRepository:
                 if composition_name not in skillDB.skillinfo.keys():
                     continue
 
-                for composition_entry in skillDB.skillinfo[composition_name]:
+                for composition_entry_index in range(len(skillDB.skillinfo[composition_name])):
                     # Determine source dictionary
                     if source == "StageProperties":
                         if stage is None:
                             raise ValueError("Stage number required for StageProperties source.")
-                        source_dict = composition_entry["StageProperties"].get(str(stage), {})
+                        if key not in skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"][stage].keys():
+                            continue
+
+                        propvalue = skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"][stage].pop(key)
                     else:
-                        source_dict = composition_entry.get(source, {})
+                        if key not in skillDB.skillinfo[composition_name][composition_entry_index][source].keys():
+                            continue
+                        propvalue = skillDB.skillinfo[composition_name][composition_entry_index][source].pop(key)
 
                     # Determine destination dictionary
                     if dest == "StageProperties":
                         if stage is None:
                             raise ValueError("Stage number required for StageProperties destination.")
-                        dest_dict = composition_entry["StageProperties"].setdefault(str(stage), {})
+                        skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"].setdefault(stage, {})
+                        skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"][stage][key] = propvalue
                     else:
-                        dest_dict = composition_entry.setdefault(dest, {})
+                        skillDB.skillinfo[composition_name][composition_entry_index][dest][key] = propvalue
 
-                    if key not in source_dict:
-                        raise KeyError(f"Key '{key}' not found in {source}.")
-
-                    # Move the key-value pair
-                    dest_dict[key] = source_dict.pop(key)
+                skillDB.skillinfo = dict(skillDB.skillinfo)
                 skillDB.updated = movingTime
+                flag_modified(skillDB, "skillinfo")
+                self.db.session.flush()
+                self.db.session.merge(skillDB)
+                self.db.session.commit()
+
+                if skillDB.id == 24:
+                    pprint(skillDB.skillinfo)
 
             print('try', stage)
             try:
-                print(stage is not None)
                 source_stage_nr = STAGE_MAP[source] if stage is None else stage
                 dest_stage_nr = STAGE_MAP[dest] if stage is None else stage
                 layer_composition_part: LayerCompositionDB = self.db.session.query(LayerCompositionDB).filter_by(compositionName=composition_name, stage=source_stage_nr, name=key).first()
@@ -166,7 +176,7 @@ class MLLayerRepository:
                         raise ValueError(f"Layer (Key) {key} does not exist")
                     layer_composition_part: LayerCompositionDB = self.db.session.query(LayerCompositionDB).filter_by(compositionName=composition_name, stage=source_stage_nr, propertyId=layerprop.id).first()
                     if layer_composition_part is None:
-                        raise ValueError(f"Unknown error: could not find composition {composition_name} - stage {source_stage_nr} - property {key} - {layerprop.id}")
+                        raise ValueError(f"Unknown error: could not find composition {composition_name} - stage {source_stage_nr} - property (key={key} - id={layerprop.id})")
 
                 print(f"composition {composition_name} with key {key} from source {source_stage_nr} to {dest_stage_nr}")
                 layer_composition_part.stage = dest_stage_nr

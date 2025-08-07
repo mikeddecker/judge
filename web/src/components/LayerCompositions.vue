@@ -17,7 +17,7 @@
           <label for="new_composition">New composition</label>
         </IftaLabel>
       </div>
-      <LayerComposition v-if="!new_composition_is_empty" :composition-name="new_composition" @composition-saved="new_composition = null"></LayerComposition>
+      <LayerComposition v-if="!new_composition_is_empty" :composition-name="new_composition" @composition-saved="new_composition = null" @moved:property="refreshLayers"></LayerComposition>
     </template>
   </DataTable>
 </template>
