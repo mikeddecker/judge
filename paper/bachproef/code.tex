@@ -229,8 +229,6 @@ In this appendix, code snippets to prevent code saturation in between text.
         import numpy as np
         import matplotlib.pyplot as plt
         import sys
-        sys.path.append('..')
-        from api.helpers import ConfigHelper
     \end{minted}
     \caption[imports-ViViT]{imports-ViViT}
     \label{code:imports-ViViT}
@@ -437,7 +435,7 @@ In this appendix, code snippets to prevent code saturation in between text.
 
                 self.mvit.head = torch.nn.Identity()  # This removes the top layer
                 self.flatten = nn.Flatten()
-                self.LastNNeurons = self._get_mvit_output(input_shape)
+                self.LastNNeurons = self._get_model_output_neurons(input_shape)
                 
                 if self.isSkillModel:
                     self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType=modelinfo['balancedType'], df_table_counts = self.df_table_counts)
@@ -445,7 +443,7 @@ In this appendix, code snippets to prevent code saturation in between text.
                     self.output_layer = create_pytorch_segmentation_output_layers(lastNNeurons=self.LastNNeurons, timesteps=modelinfo['timesteps'])
 
                 
-            def _get_mvit_output(self, shape):
+            def _get_model_output_neurons(self, shape):
                 with torch.no_grad():
                     input = torch.rand(1, *shape).to('cuda')
                     output = self.mvit(input)

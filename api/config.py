@@ -31,6 +31,7 @@ ENVS = SimpleNamespace(
         GENERATED = os.getenv("STORAGE_DIR_GENERATED_DATA"),
         GENERATED_VIDEODATA = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'videodata'),
         WEIGHTS = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'weights'),
+        WEIGHTS_YOLO = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'weights', 'yolo'),
         YOLO_LABELS = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'labels-ultralytics-yolo'),
     ),
     SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS"),
@@ -46,9 +47,10 @@ RECIPES = {
 }
 
 JOB_TYPES = ['TRAIN', 'PREDICT']
-JOB_STEPS = ['LOCALIZE', 'SEGMENT', 'RECOGNIZE', 'FULL']
+JOB_STEPS = ['LOCALIZE', 'SEGMENT', 'SKILL', 'FULL']
 LAYER_TYPES = ['boolean', 'categorical', 'numerical']
 
+STAGES = ['GeneralProperties', 'StartProperties', 'EndProperties', 'StageProperties']
 STAGE_MAP = {
     'GeneralProperties' : None,
     'StartProperties' : 0,

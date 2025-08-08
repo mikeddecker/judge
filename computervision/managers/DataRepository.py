@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
+import json
 import numpy as np
 import os
 import pandas as pd
@@ -78,6 +79,36 @@ class DataRepository:
             raise ValueError(f"Changed test to val !!")
         with self.__get_connection() as connection:
             return pd.read_sql(qry, con=connection)
+        
+    def get_recognition_config(self):
+        qry_layers = f"""
+            SELECT lp.id as propertyId, lp.name as layer, lp.type, lpv.name as value, lpv.id as valueId, lp.min, lp.max, lp.step
+            FROM LayerProperties lp
+            LEFT OUTER JOIN LayerPropertyValues lpv ON lp.id = lpv.propertyId
+            ORDER BY lp.id, lpv.name;
+        """
+        with self.__get_connection() as connection:
+            df_layers = pd.read_sql(qry_layers, con=connection)
+            
+            qry_compositions = f"""
+                SELECT lc.compositionName, lc.stage, lc.propertyId,
+                CASE
+                    WHEN lc.name is NULL THEN lp.name
+                    ELSE lc.name
+                END AS name
+                FROM LayerComposition lc
+                JOIN LayerProperties lp ON lp.id = lc.propertyId
+                ORDER BY lc.compositionName, lc.stage, lc.propertyId
+            """
+            df_composition = pd.read_sql(qry_compositions, con=connection)
+
+            distinct_compositions = df_composition['compositionName'].unique()
+
+            json_qry= ', '.join([f"MAX(JSON_LENGTH(skillinfo->'$.{cn}')) AS {cn}" for cn in distinct_compositions])
+
+            df_max_lengths = pd.read_sql(f"""SELECT {json_qry} FROM Skills;""", con=connection).iloc[0]
+
+        return df_layers, df_composition, df_max_lengths
             
     def get_team_boxes(self) -> pd.DataFrame:
         qry = sqlal.text("""
@@ -100,48 +131,42 @@ class DataRepository:
         with self.__get_connection() as connection:
             return pd.read_sql(qry, con=connection)
 
-    def get_videoIds_of_videos_with_skills(self):
+    def get_videoIds_of_videos_with_skills(self) -> list[int]:
         with self.__get_connection() as connection:
-            qry = sqlal.text(f"""SELECT DISTINCT videoId FROM Skillinfo_DoubleDutch""")  
+            qry = sqlal.text(f"""SELECT DISTINCT videoId FROM Skills""")  
             return pd.read_sql(qry, con=connection)['videoId'].to_list()
 
-    def get_skills_of_fully_segmented_videos(self, train_test_val, type='DD'):
+    def get_skills_of_fully_segmented_videos(self, train_test_val):
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")  
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE MOD(videoId, 10) <> 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")  
 
         if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) = 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE MOD(videoId, 10) = 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
         with self.__get_connection() as connection:
             return pd.read_sql(qry, con=connection)
 
-    def get_skills(self, train_test_val, type='DD', videoId:int=None):
+    def get_skills(self, train_test_val, videoId:int=None):
         """videoId is optional, then it returns only skills from that videoId"""
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         and_where_videoId = f"AND videoId = {videoId}" if videoId else ""
         if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skillinfo_DoubleDutch WHERE MOD(videoId, 10) = 5 {and_where_videoId}""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE MOD(videoId, 10) = 5 {and_where_videoId}""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
         
         with self.__get_connection() as connection:
-            return pd.read_sql(qry, con=connection)
-        
-    def get_skill_category_counts(self):
-        qry = sqlal.text(f"""SELECT 
-            (SELECT COUNT(*) FROM Skillinfo_DoubleDutch_Skill) AS skills,
-            (SELECT COUNT(*) FROM Skillinfo_DoubleDutch_Type) AS types,
-            (SELECT COUNT(*) FROM Skillinfo_DoubleDutch_Turner) AS turners;
-        """)
-
-        with self.__get_connection() as connection:
-            return pd.read_sql(qry, con=connection)
-        
+            df = pd.read_sql(qry, con=connection)
+            # Convert 'skillinfo' column from JSON string to Python dict
+            if 'skillinfo' in df.columns:
+                df['skillinfo'] = df['skillinfo'].apply(json.loads)
+            return df
+                
     def __load_relativePaths_of_videos_with_framelabels(self):
         with self.__get_connection() as connection:
             relative_paths = {}
@@ -237,25 +262,7 @@ class DataRepository:
         qry = sqlal.text(f"""SELECT * FROM {tablename} WHERE modelname = \'{modelname}\' AND epoch = {epoch}""")
         with self.__get_connection() as connection:
             return pd.read_sql(qry, con=connection)
-        
-    def get_category_names(self, balancedType, shiftIndex=False):
-        with self.__get_connection() as connection:
-            categoryNames = {}
-            columns = ['Skill', 'Type', 'Turner']
-            for cat in columns:
-                qry = sqlal.text(f"""SELECT name FROM Skillinfo_DoubleDutch_{cat}""")
-                result = pd.read_sql(qry, con=connection)
-                categoryNames[cat] = result["name"].to_list()
-
-            if balancedType == "jump_return_push_frog_other":
-                categoryNames['Skill'] = ['jump', 'return from power', 'pushup', 'frog', 'other']
             
-            if shiftIndex:
-                for c in columns:
-                    categoryNames[c].insert(0, '')
-
-            return categoryNames
-    
     def get_next_job(self):
         with self.__get_connection() as connection:
             qry = sqlal.text(f"""SELECT * FROM Jobs""")
@@ -267,13 +274,6 @@ class DataRepository:
             qry = sqlal.text(f"""DELETE FROM Jobs WHERE id = :id""")
             connection.execute(qry, {'id': jobId})
             connection.commit()
-    
-    def upsert_skillsegmented_predictions(self, videoId:int, df_predictions):
-        """Columns: Like Skillinfo_DoubleDutch"""
-        with self.__get_connection() as connection:
-            df_predictions["videoId"] = videoId
-            df_predictions.to_sql(name="Predictions_SkillSegment", if_exists='append', con=connection, chunksize=500, index=False)
-            connection.commit()
 
     def get_video_path(self, videoId):
         return os.path.join(ENVS.DIRS.VIDEOS, self.VideoNames.loc[videoId, "name"])
@@ -283,3 +283,4 @@ class DataRepository:
             qry = sqlal.text(f"""SELECT info FROM FrameLabelTypes""")
             flts = pd.read_sql(qry, con=connection)
             return flts['info'].to_list()
+

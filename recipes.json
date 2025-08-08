@@ -19,12 +19,23 @@
       "default_weights": "yolo11m.pt"
     }
   },
-  "RECOGNIZE": {
+  "SKILL": {
     "MViT": {
       "model": "MViT",
       "base_model": "MViT",
       "default_weights": "DEFAULT",
       "dim": 224,
+      "timesteps": 16,
+      "batch_size": 2,
+      "learning_rate": 0.00004
+    },
+    "MViT_extra_dense": {
+      "model": "MViT_extra_dense",
+      "base_model": "MViT",
+      "default_weights": "DEFAULT",
+      "dim": 224,     
+      "timesteps": 16,
+      "batch_size": 1,
       "learning_rate": 0.00004
     }
   },
@@ -38,3 +49,4 @@
     }
   }
 }
+

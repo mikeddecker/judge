@@ -8,8 +8,7 @@ from .DataRepository import DataRepository
 from .FrameLoader import FrameLoader
 from helpers import calculate_splitpoint_values, load_segment_batch_X_torch, load_segment_batch_y_torch
 
-sys.path.append('..')
-from api.helpers import ConfigHelper
+
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

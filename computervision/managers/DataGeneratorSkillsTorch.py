@@ -5,12 +5,13 @@ import random
 import math
 import sys
 import torch
+
+from models.OutputHeadRecognition import OutputHeadRecognition
 from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, adaptSkillLabels
+
 sys.path.append('..')
 from .DataRepository import DataRepository
 from .FrameLoader import FrameLoader
-sys.path.append('../..')
-from api.helpers import ConfigHelper
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
@@ -18,6 +19,7 @@ print(f"Using device: {device}")
 class DataGeneratorSkills(torch.utils.data.Dataset):
     def __init__(self,
                  frameloader: FrameLoader,
+                 head: OutputHeadRecognition,
                  train_test_val: str, # train, test, val
                  dim: tuple, # e.g. (128,128)
                  timesteps=16,
@@ -41,11 +43,10 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.frameloader = frameloader
         self.repo = DataRepository()
         self.Skills = self.repo.get_skills(train_test_val)
-        self.SkillCounts = self.repo.get_skill_category_counts()
+        self.head = head
 
         self.balancedType = 'jump_return_push_frog_other' # TODO : make dynamic, provide in init
         self.balancedType = 'limit_5procent'
-        self.Skills = adaptSkillLabels(df_skills=self.Skills, balancedType=self.balancedType)
         self.BalancedSet = pd.DataFrame(columns=self.Skills.columns)
 
         self.info_columns = [
@@ -58,13 +59,12 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
         print('DataGeneratorSkills init done')
-        print(self.BalancedSet["skill"].value_counts().sort_index() if self.train_test_val == 'train' else self.Skills["skill"].value_counts().sort_index())
         self.on_epoch_end()
 
     def __len__(self):
         'Denotes the number of batches per epoch'
         if self.isTestrun:
-            return 280
+            return min(280, len(self.BalancedSet))
         return len(self.BalancedSet) // self.batch_size if self.train_test_val == 'train' else len(self.Skills) // self.batch_size
 
     def __getitem__(self, batch_nr, normalize=True):
@@ -85,40 +85,15 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             timesteps=self.timesteps,
             normalized=normalize,
         )
-        y = load_skill_batch_y_torch(skillinfo_row=skillinfo_row, flip_turner=flip_turner)
-        return X, y
+        target, mask = self.head.label_to_tensor(skillinfo_row['skillinfo'])
+        
+        return X, target, mask
 
     def on_epoch_end(self):
+        print("On epoch end called")
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
 
     def __refillBalancedSet(self):
-        skillValueCounts = self.Skills["skill"].value_counts()
-        if self.balancedType == 'jump_return_push_frog_other':
-            lowestTrainAmount = min(
-                skillValueCounts.loc[1], # Jumps
-                skillValueCounts.loc[2], # Returns
-                skillValueCounts.loc[3], # Pushups
-                skillValueCounts.loc[4], # Frogs
-                skillValueCounts.loc[5], # other
-            )
+        self.BalancedSet = self.Skills.sample(frac=1.)
 
-            self.BalancedSet = pd.concat([
-                self.Skills[self.Skills['skill'] == 1].iloc[:lowestTrainAmount],
-                self.Skills[self.Skills['skill'] == 2].iloc[:lowestTrainAmount],
-                self.Skills[self.Skills['skill'] == 3].iloc[:lowestTrainAmount],
-                self.Skills[self.Skills['skill'] == 4].iloc[:lowestTrainAmount],
-                self.Skills[self.Skills['skill'] == 5].iloc[:lowestTrainAmount]
-            ], ignore_index=True)
-            self.BalancedSet = self.BalancedSet.sample(frac=1.)
-        elif self.balancedType == 'limit_5procent':
-            limit = len(self.Skills) // 5
-            skillIndexesToBeLimited = skillValueCounts[skillValueCounts.values > limit].index.to_list()
-            otherSkillIndexes = skillValueCounts[skillValueCounts.values <= limit].index.to_list()
-            df_limited_skills = pd.concat([
-                self.Skills[self.Skills['skill'] == i].iloc[:limit]
-                for i in skillIndexesToBeLimited
-            ])
-            df_others = self.Skills[self.Skills['skill'].isin(otherSkillIndexes)]
-            self.BalancedSet = pd.concat([df_limited_skills, df_others], ignore_index=True)
-            self.BalancedSet = self.BalancedSet.sample(frac=1.)

@@ -13,7 +13,7 @@
     
     <h2>Recognize</h2>
     <div class="flex flex-wrap gap-6 my-4">
-        <CardRecipe v-for="(recipe, modelname) in recipesRecognize" :title="modelname" step="RECOGNIZE" :recipe="recipe"></CardRecipe>
+        <CardRecipe v-for="(recipe, modelname) in recipesRecognize" :title="modelname" step="SKILL" :recipe="recipe"></CardRecipe>
     </div>
 </template>
 
@@ -29,7 +29,7 @@ const recipesRecognize = ref(null)
 onMounted(async () => {
     getJobOptions('LOCALIZE').then(recipes => recipesLocalize.value = recipes)
     getJobOptions('SEGMENT').then(recipes => recipesSegment.value = recipes)
-    getJobOptions('RECOGNIZE').then(recipes => recipesRecognize.value = recipes)
+    getJobOptions('SKILL').then(recipes => recipesRecognize.value = recipes)
 })
 </script>
 

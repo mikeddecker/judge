@@ -5,21 +5,14 @@ from torch.nn import Module, Parameter
 import torchvision.models as models
 import numpy as np
 import pandas as pd
-from models.torch_output_layers import create_pytorch_skill_output_layers, create_pytorch_segmentation_output_layers, forward_skill_output_layers, forward_segmentation_output_layers
+from models.torch_output_layers import create_pytorch_segmentation_output_layers, forward_skill_output_layers, forward_segmentation_output_layers
+from models.MViT_pytorch import MViT
+from types import SimpleNamespace
 
-import sys
-sys.path.append('..')
-from api.helpers.ConfigHelper import get_discipline_DoubleDutch_config
-    
-
-class MViT(nn.Module):
-    def __init__(self, skill_or_segment:str, modelinfo:dict, df_table_counts:pd.DataFrame):
-        super(MViT, self).__init__()
-        self.modelinfo = modelinfo
-        self.df_table_counts = df_table_counts
-        self.isSkillModel = skill_or_segment == "skills"
+class MViT_Dense(nn.Module):
+    def __init__(self, head: nn.Module, recipe: SimpleNamespace):
+        super(MViT_Dense, self).__init__()
         
-        input_shape = (3, modelinfo['timesteps'], modelinfo['dim'], modelinfo['dim'])
         self.mvit = models.video.mvit_v1_b(weights='DEFAULT')
         self.mvit = self.mvit.to('cuda').eval()
 
@@ -27,34 +20,33 @@ class MViT(nn.Module):
             param.requires_grad = False
 
         self.mvit.head = torch.nn.Identity()  # This removes the top layer
-        self.LastNNeurons = 384
         self.flatten = nn.Flatten()
-        self.features = nn.Linear(self._get_mvit_output(input_shape), self.LastNNeurons)
-        
-        if self.isSkillModel:
-            self.output_layers = create_pytorch_skill_output_layers(lastNNeurons=self.LastNNeurons, balancedType=modelinfo['balancedType'], df_table_counts = self.df_table_counts) # TODO : make dynamic
-        else:
-            self.output_layer = create_pytorch_segmentation_output_layers(lastNNeurons=self.LastNNeurons, timesteps=modelinfo['timesteps'])
+        self.LastNNeuronsMViT = MViT.get_output_feature_dim(recipe)
+        self.LastNNeurons = self.LastNNeuronsMViT * 3 // 4
+        self.features = nn.Linear(self.LastNNeuronsMViT, self.LastNNeurons)
 
-        
-    def _get_mvit_output(self, shape):
-        with torch.no_grad():
-            input = torch.rand(1, *shape).to('cuda')
-            output = self.mvit(input)
-            output = self.flatten(output)
-            return output.shape[1]
+        self.head = head
     
     def forward(self, x):
         # Input shape: (batch_size, channels, timesteps, height, width)
         x = self.mvit(x)
         x = self.flatten(x)
-        features = F.relu(self.features(x))
-        
-        if self.isSkillModel:
-            return forward_skill_output_layers(features=features, output_layers=self.output_layers)
-        else:
-            return forward_segmentation_output_layers(features=features, output_layer=self.output_layer)
+        x = self.features(x)
+        return self.head(x)
+    
+    @staticmethod
+    def get_output_feature_dim(recipe: SimpleNamespace) -> int:
+        input_shape = (3, recipe.timesteps, recipe.dim, recipe.dim)
+        mvit = models.video.mvit_v1_b(weights=recipe.default_weights).to('cuda').eval()
+        mvit.head = torch.nn.Identity()
 
-def get_model(skill_or_segment:str, modelinfo, df_table_counts: pd.DataFrame):
-    """Build a Self-Attention ConvLSTM model in PyTorch"""
-    return MViT(skill_or_segment=skill_or_segment, modelinfo=modelinfo, df_table_counts=df_table_counts)
+        with torch.no_grad():
+            input = torch.rand(1, *input_shape).to('cuda')
+            output = mvit(input)
+            output = output.flatten(start_dim=1)
+            return output.shape[1] * 3 // 4
+
+def get_model(head: nn.Module, recipe: SimpleNamespace):
+    """Build an MViT model in PyTorch"""
+    return MViT_Dense(head=head, recipe=recipe)
+

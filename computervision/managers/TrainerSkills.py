@@ -1,14 +1,16 @@
+import functools
 import gc
-import os
 import json
 import pandas as pd
+import os
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 import time
+import random
 
-from constants import ENVS, PYTORCH_MODELS_SKILLS
+from constants import ENVS, PYTORCH_MODELS_SKILLS, PYTORCH_MODELS_SKILLS_TEST
 from dotenv import load_dotenv
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
@@ -19,10 +21,13 @@ from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 from datetime import datetime, date
 from helpers import weighted_mse_loss
+from base_utils import load_json_file, dump_json_file
+from models.OutputHeadRecognition import OutputHeadRecognition
+from types import SimpleNamespace
+from localizor_with_strats import predict_and_save_locations
+from helpers import localize_get_best_modelpath
 
-import sys
-sys.path.append('..')
-from api.helpers import ConfigHelper
+from constants import RECIPES, SPEEDMODES
 
 class NumpyTypeEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -41,6 +46,9 @@ torch.backends.cudnn.benchmark = True
 scaler = torch.GradScaler()
 
 class TrainerSkills:
+    def __init__(self):
+        self.repo = DataRepository()
+
     def __compute_losses(self, outputs, batch_y, loss_fns):
         """Outputs is a ModelDict, acts like a dictionary"""
         losses = []
@@ -56,11 +64,11 @@ class TrainerSkills:
             losses.append(loss)
         return sum(losses)
 
-    def validate(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda'):
+    def validate_old(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda'):
         model.eval()
         val_loss = 0.0
 
-        skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
+        skillconfig: dict = {}
         y_pred = { key : [] for key, _ in skillconfig.items() }
         y_true = { key : [] for key, _ in skillconfig.items() }
 
@@ -92,7 +100,6 @@ class TrainerSkills:
                         y_pred[key].extend(pred.data.cpu().numpy())
                         y_true[key].extend(target.data.cpu().numpy())
                     
-        
         print(f"="*80)
         classification_reports = {}
         for key in y_true.keys():
@@ -119,43 +126,100 @@ class TrainerSkills:
         print(f"Total f1 score", sum(f1_scores_epoch.values()) / len(f1_scores_epoch))
         return val_loss / len(dataloader), f1_scores_epoch, classification_reports, cm
 
-    def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
+    def train(self, recipe: SimpleNamespace, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, speedmode=SPEEDMODES[1]):
         rundate = date.today().strftime('%Y%m%d')
+
+        #########################################################################################
+        def validate(model, dataloader, optimizer, device='cuda'):
+            model.eval()
+            val_loss = 0.0
+
+            head : OutputHeadRecognition = model.head
+
+            with torch.no_grad():
+                for batch_X, batch_y, batch_mask in tqdm(dataloader):
+                    with torch.amp.autocast(device_type=device):
+                        optimizer.zero_grad()
+                        outputs = model(batch_X / 255)
+
+                        # Loss
+                        total_batch_loss = OutputHeadRecognition.compute_loss(outputs, batch_y, batch_mask)
+                        val_loss += total_batch_loss.item()
+
+                        # Accuracy
+                        # TODO
+                        accaracies = { 'Total': 0.0 }
+            return val_loss / len(dataloader), accaracies
+
+        # End validate
+        #########################################################################################
+        def create_or_recreate_cropped_videos(speedmode):
+            unique_videoIds = self.repo.get_videoIds_of_videos_with_skills()
+            existing_cropped_videoIds = []
+            existing_redo_subset = set()
+            new_videos = set()
+
+            for videoId in unique_videoIds:
+                vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}', f'{videoId}_cropped.mp4')
+                if not os.path.exists(vpath):
+                    new_videos.add(videoId)
+                else:
+                    existing_cropped_videoIds.append(videoId)
+
+            recipename, weightpath = localize_get_best_modelpath()
+            random.shuffle(existing_cropped_videoIds)
+            for i in range(int(np.sqrt(len(existing_cropped_videoIds))) if speedmode == SPEEDMODES[1] else 0):
+                existing_redo_subset.add(existing_cropped_videoIds[i])
+
+            print(f"Speedmode={speedmode}: Predict and create videocrops")
+            predict_and_save_locations(
+                recipename=recipename,
+                weights=weightpath,
+                repo=self.repo,
+                videoIds=new_videos.union(existing_redo_subset),
+                saveAsVideo=True
+            )
+            
+        # End video creation
+        #########################################################################################
         try:
             start = time.time()
             testrun = False
+            modelname = recipe.model
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
-            
-            path = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills.state_dict.pt")
-            pathBest = os.path.join(ENVS.DIRS.WEIGHTS, f"best_skills.state_dict.pt")
-            checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills{'_testrun' if testrun else ''}.checkpoint.pt")
-            modelstatsPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.json")
-            modelstatsPathCurrent = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_skills{'_testrun' if testrun else ''}.stats.current.json")
-            bestModelJsonStatsPath = os.path.join(ENVS.DIRS.WEIGHTS, f"best_skills{'_testrun' if testrun else ''}.stats.json")
+
+            create_or_recreate_cropped_videos(speedmode=speedmode)
+
+            step = 'SKILL'
+            os.makedirs(os.path.join(ENVS.DIRS.WEIGHTS, step.lower()), exist_ok=True)
+            path = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}.state_dict.pt")
+            pathBest = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"best.state_dict.pt")
+            checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.checkpoint.pt")
+            modelstatsPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.stats.json")
+            modelstatsPathCurrent = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.stats.current.json")
+            bestModelJsonStatsPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"best{'_testrun' if testrun else ''}.stats.json")
 
             bestModelStats = { 'f1_macro_avg_accuracy': 0 }
-            if os.path.exists(bestModelJsonStatsPath):
-                with open(bestModelJsonStatsPath, 'r') as f:
-                    bestModelStats = json.load(f)
+            
+            bestModelStats = load_json_file(bestModelJsonStatsPath)
 
-
-            config: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
-            DIM = 224
-            repo = DataRepository()
-            model = PYTORCH_MODELS_SKILLS[modelname](skill_or_segment="skills", modelinfo=trainparams, df_table_counts=repo.get_skill_category_counts()).to(device)
-            optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=1)
+            df_layers, df_composition, max_instances_per_role = self.repo.get_recognition_config()
+            backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[modelname].get_output_feature_dim(recipe)
+            head = OutputHeadRecognition(backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
+            model = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
+            optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
+            
+            classification_reports = {}
             epoch_start = 0
             f1_scores = {}
-            classification_reports = {}
             losses = []
-            total_accuracies = []
             modelstats = {}
+            total_accuracies = []
             if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPath):
                 checkpoint = torch.load(checkpointPath, weights_only=False)
-                with open(modelstatsPath, 'r') as f:
-                    modelstats = json.load(f)
+                modelstats = load_json_file(modelstatsPath)
                 model.load_state_dict(checkpoint['model_state_dict'])
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
@@ -169,41 +233,35 @@ class TrainerSkills:
                 for param in model.parameters():
                     param.requires_grad = True
 
-            train_generator = DataGeneratorSkills(
-                frameloader=FrameLoader(repo),
+            DefaultGeneratorSkills = functools.partial(
+                DataGeneratorSkills, 
+                frameloader=FrameLoader(self.repo),
+                head=head,
                 train_test_val="train",
-                dim=(DIM,DIM),
-                timesteps=trainparams['timesteps'],
-                batch_size=trainparams['batch_size'],
+                dim=(recipe.dim,recipe.dim),
+                timesteps=recipe.timesteps,
                 testrun=testrun
             )
-            val_generator = DataGeneratorSkills(
-                frameloader=FrameLoader(repo),
-                train_test_val="val",
-                dim=(DIM,DIM),
-                timesteps=trainparams['timesteps'],
-                batch_size=trainparams['batch_size'],
-                testrun=testrun
-            )
+            train_generator = DefaultGeneratorSkills(train_test_val="train")
+            val_generator = DefaultGeneratorSkills(train_test_val="val")
         
-            dataloaderTrain = DataLoader(train_generator, batch_size=1, shuffle=True)
-            dataloaderVal = DataLoader(val_generator, batch_size=1, shuffle=True)
-
-            loss_fns = {
-                'categorical': torch.nn.CrossEntropyLoss(),
-                'regression': torch.nn.MSELoss()
-            }
-            balancedType = trainparams["balancedType"]
-            target_names = repo.get_category_names(balancedType=balancedType)
+            dataloaderTrain = DataLoader(train_generator, recipe.batch_size, shuffle=True)
+            dataloaderVal = DataLoader(val_generator, recipe.batch_size, shuffle=True)
 
             # Re-evaluate to know whether the current run is better than the previous runs
             # Adapting the losses, as limiting to 10% can change occurences of faults, bodyrotations... a little
             # TODO : load previous model instead of current :)
             # TODO : Re-evaluate previous run (because accuracy can have changed by new skills)
             print("Update re-evaluate and use it to update best models")
-            loss_fns = self.get_weighted_loss_fns(train_generator=train_generator, val_generator=val_generator, skillconfig=config)
-            _, f1_macro_avg_scores_epoch_reval, _, _ = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
+            # TODO : re-add weighted losses
 
+            validation_loss, f1_macro_avg_scores_epoch_reval = validate(
+                model=model,
+                dataloader=dataloaderVal,
+                optimizer=optimizer
+            )
+
+            print(f"Re eval loss {validation_loss}")
 
             # Training loop
             for epoch in range(epoch_start, epochs + epoch_start):
@@ -212,32 +270,30 @@ class TrainerSkills:
                 model.train()
                 total_loss = 0.0
                 i = 0
-                for batch_X, batch_y in tqdm(dataloaderTrain):
+                for batch_X, batch_y, batch_mask in tqdm(dataloaderTrain):
                     with torch.amp.autocast(device_type='cuda'):
                         optimizer.zero_grad()  # Clear gradients
                         
                         # Forward pass
                         outputs = model(batch_X / 255)
-                        total_batch_loss = self.__compute_losses(outputs=outputs, batch_y=batch_y, loss_fns=loss_fns)
+                        total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask)
                         total_batch_loss.backward()
                         optimizer.step()
                     
                     total_loss += total_batch_loss.item()
                     i+=1
                 
-                print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloaderTrain):.4f}")
-
-                val_loss, f1_scores_epoch, class_reports, conf_matrix = self.validate(model=model, dataloader=dataloaderVal, optimizer=optimizer, loss_fns=loss_fns, target_names=target_names)
+                val_loss, f1_scores_epoch = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+                print(f"Epoch {epoch+1}, Train Loss: {total_loss / len(dataloaderTrain):.4f}")
+                print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f}")
                 
                 # Call the epoch end self, because it is not called by DataLoader, although it shuffles.
-                train_generator.on_epoch_end()
+                # train_generator.on_epoch_end()
 
                 losses.append(val_loss)
                 total_accuracies.append(f1_scores_epoch['Total'])
                 scheduler.step(val_loss)
                 f1_scores[f'{epoch}'] = f1_scores_epoch
-                classification_reports[f'{epoch}'] = class_reports
-                print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f} (val loss = {val_loss})")
                 
                 minIndexLoss = losses.index(min(losses))
                 minIndexAcc = total_accuracies.index(max(total_accuracies))
@@ -246,7 +302,7 @@ class TrainerSkills:
                 hasValLossImproved = len(losses) - minIndexLoss - 1 == 0
                 hasValAccImproved = len(losses) - minIndexAcc - 1 == 0
 
-                patience = 2
+                patience = 5
                 if epochsNoImprovement > patience:
                     print(f"No improvement for {epochsNoImprovement} - stopping")
                     break
@@ -267,8 +323,8 @@ class TrainerSkills:
                         'losses': losses,
                         'f1_scores': f1_scores,
                         'classification_reports' : classification_reports,
-                        'confusion_matrix': conf_matrix,
-                        'final_classification_reports' : class_reports,
+                        'confusion_matrix': None,
+                        'final_classification_reports' : None,
                         'time' : time.time() - start,
                         'length_train': len(train_generator),
                         'length_val': len(val_generator),
@@ -285,7 +341,7 @@ class TrainerSkills:
 
                         torch.save(model.state_dict(), path)
 
-                    if stats['f1_macro_avg_accuracy'] > bestModelStats['f1_macro_avg_accuracy']:
+                    if not bestModelStats or stats['f1_macro_avg_accuracy'] > bestModelStats['f1_macro_avg_accuracy']:
                         with open(bestModelJsonStatsPath, "w") as fp:
                             json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
@@ -299,30 +355,7 @@ class TrainerSkills:
             torch.cuda.empty_cache()
             gc.collect()
 
-    def get_weighted_loss_fns(self, train_generator, val_generator, skillconfig):
-        loss_fns = {}
-        for key, value in skillconfig.items():
-            value_counts_train = train_generator.BalancedSet[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
-            value_counts_val = val_generator.Skills[ConfigHelper.lowerProperty(key)].value_counts(dropna=False)
-            value_counts_combined = value_counts_train.add(value_counts_val, fill_value=0)
+def collate_fn_skills(batch):
+    batch_X, batch_y, batch_mask = zip(*batch)
+    return torch.stack(batch_X), list(batch_y), list(batch_mask)
 
-            maximum = value_counts_combined.max()
-
-            weights = (maximum + maximum // 8 - value_counts_combined).pow(0.75)
-            weights = weights / weights.mean()
-            if value[0] == 'Categorical':
-                weights.loc[0] = 0
-            weights = weights.sort_index()
-
-            w_all = torch.ones(value_counts_combined.index.max() + 1, dtype=torch.float32).to(device=device)
-            for idx, w in weights.items():
-                w_all[idx] = w
-            w_all = (w_all + 1) ** 2
-
-            print("loss weights for", key, w_all)
-            if value[0] == 'Categorical':
-                loss_fns[key] = torch.nn.CrossEntropyLoss(w_all).to(device=device)
-            else:
-                loss_fns[key] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=w_all)
-        
-        return loss_fns

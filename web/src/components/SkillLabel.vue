@@ -45,7 +45,6 @@
                                 </Card>
                             </template>
                         </Card>
-                        
                     </TabPanel>
                 </TabPanels>
             </Tabs>

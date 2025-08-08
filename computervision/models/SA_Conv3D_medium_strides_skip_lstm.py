@@ -17,8 +17,7 @@ from tensorflow.keras.layers import Layer, ConvLSTM2D, ConvLSTM3D, Conv2D, Conv3
 from tensorflow.keras import backend as K
 
 import sys
-sys.path.append('..')
-from api.helpers import ConfigHelper
+
 
 class SelfAttention(Layer):
     """Self-attention layer for ConvLSTM"""

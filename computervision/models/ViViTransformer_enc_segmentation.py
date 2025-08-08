@@ -12,8 +12,6 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('..')
-from api.helpers import ConfigHelper
 
 
 def mlp(x, hidden_units, dropout_rate):

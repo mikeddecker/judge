@@ -426,7 +426,7 @@ def validate_localize(modeldir: str, repo: DataRepository):
 
     return ious_all['raw'][train_or_val]['avg']
 
-def predict_and_save_locations(weights: str, repo: DataRepository, videoIds: int, recipe: str, saveAsVideo:bool):
+def predict_and_save_locations(weights: str, repo: DataRepository, videoIds: int, recipename: str, saveAsVideo:bool):
     """Validates localize methods on a specific run"""
 
     strategies = ['smoothing']

@@ -10,14 +10,13 @@ import os
 import random
 import sys
 import torch
+import yaml
 
 from managers.FrameLoader import FrameLoader
-
-sys.path.append('..')
-from api.helpers import ConfigHelper
+from constants import ENVS
+from base_utils import load_json_file
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 
 def plot(imgs, bboxes=None, row_title=None, **imshow_kwargs):
     """
@@ -158,7 +157,6 @@ def iou(y_true, y_pred):
 
     return iou
 
-
 def load_skill_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool):
     try:
         loaded_frames = frameloader.get_skill_torch(videoId, dim=dim, 
@@ -230,7 +228,6 @@ def load_segment_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[i
         print(str(err))
         print(f"*"*80)
         raise err
-
 
 def calculate_splitpoint_values(videoId: int, frameLength:int, df_Skills:pd.DataFrame, fps:float, Nsec_frames_around=1/6):
     """Creates a dataframe: 'videoId', 'frameNr', 'splitpoint'
@@ -352,3 +349,43 @@ def calculate_cosine_similarity(new_x_min, new_y_min, new_x_max, new_y_max, old_
     cosine_similarity = dot_product / (magnitude_movement * magnitude_ref)
 
     return cosine_similarity
+
+def map_stageNr(stageNr):
+    if np.isnan(stageNr):
+        return 'GeneralProperties'
+    match (stageNr):
+        case None:
+            return 'GeneralProperties'
+        case 0:
+            return 'StartProperties'
+        case -1:
+            return 'EndProperties'
+        case _:
+            return str(int(stageNr))
+
+def mapped_stage_is_not_stageProperties(stage):
+    """Checks if mapped stage is not a stageNr"""
+    return stage in ['GeneralProperties', 'StartProperties', 'EndProperties']
+
+def localize_get_best_modelpath():
+    """Returns modelname, modelpath, e.g. yolo11n ./runs/detect/train7"""
+    # TODO : update to take actual best
+
+    best_raw_val_avg = 0
+    best_size = None
+    best_trainround = None
+    for size in ['n', 's', 'm']:
+        trainround = os.listdir(os.path.join(ENVS.DIRS.WEIGHTS_YOLO, size))[0]
+        localize_ious = load_json_file(os.path.join(ENVS.DIRS.WEIGHTS_YOLO, size, trainround, f"localize_ious.json"))
+        if best_raw_val_avg < localize_ious['raw']['val']['avg']:
+            best_raw_val_avg = localize_ious['raw']['val']['avg']
+            best_size = size
+            best_trainround = trainround
+
+            argpath = os.path.join(ENVS.DIRS.WEIGHTS_YOLO, size, trainround, 'args.yaml')
+            if os.path.exists(argpath):
+                with open(argpath, 'r') as file:
+                    best_modelname = yaml.safe_load(file)['model'].split('.')[0]
+
+    modelpath = os.path.join(ENVS.DIRS.WEIGHTS_YOLO, best_size, best_trainround, "weights", "best.pt")
+    return best_modelname, os.path.join(modelpath, ) # modelname = yolo11n, modelpath = '../runs/detect/train7/weights/best.pt'

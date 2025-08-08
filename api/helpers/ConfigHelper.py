@@ -1,6 +1,8 @@
 import os
 import yaml
 import glob
+from config import ENVS
+from helpers.helpers import load_json_file
 
 PYTORCH_MODELS_SKILLS = {
     "SA_Conv3D" : None,
@@ -39,26 +41,25 @@ def lowerProperty(property):
 def localize_get_best_modelpath():
     """Returns modelname, modelpath, e.g. yolo11n ./runs/detect/train7"""
     # TODO : update to take actual best
-    folder_path = os.path.join('..', 'runs', 'detect')
-    trainrounds = os.listdir(folder_path)
 
-    if len(trainrounds) == 0:
-        return None, None
-    
-    nrs = [0 if s[5:] == '' else int(s[5:]) for s in trainrounds]
-    maxround = max(nrs)
-    if maxround == 0:
-        maxround == ''
+    best_raw_val_avg = 0
+    best_size = None
+    best_trainround = None
+    for size in ['n', 's', 'm']:
+        trainround = os.listdir(os.path.join(ENVS.DIRS.WEIGHTS_YOLO, size))[0]
+        localize_ious = load_json_file(os.path.join(ENVS.DIRS.WEIGHTS_YOLO, size, trainround, f"localize_ious.json"))
+        if best_raw_val_avg < localize_ious['raw']['val']['avg']:
+            best_raw_val_avg = localize_ious['raw']['val']['avg']
+            best_size = size
+            best_trainround = trainround
 
-    modelpath = os.path.join(folder_path, f"train{maxround}")
+            argpath = os.path.join(ENVS.DIRS.WEIGHTS_YOLO, size, trainround, 'args.yaml')
+            if os.path.exists(argpath):
+                with open(argpath, 'r') as file:
+                    best_modelname = yaml.safe_load(file)['model'].split('.')[0]
 
-    argpath = os.path.join(modelpath, 'args.yaml')
-    modelname = 'pathDoesNotExist'
-    if os.path.exists(argpath):
-        with open(argpath, 'r') as file:
-            modelname = yaml.safe_load(file)['model'].split('.')[0]
-    
-    return modelname, os.path.join(modelpath, "weights", "best.pt") # modelname = yolo11n, modelpath = '../runs/detect/train7/weights/best.pt'
+    modelpath = os.path.join(ENVS.DIRS.WEIGHTS_YOLO, best_size, best_trainround, "weights", "best.pt")
+    return best_modelname, os.path.join(modelpath, ) # modelname = yolo11n, modelpath = '../runs/detect/train7/weights/best.pt'
 
 
 def recognition_get_modelpaths():

@@ -14,9 +14,6 @@ from managers.FrameLoader import FrameLoader
 from managers.DataGeneratorSegmentation import DataGeneratorSegmentation
 from managers.DataRepository import DataRepository
 
-sys.path.append('..')
-from api.helpers.ConfigHelper import get_discipline_DoubleDutch_config
-
 from models.GoogleNet import get_model as get_model_googlenet
 from models.GoogleNet_extra_dense import get_model as get_model_googlenet_extra_dense
 from models.MobileNetV3Small import get_model as get_model_mobilenet

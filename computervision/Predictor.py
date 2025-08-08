@@ -17,12 +17,11 @@ from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_seg
 from localizor_with_strats import predict_and_save_locations
 from managers.DataRepository import DataRepository
 from managers.FrameLoader import FrameLoader
+from models.OutputHeadRecognition import OutputHeadRecognition
 from moviepy import VideoFileClip, VideoClip
 from tqdm import tqdm
 from Trainer import models, trainparams
-
-sys.path.append('..')
-from api.helpers import ConfigHelper
+from helpers import localize_get_best_modelpath
 
 torch.backends.cudnn.benchmark = True
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -32,22 +31,22 @@ class Predictor:
     def __init__(self):
         self.repo = DataRepository()
 
-    def predict(self, type, videoId, recipe, modelparams: dict = None, saveAsVideo:bool=False, date:str = None, weights:str='best'):
+    def predict(self, type, videoId, recipename, modelparams: dict = None, saveAsVideo:bool=False, date:str = None, weights:str='best'):
         start = time.time()
         match type:
             case 'LOCALIZE':
-                self.__predict_location(videoId=videoId, recipe=recipe, weights=weights, saveAsVideo=saveAsVideo)
+                self.__predict_location(videoId=videoId, recipename=recipename, weights=weights, saveAsVideo=saveAsVideo)
             case 'SEGMENT':
-                if recipe in PYTORCH_MODELS_SKILLS.keys():
+                if recipename in PYTORCH_MODELS_SKILLS.keys():
                     self.__predict_segments_pytorch(videoId=videoId,
-                                                       recipe=recipe,
+                                                       recipename=recipename,
                                                        modelparams=modelparams)
                 else:
                     raise NotImplementedError()
             case 'SKILL':
-                if recipe in PYTORCH_MODELS_SKILLS.keys():
+                if recipename in PYTORCH_MODELS_SKILLS.keys():
                     self.__predict_skills_pytorch(videoId=videoId,
-                                                       recipe=recipe,
+                                                       recipename=recipename,
                                                        use_segment_predictions=False,
                                                        modelparams=modelparams,
                                                        saveAsVideo=saveAsVideo,
@@ -55,26 +54,26 @@ class Predictor:
                 else:
                     raise NotImplementedError()
             case 'FULL':
-                self.__predict_location(videoId=videoId, recipe='best', weights='best', saveAsVideo=True)
-                if recipe in PYTORCH_MODELS_SKILLS.keys():
+                self.__predict_location(videoId=videoId, recipename='best', weights='best', saveAsVideo=True)
+                if recipename in PYTORCH_MODELS_SKILLS.keys():
                     self.__predict_skills_pytorch(videoId=videoId,
-                                                       recipe=recipe,
+                                                       recipename=recipename,
                                                        use_segment_predictions=True,
                                                        modelparams=modelparams,
                                                        saveAsVideo=saveAsVideo,
-                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, recipe=recipe, modelparams=modelparams),
+                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, recipename=recipename, modelparams=modelparams),
                                                        date=date)
                 else:
                     raise NotImplementedError()
             case 'SEGMENT_SKILL':
-                if recipe in PYTORCH_MODELS_SKILLS.keys():
-                    print("recipe", recipe)
+                if recipename in PYTORCH_MODELS_SKILLS.keys():
+                    print("recipename", recipename)
                     self.__predict_skills_pytorch(videoId=videoId,
-                                                       recipe=recipe,
+                                                       recipename=recipename,
                                                        use_segment_predictions=True,
                                                        modelparams=modelparams,
                                                        saveAsVideo=saveAsVideo,
-                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, recipe="MViT_extra_dense", modelparams=modelparams),
+                                                       segment_predictions=self.__predict_segments_pytorch(videoId=videoId, recipename="MViT_extra_dense", modelparams=modelparams),
                                                        date=date)
                 else:
                     raise NotImplementedError()
@@ -83,25 +82,23 @@ class Predictor:
         seconds = time.time() - start
         print(f"Done, took {seconds:.1f} seconds")
 
-    def __predict_skills_pytorch(self, videoId, recipe, use_segment_predictions, modelparams: dict = None, saveAsVideo:bool=False, segment_predictions:list = [], date:str = None):
+    def __predict_skills_pytorch(self, videoId, recipename, use_segment_predictions, modelparams: dict = None, saveAsVideo:bool=False, segment_predictions:list = [], date:str = None):
         try:
-            if recipe not in PYTORCH_MODELS_SKILLS.keys() and recipe != 'best':
-                raise ValueError(recipe)
+            if recipename not in PYTORCH_MODELS_SKILLS.keys() and recipename != 'best':
+                raise ValueError(recipename)
             
-            # TODO : move confighelper to settings from the database
-            skillconfig: dict = ConfigHelper.get_discipline_DoubleDutch_config(include_tablename=False)
-            modelPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{recipe}_skills.state_dict.pt")
-            modelPathJson = os.path.join(ENVS.DIRS.WEIGHTS, f"{recipe}_skills.stats.json")
+            skillconfig: dict = {}
+            modelPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{recipename}_skills.state_dict.pt")
+            modelPathJson = os.path.join(ENVS.DIRS.WEIGHTS, f"{recipename}_skills.stats.json")
             modelstats = load_json_file(modelPathJson)
 
-            if recipe == 'best':
-                recipe = modelstats['recipe']
+            if recipename == 'best':
+                recipename = modelstats['recipename']
 
             DIM = 224
-            model = PYTORCH_MODELS_SKILLS[recipe](modelinfo=modelparams, df_table_counts=self.repo.get_skill_category_counts(), skill_or_segment='skills').to(device)
+            model = PYTORCH_MODELS_SKILLS[recipename](modelinfo=modelparams, df_table_counts=self.repo.get_skill_category_counts(), skill_or_segment='skills').to(device)
             model.load_state_dict(torch.load(modelPath, weights_only=True))
             model.eval()
-
 
             balancedType = modelparams["balancedType"]
             timesteps = modelparams['timesteps']
@@ -139,10 +136,12 @@ class Predictor:
                 )
                 batch_X = batch_X.unsqueeze(dim=0)
                 
-                batch_y = {} if use_segment_predictions else load_skill_batch_y_torch(skillinfo_row=skillinfo_row)
+                head : OutputHeadRecognition = model.head
+                batch_y, mask_y = {}, {} if use_segment_predictions else head.label_to_tensor(skillinfo_row['skillinfo'])
                 outputs = model(batch_X / 255)
                 predictions[frameStart] = {}
                 
+                # TODO : OutputHeadRecognition.tensor_to_label()
                 for key, pred in outputs.items():
                     target = torch.tensor([]) if use_segment_predictions else batch_y[key]
 
@@ -167,7 +166,7 @@ class Predictor:
             # pprint(predictions, sort_dicts=False)
 
             # Save predictions as JSON
-            with open(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f'{videoId}_skills_{recipe}.json'), 'w') as f:
+            with open(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f'{videoId}_skills_{recipename}.json'), 'w') as f:
                 json.dump(predictions, f, sort_keys=True, default=str, indent=4)
 
             if saveAsVideo:
@@ -260,7 +259,6 @@ class Predictor:
                     currentLabel = None
                     skill = highfrog = hands = fault = turntable = rotations = turners = type = hard2see = sloppy = bodyRotations = ""
 
-                
                 horizontal = 0
                 vertical = 0
                 w, h = draw_text(frame, type, pos=(text_pos, text_pos), font=font, font_scale=fontScale, font_thickness=fontThickness, text_color=txt_color, text_color_bg=bg_color_default)
@@ -301,16 +299,16 @@ class Predictor:
         clip.write_videofile(videoOutputPath, codec='libx264', fps=fps)
         cap.release()
 
-    def __predict_segments_pytorch(self, videoId, recipe, modelparams: dict = None):
+    def __predict_segments_pytorch(self, videoId, recipename, modelparams: dict = None):
         try:
-            if recipe not in PYTORCH_MODELS_SKILLS.keys():
-                raise ValueError(recipe)
+            if recipename not in PYTORCH_MODELS_SKILLS.keys():
+                raise ValueError(recipename)
             
             # TODO : update to use best val checkpoint 
-            modelPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{recipe}_segmentation.state_dict.pt")
+            modelPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{recipename}_segmentation.state_dict.pt")
 
             DIM = 224
-            model = PYTORCH_MODELS_SKILLS[recipe](skill_or_segment='segments', modelinfo=modelparams, df_table_counts=self.repo.get_skill_category_counts()).to(device)
+            model = PYTORCH_MODELS_SKILLS[recipename](skill_or_segment='segments', modelinfo=modelparams, df_table_counts=self.repo.get_skill_category_counts()).to(device)
             model.load_state_dict(torch.load(modelPath, weights_only=True))
             model.eval()
 
@@ -414,14 +412,14 @@ class Predictor:
             torch.cuda.empty_cache()
             gc.collect()
     
-    def __predict_location(self, videoId, recipe:str, weights:str='best', saveAsVideo:bool=False):
-        recipe, weightpath = ConfigHelper.localize_get_best_modelpath()
+    def __predict_location(self, videoId, recipename:str, weights:str='best', saveAsVideo:bool=False):
+        recipename, weightpath = localize_get_best_modelpath()
 
         if weights != 'best':
             weightpath = weights
 
         predict_and_save_locations(
-            recipe=recipe,
+            recipename=recipename,
             weights=weightpath,
             repo=self.repo,
             videoIds=[videoId],
@@ -450,45 +448,3 @@ if __name__ == "__main__":
     models = ['SwinT_s']
     dates = ["20250525", "20250524"]
     dates = ["20250525"]
-
-    # for d in dates:
-    #     for recipe in models:
-    #         for videoId in videoIds:
-    #             # predictor.predict(
-    #             #     type="LOCALIZE",
-    #             #     videoId=videoId,
-    #             #     recipe=None,
-    #             # )
-    #             predictor.predict(
-    #                 type="SEGMENT_SKILL",
-    #                 videoId=videoId,
-    #                 recipe=recipe,
-    #                 modelparams=trainparams[recipe],
-    #                 saveAsVideo=True,
-    #                 date=d
-    #             )
-    #             # TODO : cache segment predictions or save them as json
-
-    # predictor.predict(
-    #     type="SKILL",
-    #     videoId=1315,
-    #     recipe=recipe,
-    #     modelparams=modelparams,
-    #     saveAsVideo=True,
-    # )
-
-    # predictor.predict(
-    #     type="SKILL",
-    #     videoId=2285,
-    #     recipe=recipe,
-    #     modelparams=modelparams,
-    #     saveAsVideo=True,
-    # )
-
-    # predictor.predict(
-    #     type="SEGMENT",
-    #     videoId=2305,
-    #     recipe=recipe,
-    #     modelparams=modelparams,
-    #     saveAsVideo=True,
-    # )

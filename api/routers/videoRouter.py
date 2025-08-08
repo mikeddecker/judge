@@ -37,7 +37,7 @@ class VideoRouterCropped(Resource):
         except ValueError as ve:
             return ve, 404
         
-        video_path = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}_cropped.mp4")
+        video_path = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_cropped.mp4")
         if os.path.exists(video_path):
             with open(video_path, 'rb') as f:
                 return Response(f.read())

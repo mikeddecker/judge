@@ -6,8 +6,6 @@ import math
 from managers.DataRepository import DataRepository
 from managers.FrameLoader import FrameLoader
 import sys
-sys.path.append('..')
-from api.helpers import ConfigHelper
 
 # TODO : change to tf dataset, so prefetch is possible https://medium.com/analytics-vidhya/write-your-own-custom-data-generator-for-tensorflow-keras-1252b64e41c3
 class DataGeneratorSkills(keras.utils.Sequence):

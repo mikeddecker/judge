@@ -200,7 +200,7 @@ class FrameLoader:
     
     def get_skill(self, videoId: int, dim: tuple[int, int],
                   start: int, end: int, timesteps: int, normalized: bool = True, augment=False, flip_image=False):
-        vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}_cropped.mp4')
+        vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}', f'{videoId}_cropped.mp4')
         cap = cv2.VideoCapture(vpath)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
         _, frame = cap.read()

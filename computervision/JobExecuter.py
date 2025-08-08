@@ -7,6 +7,7 @@ from Predictor import Predictor
 from Trainer import Trainer, trainparams, max_rounds
 from managers.TrainerLocalize import train_yolo_model, validate_localize
 from constants import RECIPES
+from pprint import pprint
 
 # Managers
 
@@ -28,6 +29,7 @@ while no_shutdown_job:
         continue
     else:
         print(job)
+        pprint(job["job_arguments"])
 
     job_arguments = json.loads(job["job_arguments"])
     if job["type"] == "PREDICT":
@@ -35,7 +37,7 @@ while no_shutdown_job:
         predictor.predict(
             type=job["step"],
             videoId=job_arguments["videoId"],
-            recipe=job_arguments["model"],
+            recipename=job_arguments["model"],
             modelparams=RECIPES[job["step"]][job_arguments["model"]],
             saveAsVideo=saveAsMp4,
             weights=job_arguments["weights"] if job_arguments["weights"] is not None else 'best'
