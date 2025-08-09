@@ -24,7 +24,7 @@
 import { onMounted, ref, computed, watch } from 'vue'
 
 // Watch out, frame numbers can get floated: e.g. 112.000000000000001
-const props = defineProps(['title', 'videoId', 'videoSrc', 'mode', 'canvasMode', 'currentFrameNr', 'videoinfo', 'labeltype', 'predictedBoxes'])
+const props = defineProps(['title', 'videoId', 'videoSrc', 'mode', 'canvasMode', 'currentFrameNr', 'videoinfo', 'labeltype', 'predictedBoxes', 'drawPredictedBoxes'])
 const emit = defineEmits(['play', 'pause', 'seeked', 'timeupdate', 'loadeddata', 'deleteBox', 'addBox'])
 const videoElement = ref(null)
 const videoWidth = ref(0)
@@ -90,6 +90,10 @@ watch(() => props.currentFrameNr, (newFrameNr, oldFrameNr) => {
   }
 })
 
+watch(() => props.drawPredictedBoxes, (n, o) {
+  resetCanvasAndDrawBoxes()
+});
+
 onMounted(async () => {
 
 })
@@ -123,19 +127,21 @@ const resetCanvasAndDrawBoxes = () => {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
   //   ctx.beginPath();
 
-  // Draw predicted boxes
-  Object.entries(predictedBoxesCurrentFrame.value).forEach(([idx, box]) => {
-    // Received boxes are: array of 4 elements = array[xmin, ymin, xmax, ymax] but absolute values!
-    let clsIdx = predictedBoxClassesCurrentFrame.value[idx]
-    if (clsIdx < 2) {
-      ctx.strokeStyle = boxColors[10 + clsIdx]
-      const xleft = box[0] / props.videoinfo.Width * videoWidth.value
-      const yleft = box[1] / props.videoinfo.Height * videoHeight.value
-      const w = (box[2] - box[0]) / props.videoinfo.Width * videoWidth.value
-      const h = (box[3] - box[1]) / props.videoinfo.Height * videoHeight.value
-      ctx.strokeRect(xleft, yleft, w, h, 0.3);
-    }
-  })
+  // Draw predicted 
+  if (props.drawPredictedBoxes) {
+    Object.entries(predictedBoxesCurrentFrame.value).forEach(([idx, box]) => {
+      // Received boxes are: array of 4 elements = array[xmin, ymin, xmax, ymax] but absolute values!
+      let clsIdx = predictedBoxClassesCurrentFrame.value[idx]
+      if (clsIdx < 2) {
+        ctx.strokeStyle = boxColors[10 + clsIdx]
+        const xleft = box[0] / props.videoinfo.Width * videoWidth.value
+        const yleft = box[1] / props.videoinfo.Height * videoHeight.value
+        const w = (box[2] - box[0]) / props.videoinfo.Width * videoWidth.value
+        const h = (box[3] - box[1]) / props.videoinfo.Height * videoHeight.value
+        ctx.strokeRect(xleft, yleft, w, h, 0.3);
+      }
+    })
+  }
 
   // Draw labeled boxes
   Object.entries(boxes.value).forEach(([idx, box]) => {
