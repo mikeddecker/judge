@@ -90,7 +90,7 @@ watch(() => props.currentFrameNr, (newFrameNr, oldFrameNr) => {
   }
 })
 
-watch(() => props.drawPredictedBoxes, (n, o) {
+watch(() => props.drawPredictedBoxes, (n, o) => {
   resetCanvasAndDrawBoxes()
 });
 
