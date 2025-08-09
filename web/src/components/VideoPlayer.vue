@@ -223,17 +223,19 @@ const canvasMouseEndDrawing = (event) => {
   }
 
   if (canvasmodeIsAcceptPredictedBox.value) {
-    predictedBoxesHovering.value.forEach(coordinates => {
-      let box = {
-        "frameNr" : Math.round(props.currentFrameNr),
-        "x" : (coordinates[2] + coordinates[0]) / 2 / props.videoinfo.Width,
-        "y" : (coordinates[3] + coordinates[1]) / 2 / props.videoinfo.Height,
-        "width" : (coordinates[2] - coordinates[0]) / props.videoinfo.Width,
-        "height" : (coordinates[3] - coordinates[1]) / props.videoinfo.Height,
-        "jumperVisible" : true,
-      }
-      emit('addBox', box)
-    })
+    if (predictedBoxesHovering.value.length < 2) {
+      predictedBoxesHovering.value.forEach(coordinates => {
+        let box = {
+          "frameNr" : Math.round(props.currentFrameNr),
+          "x" : (coordinates[2] + coordinates[0]) / 2 / props.videoinfo.Width,
+          "y" : (coordinates[3] + coordinates[1]) / 2 / props.videoinfo.Height,
+          "width" : (coordinates[2] - coordinates[0]) / props.videoinfo.Width,
+          "height" : (coordinates[3] - coordinates[1]) / props.videoinfo.Height,
+          "jumperVisible" : true,
+        }
+        emit('addBox', box)
+      })
+    }
   }
 
   if (canvasmodeIsDraw.value && isDrawing.value) {
