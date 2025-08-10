@@ -1,6 +1,7 @@
 // Create a new store instance.
 import { getLayerCompositions } from "@/services/videoService";
 import { defineStore } from "pinia";
+import { toRaw } from "vue";
 
 export const useSkillStore = defineStore("skill", {
   state: () => {
@@ -42,9 +43,9 @@ export const useSkillStore = defineStore("skill", {
       getLayerCompositions().then(l => this.layercomposition = l)
     },
     duplicateCompositionValues(compositionName, index) {
-      const valuesToCopy = this.selectedSkill.Skillinfo[compositionName][index]
+      const valuesToCopy = toRaw(this.selectedSkill.Skillinfo[compositionName][index])
       for (let i = 0; i < this.selectedSkill.Skillinfo[compositionName].length; i++) {
-        this.selectedSkill.Skillinfo[compositionName][i] = valuesToCopy
+        this.selectedSkill.Skillinfo[compositionName][i] = structuredClone(valuesToCopy)
       }
     }
   },
