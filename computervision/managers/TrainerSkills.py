@@ -10,6 +10,7 @@ import numpy as np
 import time
 import random
 
+from colorama import Fore, Style
 from constants import ENVS, PYTORCH_MODELS_SKILLS, PYTORCH_MODELS_SKILLS_TEST
 from dotenv import load_dotenv
 from managers.DataRepository import DataRepository
@@ -160,7 +161,6 @@ class TrainerSkills:
             if not from_scratch and os.path.exists(pathBest):
                 best_model_stats = load_json_file(best_stats_path)
                 best_model_name = best_model_stats['modelname']
-                print(best_model_name, RECIPES['SKILL'][best_model_stats['recipe']['name']], modelname)
                 best_model_backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[best_model_name].get_output_feature_dim(recipe)
                 best_head = OutputHeadRecognition(best_model_backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
                 model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
@@ -190,9 +190,9 @@ class TrainerSkills:
             metrics_over_time = {}
             modelstats = {}
             f1_avgs_over_time = []
-            if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPath):
+            if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPathCurrent):
                 checkpoint = torch.load(checkpointPath, weights_only=False)
-                modelstats = load_json_file(modelstatsPath)
+                modelstats = load_json_file(modelstatsPathCurrent)
                 model.load_state_dict(checkpoint['model_state_dict'])
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
@@ -228,9 +228,6 @@ class TrainerSkills:
                 
                 validation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                 val_loss = validation_results['val_loss']
-                print(f"Epoch {epoch+1}, Train Loss: {total_loss / len(dataloaderTrain):.4f}")
-                print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f}")
-                print(f"Epoch {epoch+1}, Validation f1_avg: {validation_results['f1_total_avg']:.4f}")
                 
                 # Call the epoch end self, because it is not called by DataLoader, although it shuffles.
                 # train_generator.on_epoch_end()
@@ -243,6 +240,11 @@ class TrainerSkills:
                 minIndexAcc = f1_avgs_over_time.index(max(f1_avgs_over_time))
                 hasValAccImproved = len(losses_over_time) - minIndexAcc - 1 == 0
                 epochsNoImprovement = len(losses_over_time) - minIndexAcc - 1
+
+                color = Fore.GREEN if hasValAccImproved else Fore.RED
+                print(f"Epoch {epoch}, Train Loss: {total_loss / len(dataloaderTrain):.4f}")
+                print(f"Epoch {epoch}, Validation Loss: {val_loss:.4f}")
+                print(f"Epoch {epoch}, Validation f1_avg: {color}{validation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
 
                 patience = 5
                 if epochsNoImprovement > patience:
@@ -277,12 +279,12 @@ class TrainerSkills:
                     with open(modelstatsPathCurrent, "w") as fp:
                         json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
-                    if not revalidation_results or validation_results['f1_total_avg'] > revalidation_results['f1_total_avg']:
+                    if not from_scratch and (not revalidation_results or validation_results['f1_total_avg'] > revalidation_results['f1_total_avg']):
                         if revalidation_results:
                             print(f"Model {modelname} improved from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
                         with open(modelstatsPath, "w") as fp:
                             json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
-
+                        
                         torch.save(model.state_dict(), path)
 
                     if not from_scratch and (not best_model_revalidation_results or max(stats['f1_total_avgs_over_time']) > best_model_revalidation_results['f1_total_avg']):
