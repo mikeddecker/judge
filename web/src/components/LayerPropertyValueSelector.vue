@@ -1,19 +1,22 @@
 <template>
     <div class="flex flex-wrap gap-2 m-4">
         <span class="font-semibold my-auto">{{ name }}:</span>
-        <Select v-if="isCategorical" 
+        <Select 
+            v-if="isCategorical" 
+            :id="`${compositionName}-${compositionIndex}-${stage}-${stageNr}-${name}`"
             v-model="value" 
             :options="categoryOptions" 
             option-label="name" option-value="id"
             :invalid="value == null"
         ></Select>
         <div v-if="isBoolean" class="flex flex-wrap gap-1">
-            <RadioButton v-model="value" input-id="true" :value="true" :invalid="value == null"></RadioButton>
-            <label for="true">True</label>
-            <RadioButton v-model="value" input-id="false" :value="false" :invalid="value == null"></RadioButton>
-            <label for="false">False</label>
+            <RadioButton v-model="value" :input-id="`${compositionName}-${compositionIndex}-${stage}-${stageNr}-${name}-true`" :value="true" :invalid="value == null"></RadioButton>
+            <label :for="`${compositionName}-${compositionIndex}-${stage}-${stageNr}-${name}-true`">True</label>
+            <RadioButton v-model="value" :input-id="`${compositionName}-${compositionIndex}-${stage}-${stageNr}-${name}-false`" :value="false" :invalid="value == null"></RadioButton>
+            <label :for="`${compositionName}-${compositionIndex}-${stage}-${stageNr}-${name}-false`">False</label>
         </div>
         <InputNumber v-if="isNumerical" class="w-20" inputClass="w-full" v-model="value" 
+            :id="`${compositionName}-${compositionIndex}-${stage}-${stageNr}-${name}`"
             :step="property['step']" 
             :min="property['min']" 
             :max="property['max']" 
