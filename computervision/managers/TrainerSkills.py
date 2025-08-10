@@ -161,7 +161,9 @@ class TrainerSkills:
                 best_model_stats = load_json_file(best_stats_path)
                 best_model_name = best_model_stats['modelname']
                 print(best_model_name, RECIPES['SKILL'][best_model_stats['recipe']['name']], modelname)
-                model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
+                best_model_backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[best_model_name].get_output_feature_dim(recipe)
+                best_head = OutputHeadRecognition(best_model_backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
+                model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
                 model.load_state_dict(torch.load(pathBest, weights_only=True))
                 optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
                 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
@@ -175,7 +177,6 @@ class TrainerSkills:
                 optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
                 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
                 print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
-                best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                 revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
 
             # For new training rounds
