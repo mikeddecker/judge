@@ -54,7 +54,7 @@ export const useSkillStore = defineStore("skill", {
       return !Object.keys(state.selectedSkill).includes('Id');
     },
     selectedSkillIsEmpty: (state) => {
-      return Object.keys(state.selectedSkill.Skillinfo).length == 0
+      return Object.keys(state.selectedSkill?.Skillinfo).length == 0
     }
   },
 });
