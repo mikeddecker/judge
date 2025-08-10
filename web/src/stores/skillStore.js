@@ -47,6 +47,9 @@ export const useSkillStore = defineStore("skill", {
       for (let i = 0; i < this.selectedSkill.Skillinfo[compositionName].length; i++) {
         this.selectedSkill.Skillinfo[compositionName][i] = structuredClone(valuesToCopy)
       }
+    },
+    deleteCompositionValues(compositionName, index) {
+      delete this.selectedSkill.Skillinfo[compositionName].splice(index, 1)
     }
   },
   getters: {
