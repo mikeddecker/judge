@@ -49,83 +49,6 @@ class TrainerSkills:
     def __init__(self):
         self.repo = DataRepository()
 
-    def __compute_losses(self, outputs, batch_y, loss_fns):
-        """Outputs is a ModelDict, acts like a dictionary"""
-        losses = []
-
-        for key, pred in outputs.items():
-            target = batch_y[key]
-            
-            if key in ['Skill', 'Turner1', 'Turner2', 'Type']:  # Categorical
-                loss = loss_fns[key](pred, target.long())
-            else:
-                loss = loss_fns[key](pred.squeeze(), target)
-            
-            losses.append(loss)
-        return sum(losses)
-
-    def validate_old(self, model, dataloader, optimizer, loss_fns, target_names, device='cuda'):
-        model.eval()
-        val_loss = 0.0
-
-        skillconfig: dict = {}
-        y_pred = { key : [] for key, _ in skillconfig.items() }
-        y_true = { key : [] for key, _ in skillconfig.items() }
-
-        with torch.no_grad():
-            for batch_X, batch_y in tqdm(dataloader):
-                with torch.amp.autocast(device_type=device):
-                    optimizer.zero_grad()
-                    outputs = model(batch_X / 255)
-                    # Loss
-                    total_batch_loss = self.__compute_losses(outputs=outputs, batch_y=batch_y, loss_fns=loss_fns)
-                    val_loss += total_batch_loss.item()
-
-                    # Accuracy
-                    for key, pred in outputs.items():
-                        target = batch_y[key]
-
-                        valueType = skillconfig[key][0]
-                        if valueType == "Categorical":
-                            pred = F.softmax(pred, dim=1)
-                            _, pred = pred.max(dim=1)  # [B, n_classes] -> [B], # get values & indices with the max vals in the dim with scores for each class/label
-                        elif valueType == "Numerical":
-                            maxValue = skillconfig[key][2]
-                            pred = torch.round(pred * maxValue).squeeze(dim=0).type(torch.int64)
-                            target = torch.round(target * maxValue).type(torch.int64)
-                        else:
-                            pred = torch.round(pred).squeeze(dim=0).type(torch.int64)
-                            target = torch.round(target).type(torch.int64)
-                        
-                        y_pred[key].extend(pred.data.cpu().numpy())
-                        y_true[key].extend(target.data.cpu().numpy())
-                    
-        print(f"="*80)
-        classification_reports = {}
-        for key in y_true.keys():
-            classKey = key if key not in ['Turner1', 'Turner2'] else 'Turner'
-            labels = None if classKey not in target_names.keys() else range(1, len(target_names[classKey]) + 1) # Mysql startIdx = 1
-            tn = None if classKey not in target_names.keys() else target_names[classKey]
-            classification_reports_string = classification_report(y_true[key], y_pred[key], labels=labels, target_names=tn, zero_division=0)
-            classification_reports[key] = classification_report(y_true[key], y_pred[key], output_dict=True, labels=labels, target_names=tn, zero_division=0)
-            print(f"----- Details {key} ----")
-            print(classification_reports_string)
-
-            lbls = labels if labels is not None else range(max(max(y_true[key]), max(y_pred[key])) + 1)
-            cm = confusion_matrix(y_true[key], y_pred[key], labels=lbls)
-            cm_df = pd.DataFrame(cm, index=labels, columns=labels)
-
-            print("Confusion Matrix:", key)
-            print(cm_df)
-            print(f"="*80)
-
-        f1_scores_epoch = { k: class_report['macro avg']['f1-score'] for k, class_report in classification_reports.items() }
-        f1_scores_epoch["Total"] = sum(f1_scores_epoch.values()) / len(f1_scores_epoch)
-
-        print(f"Total skill (macro avg) accuracy", classification_reports['Skill']['macro avg'])
-        print(f"Total f1 score", sum(f1_scores_epoch.values()) / len(f1_scores_epoch))
-        return val_loss / len(dataloader), f1_scores_epoch, classification_reports, cm
-
     def train(self, recipe: SimpleNamespace, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, speedmode=SPEEDMODES[1]):
         rundate = date.today().strftime('%Y%m%d')
 
@@ -143,15 +66,20 @@ class TrainerSkills:
                         outputs = model(batch_X / 255)
 
                         # Loss
-                        total_batch_loss = OutputHeadRecognition.compute_loss(outputs, batch_y, batch_mask)
+                        total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask)
                         val_loss += total_batch_loss.item()
 
                         # Accuracy
-                        # TODO
-                        accaracies = { 'Total': 0.0 }
-            return val_loss / len(dataloader), accaracies
+                        current_f1 = head.update_metrics(outputs, batch_y, batch_mask)
 
-        # End validate
+                metrics = head.compute_metrics()
+                head.reset_metrics()
+
+            return {
+                'val_loss' : val_loss / len(dataloader),
+                'f1_total_avg' : current_f1,
+                'metrics' : metrics
+            }
         #########################################################################################
         def create_or_recreate_cropped_videos(speedmode):
             unique_videoIds = self.repo.get_videoIds_of_videos_with_skills()
@@ -199,8 +127,6 @@ class TrainerSkills:
             modelstatsPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.stats.json")
             modelstatsPathCurrent = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.stats.current.json")
             bestModelJsonStatsPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"best{'_testrun' if testrun else ''}.stats.json")
-
-            bestModelStats = { 'f1_macro_avg_accuracy': 0 }
             
             bestModelStats = load_json_file(bestModelJsonStatsPath)
 
@@ -213,10 +139,10 @@ class TrainerSkills:
             
             classification_reports = {}
             epoch_start = 0
-            f1_scores = {}
-            losses = []
+            losses_over_time = []
+            metrics_over_time = {}
             modelstats = {}
-            total_accuracies = []
+            f1_avgs_over_time = []
             if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPath):
                 checkpoint = torch.load(checkpointPath, weights_only=False)
                 modelstats = load_json_file(modelstatsPath)
@@ -224,9 +150,9 @@ class TrainerSkills:
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
                 epoch_start = modelstats['epoch'] + 1
-                losses = modelstats['losses']
-                total_accuracies = modelstats['total_accuracies']
-                f1_scores = {} if 'f1_scores' not in modelstats.keys() else modelstats['f1_scores']
+                losses_over_time = modelstats['losses_over_time']
+                f1_avgs_over_time = modelstats['f1_total_avgs_over_time']
+                metrics_over_time = {} if 'metrics_over_time' not in modelstats.keys() else modelstats['metrics_over_time']
                 classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
 
             if unfreeze_all_layers:
@@ -249,19 +175,16 @@ class TrainerSkills:
             dataloaderVal = DataLoader(val_generator, recipe.batch_size, shuffle=True)
 
             # Re-evaluate to know whether the current run is better than the previous runs
-            # Adapting the losses, as limiting to 10% can change occurences of faults, bodyrotations... a little
+            # Adapting the losses_over_time, as limiting to 10% can change occurences of faults, bodyrotations... a little
             # TODO : load previous model instead of current :)
-            # TODO : Re-evaluate previous run (because accuracy can have changed by new skills)
             print("Update re-evaluate and use it to update best models")
-            # TODO : re-add weighted losses
+            
+            # TODO : re-add weighted losses_over_time
 
-            validation_loss, f1_macro_avg_scores_epoch_reval = validate(
-                model=model,
-                dataloader=dataloaderVal,
-                optimizer=optimizer
-            )
-
-            print(f"Re eval loss {validation_loss}")
+            revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+            validation_loss = revalidation_results['val_loss']
+            print(f"Re-eval loss {validation_loss}")
+            print(f"Re-eval f1_avg: {revalidation_results['f1_total_avg']:.4f}")
 
             # Training loop
             for epoch in range(epoch_start, epochs + epoch_start):
@@ -283,32 +206,31 @@ class TrainerSkills:
                     total_loss += total_batch_loss.item()
                     i+=1
                 
-                val_loss, f1_scores_epoch = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+                validation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+                val_loss = validation_results['val_loss']
                 print(f"Epoch {epoch+1}, Train Loss: {total_loss / len(dataloaderTrain):.4f}")
                 print(f"Epoch {epoch+1}, Validation Loss: {val_loss:.4f}")
+                print(f"Epoch {epoch+1}, Validation f1_avg: {validation_results['f1_total_avg']:.4f}")
                 
                 # Call the epoch end self, because it is not called by DataLoader, although it shuffles.
                 # train_generator.on_epoch_end()
 
-                losses.append(val_loss)
-                total_accuracies.append(f1_scores_epoch['Total'])
+                losses_over_time.append(val_loss)
+                f1_avgs_over_time.append(validation_results['f1_total_avg'])
                 scheduler.step(val_loss)
-                f1_scores[f'{epoch}'] = f1_scores_epoch
+                metrics_over_time[str(epoch)] = validation_results['metrics']
                 
-                minIndexLoss = losses.index(min(losses))
-                minIndexAcc = total_accuracies.index(max(total_accuracies))
-                minIndex = max(minIndexAcc, minIndexLoss)
-                epochsNoImprovement = len(losses) - minIndex - 1
-                hasValLossImproved = len(losses) - minIndexLoss - 1 == 0
-                hasValAccImproved = len(losses) - minIndexAcc - 1 == 0
+                minIndexAcc = f1_avgs_over_time.index(max(f1_avgs_over_time))
+                hasValAccImproved = len(losses_over_time) - minIndexAcc - 1 == 0
+                epochsNoImprovement = len(losses_over_time) - minIndexAcc - 1
 
                 patience = 5
                 if epochsNoImprovement > patience:
-                    print(f"No improvement for {epochsNoImprovement} - stopping")
+                    print(f"No improvement for {epochsNoImprovement} epochs - stopping")
                     break
 
                 # TODO : add .current.json & compare to previous run
-                if hasValLossImproved or hasValAccImproved:
+                if hasValAccImproved:
                     torch.save({
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
@@ -317,12 +239,11 @@ class TrainerSkills:
 
                     stats = {
                         'epoch': epoch,
-                        'best_epoch' : epoch,
-                        'f1_macro_avg_accuracy' : f1_scores[f'{epoch}']['Total'],
-                        'total_accuracies' : total_accuracies,
-                        'losses': losses,
-                        'f1_scores': f1_scores,
-                        'classification_reports' : classification_reports,
+                        'validation_results': validation_results,
+                        'f1_total_avgs_over_time' : f1_avgs_over_time,
+                        'metrics_over_time': metrics_over_time,
+                        'losses_over_time': losses_over_time,
+                        'classification_reports' : None,
                         'confusion_matrix': None,
                         'final_classification_reports' : None,
                         'time' : time.time() - start,
@@ -335,20 +256,21 @@ class TrainerSkills:
                     with open(modelstatsPathCurrent, "w") as fp:
                         json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
-                    if stats['f1_macro_avg_accuracy'] > f1_macro_avg_scores_epoch_reval['Total']:
+                    if validation_results['f1_total_avg'] > revalidation_results['f1_total_avg']:
+                        print(f"Model {modelname} improved from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
                         with open(modelstatsPath, "w") as fp:
                             json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
                         torch.save(model.state_dict(), path)
 
-                    if not bestModelStats or stats['f1_macro_avg_accuracy'] > bestModelStats['f1_macro_avg_accuracy']:
+                    if not bestModelStats or max(stats['f1_total_avgs_over_time']) > max(bestModelStats['f1_total_avgs_over_time']):
+                        if bestModelStats:
+                            print(f"Model {modelname} improved the previous best model {bestModelStats['modelname']} from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
                         with open(bestModelJsonStatsPath, "w") as fp:
                             json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
                         torch.save(model.state_dict(), pathBest)
             
-            pprint(f"Current f1 macro avg accuracy: {f1_scores_epoch['Total']}")
-
         except Exception as e:
             raise e
         finally:

@@ -6,6 +6,7 @@ from managers.DataRepository import DataRepository
 from Predictor import Predictor
 from Trainer import Trainer, trainparams, max_rounds
 from managers.TrainerLocalize import train_yolo_model, validate_localize
+from sqlalchemy.orm import close_all_sessions
 from constants import RECIPES
 from pprint import pprint
 
@@ -19,13 +20,12 @@ no_shutdown_job = True
 predictor = Predictor()
 trainer = Trainer()
 
-
 while no_shutdown_job:
     job = REPO.get_next_job()
 
     if job is None:
-        print('Waiting for a job')
         time.sleep(3)
+        close_all_sessions()
         continue
     else:
         print(job)
@@ -52,15 +52,10 @@ while no_shutdown_job:
             save_anyway=True,
         )
 
-    
         REPO.delete_job(job["id"])
     else:
         print('Unrecognized job?')
         print(job)
         time.sleep(2)
     # Update, remove job
-    
-
-
-
 

@@ -110,7 +110,6 @@ class StatsService:
                 else:
                     scores[videoId][model] = "Waiting"
 
-
         if scores['total']["judges"]:
             scores["total"]["judges"] = round(scores["total"]["judges"], 2)
 
@@ -119,7 +118,6 @@ class StatsService:
                 scores["total"][f"{model}_procent_difference"] = round(100 * (scores["total"][model] - scores["total"]["judges"]) / scores["total"]["judges"], 2)
 
         return scores
-
 
     def getRecognitionResults(self, selectedModel: str):
         results = {
@@ -150,25 +148,25 @@ class StatsService:
                 filename = os.path.basename(tr)
                 modelname = filename[:filename.find('_skills')]
 
-                lastEpochStr = str(tr_result['best_epoch'])
+                lastEpochStr = str(tr_result['epoch'])
 
                 totalAccuraciesLastEpoch = [class_report['accuracy'] for class_report in tr_result["classification_reports"][lastEpochStr].values()]
                 totalAccuracy = sum(totalAccuraciesLastEpoch) / len(totalAccuraciesLastEpoch)
                 totalWeightedF1LastEpoch = [class_report['weighted avg']['f1-score'] for class_report in tr_result["classification_reports"][lastEpochStr].values()]
                 totalWeightedF1 = sum(totalWeightedF1LastEpoch) / len(totalWeightedF1LastEpoch)
 
-                f1_macro_avg = 0
+                f1_avg = 0
                 # TODO : temp solution after delete
                 if 'total_accuracy_at_best' in tr_result.keys():
-                    f1_macro_avg = tr_result['total_accuracy_at_best']
+                    f1_avg = tr_result['total_accuracy_at_best']
                 else:
-                    f1_macro_avg = tr_result['f1_macro_avg_accuracy']
+                    f1_avg = tr_result['f1_avg_accuracy']
                 
                 results[modelname] = tr_result
                 if modelname != 'best':
                     results['modelcomparison'][modelname] = {
                         "model" : modelname,
-                        "f1-macro-avg" : f1_macro_avg,
+                        "f1-macro-avg" : f1_avg,
                         "f1-macro-avg-skills" : tr_result['classification_reports'][lastEpochStr]['Skill']['macro avg']['f1-score'],
                         "f1-weighted-avg" : totalWeightedF1,
                         "f1-weighted-avg-skills" : tr_result['classification_reports'][lastEpochStr]['Skill']['weighted avg']['f1-score'],
@@ -217,3 +215,4 @@ class StatsService:
         return {
             'videos' : self.videoService.count()
         }
+

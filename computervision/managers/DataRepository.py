@@ -270,6 +270,7 @@ class DataRepository:
             return None if len(df_jobs) == 0 else df_jobs.iloc[0]
     
     def delete_job(self, jobId:int):
+        print(f"Deleting job ({jobId})")
         with self.__get_connection() as connection:
             qry = sqlal.text(f"""DELETE FROM Jobs WHERE id = :id""")
             connection.execute(qry, {'id': jobId})

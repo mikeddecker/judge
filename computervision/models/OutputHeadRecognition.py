@@ -1,14 +1,18 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchmetrics
+import metrics.NumericStepMetrics as nsm
+
 from helpers import map_stageNr, mapped_stage_is_not_stageProperties
-from constants import STAGES
 from pprint import pprint
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class OutputHeadRecognition(nn.Module):
     """Template by ChatGPT 2025-08-07, altered to incorporate stages"""
-    def __init__(self, input_neurons, df_layers, df_composition, max_instances_per_role):
+    def __init__(self, input_neurons: int, df_layers, df_composition, max_instances_per_role):
         super().__init__()
 
         self.output_layers = nn.ModuleDict()
@@ -19,10 +23,15 @@ class OutputHeadRecognition(nn.Module):
         print(f"max instances per role")
         print(max_instances_per_role)
 
+        self.init_categorical_mappings()
+        self.init_layers(input_neurons)
+        self.init_metrics()
+
+    def init_categorical_mappings(self):
         # Precompute categorical mappings: {propertyId: {valueId: class_idx}}
         self.categorical_valueId_to_idx = {}
         self.categorical_idx_to_valueId = {}
-        for prop_id, group_df in df_layers[df_layers['type'] == 'categorical'].groupby('propertyId'):
+        for prop_id, group_df in self.df_layers[self.df_layers['type'] == 'categorical'].groupby('propertyId'):
             self.categorical_valueId_to_idx[int(prop_id)] = {
                 int(row['valueId']): idx + 1   # +1 so 0 is reserved for "absent"
                 for idx, row in group_df.reset_index().iterrows()
@@ -37,24 +46,78 @@ class OutputHeadRecognition(nn.Module):
         print(self.categorical_idx_to_valueId)
         print(self.categorical_valueId_to_idx)
 
-        # TODO : update, use the same layer for each property id
-        for index, row in df_composition.iterrows():
+    def init_layers(self, input_neurons: int):
+        self.layers: dict[str, nn.Module] = {} # Key = prop_name, Value = Layer
+        for index, row in self.df_composition.iterrows():
             composition_name = row['compositionName']
             mapped_stage = map_stageNr(row['stage'])
-            property_row = df_layers[df_layers['propertyId'] == row['propertyId']].iloc[0]
+            property_row = self.df_layers[self.df_layers['propertyId'] == row['propertyId']].iloc[0]
             prop_name = row['name']
             prop_type = property_row['type']
 
-            for i in range(max_instances_per_role[composition_name]):
+            for i in range(self.max_instances_per_role[composition_name]):
                 output_head = '_'.join([composition_name, str(i), mapped_stage, prop_name])
-                if prop_type == "categorical":
-                    num_classes = df_layers[df_layers['propertyId'] == row['propertyId']]['value'].nunique()
-                    self.output_layers[output_head] = nn.Linear(input_neurons, num_classes + 1) # Account for 0 class
+                if prop_name in self.layers.keys():
+                    self.output_layers[output_head] = self.layers[prop_name]
+                elif prop_type == "categorical":
+                    num_classes = self.df_layers[self.df_layers['propertyId'] == row['propertyId']]['value'].nunique()
+                    layer = nn.Linear(input_neurons, num_classes + 1) # Account for 0 class
+                    self.layers[prop_name] = layer
+                    self.output_layers[output_head] = layer
                 elif prop_type == "boolean":
-                    self.output_layers[output_head] = nn.Linear(input_neurons, 1)
+                    layer = nn.Linear(input_neurons, 1)
+                    self.layers[prop_name] = layer
+                    self.output_layers[output_head] = layer
                 elif prop_type == "numerical":
-                    self.output_layers[output_head] = nn.Linear(input_neurons, 1)  # You may normalize this value
-                
+                    layer = nn.Linear(input_neurons, 1)
+                    self.layers[prop_name] = layer
+                    self.output_layers[output_head] = layer
+
+    def reset_metrics(self):
+        self.metric_values: dict[str, dict[str, list[float]]] = {
+            'precision': {}, # prop_name: num_correct_values
+            'recall': {},
+            'f1': {},
+            'acc': {},
+        }
+    
+    def init_metrics(self, average='macro'):
+        self.metrics: dict[str, dict[str, torchmetrics.Metric]] = {
+            'precision': {}, # prop_name: Metric
+            'recall': {},
+            'f1': {},
+            'acc': {},
+        }
+        self.reset_metrics()
+        for index, row in self.df_composition.iterrows():
+            composition_name = row['compositionName']
+            mapped_stage = map_stageNr(row['stage'])
+            property_row = self.df_layers[self.df_layers['propertyId'] == row['propertyId']].iloc[0]
+            prop_name = row['name']
+            prop_type = property_row['type']
+
+            if self.max_instances_per_role[composition_name] > 0:
+                if prop_name in self.metrics['acc'].keys():
+                    continue
+                elif prop_type == "categorical":
+                    num_classes = self.df_layers[self.df_layers['propertyId'] == row['propertyId']]['value'].nunique()
+                    num_classes += 1
+                    self.metrics['precision'][prop_name] = torchmetrics.Precision(task="multiclass", average=average, num_classes=num_classes).to(device)
+                    self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="multiclass", average=average, num_classes=num_classes).to(device)
+                    self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="multiclass", average=average, num_classes=num_classes).to(device)
+                    self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
+                elif prop_type == "boolean":
+                    self.metrics['precision'][prop_name] = torchmetrics.Precision(task="binary").to(device)
+                    self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="binary").to(device)
+                    self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="binary").to(device)
+                    self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="binary").to(device)
+                elif prop_type == "numerical":
+                    step = float(property_row['step'])
+                    self.metrics['precision'][prop_name] = nsm.NumericStepPrecision(step=step).to(device)
+                    self.metrics['recall'][prop_name]    = nsm.NumericStepRecall(step=step).to(device)
+                    self.metrics['f1'][prop_name]        = nsm.NumericStepF1Score(step=step).to(device)
+                    self.metrics['acc'][prop_name]       = nsm.NumericStepAccuracy(step=step).to(device)
+
     def forward(self, x):
         """
         x: [B, input_neurons] (global-pooled embedding from MViT)
@@ -126,8 +189,7 @@ class OutputHeadRecognition(nn.Module):
 
         return target, mask
 
-    @staticmethod
-    def compute_loss(preds, targets, masks):
+    def compute_loss(self, preds, targets, masks):
         """
         preds: dict[str, Tensor] where each tensor is [B, C] or [B, 1]
         targets: dict[str, Tensor] where each tensor is [B, 1]
@@ -137,7 +199,6 @@ class OutputHeadRecognition(nn.Module):
         total_count = 0
 
         try:
-            
             for key, pred_val in preds.items():
                 target_val = targets[key]
                 mask_val = masks[key]  # shape [B]
@@ -155,7 +216,7 @@ class OutputHeadRecognition(nn.Module):
                     loss = F.cross_entropy(pred_valid, target_valid.long())
                 else:
                     # Boolean or numerical
-                    loss = F.mse_loss(pred_valid.squeeze(), target_valid.float())
+                    loss = F.mse_loss(pred_valid.squeeze(dim=1), target_valid.float())
 
                 total_loss += loss
                 total_count += 1
@@ -165,9 +226,55 @@ class OutputHeadRecognition(nn.Module):
 
         except Exception as e:
             print()
-            print(f"compute loss pred", key, pred_valid)
-            print(f"compute loss targ", key, target_valid)
+            print(f"compute exception loss pred", key, pred_valid)
+            print(f"compute exception loss targ", key, target_valid)
 
             raise e
         return total_loss / total_count
+
+    def update_metrics(self, preds: dict[str, torch.Tensor], targets: dict[str, torch.Tensor], masks):
+        """Return current f1_average"""
+        for key, pred_val in preds.items():
+            target_val = targets[key]
+            mask_val = masks[key]
+            key_splits = key.split('_')
+
+            if len(key_splits) == 1:
+                # compositionName: count
+                raise NotImplementedError(f"Counts prediction not yet implemented")
+            elif len(key_splits) != 4:
+                raise ValueError(f"Something went wrong with key:", key)
+            composition_name = key_splits[0]
+            prop_name = key_splits[3]
+
+            valid_idx = mask_val.bool().nonzero(as_tuple=False).squeeze(-1)
+            if valid_idx.numel() == 0:
+                continue
+
+            pred_valid = pred_val[valid_idx].squeeze(dim=1)
+            target_valid = target_val[valid_idx]
+            # target_valid = target_valid if target_valid.ndim == 1 else target_valid.squeeze(dim=1)
+
+            if prop_name in self.metric_values['precision']:
+                self.metric_values['precision'][prop_name].append(self.metrics['precision'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['recall'][prop_name].append(self.metrics['recall'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['f1'][prop_name].append(self.metrics['f1'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['acc'][prop_name].append(self.metrics['acc'][prop_name](pred_valid, target_valid).tolist())
+            else:
+                self.metric_values['precision'][prop_name] = [self.metrics['precision'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['recall'][prop_name] = [self.metrics['recall'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['f1'][prop_name] = [self.metrics['f1'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['acc'][prop_name] = [self.metrics['acc'][prop_name](pred_valid, target_valid).item()]
+
+        return np.concatenate([np.array(a) for a in self.metric_values['f1'].values()]).mean()
+    
+    def compute_metrics(self):
+        """
+        Computes precision, recall, f1, and accuracy for each key in preds using torchmetrics.
+        """
+        return { 
+            metric: {
+                prop_name: np.mean(values) for prop_name, values in prop_dict_values.items()
+            } for metric, prop_dict_values in self.metric_values.items() 
+        }
 

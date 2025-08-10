@@ -6,7 +6,7 @@ from constants import PYTORCH_MODELS_SKILLS
 from constants import RECIPES, SPEEDMODES
 
 class Trainer:
-    def train(self, step, recipename, from_scratch, save_anyway, speedmode=SPEEDMODES[1]):
+    def train(self, step, recipename, from_scratch, save_anyway, speedmode=SPEEDMODES[0]):
         match step:
             case 'LOCALIZE':
                 train_yolo_model(RECIPES[step][recipename].size, repo=DataRepository())

@@ -10,7 +10,7 @@ const props = defineProps({
 })
 
 const selected = props.results['selected-model']
-const f1MacroAvg = round2decimals(props.results['best']['f1_macro_avg_accuracy'] * 100)
+const f1MacroAvg = round2decimals(props.results['best']['f1_avg_accuracy'] * 100)
 const f1MacroAvgSkills = round2decimals(props.results['best']['classification_reports'][props.results['best']['epoch']]['Skill']['macro avg']['f1-score'] * 100)
 const chartDataVal = computed(() => transformF1ToChart(props.results['best']['f1_scores']))
 
