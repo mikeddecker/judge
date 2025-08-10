@@ -133,32 +133,7 @@ class TrainerSkills:
             df_layers, df_composition, max_instances_per_role = self.repo.get_recognition_config()
             backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[modelname].get_output_feature_dim(recipe)
             head = OutputHeadRecognition(backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
-            model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
-            optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
             
-            classification_reports = {}
-            epoch_start = 0
-            losses_over_time = []
-            metrics_over_time = {}
-            modelstats = {}
-            f1_avgs_over_time = []
-            if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPath):
-                checkpoint = torch.load(checkpointPath, weights_only=False)
-                modelstats = load_json_file(modelstatsPath)
-                model.load_state_dict(checkpoint['model_state_dict'])
-                optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-                scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-                epoch_start = modelstats['epoch'] + 1
-                losses_over_time = modelstats['losses_over_time']
-                f1_avgs_over_time = modelstats['f1_total_avgs_over_time']
-                metrics_over_time = {} if 'metrics_over_time' not in modelstats.keys() else modelstats['metrics_over_time']
-                classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
-
-            if unfreeze_all_layers:
-                for param in model.parameters():
-                    param.requires_grad = True
-
             DefaultGeneratorSkills = functools.partial(
                 DataGeneratorSkills, 
                 frameloader=FrameLoader(self.repo),
@@ -180,17 +155,54 @@ class TrainerSkills:
             
             # TODO : re-add weighted losses_over_time
 
-            revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
-            print(f"Re-eval (current model) f1_avg: {revalidation_results['f1_total_avg']:.4f}")
-
             best_model_revalidation_results = None
+            best_model_name = None
             if not from_scratch and os.path.exists(pathBest):
                 best_model_stats = load_json_file(best_stats_path)
                 best_model_name = best_model_stats['modelname']
-                best_model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
-                best_model.load_state_dict(torch.load(pathBest, weights_only=True))
-                print("Re-evaluate best model, to get the most optimal comparisons")
-                best_model_revalidation_results = validate(model=best_model, dataloader=dataloaderVal, optimizer=optimizer)
+                model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
+                model.load_state_dict(torch.load(pathBest, weights_only=True))
+                optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
+                scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
+                print("Re-evaluate best of best model, to get the most optimal comparisons")
+                best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+
+            revalidation_results = None
+            if not from_scratch and os.path.exists(path):
+                model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
+                model.load_state_dict(torch.load(path, weights_only=True))
+                optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
+                scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
+                print("Re-evaluate best of current model, to get the most optimal comparisons")
+                best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+                revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+
+            # For new training rounds
+            model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
+            optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
+
+            classification_reports = {}
+            epoch_start = 0
+            losses_over_time = []
+            metrics_over_time = {}
+            modelstats = {}
+            f1_avgs_over_time = []
+            if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPath):
+                checkpoint = torch.load(checkpointPath, weights_only=False)
+                modelstats = load_json_file(modelstatsPath)
+                model.load_state_dict(checkpoint['model_state_dict'])
+                optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+                scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+                epoch_start = modelstats['epoch'] + 1
+                losses_over_time = modelstats['losses_over_time']
+                f1_avgs_over_time = modelstats['f1_total_avgs_over_time']
+                metrics_over_time = {} if 'metrics_over_time' not in modelstats.keys() else modelstats['metrics_over_time']
+                classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
+
+            if unfreeze_all_layers:
+                for param in model.parameters():
+                    param.requires_grad = True
 
             # Training loop
             for epoch in range(epoch_start, epochs + epoch_start):
@@ -263,7 +275,7 @@ class TrainerSkills:
                     with open(modelstatsPathCurrent, "w") as fp:
                         json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
-                    if validation_results['f1_total_avg'] > revalidation_results['f1_total_avg']:
+                    if not from_scratch and validation_results['f1_total_avg'] > revalidation_results['f1_total_avg']:
                         print(f"Model {modelname} improved from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
                         with open(modelstatsPath, "w") as fp:
                             json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
@@ -272,7 +284,7 @@ class TrainerSkills:
 
                     if not from_scratch and (not best_model_revalidation_results or max(stats['f1_total_avgs_over_time']) > best_model_revalidation_results['f1_total_avg']):
                         if best_model_revalidation_results:
-                            print(f"Model {modelname} improved the previous best model {best_model_revalidation_results['modelname']} from {best_model_revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
+                            print(f"Model {modelname} improved the previous best model {best_model_name} from {best_model_revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
                         with open(best_stats_path, "w") as fp:
                             json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
