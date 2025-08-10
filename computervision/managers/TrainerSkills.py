@@ -160,11 +160,12 @@ class TrainerSkills:
             if not from_scratch and os.path.exists(pathBest):
                 best_model_stats = load_json_file(best_stats_path)
                 best_model_name = best_model_stats['modelname']
+                print(best_model_name, RECIPES['SKILL'][best_model_stats['recipe']['name']], modelname)
                 model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
                 model.load_state_dict(torch.load(pathBest, weights_only=True))
                 optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
                 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
-                print("Re-evaluate best of best model, to get the most optimal comparisons")
+                print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
                 best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
 
             revalidation_results = None
@@ -173,7 +174,7 @@ class TrainerSkills:
                 model.load_state_dict(torch.load(path, weights_only=True))
                 optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
                 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
-                print("Re-evaluate best of current model, to get the most optimal comparisons")
+                print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
                 best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                 revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
 
@@ -275,8 +276,9 @@ class TrainerSkills:
                     with open(modelstatsPathCurrent, "w") as fp:
                         json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
-                    if not from_scratch and validation_results['f1_total_avg'] > revalidation_results['f1_total_avg']:
-                        print(f"Model {modelname} improved from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
+                    if not revalidation_results or validation_results['f1_total_avg'] > revalidation_results['f1_total_avg']:
+                        if revalidation_results:
+                            print(f"Model {modelname} improved from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
                         with open(modelstatsPath, "w") as fp:
                             json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 

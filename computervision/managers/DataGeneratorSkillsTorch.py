@@ -55,7 +55,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         # Shuffle skills
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
-        print('DataGeneratorSkills init done')
+        print(f'DataGeneratorSkills {train_test_val} init done')
         self.on_epoch_end()
 
     def __len__(self):
@@ -87,7 +87,6 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         return X, target, mask
 
     def on_epoch_end(self):
-        print("On epoch end called")
         self.Skills = self.Skills.sample(frac=1.)
         self.__refillBalancedSet()
 
