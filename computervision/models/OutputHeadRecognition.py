@@ -74,11 +74,12 @@ class OutputHeadRecognition(nn.Module):
                     self.output_layers[output_head] = layer
 
     def reset_metrics(self):
-        self.metric_values: dict[str, dict[str, list[float]]] = {
-            'precision': {}, # prop_name: num_correct_values
-            'recall': {},
-            'f1': {},
-            'acc': {},
+        m = { g: {} for g in ['props', 'compositions', 'output_heads']}
+        self.metric_values: dict[str, dict[str, dict[str, list[float]]]] = {
+            'precision': m.copy(), # prop_name: num_correct_values
+            'recall': m.copy(),
+            'f1': m.copy(),
+            'acc': m.copy(),
         }
     
     def init_metrics(self, average='macro'):
@@ -199,9 +200,9 @@ class OutputHeadRecognition(nn.Module):
         total_count = 0
 
         try:
-            for key, pred_val in preds.items():
-                target_val = targets[key]
-                mask_val = masks[key]  # shape [B]
+            for output_head, pred_val in preds.items():
+                target_val = targets[output_head]
+                mask_val = masks[output_head]  # shape [B]
 
                 # Filter only valid samples
                 valid_idx = mask_val.bool().nonzero(as_tuple=False).squeeze(-1)
@@ -226,26 +227,26 @@ class OutputHeadRecognition(nn.Module):
 
         except Exception as e:
             print()
-            print(f"compute exception loss pred", key, pred_valid)
-            print(f"compute exception loss targ", key, target_valid)
+            print(f"compute exception loss pred", output_head, pred_valid)
+            print(f"compute exception loss targ", output_head, target_valid)
 
             raise e
         return total_loss / total_count
 
     def update_metrics(self, preds: dict[str, torch.Tensor], targets: dict[str, torch.Tensor], masks):
         """Return current f1_average"""
-        for key, pred_val in preds.items():
-            target_val = targets[key]
-            mask_val = masks[key]
-            key_splits = key.split('_')
+        for output_head, pred_val in preds.items():
+            target_val = targets[output_head]
+            mask_val = masks[output_head]
+            output_head_splits = output_head.split('_')
 
-            if len(key_splits) == 1:
+            if len(output_head_splits) == 1:
                 # compositionName: count
                 raise NotImplementedError(f"Counts prediction not yet implemented")
-            elif len(key_splits) != 4:
-                raise ValueError(f"Something went wrong with key:", key)
-            composition_name = key_splits[0]
-            prop_name = key_splits[3]
+            elif len(output_head_splits) != 4:
+                raise ValueError(f"Something went wrong with output_head:", output_head)
+            composition_name = output_head_splits[0]
+            prop_name = output_head_splits[3]
 
             valid_idx = mask_val.bool().nonzero(as_tuple=False).squeeze(-1)
             if valid_idx.numel() == 0:
@@ -256,25 +257,38 @@ class OutputHeadRecognition(nn.Module):
             # target_valid = target_valid if target_valid.ndim == 1 else target_valid.squeeze(dim=1)
 
             if prop_name in self.metric_values['precision']:
-                self.metric_values['precision'][prop_name].append(self.metrics['precision'][prop_name](pred_valid, target_valid).tolist())
-                self.metric_values['recall'][prop_name].append(self.metrics['recall'][prop_name](pred_valid, target_valid).tolist())
-                self.metric_values['f1'][prop_name].append(self.metrics['f1'][prop_name](pred_valid, target_valid).tolist())
-                self.metric_values['acc'][prop_name].append(self.metrics['acc'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['precision']['props'][prop_name].append(self.metrics['precision'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['recall']['props'][prop_name].append(self.metrics['recall'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['f1']['props'][prop_name].append(self.metrics['f1'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['acc']['props'][prop_name].append(self.metrics['acc'][prop_name](pred_valid, target_valid).tolist())
             else:
-                self.metric_values['precision'][prop_name] = [self.metrics['precision'][prop_name](pred_valid, target_valid).item()]
-                self.metric_values['recall'][prop_name] = [self.metrics['recall'][prop_name](pred_valid, target_valid).item()]
-                self.metric_values['f1'][prop_name] = [self.metrics['f1'][prop_name](pred_valid, target_valid).item()]
-                self.metric_values['acc'][prop_name] = [self.metrics['acc'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['precision']['props'][prop_name] = [self.metrics['precision'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['recall']['props'][prop_name] = [self.metrics['recall'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['f1']['props'][prop_name] = [self.metrics['f1'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['acc']['props'][prop_name] = [self.metrics['acc'][prop_name](pred_valid, target_valid).item()]
 
-        return np.concatenate([np.array(a) for a in self.metric_values['f1'].values()]).mean()
+            if output_head in self.metric_values['precision']:
+                self.metric_values['precision']['output_heads'][output_head].append(self.metrics['precision'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['recall']['output_heads'][output_head].append(self.metrics['recall'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['f1']['output_heads'][output_head].append(self.metrics['f1'][prop_name](pred_valid, target_valid).tolist())
+                self.metric_values['acc']['output_heads'][output_head].append(self.metrics['acc'][prop_name](pred_valid, target_valid).tolist())
+            else:
+                self.metric_values['precision']['output_heads'][output_head] = [self.metrics['precision'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['recall']['output_heads'][output_head] = [self.metrics['recall'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['f1']['output_heads'][output_head] = [self.metrics['f1'][prop_name](pred_valid, target_valid).item()]
+                self.metric_values['acc']['output_heads'][output_head] = [self.metrics['acc'][prop_name](pred_valid, target_valid).item()]
+
+        return np.concatenate([np.array(a) for a in self.metric_values['f1']['props'].values()]).mean()
     
     def compute_metrics(self):
         """
-        Computes precision, recall, f1, and accuracy for each key in preds using torchmetrics.
+        Computes precision, recall, f1, and accuracy for each output_head in preds using torchmetrics.
         """
         return { 
             metric: {
-                prop_name: np.mean(values) for prop_name, values in prop_dict_values.items()
-            } for metric, prop_dict_values in self.metric_values.items() 
+                group: {
+                    prop_name: np.mean(values) for prop_name, values in prop_dict_values.items()
+                } for group, prop_dict_values in group_prop_dict_values.items()
+            } for metric, group_prop_dict_values in self.metric_values.items() 
         }
 
