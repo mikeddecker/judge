@@ -156,28 +156,35 @@ class TrainerSkills:
             
             # TODO : re-add weighted losses_over_time
 
-            best_model_revalidation_results = None
-            best_model_name = None
-            if not from_scratch and os.path.exists(pathBest):
-                best_model_stats = load_json_file(best_stats_path)
-                best_model_name = best_model_stats['modelname']
-                best_model_backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[best_model_name].get_output_feature_dim(recipe)
-                best_head = OutputHeadRecognition(best_model_backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
-                model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
-                model.load_state_dict(torch.load(pathBest, weights_only=True))
-                optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
-                print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
-                best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+            try:
+                best_model_revalidation_results = None
+                best_model_name = None
+                if not from_scratch and os.path.exists(pathBest):
+                    best_model_stats = load_json_file(best_stats_path)
+                    best_model_name = best_model_stats['modelname']
+                    best_model_backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[best_model_name].get_output_feature_dim(recipe)
+                    best_head = OutputHeadRecognition(best_model_backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
+                    model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
+                    model.load_state_dict(torch.load(pathBest, weights_only=True))
+                    optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
+                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
+                    print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
+                    best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+            except Exception as e:
+                pass
 
-            revalidation_results = None
-            if not from_scratch and os.path.exists(path):
-                model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
-                model.load_state_dict(torch.load(path, weights_only=True))
-                optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
-                print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
-                revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+            try:                
+                revalidation_results = None
+                if not from_scratch and os.path.exists(path):
+                    model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
+                    model.load_state_dict(torch.load(path, weights_only=True))
+                    optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
+                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
+                    print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
+                    revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+            except Exception as e:
+                pass
+            
 
             # For new training rounds
             model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
