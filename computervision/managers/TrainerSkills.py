@@ -35,6 +35,8 @@ class NumpyTypeEncoder(json.JSONEncoder):
             return obj.tolist()
         elif isinstance(obj, np.generic):
             return obj.item()
+        elif isinstance(obj, SimpleNamespace):
+            return obj.__dict__
         return super().default(obj)
 
 load_dotenv()
@@ -126,14 +128,12 @@ class TrainerSkills:
             checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.checkpoint.pt")
             modelstatsPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.stats.json")
             modelstatsPathCurrent = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.stats.current.json")
-            bestModelJsonStatsPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"best{'_testrun' if testrun else ''}.stats.json")
+            best_stats_path = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"best{'_testrun' if testrun else ''}.stats.json")
             
-            bestModelStats = load_json_file(bestModelJsonStatsPath)
-
             df_layers, df_composition, max_instances_per_role = self.repo.get_recognition_config()
             backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[modelname].get_output_feature_dim(recipe)
             head = OutputHeadRecognition(backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
-            model = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
+            model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
             optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
             
@@ -177,14 +177,20 @@ class TrainerSkills:
             # Re-evaluate to know whether the current run is better than the previous runs
             # Adapting the losses_over_time, as limiting to 10% can change occurences of faults, bodyrotations... a little
             # TODO : load previous model instead of current :)
-            print("Update re-evaluate and use it to update best models")
             
             # TODO : re-add weighted losses_over_time
 
             revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
-            validation_loss = revalidation_results['val_loss']
-            print(f"Re-eval loss {validation_loss}")
-            print(f"Re-eval f1_avg: {revalidation_results['f1_total_avg']:.4f}")
+            print(f"Re-eval (current model) f1_avg: {revalidation_results['f1_total_avg']:.4f}")
+
+            best_model_revalidation_results = None
+            if not from_scratch and os.path.exists(pathBest):
+                best_model_stats = load_json_file(best_stats_path)
+                best_model_name = best_model_stats['modelname']
+                best_model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
+                best_model.load_state_dict(torch.load(pathBest, weights_only=True))
+                print("Re-evaluate best model, to get the most optimal comparisons")
+                best_model_revalidation_results = validate(model=best_model, dataloader=dataloaderVal, optimizer=optimizer)
 
             # Training loop
             for epoch in range(epoch_start, epochs + epoch_start):
@@ -251,6 +257,7 @@ class TrainerSkills:
                         'length_val': len(val_generator),
                         'rundate': rundate,
                         'modelname': modelname,
+                        'recipe': recipe
                     }
                     
                     with open(modelstatsPathCurrent, "w") as fp:
@@ -263,10 +270,10 @@ class TrainerSkills:
 
                         torch.save(model.state_dict(), path)
 
-                    if not bestModelStats or max(stats['f1_total_avgs_over_time']) > max(bestModelStats['f1_total_avgs_over_time']):
-                        if bestModelStats:
-                            print(f"Model {modelname} improved the previous best model {bestModelStats['modelname']} from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
-                        with open(bestModelJsonStatsPath, "w") as fp:
+                    if not from_scratch and (not best_model_revalidation_results or max(stats['f1_total_avgs_over_time']) > best_model_revalidation_results['f1_total_avg']):
+                        if best_model_revalidation_results:
+                            print(f"Model {modelname} improved the previous best model {best_model_revalidation_results['modelname']} from {best_model_revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
+                        with open(best_stats_path, "w") as fp:
                             json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
                         torch.save(model.state_dict(), pathBest)
@@ -276,8 +283,4 @@ class TrainerSkills:
         finally:
             torch.cuda.empty_cache()
             gc.collect()
-
-def collate_fn_skills(batch):
-    batch_X, batch_y, batch_mask = zip(*batch)
-    return torch.stack(batch_X), list(batch_y), list(batch_mask)
 
