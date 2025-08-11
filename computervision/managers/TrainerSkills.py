@@ -122,14 +122,13 @@ class TrainerSkills:
 
             create_or_recreate_cropped_videos(speedmode=speedmode)
 
-            step = 'SKILL'
-            os.makedirs(os.path.join(ENVS.DIRS.WEIGHTS, step.lower()), exist_ok=True)
-            path = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}.state_dict.pt")
-            pathBest = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"best.state_dict.pt")
-            checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.checkpoint.pt")
-            modelstatsPath = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.stats.json")
-            modelstatsPathCurrent = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"{modelname}{'_testrun' if testrun else ''}.stats.current.json")
-            best_stats_path = os.path.join(ENVS.DIRS.WEIGHTS, step.lower(), f"best{'_testrun' if testrun else ''}.stats.json")
+            os.makedirs(os.path.join(ENVS.DIRS.WEIGHTS.SKILLS), exist_ok=True)
+            path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}.state_dict.pt")
+            pathBest = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"best.state_dict.pt")
+            checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.checkpoint.pt")
+            modelstatsPath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.stats.json")
+            modelstatsPathCurrent = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.stats.current.json")
+            best_stats_path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"best{'_testrun' if testrun else ''}.stats.json")
             
             df_layers, df_composition, max_instances_per_role = self.repo.get_recognition_config()
             backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[modelname].get_output_feature_dim(recipe)

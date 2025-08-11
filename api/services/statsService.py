@@ -4,7 +4,8 @@ import yaml
 import pandas as pd
 from .videoService import VideoService # TODO : move to repo
 from .jobService import JobService # TODO : move to repo
-from helpers.ConfigHelper import recognition_get_modelpaths, PYTORCH_MODELS_SKILLS, get_discipline_DoubleDutch_config
+from helpers.ConfigHelper import PYTORCH_MODELS_SKILLS, get_discipline_DoubleDutch_config, recognition_get_modelpaths
+from helpers.helpers import load_json_file
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
@@ -139,6 +140,7 @@ class StatsService:
         }
       
         results['trainrounds'] = recognition_get_modelpaths()
+        print(results['trainrounds'])
 
         for modelname in PYTORCH_MODELS_SKILLS.keys():
             results[modelname] = {
@@ -147,64 +149,19 @@ class StatsService:
                 }
             }
         
-        for tr in results['trainrounds']:
-            if tr.find('testrun') != -1:
+        for train_round_path in results['trainrounds']:
+            if train_round_path.find('testrun') != -1:
                 continue
 
-            tr_result = {}
-            if os.path.exists(tr):
-                with open(tr, 'r') as f:
-                    tr_result = json.load(f)
-                
-                filename = os.path.basename(tr)
-                modelname = filename[:filename.find('_skills')]
+            train_round_result = load_json_file(train_round_path)
 
-                lastEpochStr = str(tr_result['epoch'])
+            if not train_round_result:
+                continue                
 
-                totalAccuraciesLastEpoch = [class_report['accuracy'] for class_report in tr_result["classification_reports"][lastEpochStr].values()]
-                totalAccuracy = sum(totalAccuraciesLastEpoch) / len(totalAccuraciesLastEpoch)
-                totalWeightedF1LastEpoch = [class_report['weighted avg']['f1-score'] for class_report in tr_result["classification_reports"][lastEpochStr].values()]
-                totalWeightedF1 = sum(totalWeightedF1LastEpoch) / len(totalWeightedF1LastEpoch)
+            filename = os.path.basename(train_round_path)
+            modelname = filename[:filename.find('_skills')]
 
-                f1_avg = 0
-                # TODO : temp solution after delete
-                if 'total_accuracy_at_best' in tr_result.keys():
-                    f1_avg = tr_result['total_accuracy_at_best']
-                else:
-                    f1_avg = tr_result['f1_avg_accuracy']
-                
-                results[modelname] = tr_result
-                if modelname != 'best':
-                    results['modelcomparison'][modelname] = {
-                        "model" : modelname,
-                        "f1-macro-avg" : f1_avg,
-                        "f1-macro-avg-skills" : tr_result['classification_reports'][lastEpochStr]['Skill']['macro avg']['f1-score'],
-                        "f1-weighted-avg" : totalWeightedF1,
-                        "f1-weighted-avg-skills" : tr_result['classification_reports'][lastEpochStr]['Skill']['weighted avg']['f1-score'],
-                        "total-accuracy" : totalAccuracy,
-                        "date" : 'pre-juli' if 'rundate' not in tr_result.keys() else tr_result['rundate'],
-                        "hours_training" : 0 if 'time' not in tr_result.keys() else round(tr_result["time"] / 36) / 100
-                    }
-
-        results['distributions'] = {
-            'skills' : {
-                'push-up': {
-                    'train': 432,
-                    'test': 0,
-                    'val': 12
-                },
-                'frog': {
-                    'train': 325,
-                    'test': 0,
-                    'val': 13
-                },
-                'jump': {
-                    'train': 1586,
-                    'test': 0,
-                    'val': 132
-                }
-            }
-        }
+            lastEpochStr = str(train_round_result['epoch'])
         
         return results
 

@@ -25,8 +25,10 @@ ENVS = SimpleNamespace(
         VIDEOS = os.getenv("STORAGE_DIR_VIDEOS"),
         GENERATED = os.getenv("STORAGE_DIR_GENERATED_DATA"),
         GENERATED_VIDEODATA = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'videodata'),
-        WEIGHTS = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'weights'),
-        WEIGHTS_YOLO = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'weights', 'yolo'),
+        WEIGHTS = SimpleNamespace(
+            YOLO = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'weights', 'yolo'),
+            SKILLS = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'weights', 'skills'),
+        ),
         YOLO_LABELS = os.path.join(os.getenv("STORAGE_DIR_GENERATED_DATA"), 'labels-ultralytics-yolo'),
     ),
     SUPPORTED_VIDEO_FORMATS = os.getenv("SUPPORTED_VIDEO_FORMATS"),

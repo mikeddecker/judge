@@ -119,7 +119,7 @@ class StatsRepository:
     def localize_results(self) -> dict:
         results = {}
         for key, recipe in RECIPES['LOCALIZE'].items():
-            resultdir = os.path.join(ENVS.DIRS.WEIGHTS_YOLO, recipe.size)
+            resultdir = os.path.join(ENVS.DIRS.WEIGHTS.YOLO, recipe.size)
             subfolder = os.listdir(resultdir)[0]
             resultdir = os.path.join(resultdir, subfolder)
             ious_all = load_json_file(os.path.join(resultdir, 'localize_ious.json'))
@@ -224,4 +224,7 @@ class StatsRepository:
         return {
             k: dict(values) for k, values in counts.items()
         }
+
+    def skills_prop_metrics(self) -> dict:
+        pass
 

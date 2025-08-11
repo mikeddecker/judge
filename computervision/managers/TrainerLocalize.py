@@ -48,9 +48,8 @@ def train_yolo_model(variant: str, repo: DataRepository):
     os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'labels', 'test'), exist_ok=True)
     os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'labels', 'val'), exist_ok=True)
 
-    weightdir = os.path.join(ENVS.DIRS.WEIGHTS_YOLO)
-    os.makedirs(weightdir, exist_ok=True)
-    weightdir = os.path.join(ENVS.DIRS.WEIGHTS_YOLO, variant)
+    os.makedirs(ENVS.DIRS.WEIGHTS.YOLO, exist_ok=True)
+    weightdir = os.path.join(ENVS.DIRS.WEIGHTS.YOLO, variant)
     os.makedirs(weightdir, exist_ok=True)
 
     small_dataset = True

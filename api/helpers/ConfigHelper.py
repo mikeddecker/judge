@@ -46,26 +46,27 @@ def localize_get_best_modelpath():
     best_size = None
     best_trainround = None
     for size in ['n', 's', 'm']:
-        trainround = os.listdir(os.path.join(ENVS.DIRS.WEIGHTS_YOLO, size))[0]
-        localize_ious = load_json_file(os.path.join(ENVS.DIRS.WEIGHTS_YOLO, size, trainround, f"localize_ious.json"))
+        trainround = os.listdir(os.path.join(ENVS.DIRS.WEIGHTS.YOLO, size))[0]
+        localize_ious = load_json_file(os.path.join(ENVS.DIRS.WEIGHTS.YOLO, size, trainround, f"localize_ious.json"))
         if best_raw_val_avg < localize_ious['raw']['val']['avg']:
             best_raw_val_avg = localize_ious['raw']['val']['avg']
             best_size = size
             best_trainround = trainround
 
-            argpath = os.path.join(ENVS.DIRS.WEIGHTS_YOLO, size, trainround, 'args.yaml')
+            argpath = os.path.join(ENVS.DIRS.WEIGHTS.YOLO, size, trainround, 'args.yaml')
             if os.path.exists(argpath):
                 with open(argpath, 'r') as file:
                     best_modelname = yaml.safe_load(file)['model'].split('.')[0]
 
-    modelpath = os.path.join(ENVS.DIRS.WEIGHTS_YOLO, best_size, best_trainround, "weights", "best.pt")
+    modelpath = os.path.join(ENVS.DIRS.WEIGHTS.YOLO, best_size, best_trainround, "weights", "best.pt")
     return best_modelname, os.path.join(modelpath, ) # modelname = yolo11n, modelpath = '../runs/detect/train7/weights/best.pt'
-
 
 def recognition_get_modelpaths():
     """Returns path to modelstats, e.g. ./weights/MViT_skills_20250524.stats.json"""
     # TODO : update to take actual best
-    folder_path = os.path.join('..', 'computervision', 'weights', f"*skills*.stats.json")
+    print(f"ENVS.DIRS.WEIGHTS.SKILLS", ENVS.DIRS.WEIGHTS.SKILLS)
+    folder_path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"*.stats.json")
     trainrounds = glob.glob(folder_path)
         
     return trainrounds
+
