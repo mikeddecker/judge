@@ -133,6 +133,8 @@ class TrainerSkills:
             
             df_layers, df_composition, max_instances_per_role = self.repo.get_recognition_config()
             backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[modelname].get_output_feature_dim(recipe)
+            df_prop_counts = self.repo.get_skill_prop_counts()
+            print(df_prop_counts)
             head = OutputHeadRecognition(backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
             
             DefaultGeneratorSkills = functools.partial(
@@ -185,7 +187,6 @@ class TrainerSkills:
             except Exception as e:
                 pass
             
-
             # For new training rounds
             model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
             optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)

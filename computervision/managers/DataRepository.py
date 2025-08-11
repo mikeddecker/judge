@@ -285,3 +285,35 @@ class DataRepository:
             flts = pd.read_sql(qry, con=connection)
             return flts['info'].to_list()
 
+    def get_skill_prop_counts(self):
+        with self.__get_connection() as connection:
+            distinct_prop_names = """
+                SELECT
+                DISTINCT CASE
+                    WHEN lc.name is NULL THEN lp.name
+                    ELSE lc.name
+                END AS name
+                FROM LayerComposition lc
+                JOIN LayerProperties lp ON lp.id = lc.propertyId
+            """
+            distinct_prop_names = pd.read_sql(distinct_prop_names, con=connection)['name'].to_list()
+
+            counts = [
+                f"""
+                SUM(
+                    ROUND ( 
+                        (
+                            LENGTH(skillinfo) - LENGTH( REPLACE(skillinfo, "{word}", "") ) 
+                        ) / LENGTH("{word}")
+                    )
+                ) AS {word}   
+                """
+                for word in distinct_prop_names
+            ]
+
+            qry = f"""
+            SELECT {', '.join(counts)} FROM Skills;
+            """
+
+            return pd.read_sql(qry, con=connection)
+
