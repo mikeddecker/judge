@@ -81,6 +81,9 @@ class OutputHeadRecognition(nn.Module):
             'f1': m.copy(),
             'acc': m.copy(),
         }
+        for metric_type, prop_name_metric in self.metrics.items():
+            for prop_name, metric in prop_name_metric.items():
+                metric.reset()
     
     def init_metrics(self, average='macro'):
         self.metrics: dict[str, dict[str, torchmetrics.Metric]] = {
@@ -284,11 +287,9 @@ class OutputHeadRecognition(nn.Module):
         """
         Computes precision, recall, f1, and accuracy for each output_head in preds using torchmetrics.
         """
-        return { 
-            metric: {
-                group: {
-                    prop_name: np.mean(values) for prop_name, values in prop_dict_values.items()
-                } for group, prop_dict_values in group_prop_dict_values.items()
-            } for metric, group_prop_dict_values in self.metric_values.items() 
+        return {
+            type: {
+                propname: metric.compute().item() for propname, metric in propname_metric.items()
+            } for type, propname_metric in self.metrics.items()
         }
 

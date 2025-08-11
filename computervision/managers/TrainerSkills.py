@@ -80,7 +80,7 @@ class TrainerSkills:
 
             return {
                 'val_loss' : val_loss / len(dataloader),
-                'f1_total_avg' : current_f1,
+                'f1_total_avg' : float(np.mean(list(metrics['f1'].values()))),
                 'metrics' : metrics
             }
         #########################################################################################
