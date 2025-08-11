@@ -63,18 +63,18 @@ def train_yolo_model(variant: str, repo: DataRepository):
         imagecount = np.unique(frames[['videoId', 'frameNr']].values)
         if len(imagecount) < 75:
             patience = 30
-            lr = 0.0001
+            lr = 0.0002
             batch_size = 1
         elif len(imagecount) < 200:
-            patience = 15
+            patience = 22
             lr = 0.0001
             batch_size = 2
         elif len(imagecount) < 500:
-            patience = 8
+            patience = 15
             lr = 0.0001 / 2
             batch_size = 4
         else:
-            patience = 5
+            patience = 8
             lr = 0.00001
             batch_size = 8
 
