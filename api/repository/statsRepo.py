@@ -1,16 +1,34 @@
+import json
 import os
+import re
+from collections import Counter
 from config import RECIPES, ENVS
 from flask_sqlalchemy import SQLAlchemy
 from helpers.helpers import load_json_file
 from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type, FrameLabelType
-from sqlalchemy import desc, func, case
-from typing import List
+from repository.models import Skill, LayerComposition, LayerProperty, LayerPropertyValue
+from sqlalchemy import desc, func, case, select, text
+
+def extract_key_number_pairs(obj):
+    if isinstance(obj, list):
+        for item in obj:
+            yield from extract_key_number_pairs(item)
+    else:
+        for k, v in obj.items():
+            if isinstance(v, (int, float)):
+                yield (k, v)
+            elif isinstance(v, (dict, list)):
+                yield from extract_key_number_pairs(v)
 
 class StatsRepository:
     def __init__(self, db : SQLAlchemy):
         self.db = db
-        self.split_train_test = case(
+        self.split_train_test_framelabel = case(
             (FrameLabel.videoId % 10 == 5, 'test'),
+            else_='train'
+        ).label("split")
+        self.split_train_test_skill = case(
+            (Skill.videoId % 10 == 5, 'test'),
             else_='train'
         ).label("split")
 
@@ -18,10 +36,10 @@ class StatsRepository:
         counts = self.db.session.query(
             FrameLabel.labeltype,
             func.count().label("count"),
-            self.split_train_test
+            self.split_train_test_framelabel
         ).group_by(
             FrameLabel.labeltype,
-            self.split_train_test
+            self.split_train_test_framelabel
         ).all()
 
         return [
@@ -38,7 +56,7 @@ class StatsRepository:
         subq = self.db.session.query(
             FrameLabel.videoId,
             FrameLabel.frameNr,
-            self.split_train_test
+            self.split_train_test_framelabel
         ).distinct(
             FrameLabel.videoId,
             FrameLabel.frameNr
@@ -59,7 +77,6 @@ class StatsRepository:
             }
             for row in counts
         ]
-    
     
     def localize_box_counts_daily(self) -> dict:
         labeltypes: dict[int, FrameLabelType] = {
@@ -115,3 +132,96 @@ class StatsRepository:
                     **recipe_results['results_dict']
                 }
         return results
+    
+    def skills_prop_names(self, layercompositionname:str=None) -> list[str]:
+        prop_name = case(
+                (LayerComposition.name == None, LayerProperty.name),
+                else_=LayerComposition.name
+            ).label('prop_name')
+        
+        qry = self.db.session.query(
+            LayerComposition,
+            prop_name
+        ).join(
+            LayerComposition.property
+        )
+
+        if layercompositionname:
+            qry = qry.filter(LayerComposition.compositionName == layercompositionname)
+
+        return sorted({
+            row.prop_name for row in qry.all()
+        })
+    
+    def layercomposition_names(self) -> list[str]:
+        layercomposition_names = self.db.session.query(
+            LayerComposition.compositionName
+        ).distinct(
+            LayerComposition.compositionName
+        ).all()
+        return [lcn.compositionName for lcn in layercomposition_names]
+    
+    def skills_prop_counts(self, layercompositionname: str = None) -> dict:        
+        prop_names = self.skills_prop_names(layercompositionname)
+
+        query = self.db.session.query(
+            *[
+                func.sum(
+                    func.round(
+                        (
+                            func.char_length(Skill.skillinfo) -
+                            func.char_length(func.replace(Skill.skillinfo, prop_name, ""))
+                        ) / func.char_length(prop_name)
+                    )
+                ).label(prop_name)
+                for prop_name in prop_names
+            ],
+            self.split_train_test_skill
+        ).group_by(
+            self.split_train_test_skill
+        )
+
+        if layercompositionname:
+            query = query.filter(
+                func.json_search(Skill.skillinfo, 'one', layercompositionname) != None
+            )
+
+        results = query.all()
+
+        output = {}
+        for row in results:
+            output[row.split]  = {prop_name: int(getattr(row, prop_name)) for prop_name in prop_names}
+
+        return output
+
+    def skills_prop_value_frequencies(self, layercompositionname: str = None) -> dict:
+        """
+        Returns counts of each distinct value for a given property in skillinfo JSON.
+        Example: {'Backwards': {0: 12, 1: 59}, 'CrossRestriction': {71: 443, 72: 223, 73: 150...} }
+        """
+        query = self.db.session.query(
+            func.json_extract(Skill.skillinfo, f'$.{layercompositionname}').label('skillinfo') if layercompositionname else Skill.skillinfo,
+            self.split_train_test_skill
+        ).group_by(
+            func.json_extract(Skill.skillinfo, f'$.{layercompositionname}').label('skillinfo') if layercompositionname else Skill.skillinfo,
+            self.split_train_test_skill
+        )
+
+        if layercompositionname:
+            query = query.filter(
+                func.json_search(Skill.skillinfo, 'one', layercompositionname) != None
+            )
+
+        result = query.all()
+
+        prop_names = self.skills_prop_names(layercompositionname)
+        counts = { prop_name: { s: Counter() for s in ['train', 'test'] } for prop_name in prop_names }
+        for row in result:
+            s = json.loads(row.skillinfo) if layercompositionname else row.skillinfo
+            for k,v in extract_key_number_pairs(s):
+                counts[k][row.split][v] += 1
+
+        return {
+            k: dict(values) for k, values in counts.items()
+        }
+

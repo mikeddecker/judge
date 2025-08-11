@@ -3,7 +3,6 @@
     <h1>Statistics</h1>
     <div v-if="error" class="error">{{ error }}</div>
     
-    
     <div v-if="loading">Loading...</div>
     <Tabs v-else value="general">
       <TabList>
@@ -25,15 +24,13 @@
           <ResultsSegmentationView v-if="segmentationStats" :results="segmentationStats"></ResultsSegmentationView>
         </TabPanel>
         <TabPanel value="recognition">
-          <ResultsRecognitionView v-if="recognitionStats" :results="recognitionStats"></ResultsRecognitionView>
+          <StatsSkillsView v-if="recognitionStats" :results="recognitionStats"></StatsSkillsView>
         </TabPanel>
         <TabPanel value="diff-score-comparison">
           <ResultsJudgeScores v-if="judgeStats" :results="judgeStats"></ResultsJudgeScores>
         </TabPanel>
       </TabPanels>
     </Tabs>
-
-    
 
   </div>
 </template>
@@ -42,7 +39,7 @@
 import { getFolder, getFrameLabelTypes, getStats } from '../services/videoService';
 import { computed, onMounted, ref } from 'vue';
 import ResultsSegmentationView from './ResultsSegmentationView.vue';
-import ResultsRecognitionView from './ResultsRecognitionView.vue';
+import StatsSkillsView from './StatsSkillsView.vue';
 import ResultsLocalizationView from '@/views/ResultsLocalizationView.vue';
 import ResultsJudgeScores from '@/views/ResultsJudgeScores.vue';
 import StatsGeneral from './StatsGeneral.vue';
@@ -93,3 +90,4 @@ async function getStatistics() {
   color: red;
 }
 </style>
+

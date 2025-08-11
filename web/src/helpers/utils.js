@@ -34,3 +34,6 @@ export function getColor(skillprop) {
 }
 
 export async function sleep(ms) { await new Promise(r => setTimeout(r, ms)); }
+
+export function union(a, b) { return [...new Set([...a, ...b])] };
+

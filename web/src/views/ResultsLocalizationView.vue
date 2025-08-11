@@ -10,6 +10,7 @@ import { onMounted, ref } from 'vue';
 const recipesLocalize = ref(null)
 
 onMounted(async () => {
-    getJobOptions('LOCALIZE').then(recipes => recipesLocalize.value = recipes)
+  getJobOptions('LOCALIZE').then(recipes => recipesLocalize.value = recipes)
 })
 </script>
+

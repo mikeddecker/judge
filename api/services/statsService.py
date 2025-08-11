@@ -120,11 +120,22 @@ class StatsService:
         return scores
 
     def getRecognitionResults(self, selectedModel: str):
+        layercomposition_names = self.StatsRepo.layercomposition_names()
         results = {
             'best' : {
                 'f1-macro-avg' : 0
             },
-            'modelcomparison' : {}
+            'models' : {},
+            'modelcomparison' : {},
+            'prop_name_counts' : {
+                'total': self.StatsRepo.skills_prop_counts(),
+                **{ lcn: self.StatsRepo.skills_prop_counts(lcn) for lcn in layercomposition_names }
+            },
+            'prop_value_frequencies': {
+                'total': self.StatsRepo.skills_prop_value_frequencies(),
+                **{ lcn: self.StatsRepo.skills_prop_value_frequencies(lcn) for lcn in layercomposition_names }
+            },
+            'layercomposition_names': layercomposition_names,
         }
       
         results['trainrounds'] = recognition_get_modelpaths()
