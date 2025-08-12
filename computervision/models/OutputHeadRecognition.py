@@ -74,13 +74,6 @@ class OutputHeadRecognition(nn.Module):
                     self.output_layers[output_head] = layer
 
     def reset_metrics(self):
-        m = { g: {} for g in ['props', 'compositions', 'output_heads']}
-        self.metric_values: dict[str, dict[str, dict[str, list[float]]]] = {
-            'precision': m.copy(), # prop_name: num_correct_values
-            'recall': m.copy(),
-            'f1': m.copy(),
-            'acc': m.copy(),
-        }
         for metric_type, prop_name_metric in self.metrics.items():
             for prop_name, metric in prop_name_metric.items():
                 metric.reset()
@@ -91,6 +84,7 @@ class OutputHeadRecognition(nn.Module):
             'recall': {},
             'f1': {},
             'acc': {},
+            'confusion': {},
         }
         self.reset_metrics()
         for index, row in self.df_composition.iterrows():
@@ -110,17 +104,23 @@ class OutputHeadRecognition(nn.Module):
                     self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="multiclass", average=average, num_classes=num_classes).to(device)
                     self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="multiclass", average=average, num_classes=num_classes).to(device)
                     self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
+                    self.metrics['confusion'][prop_name] = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=num_classes).to(device)
                 elif prop_type == "boolean":
                     self.metrics['precision'][prop_name] = torchmetrics.Precision(task="binary").to(device)
                     self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="binary").to(device)
                     self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="binary").to(device)
                     self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="binary").to(device)
+                    self.metrics['confusion'][prop_name] = torchmetrics.ConfusionMatrix(task="binary").to(device)
                 elif prop_type == "numerical":
                     step = float(property_row['step'])
+                    step = 0.1 if step < 0.1 else step
+                    min = float(property_row['min'])
+                    max = float(property_row['max'])
                     self.metrics['precision'][prop_name] = nsm.NumericStepPrecision(step=step).to(device)
                     self.metrics['recall'][prop_name]    = nsm.NumericStepRecall(step=step).to(device)
                     self.metrics['f1'][prop_name]        = nsm.NumericStepF1Score(step=step).to(device)
                     self.metrics['acc'][prop_name]       = nsm.NumericStepAccuracy(step=step).to(device)
+                    self.metrics['confusion'][prop_name] = nsm.NumericStepConfusionMatrix(step=step, min=min, max=max).to(device)
 
     def forward(self, x):
         """
@@ -259,29 +259,13 @@ class OutputHeadRecognition(nn.Module):
             target_valid = target_val[valid_idx]
             # target_valid = target_valid if target_valid.ndim == 1 else target_valid.squeeze(dim=1)
 
-            if prop_name in self.metric_values['precision']:
-                self.metric_values['precision']['props'][prop_name].append(self.metrics['precision'][prop_name](pred_valid, target_valid).tolist())
-                self.metric_values['recall']['props'][prop_name].append(self.metrics['recall'][prop_name](pred_valid, target_valid).tolist())
-                self.metric_values['f1']['props'][prop_name].append(self.metrics['f1'][prop_name](pred_valid, target_valid).tolist())
-                self.metric_values['acc']['props'][prop_name].append(self.metrics['acc'][prop_name](pred_valid, target_valid).tolist())
-            else:
-                self.metric_values['precision']['props'][prop_name] = [self.metrics['precision'][prop_name](pred_valid, target_valid).item()]
-                self.metric_values['recall']['props'][prop_name] = [self.metrics['recall'][prop_name](pred_valid, target_valid).item()]
-                self.metric_values['f1']['props'][prop_name] = [self.metrics['f1'][prop_name](pred_valid, target_valid).item()]
-                self.metric_values['acc']['props'][prop_name] = [self.metrics['acc'][prop_name](pred_valid, target_valid).item()]
+            self.metrics['precision'][prop_name].update(pred_valid, target_valid)
+            self.metrics['recall'][prop_name].update(pred_valid, target_valid)
+            self.metrics['f1'][prop_name].update(pred_valid, target_valid)
+            self.metrics['acc'][prop_name].update(pred_valid, target_valid)
+            self.metrics['confusion'][prop_name].update(pred_valid, target_valid)
 
-            if output_head in self.metric_values['precision']:
-                self.metric_values['precision']['output_heads'][output_head].append(self.metrics['precision'][prop_name](pred_valid, target_valid).tolist())
-                self.metric_values['recall']['output_heads'][output_head].append(self.metrics['recall'][prop_name](pred_valid, target_valid).tolist())
-                self.metric_values['f1']['output_heads'][output_head].append(self.metrics['f1'][prop_name](pred_valid, target_valid).tolist())
-                self.metric_values['acc']['output_heads'][output_head].append(self.metrics['acc'][prop_name](pred_valid, target_valid).tolist())
-            else:
-                self.metric_values['precision']['output_heads'][output_head] = [self.metrics['precision'][prop_name](pred_valid, target_valid).item()]
-                self.metric_values['recall']['output_heads'][output_head] = [self.metrics['recall'][prop_name](pred_valid, target_valid).item()]
-                self.metric_values['f1']['output_heads'][output_head] = [self.metrics['f1'][prop_name](pred_valid, target_valid).item()]
-                self.metric_values['acc']['output_heads'][output_head] = [self.metrics['acc'][prop_name](pred_valid, target_valid).item()]
-
-        return np.concatenate([np.array(a) for a in self.metric_values['f1']['props'].values()]).mean()
+        return np.mean([self.metrics['f1'][pn].compute().item() for pn in self.metrics['f1'].keys()])
     
     def compute_metrics(self):
         """
@@ -289,7 +273,8 @@ class OutputHeadRecognition(nn.Module):
         """
         return {
             type: {
-                propname: metric.compute().item() for propname, metric in propname_metric.items()
+                propname: metric.compute().item() if metric.compute().ndim == 0 else metric.compute().tolist()
+                for propname, metric in propname_metric.items()
             } for type, propname_metric in self.metrics.items()
         }
 

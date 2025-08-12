@@ -34,6 +34,8 @@ class NumpyTypeEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
+        elif hasattr(obj, "ndim"):  # torch.Tensor
+            return obj.item() if obj.ndim == 0 else obj.tolist()
         elif isinstance(obj, np.generic):
             return obj.item()
         elif isinstance(obj, SimpleNamespace):
