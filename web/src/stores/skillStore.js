@@ -49,7 +49,10 @@ export const useSkillStore = defineStore("skill", {
       }
     },
     deleteCompositionValues(compositionName, index) {
-      delete this.selectedSkill.Skillinfo[compositionName].splice(index, 1)
+      this.selectedSkill.Skillinfo[compositionName].splice(index, 1)
+      if (!this.selectedSkill.Skillinfo[compositionName].length) {
+        delete this.selectedSkill.Skillinfo[compositionName]
+      }
     }
   },
   getters: {
