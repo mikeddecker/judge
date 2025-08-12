@@ -128,3 +128,30 @@ class NumericStepConfusionMatrix(Metric):
         super().to(*args, **kwargs)
         return self
 
+class NumericStepWeightedMSE(Metric):
+    def __init__(self, weights: torch.Tensor, step: float = 1.0, dist_sync_on_step: bool = False):
+        super().__init__(dist_sync_on_step=dist_sync_on_step)
+        self.step = step
+        self.weights = weights
+
+        self.register_buffer("weights", weights.float())
+
+        # Metric state: accumulates loss across batches
+        self.add_state("sum_loss", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
+
+    def update(self, preds: torch.Tensor, targets: torch.Tensor):
+        preds = preds if preds.ndim == 1 else preds.squeeze(dim=1)
+        targets = targets if preds.ndim == 1 else targets.squeeze(dim=1)
+
+        pred_rounded = torch.round(preds / self.step) * self.step
+        target_rounded = torch.round(targets / self.step) * self.step
+
+        weights = self.weights[target_rounded.long()]
+        loss_per_sample = weights * (pred_rounded - target_rounded) ** 2
+        self.sum_loss += loss_per_sample.sum()
+        self.total += target_rounded.numel()
+
+    def compute(self):
+        return self.sum_loss / self.total
+

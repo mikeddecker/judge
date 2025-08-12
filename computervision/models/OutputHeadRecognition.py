@@ -5,14 +5,15 @@ import torch.nn.functional as F
 import torchmetrics
 import metrics.NumericStepMetrics as nsm
 
-from helpers import map_stageNr, mapped_stage_is_not_stageProperties
+from collections import defaultdict
+from helpers import map_stageNr, mapped_stage_is_not_stageProperties, weighted_mse_loss
 from pprint import pprint
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class OutputHeadRecognition(nn.Module):
     """Template by ChatGPT 2025-08-07, altered to incorporate stages"""
-    def __init__(self, input_neurons: int, df_layers, df_composition, max_instances_per_role):
+    def __init__(self, input_neurons: int, df_layers, df_composition, max_instances_per_role, prop_counts: defaultdict[defaultdict[int|float]]):
         super().__init__()
 
         self.output_layers = nn.ModuleDict()
@@ -24,7 +25,7 @@ class OutputHeadRecognition(nn.Module):
         print(max_instances_per_role)
 
         self.init_categorical_mappings()
-        self.init_layers(input_neurons)
+        self.init_layers(input_neurons, prop_counts)
         self.init_metrics()
 
     def init_categorical_mappings(self):
@@ -46,8 +47,9 @@ class OutputHeadRecognition(nn.Module):
         print(self.categorical_idx_to_valueId)
         print(self.categorical_valueId_to_idx)
 
-    def init_layers(self, input_neurons: int):
+    def init_layers(self, input_neurons: int, prop_counts: defaultdict[defaultdict[int]]):
         self.layers: dict[str, nn.Module] = {} # Key = prop_name, Value = Layer
+        self.loss_fns: dict[str, callable] = {}
         for index, row in self.df_composition.iterrows():
             composition_name = row['compositionName']
             mapped_stage = map_stageNr(row['stage'])
@@ -64,14 +66,30 @@ class OutputHeadRecognition(nn.Module):
                     layer = nn.Linear(input_neurons, num_classes + 1) # Account for 0 class
                     self.layers[prop_name] = layer
                     self.output_layers[output_head] = layer
+
+                    counts = torch.Tensor([prop_counts[prop_name].get(self.categorical_idx_to_valueId[row['propertyId']][k], 1) for k in range(num_classes+1)]).to(device)                    
+                    max_count = counts.max()
+                    weights = max_count / counts
+                    self.loss_fns[prop_name] = torch.nn.CrossEntropyLoss(weights).to(device)
                 elif prop_type == "boolean":
                     layer = nn.Linear(input_neurons, 1)
                     self.layers[prop_name] = layer
                     self.output_layers[output_head] = layer
+
+                    counts = torch.Tensor([prop_counts[prop_name].get(k, 1) for k in [False, True]]).to(device)
+                    max_count = counts.max()
+                    weights = max_count / counts
+                    self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights)
                 elif prop_type == "numerical":
                     layer = nn.Linear(input_neurons, 1)
                     self.layers[prop_name] = layer
                     self.output_layers[output_head] = layer
+
+                    step = property_row['step'] if property_row['step'] > 0.1 else 0.1
+                    counts = torch.Tensor([prop_counts[prop_name].get(k * step, 1) for k in range(round(property_row['min'] / step), round(property_row['max'] / step))]).to(device)
+                    max_count = counts.max()
+                    weights = max_count / counts
+                    self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights)
 
     def reset_metrics(self):
         for metric_type, prop_name_metric in self.metrics.items():
@@ -215,12 +233,13 @@ class OutputHeadRecognition(nn.Module):
                 pred_valid = pred_val[valid_idx]
                 target_valid = target_val[valid_idx]
 
+                prop_name = output_head.split('_')[-1]
                 if pred_valid.ndim > 1 and pred_valid.shape[1] > 1:
                     # Categorical
-                    loss = F.cross_entropy(pred_valid, target_valid.long())
+                    loss = self.loss_fns[prop_name](pred_valid, target_valid.long())
                 else:
                     # Boolean or numerical
-                    loss = F.mse_loss(pred_valid.squeeze(dim=1), target_valid.float())
+                    loss = self.loss_fns[prop_name](pred_valid.squeeze(dim=1), target_valid.float())
 
                 total_loss += loss
                 total_count += 1

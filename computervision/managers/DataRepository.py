@@ -6,9 +6,21 @@ import os
 import pandas as pd
 import sqlalchemy as sqlal
 
+from collections import defaultdict
 from constants import ENVS
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
+
+def extract_key_number_pairs(obj):
+    if isinstance(obj, list):
+        for item in obj:
+            yield from extract_key_number_pairs(item)
+    else:
+        for k, v in obj.items():
+            if isinstance(v, (int, float)):
+                yield (k, v)
+            elif isinstance(v, (dict, list)):
+                yield from extract_key_number_pairs(v)
 
 class DataRepository:
     VideoNames = {} # pandas dataframe
@@ -298,22 +310,17 @@ class DataRepository:
             """
             distinct_prop_names = pd.read_sql(distinct_prop_names, con=connection)['name'].to_list()
 
-            counts = [
-                f"""
-                SUM(
-                    ROUND ( 
-                        (
-                            LENGTH(skillinfo) - LENGTH( REPLACE(skillinfo, "{word}", "") ) 
-                        ) / LENGTH("{word}")
-                    )
-                ) AS {word}   
-                """
-                for word in distinct_prop_names
-            ]
+            connection.execution_options(stream_results=True)
 
-            qry = f"""
-            SELECT {', '.join(counts)} FROM Skills;
-            """
+            # counts[prop_name][value] = occurrence count
+            counts = defaultdict(lambda: defaultdict(int))
+            for chunk_dataframe in pd.read_sql("SELECT skillinfo FROM Skills", connection, chunksize=50000):
+                print(f"Dataframe with {len(chunk_dataframe)} rows")
 
-            return pd.read_sql(qry, con=connection)
+                for row in chunk_dataframe.itertuples(index=False):
+                    s = json.loads(row.skillinfo)
+                    for k,v in extract_key_number_pairs(s):
+                        counts[k][v] += 1
+
+            return counts
 

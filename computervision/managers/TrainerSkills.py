@@ -10,6 +10,7 @@ import numpy as np
 import time
 import random
 
+from collections import defaultdict
 from colorama import Fore, Style
 from constants import ENVS, PYTORCH_MODELS_SKILLS, PYTORCH_MODELS_SKILLS_TEST
 from dotenv import load_dotenv
@@ -40,6 +41,8 @@ class NumpyTypeEncoder(json.JSONEncoder):
             return obj.item()
         elif isinstance(obj, SimpleNamespace):
             return obj.__dict__
+        elif isinstance(obj, defaultdict):
+            return dict(obj)
         return super().default(obj)
 
 load_dotenv()
@@ -134,9 +137,8 @@ class TrainerSkills:
             
             df_layers, df_composition, max_instances_per_role = self.repo.get_recognition_config()
             backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[modelname].get_output_feature_dim(recipe)
-            df_prop_counts = self.repo.get_skill_prop_counts()
-            print(df_prop_counts)
-            head = OutputHeadRecognition(backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
+            prop_counts = self.repo.get_skill_prop_counts()
+            head = OutputHeadRecognition(backbone_output_neurons, df_layers, df_composition, max_instances_per_role, prop_counts)
             
             DefaultGeneratorSkills = functools.partial(
                 DataGeneratorSkills, 
