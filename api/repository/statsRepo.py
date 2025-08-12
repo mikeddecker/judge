@@ -225,6 +225,16 @@ class StatsRepository:
             k: dict(values) for k, values in counts.items()
         }
 
+    def skill_counts(self) -> dict:
+        result = self.db.session.query(
+            self.split_train_test_skill,
+            func.count(self.split_train_test_skill).label('count')
+        ).group_by(
+            self.split_train_test_skill
+        ).all()
+
+        return { row.split: row.count for row in result }
+
     def skills_prop_metrics(self) -> dict:
         pass
 

@@ -1,7 +1,9 @@
 <template>
-  <pre>{{ Object.keys(results) }}</pre>
+  <BarChartTrainTest :values="skillcounts" 
+    direction="x" title="Skill counts" class="w-120"
+  ></BarChartTrainTest>
 
-  <Tabs value="total">
+  <Tabs value="total" class="mt-8">
     <TabList>
       <Tab value="total">Total</Tab>
       <Tab
@@ -83,7 +85,7 @@ const transformCounts = (values) => {
     );
     let transformed = {
         labels,
-        'datasets': [
+        datasets: [
             {
                 label: 'Train',
                 data: labels.map(label => Math.sqrt(values['train']?.[label]) || 0),
@@ -98,6 +100,24 @@ const transformCounts = (values) => {
     }
     return transformed
 }
+
+const skillcounts = computed(() => { 
+  return {
+    labels: ['dataset'],
+    datasets: [
+      { 
+        backgroundColor: getColor(1),
+        data: [props.results['skill_counts']['train']],
+        label: 'Train'
+      },
+      { 
+        backgroundColor: getColor(2),
+        data: [props.results['skill_counts']['test']],
+        label: 'Test'
+      },
+    ]
+  }
+})
 
 </script>
 

@@ -66,7 +66,7 @@ const chartOptions = {
             callbacks: {
             label: function(context) {
                 const sqrtVal = props.direction == 'y' ? context.parsed.x : context.parsed.y
-                const originalVal = Math.round(sqrtVal * sqrtVal)
+                const originalVal = props.squared ? Math.round(sqrtVal * sqrtVal) : sqrtVal
                 return `Count: ${originalVal}`
             }
         }
