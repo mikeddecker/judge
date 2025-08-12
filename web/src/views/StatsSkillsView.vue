@@ -103,7 +103,7 @@ const transformCounts = (values) => {
 
 const skillcounts = computed(() => { 
   return {
-    labels: ['dataset'],
+    labels: ['count'],
     datasets: [
       { 
         backgroundColor: getColor(1),
