@@ -45,6 +45,7 @@
         <BarChartTrainTest
           :values="transformCounts(results['prop_name_counts'][layercomposition])"
           direction="y"
+          :squared="true"
           :title="`Property counts ${layercomposition}`"
         />
         <div class="flex flex-wrap gap-8">
