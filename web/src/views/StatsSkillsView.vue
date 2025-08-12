@@ -3,6 +3,8 @@
     direction="x" title="Skill counts" class="w-120"
   ></BarChartTrainTest>
 
+  <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
+
   <Tabs value="total" class="mt-8">
     <TabList>
       <Tab value="total">Total</Tab>
@@ -116,6 +118,60 @@ const skillcounts = computed(() => {
         label: 'Test'
       },
     ]
+  }
+})
+
+const chartDataBestModel = computed(() => {
+  console.log(props.results)
+  let metricsOverTime = props.results['models']['best']['metrics_over_time']
+  console.log('metrics over time', metricsOverTime)
+  const classes = Object.keys(metricsOverTime[0]['f1'])
+  const epochs = Object.entries(metricsOverTime).map((_, idx) => `${idx}`)
+  console.log(classes, epochs)
+  // Create one dataset per class
+  const datasets = classes.map(cls => ({
+    label: cls,
+    data: Object.values(metricsOverTime).map(entry => entry['f1'][cls]),
+    borderColor: getColor(cls),
+    fill: false,
+    cubicInterpolationMode: 'monotone',
+    tension: 0.4,
+  }))
+  
+  return {
+    labels: epochs,
+    datasets
+  }
+})
+const chartOptionsBestModel = ref({
+  responsive: true,
+  plugins: {
+    title: {
+      display: true,
+      text: 'F1-scores-validation'
+    },
+  },
+  interaction: {
+    intersect: false,
+  },
+  scales: {
+    x: {
+      display: true,
+      title: {
+        display: true,
+        text: 'epoch'
+      }
+    },
+    y: {
+      display: true,
+      title: {
+        display: true,
+        text: 'f1-score'
+      },
+      suggestedMin: 0,
+      suggestedMax: 1,
+      position: 'right'
+    },
   }
 })
 

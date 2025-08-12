@@ -8,6 +8,7 @@ from helpers.helpers import load_json_file
 from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type, FrameLabelType
 from repository.models import Skill, LayerComposition, LayerProperty, LayerPropertyValue
 from sqlalchemy import desc, func, case, select, text
+from helpers.ConfigHelper import recognition_get_modelpaths
 
 def extract_key_number_pairs(obj):
     if isinstance(obj, list):
@@ -235,6 +236,21 @@ class StatsRepository:
 
         return { row.split: row.count for row in result }
 
-    def skills_prop_metrics(self) -> dict:
-        pass
+    def skills_metrics(self) -> dict:
+        model_results = {}
+        model_paths =  recognition_get_modelpaths()
+        
+        for train_round_path in model_paths:
+            if train_round_path.find('testrun') != -1:
+                continue
+
+            train_round_result = load_json_file(train_round_path)
+
+            if not train_round_result:
+                continue                
+            
+            modelname = train_round_result['modelname'] if 'best' not in train_round_path else 'best'
+            model_results[modelname] = train_round_result
+
+        return model_results
 

@@ -126,7 +126,7 @@ class StatsService:
             'best' : {
                 'f1-macro-avg' : 0
             },
-            'models' : {},
+            'models' : self.StatsRepo.skills_metrics(),
             'modelcomparison' : {},
             'prop_name_counts' : {
                 'total': self.StatsRepo.skills_prop_counts(),
@@ -139,30 +139,6 @@ class StatsService:
             'skill_counts': self.StatsRepo.skill_counts(),
             'layercomposition_names': layercomposition_names,
         }
-      
-        results['trainrounds'] = recognition_get_modelpaths()
-        print(results['trainrounds'])
-
-        for modelname in PYTORCH_MODELS_SKILLS.keys():
-            results[modelname] = {
-                'best' : {
-                    'f1-macro-avg' : 0
-                }
-            }
-        
-        for train_round_path in results['trainrounds']:
-            if train_round_path.find('testrun') != -1:
-                continue
-
-            train_round_result = load_json_file(train_round_path)
-
-            if not train_round_result:
-                continue                
-
-            filename = os.path.basename(train_round_path)
-            modelname = filename[:filename.find('_skills')]
-
-            lastEpochStr = str(train_round_result['epoch'])
         
         return results
 
