@@ -23,16 +23,18 @@
                 </TabList>
                 <TabPanels class="px-0">
                     <TabPanel v-for="(label, idx) in compositionLabelValues" :key="`item-panel-${compositionName}-${idx}`" :value="`item-${compositionName}-${idx}`" class="flex flex-wrap">
-                        <Button 
+                        <div class="w-full flex flex-wrap">
+                            <Button 
                             class="mx-2" aria-label="Duplicate" label="Duplicate" size="small"
                             v-tooltip="`Duplicate current label of ${compositionName} to all other instances`" 
                             @click="skillStore.duplicateCompositionValues(compositionName, idx)"
-                        ></Button>
-                        <Button 
+                            ></Button>
+                            <Button 
                             class="mx-2" aria-label="Delete" label="Delete" size="small"
                             v-tooltip="`Delete current label of ${compositionName}`" 
                             @click="skillStore.deleteCompositionValues(compositionName, idx)"
-                        ></Button>
+                            ></Button>
+                        </div>
                         <Card v-for="(upperStage, i) in ['GeneralProperties', 'StartProperties', 'EndProperties']" class="m-2">
                             <template #header>{{ upperStage }}</template>
                             <template #content>

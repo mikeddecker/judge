@@ -46,7 +46,7 @@
       </div>
     </div>
     
-    <div id="column-2" class="w-[25vw]">
+    <div id="column-2" class="w-[30vw]">
       <div id="type-selection" class="flex h-fit gap-2 stretch">
           <Button :class="modeIsWatch ? 'p-button-highlight' : ''" @click="() => mode = 'WATCH'">Watch</Button>
           <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
