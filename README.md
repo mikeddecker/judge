@@ -63,7 +63,6 @@ There are 3 projects:
   - Launch training of models
   - View video and model statistics
 - [CV/Computer Vision](./computervision/README.md) - providing a job executor training AI models.
-  - `pip3 install -r requirements.txt`
 
 ### Starting up
 
