@@ -6,7 +6,7 @@
     <span v-if="croperror">{{ croperror }}</span>
     
     <div id="videoview-content" v-if="!loading" class="flex gap-2">
-      <div id="column-1" class="w-[75vw]">
+      <div id="column-1" class="w-[70vw]">
         
         <VideoPlayer class="relative" 
         v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
