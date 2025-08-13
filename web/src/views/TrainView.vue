@@ -8,7 +8,7 @@
     
     <h2>Segment</h2>
     <div class="flex flex-wrap gap-6 my-4">
-        <CardRecipe v-for="(recipe, modelname) in recipesSegment" :title="modelname" step="SEGMENT" :recipe="recipe"></CardRecipe>
+        <!-- <CardRecipe v-for="(recipe, modelname) in recipesSegment" :title="modelname" step="SEGMENT" :recipe="recipe"></CardRecipe> -->
     </div>
     
     <h2>Recognize</h2>

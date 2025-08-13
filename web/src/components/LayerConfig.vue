@@ -1,6 +1,5 @@
 <template>
   <h3>Layers</h3>
-  <span>Keep in mind that the reactivity always lags one behind upon adding values.</span>
   <Layers/>
 
   <Divider/>
