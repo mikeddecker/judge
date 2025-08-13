@@ -1,5 +1,5 @@
 <template>
-  <DataTable v-model:expandedRows="expandedRows" :value="layerCompositionsMapped" key="compositionName" data-key="name"
+  <DataTable v-model:expandedRows="expandedRows" :value="layerCompositionsMapped" key="compositionName" data-key="compositionName"
   @rowExpand="onRowExpand" @rowCollapse="onRowCollapse" tableStyle="min-width: 60rem">
     <Column expander style="width: 5rem"/>
     <Column field="compositionName" header="Name"/>
