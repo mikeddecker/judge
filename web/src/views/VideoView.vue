@@ -14,8 +14,8 @@
         @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
         @add-box="onAddBox" @delete-box="onDeleteBox">
       </VideoPlayer>
-      <SkillBalk :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
-      <SkillBalk :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2" :key="skillbalkKey"/>
+      <SkillBalk v-if="modeIsSkills" :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
+      <SkillBalk v-if="modeIsSkills" :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2" :key="skillbalkKey"/>
       <div id="skill-controls" class="flex gap-2 my-2 wrap" v-show="modeIsSkills">
         <Button v-show="paused && !skillStore.selectedSkill.Id" @click="setFrameStart()">set frame Start</Button>
         <Button v-show="paused && !skillStore.selectedSkill.Id" @click="setFrameEnd()">set frame End</Button>
@@ -50,10 +50,7 @@
       <div id="type-selection" class="flex h-fit gap-2 stretch">
           <Button :class="modeIsWatch ? 'p-button-highlight' : ''" @click="() => mode = 'WATCH'">Watch</Button>
           <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
-          <Button :class="modeIsSegment ? 'p-button-highlight' : ''" @click="() => mode = 'SEGMENT'">Segment</Button>
           <Button :class="modeIsSkills ? 'p-button-highlight' : ''" @click="() => mode = 'SKILLS'">Skills</Button>
-          <Button v-show="modeIsAnnotate" :class="modeIsAnnotate ? 'p-button-highlight' : ''" @click="() => predictMode = 'predict'">Annotate</Button>
-          <Button v-show="modeIsPredict" :class="modeIsPredict ? 'p-button-highlight' : ''" @click="() => predictMode = 'annotate'">Predict</Button>
           
         </div>
         <div class="my-2 flex gap-2">
@@ -136,11 +133,7 @@ const skillbalkKey = ref(0)
 const mode = ref('WATCH')
 const modeIsWatch = computed(() => mode.value == 'WATCH')
 const modeIsLocalize = computed(() => mode.value == 'LOCALIZE')
-const modeIsSegment = computed(() => mode.value == 'SEGMENT')
 const modeIsSkills = computed(() => mode.value == 'SKILLS')
-const predictMode = ref('annotate')
-const modeIsAnnotate = computed(() => predictMode.value == 'annotate')
-const modeIsPredict = computed(() => predictMode.value == 'predict')
 
 const canvasModes = ['draw', 'edit', 'delete', 'accept']
 const labeltypes = ref([])

@@ -10,10 +10,8 @@ const router = useRouter()
 const imageUrl = ref('');
 const cssColorClass = computed(() => { return props.videoId % 10 == 5 ? 'testvideo' : 'trainvideo' })
 
-// completed target 10% of frames labeled
-// const labelthreshold = 0.1 // Minimun % to be labeled to reach 100%
-// const completed = computed(() => Math.min(100, Math.floor(props.info.LabeledFrameCount / props.info.FrameLength / labelthreshold * 100)))
-const completed = computed(() => props.info.BoxCount)
+// percentageCompleted target 10% of frames labeled
+const percentageCompleted = computed(() => props.info.BoxCount)
 
 onMounted(async () => {
   try {
@@ -35,9 +33,9 @@ onMounted(async () => {
     </div>
     <div class="flex bottom-left">
       <span class="flex-end">video {{ videoId }}</span>
-      <img v-if="info.Completed_Skill_Labels" class="completed" src="@/assets/checked.png" alt="folder image" />
+      <img v-if="info.Completed_Skill_Labels" class="percentageCompleted" src="@/assets/checked.png" alt="folder image" />
     </div>
-    <ProgressBar :bgcolor="'#29ab87'" :completed="completed" />
+    <ProgressBar :bgcolor="'#29ab87'" :percentage-completed="percentageCompleted" />
 </div>
 </template>
 
@@ -74,7 +72,7 @@ h2 {
   width: 100%;
 }
 
-img.completed {
+img.percentageCompleted {
   width: 20%;
   align-self: flex-end;
   margin-top: auto;
@@ -103,10 +101,10 @@ img.completed {
   background-color:aqua;
 }
 
-
 @media (min-width: 1024px) {
   .videoinfo {
     width: 23%;
   }
 }
 </style>
+
