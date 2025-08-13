@@ -6,8 +6,7 @@
     <span v-if="croperror">{{ croperror }}</span>
     
     <div id="videoview-content" v-if="!loading" class="flex gap-2">
-      <div id="column-1" class="w-[70vw]">
-        
+      <div id="column-1" class="w-[67vw]">
         <VideoPlayer class="relative" 
         v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
         :current-frame-nr="currentFrame" :videoinfo="videoinfo" :labeltype="labeltypes[selectedLabeltype]" :predicted-boxes="locationPredictions" :draw-predicted-boxes="selectedLocalizeModel"
@@ -46,7 +45,7 @@
       </div>
     </div>
     
-    <div id="column-2" class="w-[30vw]">
+    <div id="column-2" class="w-[33vw]">
       <div id="type-selection" class="flex h-fit gap-2 stretch">
           <Button :class="modeIsWatch ? 'p-button-highlight' : ''" @click="() => mode = 'WATCH'">Watch</Button>
           <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
