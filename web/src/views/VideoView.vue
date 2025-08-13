@@ -80,7 +80,6 @@
             <span class="my-auto" v-if="localizeJobLaunched">Job in queue</span>
           </div>
         </div>
-        <Button v-if="modeIsPredict" @click="() => predictSkills(videoinfo.Id)" disabled>Launch job</Button>
         
         <!--Skills -->
         <ConfirmPopup></ConfirmPopup>

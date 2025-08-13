@@ -153,6 +153,7 @@ const resetCanvasAndDrawBoxes = () => {
     ctx.strokeRect(xleft, yleft, w, h);
   })
 
+  // Draw team box
   let cfnr = String(Math.round(props.currentFrameNr ? props.currentFrameNr : 0))
   let teambox = props.videoinfo.TeamBoxes && Object.keys(props.videoinfo.TeamBoxes).includes(cfnr) ? props.videoinfo.TeamBoxes[cfnr] : null
   if (teambox) {
@@ -193,7 +194,7 @@ const canvasMouseMoves = (event) => {
       return minXbox < mouseX.value && mouseX.value < maxXbox && minYbox < mouseY.value && mouseY.value < maxYbox
     })
 
-    predictedBoxesHovering.value = props.predictedBoxes['boxes'][props.currentFrameNr].filter(
+    predictedBoxesHovering.value = props.predictedBoxes?.boxes[props.currentFrameNr].filter(
       (boxArray) => {
         let minXbox = boxArray[0] / props.videoinfo.Width
         let maxXbox = boxArray[2] / props.videoinfo.Width
@@ -203,7 +204,7 @@ const canvasMouseMoves = (event) => {
       }
     )
   }
-  mouse.value = (boxesHovering.value.length || predictedBoxesHovering.value.length) ? 'cursor-pointer' : canvasmodeIsDraw.value ? 'cursor-crosshair' : 'cursor-auto'
+  mouse.value = (boxesHovering.value?.length || predictedBoxesHovering.value?.length) ? 'cursor-pointer' : canvasmodeIsDraw.value ? 'cursor-crosshair' : 'cursor-auto'
   
   resetCanvasAndDrawBoxes()
 }
