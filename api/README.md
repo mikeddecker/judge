@@ -30,18 +30,10 @@ SUPPORTED_VIDEO_FORMATS = ['.mov', '.mp4', '.MP4']
 SUPPORTED_IMAGE_FORMATS = ['.jpeg', '.png']
 ```
 
-1. Create an empty database with .env name `MYSQLDB_DATABASE`
-2. Run the database migrations: 
-
-```bash 
-flask db upgrade
-```
-
-3. Run the app:
-
-```bash
-python app.py
-```
+1. Start the docker container: `docker compose up -d`
+2. Create an empty database with .env same name as `MYSQLDB_DATABASE`
+3. Run the database migrations: `flask db upgrade`
+4. Run the app: `python app.py`
 
 ## Changing the databse (Flask - alembic)
 
