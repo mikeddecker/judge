@@ -127,7 +127,6 @@ class MLLayerRepository:
         try:
             skills : list[SkillDB] = self.db.session.query(SkillDB).all()
             for skillDB in skills:
-                print(skillDB.id)
                 if composition_name not in skillDB.skillinfo.keys():
                     continue
 
@@ -161,10 +160,6 @@ class MLLayerRepository:
                 self.db.session.merge(skillDB)
                 self.db.session.commit()
 
-                if skillDB.id == 24:
-                    pprint(skillDB.skillinfo)
-
-            print('try', stage)
             try:
                 source_stage_nr = STAGE_MAP[source] if stage is None else stage
                 dest_stage_nr = STAGE_MAP[dest] if stage is None else stage
@@ -178,7 +173,6 @@ class MLLayerRepository:
                     if layer_composition_part is None:
                         raise ValueError(f"Unknown error: could not find composition {composition_name} - stage {source_stage_nr} - property (key={key} - id={layerprop.id})")
 
-                print(f"composition {composition_name} with key {key} from source {source_stage_nr} to {dest_stage_nr}")
                 layer_composition_part.stage = dest_stage_nr
                 
                 self.db.session.commit()

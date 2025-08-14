@@ -64,7 +64,6 @@ def localize_get_best_modelpath():
 def recognition_get_modelpaths():
     """Returns path to modelstats, e.g. ./weights/MViT_skills_20250524.stats.json"""
     # TODO : update to take actual best
-    print(f"ENVS.DIRS.WEIGHTS.SKILLS", ENVS.DIRS.WEIGHTS.SKILLS)
     folder_path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"*.stats.json")
     trainrounds = glob.glob(folder_path)
         
