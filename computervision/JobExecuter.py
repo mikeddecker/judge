@@ -34,7 +34,7 @@ while no_shutdown_job:
     job_arguments = json.loads(job["job_arguments"])
     if job["type"] == "PREDICT":
         saveAsMp4 = False if "save_mp4" not in job_arguments.keys() else bool(job_arguments["save_mp4"])
-        print(f"Cropping video {job_arguments["videoId"]}")
+        print(f"Predict video {job_arguments["videoId"]}")
         predictor.predict(
             type=job["step"],
             videoId=job_arguments["videoId"],
