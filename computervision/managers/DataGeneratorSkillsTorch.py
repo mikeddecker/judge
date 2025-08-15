@@ -82,8 +82,12 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             timesteps=self.timesteps,
             normalized=normalize,
         )
-        target, mask = self.head.label_to_tensor(skillinfo_row['skillinfo'])
-        
+        try:
+            target, mask = self.head.label_to_tensor(skillinfo_row['skillinfo'])
+        except:
+            print(f"Error for skill: {skillinfo_row['id']}")
+            raise
+
         return X, target, mask
 
     def on_epoch_end(self):

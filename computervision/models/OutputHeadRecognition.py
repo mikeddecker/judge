@@ -198,13 +198,18 @@ class OutputHeadRecognition(nn.Module):
                 # TODO : fix value of categorical: guess now is: propValueId and not index of ... + 1
                 if requires_gradient:
                     value = int(label_dict[composition_name][i]['StageProperties'][mapped_stage][prop_name] if is_stage else label_dict[composition_name][i][mapped_stage][prop_name])
-                    if prop_type == 'categorical':
-                        target[output_head] = torch.tensor(int(self.categorical_valueId_to_idx[prop_id][value]), device=device)
-                    elif prop_type == 'boolean':
-                        target[output_head] = torch.tensor(int(value), device=device)
-                    elif prop_type == 'numerical':
-                        target[output_head] = torch.tensor(float(value), dtype=torch.float32, device=device)
-                    mask[output_head] = torch.tensor(True, device=device)
+                    try:
+                        if prop_type == 'categorical':
+                            target[output_head] = torch.tensor(int(self.categorical_valueId_to_idx[prop_id][value]), device=device)
+                        elif prop_type == 'boolean':
+                            target[output_head] = torch.tensor(int(value), device=device)
+                        elif prop_type == 'numerical':
+                            target[output_head] = torch.tensor(float(value), dtype=torch.float32, device=device)
+                        mask[output_head] = torch.tensor(True, device=device)
+                    except:
+                        print(f"Error for outputhead: {output_head}, prop_id: {prop_id}, value: {value}")
+                        print(f"{self.categorical_valueId_to_idx[prop_id]}")
+                        raise
                 else :
                     target[output_head] = torch.tensor(0.0, device=device) # Dummy
                     mask[output_head] = torch.tensor(True, device=device)
