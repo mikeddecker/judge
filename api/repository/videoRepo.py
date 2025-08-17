@@ -261,7 +261,6 @@ class VideoRepository:
         self.db.session.commit()
 
     def initiate(self):
-        print('init db')
         if FrameLabelType.query.count() == 0:
             self.db.session.add(FrameLabelType(id=1, info='foreground-person'))
             self.db.session.add(FrameLabelType(id=2, info='background-person'))

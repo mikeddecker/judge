@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from helpers.ValueHelper import ValueHelper
 from repository.db import db
 from routers.folderRouter import FolderRouter
@@ -36,6 +36,9 @@ def create_app(config_object="config.Config"):
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
+
+    with app.app_context():
+        upgrade()
     
     return app
 
