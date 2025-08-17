@@ -36,7 +36,7 @@
               <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd != currentFrame" @click="frameToEndOfSkill">Frame to END of selected skill</Button>
               <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd == currentFrame" @click="frameToStartOfSkill">Frame to START of selected skill</Button>
               <Button v-show="frameStart && frameEnd" @click="replaySection" v-shortkey="['r']" @shortkey="replaySection">Replay section (r)</Button>
-              <Button v-show="skillStore.selectedSkill.Id" @click="playNextSection" v-shortkey="['n']" @shortkey="playNextSection" label="Play next section (n)" aria-label="Play next section (n)"></Button>
+              <Button @click="playNextSection" v-shortkey="['n']" @shortkey="playNextSection" label="Play next section (n)" aria-label="Play next section (n)"></Button>
             </div>
             <div id="prediction-controls" class="flex gap-2 my-2 wrap" v-if="selectedSkillIsPrediction">
               <Button @click="splitPrediction">Split prediction</Button>
@@ -50,9 +50,10 @@
       </div>
         
       <Button v-if="modeIsSkills" icon="pi pi-arrow-down" v-shortkey="['arrowdown']" @shortkey="upDrawerVisible = true" @click="upDrawerVisible = true" />
-      <Button icon="pi pi-arrow-left" v-shortkey="['arrowleft']" @click="rightDrawerVisible = true" @shortkey="rightDrawerVisible = true"/>
+      <Button icon="pi pi-arrow-left" v-shortkey="['arrowleft']" @click="sideDrawerVisible = true; drawerDirection = 'right'" @shortkey="sideDrawerVisible = true; drawerDirection = 'right'"/>
+      <Button icon="pi pi-arrow-right" v-shortkey="['arrowright']" @click="sideDrawerVisible = true; drawerDirection = 'left'" @shortkey="sideDrawerVisible = true; drawerDirection = 'left'"/>
 
-      <Drawer v-model:visible="rightDrawerVisible" class="w-[40vw]" position="right">
+      <Drawer v-model:visible="sideDrawerVisible" class="w-[40vw]" :position="drawerDirection">
         <div id="type-selection" class="flex h-fit gap-2 stretch">
           <Button :class="modeIsWatch ? 'p-button-highlight' : ''" @click="() => mode = 'WATCH'">Watch</Button>
           <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
@@ -134,8 +135,9 @@ const croppedVideoSrc = ref('')
 const paused = ref(true)
 const videoElement = ref(null)
 const skillbalkKey = ref(0)
-const rightDrawerVisible = ref(false)
+const sideDrawerVisible = ref(false)
 const upDrawerVisible = ref(false)
+const drawerDirection = ref('right')
 
 const mode = ref('WATCH')
 const modeIsWatch = computed(() => mode.value == 'WATCH')
@@ -427,9 +429,14 @@ async function replaySection() {
 
 function getNextSkill() {
   let skills = selectedSkillIsPrediction.value ? predictions.value['skills'] : videoinfo.value.Skills
-  return skills
-    .filter(skill => skill.FrameStart >= skillStore.selectedSkill.FrameEnd)
-    .sort((a,b) => a.FrameEnd - b.FrameEnd)[0]
+  let sortedSkills = skills.sort((a,b) => a.FrameEnd - b.FrameEnd)
+  console.log(skillStore.selectedSkill.Id)
+  if (!skillStore.selectedSkill.Id) {
+    console.log("nope", sortedSkills[0])
+    return sortedSkills[0]
+  }
+  return sortedSkills
+    .filter(skill => skill.FrameStart >= skillStore.selectedSkill.FrameEnd)[0]
 }
 
 async function playNextSection() {
@@ -437,6 +444,8 @@ async function playNextSection() {
   if (nextSkill) {
     onSkillClicked(nextSkill.Id, selectedSkillIsPrediction.value)
     replaySection()
+  } else {
+    skillStore.setSelectedSkill({ "FrameStart": frameStart.value, "Skillinfo": {} })
   }
 }
 
