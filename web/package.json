@@ -14,6 +14,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@gregdev/vue3-shortkey": "^4.0.1",
     "@primeuix/themes": "^1.1.1",
     "@primevue/themes": "^4.3.4",
     "@tailwindcss/vite": "^4.1.5",
@@ -25,6 +26,7 @@
     "tailwindcss-primeui": "^0.6.1",
     "vue": "^3.5.12",
     "vue-router": "^4.4.5",
+    "vue3-shortkey": "^4.0.0",
     "vuex": "^4.0.2"
   },
   "devDependencies": {

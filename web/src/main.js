@@ -7,6 +7,7 @@ import router from './router'
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura'
 import ConfirmationService from 'primevue/confirmationservice';
+import Vue3Shortkey from '@gregdev/vue3-shortkey'
 
 // PrimeVue components
 import Button from "primevue/button"
@@ -49,6 +50,11 @@ app.use(PrimeVue,
 )
 app.use(createPinia());
 app.use(ConfirmationService);
+app.use(Vue3Shortkey, {
+  prevent: ['input', 'textarea'], // ignore shortcuts while typing
+  capture: true,                  // listen during capture phase
+  propagation: false,             // stop event propagation by default
+})
 
 app.component('Button', Button);
 app.component('Card', Card);
