@@ -441,9 +441,7 @@ async function replaySection() {
 function getNextSkill() {
   let skills = selectedSkillIsPrediction.value ? predictions.value['skills'] : videoinfo.value.Skills
   let sortedSkills = skills.sort((a,b) => a.FrameEnd - b.FrameEnd)
-  console.log(skillStore.selectedSkill.Id)
   if (!skillStore.selectedSkill.Id) {
-    console.log("nope", sortedSkills[0])
     return sortedSkills[0]
   }
   return sortedSkills
@@ -456,23 +454,17 @@ async function playNextSection() {
     onSkillClicked(nextSkill.Id, selectedSkillIsPrediction.value)
     replaySection()
   } else {
-    skillStore.setSelectedSkill({ "FrameStart": frameStart.value, "Skillinfo": {} })
+    deselectSkill()
   }
 }
 
 function prepareNextLabel(fs) {
-  let nextSkill = getNextSkill()
-  if (nextSkill) {
-    playNextSection()
-    return
-  } else {
-    frameStart.value = fs
-    frameEnd.value = undefined
-    for (let skillIdx in skills.value) {
-      skills.value[skillIdx].inCreation = false
-    }
-    deselectSkill()
+  frameStart.value = fs
+  frameEnd.value = undefined
+  for (let skillIdx in skills.value) {
+    skills.value[skillIdx].inCreation = false
   }
+  deselectSkill()
 }
 
 async function addSkill() {
@@ -604,9 +596,11 @@ const confirmRemoveSkill = (event) => {
       label: 'Delete'
     },
     accept: () => {
-      deleteSkill(videoId.value, frameStart.value, frameEnd.value)
-      getVideoInfo(videoId.value).then(v => videoinfo.value = v)
-      skillStore.setSelectedSkill({ "FrameStart": frameStart.value, "Skillinfo": {} })
+      deleteSkill(videoId.value, frameStart.value, frameEnd.value).then(() => {
+        getVideoInfo(videoId.value).then(v => videoinfo.value = v).then(() => {
+          skillStore.setSelectedSkill({ "FrameStart": frameStart.value, "Skillinfo": {} })
+        })
+      })
     },
   });
 };

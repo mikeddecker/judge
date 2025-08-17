@@ -52,9 +52,9 @@ app.use(PrimeVue,
 app.use(createPinia());
 app.use(ConfirmationService);
 app.use(Vue3Shortkey, {
-  prevent: ['input', 'textarea'], // ignore shortcuts while typing
-  capture: true,                  // listen during capture phase
-  propagation: false,             // stop event propagation by default
+  prevent: ['input', 'textarea', 'select', '.p-dropdown', '.p-multiselect', '.p-select-label'], // ignore shortcuts while typing
+  capture: true, // listen during capture phase
+  propagation: false, // stop event propagation by default
 })
 
 app.component('Button', Button);
