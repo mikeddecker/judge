@@ -13,7 +13,7 @@
           @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
           @add-box="onAddBox" @delete-box="onDeleteBox">
         </VideoPlayer>
-        <Drawer v-model:visible="upDrawerVisible" position="top" class="h-fit p-4">
+        <Drawer v-model:visible="upDrawerVisible" position="top" class="h-fit px-4 py-2">
           <template #container>
             <SkillBalk v-if="modeIsSkills" :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
             <SkillBalk v-if="modeIsSkills && predictions['skills'].length" :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2" :key="skillbalkKey"/>
@@ -45,58 +45,59 @@
               <Button @click="() => shifPredictedSplitpoint(+1)">Shift splitpoint<i class="pi pi-arrow-right"></i></Button>
               <Button @click="acceptPredictedSkill">Accept<i class="pi pi-check"></i></Button>
             </div>
+            <div id="label-controls" class="w-[50vw]" :class="drawerDirectionClass">
+              <div id="type-selection" class="flex h-fit gap-2 stretch">
+                <Button :class="modeIsWatch ? 'p-button-highlight' : ''" @click="() => mode = 'WATCH'">Watch</Button>
+                <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
+                <Button :class="modeIsSkills ? 'p-button-highlight' : ''" @click="() => mode = 'SKILLS'">Skills</Button>
+                
+              </div>
+              <div class="my-2 flex gap-2">
+                currentFrame: {{ currentFrame }}
+                <div id="localize-frame-navigation-buttons" class="flex gap-2">
+                  <Button v-if="modeIsLocalize" @click="setToPreviousFrame"><i class="pi pi-arrow-left"></i></Button>
+                  <Button v-if="modeIsLocalize" @click="setToRandomFrame"><i class="pi pi-arrow-right-arrow-left"></i></Button>
+                  <Button v-if="modeIsLocalize" @click="setToNextFrame"><i class="pi pi-arrow-right"></i></Button>
+                </div>
+              </div>
+              <LocalizeInfo v-if="modeIsLocalize" :videoinfo="videoinfo"></LocalizeInfo>
+              <div id="localize-controls" v-if="modeIsLocalize" class="my-2">
+                <div class="flex gap-2">
+                  <span class="my-auto">Labeltype</span>
+                  <Select v-model="selectedLabeltype" :options="Object.keys(labeltypes)"></Select>
+                  <InputNumber v-model="currentFrame" inputId="input-currentFrame" fluid></InputNumber>
+                </div>
+                <div class="mt-2 flex gap-2">
+                  <span class="my-auto">Canvas modus</span>
+                  <Select v-model="canvasMode" :options="canvasModes"></Select>
+                </div>
+                <div class="mt-2 flex gap-2">
+                  <span class="my-auto">Use</span>
+                  <Select v-model="selectedLocalizeModel" :options="Object.keys(localizeModelOptions)"></Select>
+                  <Select v-model="selectedWeights" :options="predictionWeightOptions"></Select>
+                  <Button v-if="selectedLocalizeModel && !localizeJobLaunched" @click="predictBoxes" label="Launch job"></Button>
+                  <span class="my-auto" v-if="localizeJobLaunched">Job in queue</span>
+                </div>
+              </div>
+              
+              <!--Skills -->
+              <ConfirmPopup></ConfirmPopup>
+              <SkillLabel v-if="modeIsSkills" :video-id="videoinfo.Id" :frame-start="frameStart" :frame-end="frameEnd"></SkillLabel>
+              <div v-if="modeIsSkills" class="flex flex-wrap gap-2">
+                <Button v-if="!skillStore.selectedSkillIsEmpty && skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['a']" @shortkey="addSkill" @click="addSkill" aria-label="Add skill (a)" label="Add skill (a)" icon="pi pi-plus-circle" class="my-2"></Button>
+                <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['u']" @shortkey="updateSkill" @click="updateSkill" aria-label="Update skill (u)" label="Update skill (u)" icon="pi pi-pencil" class="my-2"></Button>
+                <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" @click="confirmRemoveSkill($event)" severity="danger" aria-label="Delete skill" label="Delete skill" icon="pi pi-pencil" class="my-2"></Button>
+              </div>
+            </div>
+            <div class="flex flex-wrap hidden">
+              <Button icon="pi pi-arrow-left" v-shortkey="['arrowleft']" @click="drawerDirection = 'left'" @shortkey="drawerDirection = 'left'"/>
+              <Button icon="pi pi-arrow-right" v-shortkey="['arrowright']" @click="drawerDirection = 'right'" @shortkey="drawerDirection = 'right'"/>
+            </div>
           </template>
         </Drawer>
       </div>
-        
-      <Button v-if="modeIsSkills" icon="pi pi-arrow-down" v-shortkey="['arrowdown']" @shortkey="upDrawerVisible = true" @click="upDrawerVisible = true" />
-      <Button icon="pi pi-arrow-left" v-shortkey="['arrowleft']" @click="sideDrawerVisible = true; drawerDirection = 'right'" @shortkey="sideDrawerVisible = true; drawerDirection = 'right'"/>
-      <Button icon="pi pi-arrow-right" v-shortkey="['arrowright']" @click="sideDrawerVisible = true; drawerDirection = 'left'" @shortkey="sideDrawerVisible = true; drawerDirection = 'left'"/>
-
-      <Drawer v-model:visible="sideDrawerVisible" class="w-[40vw]" :position="drawerDirection">
-        <div id="type-selection" class="flex h-fit gap-2 stretch">
-          <Button :class="modeIsWatch ? 'p-button-highlight' : ''" @click="() => mode = 'WATCH'">Watch</Button>
-          <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
-          <Button :class="modeIsSkills ? 'p-button-highlight' : ''" @click="() => mode = 'SKILLS'">Skills</Button>
-          
-        </div>
-        <div class="my-2 flex gap-2">
-          currentFrame: {{ currentFrame }}
-          <div id="localize-frame-navigation-buttons" class="flex gap-2">
-            <Button v-if="modeIsLocalize" @click="setToPreviousFrame"><i class="pi pi-arrow-left"></i></Button>
-            <Button v-if="modeIsLocalize" @click="setToRandomFrame"><i class="pi pi-arrow-right-arrow-left"></i></Button>
-            <Button v-if="modeIsLocalize" @click="setToNextFrame"><i class="pi pi-arrow-right"></i></Button>
-          </div>
-        </div>
-        <LocalizeInfo v-if="modeIsLocalize" :videoinfo="videoinfo"></LocalizeInfo>
-        <div id="localize-controls" v-if="modeIsLocalize" class="my-2">
-          <div class="flex gap-2">
-            <span class="my-auto">Labeltype</span>
-            <Select v-model="selectedLabeltype" :options="Object.keys(labeltypes)"></Select>
-            <InputNumber v-model="currentFrame" inputId="input-currentFrame" fluid></InputNumber>
-          </div>
-          <div class="mt-2 flex gap-2">
-            <span class="my-auto">Canvas modus</span>
-            <Select v-model="canvasMode" :options="canvasModes"></Select>
-          </div>
-          <div class="mt-2 flex gap-2">
-            <span class="my-auto">Use</span>
-            <Select v-model="selectedLocalizeModel" :options="Object.keys(localizeModelOptions)"></Select>
-            <Select v-model="selectedWeights" :options="predictionWeightOptions"></Select>
-            <Button v-if="selectedLocalizeModel && !localizeJobLaunched" @click="predictBoxes" label="Launch job"></Button>
-            <span class="my-auto" v-if="localizeJobLaunched">Job in queue</span>
-          </div>
-        </div>
-        
-        <!--Skills -->
-        <ConfirmPopup></ConfirmPopup>
-        <SkillLabel v-if="modeIsSkills" :video-id="videoinfo.Id" :frame-start="frameStart" :frame-end="frameEnd"></SkillLabel>
-        <div v-if="modeIsSkills" class="flex flex-wrap gap-2">
-          <Button v-if="!skillStore.selectedSkillIsEmpty && skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['a']" @shortkey="addSkill" @click="addSkill" aria-label="Add skill (a)" label="Add skill (a)" icon="pi pi-plus-circle" class="my-2"></Button>
-          <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['u']" @shortkey="updateSkill" @click="updateSkill" aria-label="Update skill (u)" label="Update skill (u)" icon="pi pi-pencil" class="my-2"></Button>
-          <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" @click="confirmRemoveSkill($event)" severity="danger" aria-label="Delete skill" label="Delete skill" icon="pi pi-pencil" class="my-2"></Button>
-        </div>
-      </Drawer>
+      
+      <Button icon="pi pi-arrow-down" v-shortkey="['arrowdown']" @shortkey="upDrawerVisible = true" @click="upDrawerVisible = true" />
     </div>
       
     <pre>{{ videoinfo }}</pre>
@@ -135,9 +136,9 @@ const croppedVideoSrc = ref('')
 const paused = ref(true)
 const videoElement = ref(null)
 const skillbalkKey = ref(0)
-const sideDrawerVisible = ref(false)
 const upDrawerVisible = ref(false)
 const drawerDirection = ref('right')
+const drawerDirectionClass = computed(() => drawerDirection.value == 'right' ? 'ml-auto' : 'mr-auto')
 
 const mode = ref('WATCH')
 const modeIsWatch = computed(() => mode.value == 'WATCH')
