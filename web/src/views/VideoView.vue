@@ -57,7 +57,7 @@
                 <div id="localize-frame-navigation-buttons" class="flex gap-2">
                   <Button v-if="modeIsLocalize" @click="setToPreviousFrame" v-shortkey="['p']" @shortkey="setToPreviousFrame"><i class="pi pi-arrow-left"></i></Button>
                   <Button v-if="modeIsLocalize" @click="setToRandomFrame" v-shortkey="['r']" @shortkey="setToRandomFrame"><i class="pi pi-arrow-right-arrow-left"></i></Button>
-                  <Button v-if="modeIsLocalize" @click="setToNextFrame" v-shortkey="['n']" @shortkey="setToRandomFrame"><i class="pi pi-arrow-right"></i></Button>
+                  <Button v-if="modeIsLocalize" @click="setToNextFrame" v-shortkey="['n']" @shortkey="setToNextFrame"><i class="pi pi-arrow-right"></i></Button>
                 </div>
               </div>
               <LocalizeInfo v-if="modeIsLocalize" :videoinfo="videoinfo"></LocalizeInfo>
