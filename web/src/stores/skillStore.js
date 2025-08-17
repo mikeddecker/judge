@@ -13,27 +13,25 @@ export const useSkillStore = defineStore("skill", {
   actions: {
     setSelectedSkill(skill) { this.selectedSkill = skill },
     async addComposition(selectedCompositionName) {
-      const getDefaultValue = (layerproperty) => {
-        return Object.fromEntries(Object.entries(layerproperty).map(([propertyname, propertyinfo]) => {
-          let dv = null
-          // TODO create default options in config
-          switch (propertyinfo.property.type) {
-            case 'numerical': dv = propertyinfo.property.min; break;
-            case 'categorical': dv = 0; break;
-            case 'boolean': dv = false; break;
+      const getStageFocussedDefaultValues = (layerproperty) => {
+        // Fills in stage with default values 
+        let stageDefaultValues = {}
+        Object.entries(layerproperty).forEach(([propertyname, propertyinfo]) => {
+          if (propertyinfo.focussed) {
+            stageDefaultValues[propertyname] = propertyinfo.defaultValue
           }
-          return [propertyname, dv]
-        }))
+        })
+        return stageDefaultValues
       }
       let selectedLayerComposition = this.layercomposition[selectedCompositionName]
       let label = Object.fromEntries(Object.entries(selectedLayerComposition).map(([upperStage, upperStageValues]) => {
         if (upperStage == 'compositionName') { return [ upperStage, upperStageValues ]}
         if (upperStage == 'StageProperties') {
           return [upperStage, Object.fromEntries(Object.entries(upperStageValues).map(([stageNr, stageValues]) => {
-              return [stageNr, getDefaultValue(stageValues)]
+              return [stageNr, getStageFocussedDefaultValues(stageValues)]
           }))]
         } else {
-          return [upperStage, getDefaultValue(upperStageValues)]
+          return [upperStage, getStageFocussedDefaultValues(upperStageValues)]
         }
       }));
       

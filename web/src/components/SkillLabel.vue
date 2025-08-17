@@ -38,7 +38,13 @@
                         <Card v-for="(upperStage, i) in ['GeneralProperties', 'StartProperties', 'EndProperties']" class="m-2">
                             <template #header>{{ upperStage }}</template>
                             <template #content>
-                                <LayerPropertyValueSelector v-for="(layerValue, layerKey) in layercomposition[compositionName][upperStage]" :composition-name="compositionName" :composition-index="idx" :name="layerKey" :stage="upperStage" :property="layercomposition[compositionName][upperStage][layerKey]['property']"></LayerPropertyValueSelector>
+                                <LayerPropertyValueSelector 
+                                    v-for="(layerValue, layerKey) in layercomposition[compositionName][upperStage]" 
+                                    :composition-name="compositionName" :composition-index="idx" 
+                                    :name="layerKey" :stage="upperStage" 
+                                    :property="layercomposition[compositionName][upperStage][layerKey]['property']" 
+                                    :focussed="layerValue.focussed">
+                                </LayerPropertyValueSelector>
                             </template>
                         </Card>
                         <Card>
@@ -47,7 +53,13 @@
                                 <Card v-for="(stageLabel, stageNr) in label['StageProperties']" class="m-2">
                                     <template #header>{{ stageNr }}</template>
                                     <template #content>
-                                        <LayerPropertyValueSelector v-for="(layerValue, layerKey) in layercomposition[compositionName]['StageProperties'][stageNr]" :composition-name="compositionName" :composition-index="idx" :name="layerKey" stage="StageProperties" :stage-nr="stageNr" :property="layercomposition[compositionName]['StageProperties'][stageNr][layerKey]['property']"></LayerPropertyValueSelector>
+                                        <LayerPropertyValueSelector 
+                                            v-for="(layerValue, layerKey) in layercomposition[compositionName]['StageProperties'][stageNr]" 
+                                            :composition-name="compositionName" :composition-index="idx" 
+                                            :name="layerKey" stage="StageProperties" :stage-nr="stageNr" 
+                                            :property="layercomposition[compositionName]['StageProperties'][stageNr][layerKey]['property']" 
+                                            :focussed="layerValue.focussed">
+                                        </LayerPropertyValueSelector>
                                     </template>
                                 </Card>
                             </template>

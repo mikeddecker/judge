@@ -16,16 +16,22 @@
             <label :for="`${guidvalue}-false`">False</label>
         </div>
         <InputNumber v-if="isNumerical" class="w-20" inputClass="w-full" v-model="innervalue" 
-            :id="guidvalue"
-            :step="property['step']" 
-            :min="property['min']" 
-            :max="property['max']" 
-            :minFractionDigits="0" 
-            :maxFractionDigits="2" 
-            show-buttons 
-            :invalid="innervalue == null" 
-            :readonlyInput="true"
+        :id="guidvalue"
+        :step="property['step']" 
+        :min="property['min']" 
+        :max="property['max']" 
+        :minFractionDigits="0" 
+        :maxFractionDigits="2" 
+        show-buttons 
+        :invalid="innervalue == null" 
+        :readonlyInput="true"
         ></InputNumber>
+        <span class="my-auto">
+            (
+                Focus?
+                <Checkbox v-model="innerfocussed" binary />
+            )
+        </span>
     </div>
 </template>
 
@@ -46,6 +52,10 @@ const props = defineProps({
     },
     value: {
         required: true,
+    },
+    focussed: {
+        type: Boolean,
+        required: false
     }
 })
 
@@ -66,6 +76,15 @@ const innervalue = computed({
   },
   set(val) {
     emit('update:value', val)
+  }
+})
+
+const innerfocussed = computed({
+  get() {
+    return props.focussed
+  },
+  set(val) {
+    emit('update:focussed', val)
   }
 })
 

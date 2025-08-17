@@ -49,6 +49,12 @@ h4 {
   color: var(--vt-c-ligth-brown)
 }
 
+h5 {
+  font-size: 1.20rem;
+  font-weight: 350;
+  color: var(--vt-c-ligth-green);
+}
+
 .p-card {
   width: fit-content;
 }

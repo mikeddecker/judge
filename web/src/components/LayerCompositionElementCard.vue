@@ -1,13 +1,14 @@
 <template>
-    <div class="flex-auto">
-        <h5>{{ title }}</h5>
-        <Listbox :options="Object.keys(stageProperties)" listStyle="max-height:750px" disabled/>
+    <div class="flex-auto border rounded-md m-2">
+        <h5 class="m-3">{{ title }}</h5>
         <LayerCompositionPropertyValueSelector
             v-for="(composition, compositionKey) in stageProperties"
             :property="composition['property']"
             :name="compositionKey"
             :value="composition['defaultValue']"
-            @update:value="value => updateValue(composition, compositionKey, value)"
+            :focussed="composition['focussed']"
+            @update:value="value => updateAttribute(composition, compositionKey, 'defaultValue', value)"
+            @update:focussed="value => updateAttribute(composition, compositionKey, 'focussed', value)"
         ></LayerCompositionPropertyValueSelector>
     </div>
 </template>
@@ -26,11 +27,11 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['update:value'])
+const emit = defineEmits(['update:attribute'])
 
-const updateValue = (composition, key, value) => {
-    composition['defaultValue'] = value
-    emit('update:value', key, 'defaultValue', value)
+const updateAttribute = (composition, key, attribute, value) => {
+    composition[attribute] = value
+    emit('update:attribute', key, attribute, value)
 }
 </script>
 

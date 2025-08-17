@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-wrap gap-2 m-4">
+    <div v-show="focussed" class="flex flex-wrap gap-2 m-4">
         <span class="font-semibold my-auto">{{ name }}:</span>
         <Select 
             v-if="isCategorical" 
@@ -27,6 +27,7 @@
             :readonlyInput="true"
         ></InputNumber>
     </div>
+    <slot></slot>
 </template>
 
 <script setup>
@@ -58,6 +59,10 @@ const props = defineProps({
     property: {
         type: Object,
         required: true
+    },
+    focussed: {
+        type: Boolean,
+        required: false
     }
 })
 
