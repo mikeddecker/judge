@@ -33,8 +33,8 @@
         <Button v-show="skillStore.selectedSkill.Id" @click="deselectSkill">Deselect skill</Button>
         <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd != currentFrame" @click="frameToEndOfSkill">Frame to END of selected skill</Button>
         <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd == currentFrame" @click="frameToStartOfSkill">Frame to START of selected skill</Button>
-        <Button v-show="frameStart && frameEnd" @click="replaySection">Replay section</Button>
-        <Button v-show="skillStore.selectedSkill.Id" @click="playNextSection">Play next section</Button>
+        <Button v-show="frameStart && frameEnd" @click="replaySection" v-shortkey="['r']" @shortkey="replaySection">Replay section (r)</Button>
+        <Button v-show="skillStore.selectedSkill.Id" @click="playNextSection" v-shortkey="['n']" @shortkey="playNextSection" label="Play next section (n)" aria-label="Play next section (n)"></Button>
       </div>
       <div id="prediction-controls" class="flex gap-2 my-2 wrap" v-if="selectedSkillIsPrediction">
         <Button @click="splitPrediction">Split prediction</Button>
@@ -84,9 +84,9 @@
         <ConfirmPopup></ConfirmPopup>
         <SkillLabel v-if="modeIsSkills" :video-id="videoinfo.Id" :frame-start="frameStart" :frame-end="frameEnd"></SkillLabel>
         <div v-if="modeIsSkills" class="flex flex-wrap gap-2">
-          <Button v-if="!skillStore.selectedSkillIsEmpty && skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['a']" @shortkey="addSkill" @click="addSkill" aria-label="Add skill" label="Add skill" icon="pi pi-plus-circle" class="my-2"></Button>
-          <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['u']" @shortkey="updateSkill" @click="updateSkill" aria-label="Update skill" label="Update skill" icon="pi pi-pencil" class="my-2"></Button>
-          <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['d']" @shortkey="confirmRemoveSkill($event)" @click="confirmRemoveSkill($event)" severity="danger" aria-label="Delete skill" label="Delete skill" icon="pi pi-pencil" class="my-2"></Button>
+          <Button v-if="!skillStore.selectedSkillIsEmpty && skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['a']" @shortkey="addSkill" @click="addSkill" aria-label="Add skill (a)" label="Add skill (a)" icon="pi pi-plus-circle" class="my-2"></Button>
+          <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['u']" @shortkey="updateSkill" @click="updateSkill" aria-label="Update skill (u)" label="Update skill (u)" icon="pi pi-pencil" class="my-2"></Button>
+          <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" @click="confirmRemoveSkill($event)" severity="danger" aria-label="Delete skill" label="Delete skill" icon="pi pi-pencil" class="my-2"></Button>
         </div>
       </div>
       
@@ -382,7 +382,7 @@ async function playJustALittleFurther(framesToSkip) {
   setFrameEnd()
 }
 
-function deselectSkill() {
+function deselectSkill() { 
   if (frameEnd.value) {
     frameStart.value = frameEnd.value
     frameEnd.value = undefined
@@ -415,11 +415,16 @@ async function replaySection() {
   videoElement.value.pause()
   currentFrame.value = frameEnd.value
 }
-async function playNextSection() {
+
+function getNextSkill() {
   let skills = selectedSkillIsPrediction.value ? predictions.value['skills'] : videoinfo.value.Skills
-  let nextSkill = skills
+  return skills
     .filter(skill => skill.FrameStart >= skillStore.selectedSkill.FrameEnd)
     .sort((a,b) => a.FrameEnd - b.FrameEnd)[0]
+}
+
+async function playNextSection() {
+  let nextSkill = getNextSkill()
   if (nextSkill) {
     onSkillClicked(nextSkill.Id, selectedSkillIsPrediction.value)
     replaySection()
@@ -427,12 +432,18 @@ async function playNextSection() {
 }
 
 function prepareNextLabel(fs) {
-  frameStart.value = fs
-  frameEnd.value = undefined
-  for (let skillIdx in skills.value) {
-    skills.value[skillIdx].inCreation = false
+  let nextSkill = getNextSkill()
+  if (nextSkill) {
+    playNextSection()
+    return
+  } else {
+    frameStart.value = fs
+    frameEnd.value = undefined
+    for (let skillIdx in skills.value) {
+      skills.value[skillIdx].inCreation = false
+    }
+    deselectSkill()
   }
-  deselectSkill()
 }
 
 async function addSkill() {
