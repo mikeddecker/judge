@@ -6,7 +6,7 @@ from domain.layerComposition import LayerComposition
 from flask_sqlalchemy import SQLAlchemy
 from repository.models import LayerProperty, LayerPropertyValue, LayerComposition as LayerCompositionDB, Skill as SkillDB
 from repository.MapToDomain import MapToDomain
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.attributes import flag_modified
 from pprint import pprint
 
@@ -104,6 +104,34 @@ class MLLayerRepository:
         )
 
         self.db.session.add(newLayerCompositionDB)
+        self.db.session.commit()
+
+        return self.get_layer_compositions()
+    
+    def update_layer_compostion_attribute_value(self, compositionName: str,  stage: int, propertyname: str, attribute: str, value):
+        layer_composition_row: LayerCompositionDB = self.db.session.query(
+            LayerCompositionDB
+        ).join(
+            LayerCompositionDB.property
+        ).filter(
+            LayerCompositionDB.compositionName==compositionName,
+            LayerCompositionDB.stage==stage,
+            or_(
+                LayerCompositionDB.name==propertyname,
+                LayerProperty.name==propertyname,
+            )
+        ).first()
+
+        if layer_composition_row is None:
+            raise ValueError(f"{compositionName} - {stage} - {propertyname} does not exist")
+        
+        match attribute:
+            case 'defaultValue':
+                layer_composition_row.defaultValue = value
+            case 'focussed':
+                layer_composition_row.focussed = value
+            case _:
+                print('?', attribute)
         self.db.session.commit()
 
         return self.get_layer_compositions()

@@ -37,3 +37,10 @@ export async function sleep(ms) { await new Promise(r => setTimeout(r, ms)); }
 
 export function union(a, b) { return [...new Set([...a, ...b])] };
 
+export function guidGenerator() {
+    var S4 = function() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+}
+

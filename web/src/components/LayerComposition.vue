@@ -2,15 +2,16 @@
     <div v-if="composition">
         <h4 class="text-blue-700">{{ compositionName }} overview</h4>
         <div class="flex flex-wrap gap-4 mb-4">
-            <LayerCompositionElementCard class="w-1/4" title="General" :element="composition['GeneralProperties']"></LayerCompositionElementCard>
-            <LayerCompositionElementCard class="w-1/4" title="Start" :element="composition['StartProperties']"></LayerCompositionElementCard>
-            <LayerCompositionElementCard class="w-1/4" title="End" :element="composition['EndProperties']"></LayerCompositionElementCard>
+            <LayerCompositionElementCard class="w-1/4" title="General" :stage-properties="composition['GeneralProperties']" @update:value="(name, attribute, value) => updateLayerCompositionAttributeValue(compositionName, null, name, attribute, value)"></LayerCompositionElementCard>
+            <LayerCompositionElementCard class="w-1/4" title="Start" :stage-properties="composition['StartProperties']" @update:value="(name, attribute, value) => updateLayerCompositionAttributeValue(compositionName, 0, name, attribute, value)"></LayerCompositionElementCard>
+            <LayerCompositionElementCard class="w-1/4" title="End" :stage-properties="composition['EndProperties']" @update:value="(name, attribute, value) => updateLayerCompositionAttributeValue(compositionName, -1, name, attribute, value)"></LayerCompositionElementCard>
         </div>
         <h4>Stage properties</h4>
         <div class="flex flex-wrap gap-4 mb-4">
             <LayerCompositionElementCard 
                 v-for="(stage, stageNr) in composition['StageProperties']" 
-                :title="`stage ${stageNr}`" :element="stage" 
+                :title="`stage ${stageNr}`" :stage-properties="stage" 
+                @update:value="(name, attribute, value) => updateLayerCompositionAttributeValue(compositionName, Number(stageNr), name, attribute, value)"
                 class="w-1/5"></LayerCompositionElementCard>
         </div>
     </div>
@@ -41,7 +42,7 @@
 </template>
 
 <script setup>
-import { addLayerComposition, getLayers, moveLayerProperty } from '@/services/videoService';
+import { addLayerComposition, getLayers, moveLayerProperty, updateLayerCompositionAttributeValue } from '@/services/videoService';
 import { computed, onMounted, ref } from 'vue';
 import LayerCompositionElementCard from './LayerCompositionElementCard.vue';
 

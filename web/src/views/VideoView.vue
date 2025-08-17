@@ -101,7 +101,7 @@
 
 <script setup>
 import { getVideoInfo, getVideoPath, getCroppedVideoPath, removeVideoFrame, postVideoFrame, postSkill, putSkill, getSkillLevel, updateVideoSkillsCompleted, getVideoPredictions, getFrameLabelTypes, getJobOptions, launchJob, hasLocalizePredictions, getLocalizePredictions, deleteSkill } from '../services/videoService';
-import { sleep } from '@/helpers/utils';
+import { guidGenerator, sleep } from '@/helpers/utils';
 import { onMounted, ref, watch, computed, toRaw } from 'vue'
 import { useConfirm } from "primevue/useconfirm";
 import { useRoute } from 'vue-router';
@@ -177,13 +177,6 @@ watch(
     loadVideo(newId)
   )
 )
-
-function guidGenerator() {
-    var S4 = function() {
-       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-    };
-    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-}
 
 const getPreviousPredictedSkill = (adjacent) => {
   if (adjacent) {

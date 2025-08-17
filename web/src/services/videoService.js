@@ -373,3 +373,13 @@ export const addLayerComposition = async (compositionName, stage, propertyId, na
   });
 };
 
+export const updateLayerCompositionAttributeValue = async (compositionName, stage, propertyname, attribute, value) => {
+  return await api.post('/layercompositions/attribute', { compositionName, stage, propertyname, attribute, value }, { headers: { 'Content-Type': 'application/json' }})
+  .then(function (response) {
+    return response.data;
+  })
+  .catch(function (error) {
+    console.error(error);
+  });
+};
+

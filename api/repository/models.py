@@ -305,8 +305,21 @@ class LayerComposition(db.Model):
     stage = db.Column(db.Integer, CheckConstraint('stage >= -1'), nullable=True)
     propertyId = db.Column(db.Integer, db.ForeignKey('LayerProperties.id'), nullable=False)
     property = db.relationship('LayerProperty', backref='compositions', lazy='joined')
+    defaultValue = db.Column(db.String(15), nullable=True)
+    focussed = db.Column(db.Boolean, nullable=False, default=True)
     creationDate = db.Column(db.DateTime, default=datetime.now)
     lastUpdated = db.Column(db.DateTime, default=datetime.now)
+
+    def defaultValueConvert(self, value: str, property: LayerProperty):
+        if value is None:
+            return value
+        match property.type:
+            case 'boolean':
+                return True if value in ['true', 'True', 1, '1'] else False
+            case 'categorical':
+                return int(value)
+            case 'numerical':
+                return float(value)
 
     def to_dict(self):
         return {
@@ -315,5 +328,7 @@ class LayerComposition(db.Model):
             'name': self.name,
             'stage' : self.stage,
             'property' : self.property.to_dict(),
+            'defaultValue': self.defaultValueConvert(self.defaultValue, self.property),
+            'focussed': self.focussed,
         }
 

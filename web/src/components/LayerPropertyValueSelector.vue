@@ -75,9 +75,9 @@ const value = computed({
   },
   set(val) {
     if (props.stageNr) {
-      skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage][props.stageNr][props.name] = val;
+        skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage][props.stageNr][props.name] = val;
     } else {
-      skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage][props.name] = val;
+        skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage][props.name] = val;
     }
   }
 })

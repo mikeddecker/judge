@@ -147,20 +147,36 @@ class MLLayerTypesRouter(Resource):
     def get(self):
         return self.mlLayerService.get_types(), 200
 
-# class MLLayerValueRouter(Resource):
-#     def __init__(self, **kwargs):
-#         self.folderService = FolderService()
-#         self.videoService = VideoService()
-#         self.jobService = JobService()
-#         self.tagService = TagService()
-#         super().__init__(**kwargs)
-    
-#     def get(self):
-#         return [t.to_dict() for t in self.tagService.get_tag_groups()], 200
+class MLLayerCompositionPropertyAttributeRouter(Resource):
+    def __init__(self, **kwargs):
+        self.mlLayerService = MLLayerService()
+        super().__init__(**kwargs)
+        
+    def post(self):
+        data = request.get_json()
 
-#     def post(self):
-#         data = request.get_json()
-#         name = data.get('name')
-#         ValueHelper.check_raise_string_only_abc123(name)
-#         return self.tagService.add_group(name).to_dict(), 200
+        compositionName = data.get('compositionName')
+        stage = data.get('stage')
+        propertyname = data.get('propertyname')
+        attribute = data.get('attribute')
+        value = data.get('value')
+
+        try:
+            ValueHelper.check_raise_string_only_abc123space(compositionName)
+            ValueHelper.check_raise_string_only_abc123(propertyname)
+            ValueHelper.check_raise_string_only_abc123(attribute)
+            if stage is not None:
+                assert isinstance(stage, int), f"Invalid stage, {stage}"
+
+            self.mlLayerService.update_layer_composition_attribute_value(
+                compositionName=compositionName,
+                stage=stage,
+                attribute=attribute,
+                name=propertyname,
+                value=value,
+            )
+        except Exception as e:
+            print('MLLayerCompositionPropertyAttributeRouter', e)
+
+        return 'ok', 200 
 

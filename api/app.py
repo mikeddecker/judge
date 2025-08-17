@@ -16,7 +16,7 @@ from routers.jobRouter import JobTrainRouter, JobLaunchRouter, JobOptionsRouter
 from routers.storageRouter import StorageRouter, OrphanDeleterRouter
 from routers.skillRouter import SkillRouter, SkillLevel, SkillLabelingCompletedRouter, DiffScoreComparison
 from routers.downloadRouter import DownloadRouter
-from routers.mlLayerRouter import MLLayerRouter, MLLayerTypesRouter, MLLayerCompositionRouter, MLLayerCompositionMovePropertyRouter
+from routers.mlLayerRouter import MLLayerRouter, MLLayerTypesRouter, MLLayerCompositionRouter, MLLayerCompositionMovePropertyRouter, MLLayerCompositionPropertyAttributeRouter
 from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
 from services.videoService import VideoService
@@ -58,6 +58,7 @@ api.add_resource(MLLayerRouter, '/layers')
 api.add_resource(MLLayerTypesRouter, '/layers/types')
 api.add_resource(MLLayerCompositionMovePropertyRouter, '/layers/move')
 api.add_resource(MLLayerCompositionRouter, '/layercompositions')
+api.add_resource(MLLayerCompositionPropertyAttributeRouter, '/layercompositions/attribute')
 api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
 api.add_resource(FrameLabelTypeRouter, '/frameLabelTypes')
 api.add_resource(SkillRouter, '/skill/<int:videoId>')

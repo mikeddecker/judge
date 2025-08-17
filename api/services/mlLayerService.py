@@ -109,6 +109,24 @@ class MLLayerService:
             name=name
         )
 
+    def update_layer_composition_attribute_value(self, compositionName: str, stage: int | None, attribute:str, name: str, value) -> dict[str, LayerComposition]:
+        """Return all layer compositions"""
+        ValueHelper.check_raise_string_only_abc123(compositionName)
+        ValueHelper.check_raise_string_only_abc123(name)
+        if stage is not None:
+            assert isinstance(stage, int), f"Stage must be an integer"
+            assert stage >= -1, f"Stage must be an integer >= -1"
+
+        assert attribute in ['defaultValue', 'focussed']
+
+        return self.MlLayerRepo.update_layer_compostion_attribute_value(
+            compositionName=compositionName, 
+            stage=stage,
+            propertyname=name,
+            attribute=attribute,
+            value=value,
+        )
+
     def move_skill_property(self, composition_name:str, source:str, dest:str, key:str, stage:str|int=None):
         """
         Moves a key-value pair from one section to another within a given composition and entry.
