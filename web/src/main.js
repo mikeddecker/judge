@@ -18,6 +18,7 @@ import Column from 'primevue/column';
 import ConfirmPopup from 'primevue/confirmpopup';
 import DataTable from 'primevue/datatable';
 import Divider from 'primevue/divider';
+import Drawer from 'primevue/drawer';
 import InputNumber from 'primevue/inputnumber';
 import InputText from 'primevue/inputtext';
 import { IftaLabel } from 'primevue';
@@ -64,10 +65,11 @@ app.component('Column', Column);
 app.component('ConfirmPopup', ConfirmPopup);
 app.component('DataTable', DataTable);
 app.component('Divider', Divider);
-app.component('InputNumber', InputNumber)
-app.component('InputText', InputText)
-app.component('IftaLabel', IftaLabel)
-app.component('Listbox', Listbox)
+app.component('Drawer', Drawer);
+app.component('InputNumber', InputNumber);
+app.component('InputText', InputText);
+app.component('IftaLabel', IftaLabel);
+app.component('Listbox', Listbox);
 app.component('RadioButton', RadioButton);
 app.component('Select', Select);
 app.component('Tabs', Tabs);

@@ -6,47 +6,54 @@
     <span v-if="croperror">{{ croperror }}</span>
     
     <div id="videoview-content" v-if="!loading" class="flex gap-2">
-      <div id="column-1" class="w-[67vw]">
-        <VideoPlayer class="relative" 
-        v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
-        :current-frame-nr="currentFrame" :videoinfo="videoinfo" :labeltype="labeltypes[selectedLabeltype]" :predicted-boxes="locationPredictions" :draw-predicted-boxes="selectedLocalizeModel"
-        @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
-        @add-box="onAddBox" @delete-box="onDeleteBox">
-      </VideoPlayer>
-      <SkillBalk v-if="modeIsSkills" :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
-      <SkillBalk v-if="modeIsSkills" :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2" :key="skillbalkKey"/>
-      <div id="skill-controls" class="flex gap-2 my-2 wrap" v-show="modeIsSkills">
-        <Button v-show="paused && !skillStore.selectedSkill.Id" @click="setFrameStart()">set frame Start</Button>
-        <Button v-show="paused && !skillStore.selectedSkill.Id" @click="setFrameEnd()">set frame End</Button>
-        <Button @click="playJustALittleFurther(-25)" class="bg-teal-600">-25</Button>
-        <Button @click="playJustALittleFurther(-15)" class="bg-teal-600">-15</Button>
-        <Button @click="playJustALittleFurther(-10)" class="bg-teal-600">-10</Button>
-        <Button @click="playJustALittleFurther(-5)" class="bg-teal-600">-5</Button>
-        <Button @click="playJustALittleFurther(-2)" class="bg-teal-600">-2</Button>
-        <Button @click="playJustALittleFurther(-1)" class="bg-teal-600">-1</Button>
-        <Button @click="playJustALittleFurther(+1)" class="bg-teal-600">+1</Button>
-        <Button @click="playJustALittleFurther(+2)" class="bg-teal-600">+2</Button>
-        <Button @click="playJustALittleFurther(+5)" class="bg-teal-600">+5</Button>
-        <Button @click="playJustALittleFurther(+10)" class="bg-teal-600" ref="focusBtn">+10</Button>
-        <Button @click="playJustALittleFurther(+15)" class="bg-teal-600">+15</Button>
-        <Button @click="playJustALittleFurther(+25)" class="bg-teal-600">+25</Button>
-        <Button v-show="skillStore.selectedSkill.Id" @click="deselectSkill">Deselect skill</Button>
-        <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd != currentFrame" @click="frameToEndOfSkill">Frame to END of selected skill</Button>
-        <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd == currentFrame" @click="frameToStartOfSkill">Frame to START of selected skill</Button>
-        <Button v-show="frameStart && frameEnd" @click="replaySection" v-shortkey="['r']" @shortkey="replaySection">Replay section (r)</Button>
-        <Button v-show="skillStore.selectedSkill.Id" @click="playNextSection" v-shortkey="['n']" @shortkey="playNextSection" label="Play next section (n)" aria-label="Play next section (n)"></Button>
+      <div id="column-1" class="w-[97vw]">
+        <VideoPlayer class="absolute" 
+          v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
+          :current-frame-nr="currentFrame" :videoinfo="videoinfo" :labeltype="labeltypes[selectedLabeltype]" :predicted-boxes="locationPredictions" :draw-predicted-boxes="selectedLocalizeModel"
+          @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
+          @add-box="onAddBox" @delete-box="onDeleteBox">
+        </VideoPlayer>
+        <Drawer v-model:visible="upDrawerVisible" position="top" class="h-fit p-4">
+          <template #container>
+            <SkillBalk v-if="modeIsSkills" :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
+            <SkillBalk v-if="modeIsSkills && predictions['skills'].length" :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2" :key="skillbalkKey"/>
+            <div id="skill-controls" class="flex gap-2 my-2 wrap" v-show="modeIsSkills">
+              <Button v-show="paused && !skillStore.selectedSkill.Id" @click="setFrameStart()">set frame Start</Button>
+              <Button v-show="paused && !skillStore.selectedSkill.Id" @click="setFrameEnd()">set frame End</Button>
+              <Button @click="playJustALittleFurther(-25)" class="bg-teal-600">-25</Button>
+              <Button @click="playJustALittleFurther(-15)" class="bg-teal-600">-15</Button>
+              <Button @click="playJustALittleFurther(-10)" class="bg-teal-600">-10</Button>
+              <Button @click="playJustALittleFurther(-5)" class="bg-teal-600">-5</Button>
+              <Button @click="playJustALittleFurther(-2)" class="bg-teal-600">-2</Button>
+              <Button @click="playJustALittleFurther(-1)" class="bg-teal-600">-1</Button>
+              <Button @click="playJustALittleFurther(+1)" class="bg-teal-600">+1</Button>
+              <Button @click="playJustALittleFurther(+2)" class="bg-teal-600">+2</Button>
+              <Button @click="playJustALittleFurther(+5)" class="bg-teal-600">+5</Button>
+              <Button @click="playJustALittleFurther(+10)" class="bg-teal-600" ref="focusBtn">+10</Button>
+              <Button @click="playJustALittleFurther(+15)" class="bg-teal-600">+15</Button>
+              <Button @click="playJustALittleFurther(+25)" class="bg-teal-600">+25</Button>
+              <Button v-show="skillStore.selectedSkill.Id" @click="deselectSkill">Deselect skill</Button>
+              <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd != currentFrame" @click="frameToEndOfSkill">Frame to END of selected skill</Button>
+              <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd == currentFrame" @click="frameToStartOfSkill">Frame to START of selected skill</Button>
+              <Button v-show="frameStart && frameEnd" @click="replaySection" v-shortkey="['r']" @shortkey="replaySection">Replay section (r)</Button>
+              <Button v-show="skillStore.selectedSkill.Id" @click="playNextSection" v-shortkey="['n']" @shortkey="playNextSection" label="Play next section (n)" aria-label="Play next section (n)"></Button>
+            </div>
+            <div id="prediction-controls" class="flex gap-2 my-2 wrap" v-if="selectedSkillIsPrediction">
+              <Button @click="splitPrediction">Split prediction</Button>
+              <Button @click="mergeSplits">Merge</Button>
+              <Button @click="() => shifPredictedSplitpoint(-1)">Shift splitpoint<i class="pi pi-arrow-left"></i></Button>
+              <Button @click="() => shifPredictedSplitpoint(+1)">Shift splitpoint<i class="pi pi-arrow-right"></i></Button>
+              <Button @click="acceptPredictedSkill">Accept<i class="pi pi-check"></i></Button>
+            </div>
+          </template>
+        </Drawer>
       </div>
-      <div id="prediction-controls" class="flex gap-2 my-2 wrap" v-if="selectedSkillIsPrediction">
-        <Button @click="splitPrediction">Split prediction</Button>
-        <Button @click="mergeSplits">Merge</Button>
-        <Button @click="() => shifPredictedSplitpoint(-1)">Shift splitpoint<i class="pi pi-arrow-left"></i></Button>
-        <Button @click="() => shifPredictedSplitpoint(+1)">Shift splitpoint<i class="pi pi-arrow-right"></i></Button>
-        <Button @click="acceptPredictedSkill">Accept<i class="pi pi-check"></i></Button>
-      </div>
-    </div>
-    
-    <div id="column-2" class="w-[33vw]">
-      <div id="type-selection" class="flex h-fit gap-2 stretch">
+        
+      <Button v-if="modeIsSkills" icon="pi pi-arrow-down" v-shortkey="['arrowdown']" @shortkey="upDrawerVisible = true" @click="upDrawerVisible = true" />
+      <Button icon="pi pi-arrow-left" v-shortkey="['arrowleft']" @click="rightDrawerVisible = true" @shortkey="rightDrawerVisible = true"/>
+
+      <Drawer v-model:visible="rightDrawerVisible" class="w-[40vw]" position="right">
+        <div id="type-selection" class="flex h-fit gap-2 stretch">
           <Button :class="modeIsWatch ? 'p-button-highlight' : ''" @click="() => mode = 'WATCH'">Watch</Button>
           <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
           <Button :class="modeIsSkills ? 'p-button-highlight' : ''" @click="() => mode = 'SKILLS'">Skills</Button>
@@ -88,9 +95,9 @@
           <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['u']" @shortkey="updateSkill" @click="updateSkill" aria-label="Update skill (u)" label="Update skill (u)" icon="pi pi-pencil" class="my-2"></Button>
           <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" @click="confirmRemoveSkill($event)" severity="danger" aria-label="Delete skill" label="Delete skill" icon="pi pi-pencil" class="my-2"></Button>
         </div>
-      </div>
-      
+      </Drawer>
     </div>
+      
     <pre>{{ videoinfo }}</pre>
     <Button v-if="modeIsSkills" class="mb-8" @click="toggleSkillsCompleted">Toggle skills completed, now = {{ videoinfo.Completed_Skill_Labels }}</button>
   </div>
@@ -127,6 +134,8 @@ const croppedVideoSrc = ref('')
 const paused = ref(true)
 const videoElement = ref(null)
 const skillbalkKey = ref(0)
+const rightDrawerVisible = ref(false)
+const upDrawerVisible = ref(false)
 
 const mode = ref('WATCH')
 const modeIsWatch = computed(() => mode.value == 'WATCH')
@@ -596,6 +605,10 @@ const confirmRemoveSkill = (event) => {
 button:focus {
   border-color: blue;
   outline: none;
+}
+
+.p-drawer-mask {
+  background-color: rgba(0, 0, 0, 0.1); /* 25% black */
 }
 </style>
 

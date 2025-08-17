@@ -1,7 +1,7 @@
 <template>
   <div>
     <video
-      id="vid" ref="videoPlayer" :src="videoSrc" loop controls class="max-h-[75vh]"
+      id="vid" ref="videoPlayer" :src="videoSrc" loop controls class="max-h-[98vh]"
       @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate" @loadeddata="onLoadedData"
     />
     <canvas
