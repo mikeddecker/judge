@@ -86,6 +86,10 @@ h5 {
   color: aquamarine;
 }
 
+.p-drawer label {
+  color: var(--vt-c-white-soft);
+}
+
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
