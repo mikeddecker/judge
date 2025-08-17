@@ -22,7 +22,7 @@
                     <Tab v-for="(label, idx) in skillStore.selectedSkill.Skillinfo[compositionName]" :key="`item-${compositionName}-${idx}`" :value="`item-${compositionName}-${idx}`">{{ idx }}</Tab>
                 </TabList>
                 <TabPanels class="px-0">
-                    <TabPanel v-for="(label, idx) in compositionLabelValues" :key="`item-panel-${compositionName}-${idx}`" :value="`item-${compositionName}-${idx}`" class="flex flex-wrap">
+                    <TabPanel v-for="(label, idx) in compositionLabelValues" scrollable :key="`item-panel-${compositionName}-${idx}`" :value="`item-${compositionName}-${idx}`" class="flex flex-wrap">
                         <div class="w-full flex flex-wrap">
                             <Button 
                             class="mx-2" aria-label="Duplicate" label="Duplicate" size="small"

@@ -1,5 +1,5 @@
 <template>
-    <div class="skillbalk">
+    <div class="skillbalk min-h-4">
       <div 
         v-for="s in props.Skills" 
         :key="s.Id" 
@@ -87,7 +87,6 @@ function handleClick(skillId, isPrediction) {
   
 <style scoped>
   .skillbalk {
-    height: 30px;
     position: relative;
     background-color: darkkhaki;
   }
@@ -100,4 +99,4 @@ function handleClick(skillId, isPrediction) {
     border: 1px solid pink;
   }
 </style>
-  
+

@@ -13,7 +13,7 @@
           @play="updatePlaying" @pause="updatePaused" @seeked="onSeeked" @timeupdate="ontimeupdate"
           @add-box="onAddBox" @delete-box="onDeleteBox">
         </VideoPlayer>
-        <Drawer v-model:visible="upDrawerVisible" position="top" class="h-fit px-4 py-2">
+        <Drawer v-model:visible="upDrawerVisible" position="top" class="h-fit px-4 py-2 max-h-screen overflow-y-auto">
           <template #container>
             <SkillBalk v-if="modeIsSkills" :videoinfo="videoinfo" :Skills="skills" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2"/>
             <SkillBalk v-if="modeIsSkills && predictions['skills'].length" :videoinfo="videoinfo" :Skills="predictions['skills']" @skill-clicked="onSkillClicked" :currentFrame="currentFrame" class="mt-2" :key="skillbalkKey"/>
@@ -47,17 +47,17 @@
             </div>
             <div id="label-controls" class="w-[50vw]" :class="drawerDirectionClass">
               <div id="type-selection" class="flex h-fit gap-2 stretch">
-                <Button :class="modeIsWatch ? 'p-button-highlight' : ''" @click="() => mode = 'WATCH'">Watch</Button>
-                <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" @click="() => mode = 'LOCALIZE'">Localize</Button>
-                <Button :class="modeIsSkills ? 'p-button-highlight' : ''" @click="() => mode = 'SKILLS'">Skills</Button>
+                <Button :class="modeIsWatch ? 'p-button-highlight' : ''" v-shortkey="['w']" @shortkey="mode = 'WATCH'" @click="() => mode = 'WATCH'">Watch</Button>
+                <Button :class="modeIsLocalize ? 'p-button-highlight' : ''" v-shortkey="['l']" @shortkey="mode = 'LOCALIZE'" @click="() => mode = 'LOCALIZE'">Localize</Button>
+                <Button :class="modeIsSkills ? 'p-button-highlight' : ''" v-shortkey="['s']" @shortkey="mode = 'SKILLS'" @click="() => mode = 'SKILLS'">Skills</Button>
                 
               </div>
               <div class="my-2 flex gap-2">
                 currentFrame: {{ currentFrame }}
                 <div id="localize-frame-navigation-buttons" class="flex gap-2">
-                  <Button v-if="modeIsLocalize" @click="setToPreviousFrame"><i class="pi pi-arrow-left"></i></Button>
-                  <Button v-if="modeIsLocalize" @click="setToRandomFrame"><i class="pi pi-arrow-right-arrow-left"></i></Button>
-                  <Button v-if="modeIsLocalize" @click="setToNextFrame"><i class="pi pi-arrow-right"></i></Button>
+                  <Button v-if="modeIsLocalize" @click="setToPreviousFrame" v-shortkey="['p']" @shortkey="setToPreviousFrame"><i class="pi pi-arrow-left"></i></Button>
+                  <Button v-if="modeIsLocalize" @click="setToRandomFrame" v-shortkey="['r']" @shortkey="setToRandomFrame"><i class="pi pi-arrow-right-arrow-left"></i></Button>
+                  <Button v-if="modeIsLocalize" @click="setToNextFrame" v-shortkey="['n']" @shortkey="setToRandomFrame"><i class="pi pi-arrow-right"></i></Button>
                 </div>
               </div>
               <LocalizeInfo v-if="modeIsLocalize" :videoinfo="videoinfo"></LocalizeInfo>
@@ -98,6 +98,16 @@
       </div>
       
       <Button icon="pi pi-arrow-down" v-shortkey="['arrowdown']" @shortkey="upDrawerVisible = true" @click="upDrawerVisible = true" />
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['d']" @shortkey="canvasMode = 'draw'"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['a']" @shortkey="canvasMode = 'accept'"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['e']" @shortkey="canvasMode = 'edit'"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['p']" @shortkey="setToPreviousFrame"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['r']" @shortkey="setToRandomFrame"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['n']" @shortkey="setToNextFrame"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['f']" @shortkey="selectedLabeltype = Object.keys(labeltypes)[0]"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['b']" @shortkey="selectedLabeltype = Object.keys(labeltypes)[1]"></Button>
+      <Button hidden v-if="modeIsSkills" v-shortkey="['r']" @shortkey="replaySection"></Button>
+      <Button hidden v-if="modeIsSkills" v-shortkey="['n']" @shortkey="playNextSection"></Button>
     </div>
       
     <pre>{{ videoinfo }}</pre>
@@ -137,7 +147,7 @@ const paused = ref(true)
 const videoElement = ref(null)
 const skillbalkKey = ref(0)
 const upDrawerVisible = ref(false)
-const drawerDirection = ref('right')
+const drawerDirection = ref('left')
 const drawerDirectionClass = computed(() => drawerDirection.value == 'right' ? 'ml-auto' : 'mr-auto')
 
 const mode = ref('WATCH')
@@ -326,7 +336,7 @@ const setToPreviousFrame = () => {
   let maxFrameNr = videoinfo.value.Frames
     .reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
   let smallerFrameNr = videoinfo.value.Frames
-    .filter(b => b.LabelType == labeltypes[selectedLabeltype.value])
+    .filter((frameinfo) => frameinfo.FrameNr < currentFrame.value)
     .reduce((previous, current) => Math.max(previous, current.FrameNr), -Infinity)
   currentFrame.value = smallerFrameNr == -Infinity ? maxFrameNr : smallerFrameNr
 }
@@ -620,5 +630,6 @@ button:focus {
 .p-drawer-mask {
   background-color: rgba(0, 0, 0, 0.1); /* 25% black */
 }
+
 </style>
 
