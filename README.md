@@ -55,6 +55,10 @@ NVIDIA GeForce RTX™ 4050 Laptop GPU 5898MiB.
 
 ### Installation guide
 
+Prerequisites
+- Install Node.js version 18.3 or higher
+- Install Docker (& Docker compose) - used for the mysql database
+
 There are 3 projects:
 - [API](./api/README.md) - providing data to the web app & containing docker logic
 - [Web](./web/README.md) - Interface to:
@@ -65,6 +69,8 @@ There are 3 projects:
 - [CV/Computer Vision](./computervision/README.md) - providing a job executor training AI models.
 
 ### Starting up
+
+When everything is installed, you can start the projects.
 
 1. In the api folder - start up docker - `docker compose up -d`
 2. In the api folder - `python app.py`
@@ -81,7 +87,7 @@ mysqldump -h 127.0.0.1 -P 3377 -u root -p judge > "/media/miked/Elements/Judge/F
 
 ### Clean requirements & update
 
-(in api and computervision)
+This is a set of commands to clean-up the requirements.txt file (in the api and computervision project)
 The last install is run again to make sure there aren't to much packages deleted.
 ```bash
 pip install --upgrade pip-chill

@@ -30,10 +30,23 @@ SUPPORTED_VIDEO_FORMATS = ['.mov', '.mp4', '.MP4']
 SUPPORTED_IMAGE_FORMATS = ['.jpeg', '.png']
 ```
 
+Prerequisites
+- Install Docker (& Docker compose)
+
 1. Start the docker container: `docker compose up -d`
 2. Create an empty database with .env same name as `MYSQLDB_DATABASE`
 3. Run the database migrations: `flask db upgrade`
 4. Run the app: `python app.py`
+5. Check if you can run `http://localhost:5555/folders` in your web browser (if not, check port forwarding e.g. `app.py` - `app.run(port=5555, debug=True)`)
+
+## Docker mysql error?
+
+When starting up the docker, it won't install mysql?
+Download the needed mysql packages:
+
+```bash
+sudo apt-get install default-libmysqlclient-dev build-essential pkg-config
+```
 
 ## Changing the databse (Flask - alembic)
 

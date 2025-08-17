@@ -173,6 +173,9 @@ Judge scores vs AI scores
 
 ## Installation guide
 
+Prerequisites
+- Install Node.js version 18.3 or higher
+
 ### Recommended IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
@@ -192,6 +195,14 @@ npm install
 ```sh
 npm run dev
 ```
+
+if you run on a remote server
+
+```sh
+npm run dev -- --host
+```
+
+! Make sure ports are forwarded correctly.
 
 #### Compile and Minify for Production
 
