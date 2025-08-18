@@ -35,7 +35,7 @@
               <Button v-show="skillStore.selectedSkill.Id" @click="deselectSkill">Deselect skill</Button>
               <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd != currentFrame" @click="frameToEndOfSkill">Frame to END of selected skill</Button>
               <Button v-show="skillStore.selectedSkill.Id && skillStore.selectedSkill.FrameEnd == currentFrame" @click="frameToStartOfSkill">Frame to START of selected skill</Button>
-              <Button v-show="frameStart && frameEnd" @click="replaySection" v-shortkey="['r']" @shortkey="replaySection">Replay section (r)</Button>
+              <Button v-show="frameStart && frameEnd" @click="replaySection" v-shortkey="['r']" @shortkey="() => handleKeyPress('r')">Replay section (r)</Button>
               <Button @click="playNextSection" v-shortkey="['n']" @shortkey="playNextSection" label="Play next section (n)" aria-label="Play next section (n)"></Button>
             </div>
             <div id="prediction-controls" class="flex gap-2 my-2 wrap" v-if="selectedSkillIsPrediction">
@@ -56,7 +56,7 @@
                 currentFrame: {{ currentFrame }}
                 <div id="localize-frame-navigation-buttons" class="flex gap-2">
                   <Button v-if="modeIsLocalize" @click="setToPreviousFrame" v-shortkey="['p']" @shortkey="setToPreviousFrame"><i class="pi pi-arrow-left"></i></Button>
-                  <Button v-if="modeIsLocalize" @click="setToRandomFrame" v-shortkey="['r']" @shortkey="setToRandomFrame"><i class="pi pi-arrow-right-arrow-left"></i></Button>
+                  <Button v-if="modeIsLocalize" @click="setToRandomFrame" v-shortkey="['r']" @shortkey="() => handleKeyPress('r')"><i class="pi pi-arrow-right-arrow-left"></i></Button>
                   <Button v-if="modeIsLocalize" @click="setToNextFrame" v-shortkey="['n']" @shortkey="setToNextFrame"><i class="pi pi-arrow-right"></i></Button>
                 </div>
               </div>
@@ -98,16 +98,14 @@
       </div>
       
       <Button icon="pi pi-arrow-down" v-shortkey="['arrowdown']" @shortkey="upDrawerVisible = true" @click="upDrawerVisible = true" />
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['d']" @shortkey="canvasMode = 'draw'"></Button>
       <Button hidden v-if="modeIsLocalize" v-shortkey="['a']" @shortkey="canvasMode = 'accept'"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['e']" @shortkey="canvasMode = 'edit'"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['p']" @shortkey="setToPreviousFrame"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['r']" @shortkey="setToRandomFrame"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['n']" @shortkey="setToNextFrame"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['f']" @shortkey="selectedLabeltype = Object.keys(labeltypes)[0]"></Button>
       <Button hidden v-if="modeIsLocalize" v-shortkey="['b']" @shortkey="selectedLabeltype = Object.keys(labeltypes)[1]"></Button>
-      <Button hidden v-if="modeIsSkills" v-shortkey="['r']" @shortkey="replaySection"></Button>
-      <Button hidden v-if="modeIsSkills" v-shortkey="['n']" @shortkey="playNextSection"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['d']" @shortkey="canvasMode = 'draw'"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['e']" @shortkey="canvasMode = 'edit'"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['f']" @shortkey="selectedLabeltype = Object.keys(labeltypes)[0]"></Button>
+      <Button hidden v-if="modeIsLocalize" v-shortkey="['p']" @shortkey="setToPreviousFrame"></Button>
+      <Button hidden v-shortkey="['n']" @shortkey="() => handleKeyPress('n')"></Button>
+      <Button hidden v-shortkey="['r']" @shortkey="() => handleKeyPress('r')"></Button>
     </div>
       
     <pre>{{ videoinfo }}</pre>
@@ -426,6 +424,7 @@ function frameToStartOfSkill() {
 }
 
 async function replaySection() {
+  if (modeIsLocalize.value) { return } 
   currentFrame.value = frameStart.value
   await sleep(100)
 
@@ -604,6 +603,20 @@ const confirmRemoveSkill = (event) => {
     },
   });
 };
+
+const handleKeyPress = (key) => {
+  console.log('handle key', key, modeIsLocalize.value)
+  switch (key) {
+    case 'r':
+      if (modeIsLocalize.value) { setToRandomFrame() }
+      if (modeIsSkills.value) { replaySection() }
+      return;
+    case 'n':
+      if (modeIsLocalize.value) { setToNextFrame() }
+      if (modeIsSkills.value) { playNextSection() }
+      return;
+  }
+}
 
 </script>
 
