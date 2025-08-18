@@ -35,7 +35,7 @@
                             @click="skillStore.deleteCompositionValues(compositionName, idx)"
                             ></Button>
                         </div>
-                        <Card v-for="(upperStage, i) in ['GeneralProperties', 'StartProperties', 'EndProperties']" class="m-2">
+                        <Card v-for="(upperStage, i) in ['GeneralProperties', 'StartProperties', 'EndProperties']" class="m-2 flex-auto">
                             <template #header>{{ upperStage }}</template>
                             <template #content>
                                 <LayerPropertyValueSelector 
@@ -47,10 +47,10 @@
                                 </LayerPropertyValueSelector>
                             </template>
                         </Card>
-                        <Card>
+                        <Card class="flex-auto m-2">
                             <template #header>{{ 'StageProperties' }}</template>
-                            <template #content>
-                                <Card v-for="(stageLabel, stageNr) in label['StageProperties']" class="m-2">
+                            <template #content style="display: flex;">
+                                <Card v-for="(stageLabel, stageNr) in label['StageProperties']" class="m-2 flex-auto">
                                     <template #header>{{ stageNr }}</template>
                                     <template #content>
                                         <LayerPropertyValueSelector 

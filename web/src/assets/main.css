@@ -69,6 +69,11 @@ h5 {
   margin: 0.2rem auto;
 }
 
+.p-card-content:has(> .p-card) {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .p-drawer {
   --vt-c-ligth-green: aquamarine;
   --p-card-background: rgba(20, 145, 145, 0.65);
