@@ -69,7 +69,7 @@ class OutputHeadRecognition(nn.Module):
 
                     counts = torch.Tensor([prop_counts[prop_name].get(self.categorical_idx_to_valueId[row['propertyId']][k], 1) for k in range(num_classes+1)]).to(device)                    
                     max_count = counts.max()
-                    weights = max_count / counts
+                    weights = (max_count / 2 / counts) ** 0.5
                     self.loss_fns[prop_name] = torch.nn.CrossEntropyLoss(weights).to(device)
                 elif prop_type == "boolean":
                     layer = nn.Linear(input_neurons, 1)
