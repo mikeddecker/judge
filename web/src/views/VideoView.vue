@@ -6,7 +6,7 @@
     <span v-if="croperror">{{ croperror }}</span>
     
     <div id="videoview-content" v-if="!loading" class="flex gap-2">
-      <div id="column-1" class="w-[97vw]">
+      <div id="column-1" class="w-[97vw] h-[100vh]">
         <VideoPlayer class="absolute" 
           v-if="!loading" v-bind:video-id="route.params.id" :video-src="videoPath" :mode="mode" :canvas-mode="canvasMode"
           :current-frame-nr="currentFrame" :videoinfo="videoinfo" :labeltype="labeltypes[selectedLabeltype]" :predicted-boxes="locationPredictions" :draw-predicted-boxes="selectedLocalizeModel"
@@ -107,8 +107,6 @@
       <Button hidden v-shortkey="['n']" @shortkey="() => handleKeyPress('n')"></Button>
       <Button hidden v-shortkey="['r']" @shortkey="() => handleKeyPress('r')"></Button>
     </div>
-      
-    <pre>{{ videoinfo }}</pre>
     <Button v-if="modeIsSkills" class="mb-8" @click="toggleSkillsCompleted">Toggle skills completed, now = {{ videoinfo.Completed_Skill_Labels }}</button>
   </div>
   <div v-else>
