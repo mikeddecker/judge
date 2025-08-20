@@ -78,7 +78,7 @@ const sourceFilterdLayers = computed(() => {
 })
 const selectedSourceOrDestIsStageProperties = computed(() => selectedDestStage.value == 'StageProperties' || selectedSourceStage.value == 'StageProperties')
 const possibleStageNrsToMoveToOrFrom = computed(() => {
-
+    console.log(selectedSourceStage.value)
 })
 const stages = ['GeneralProperties', 'StartProperties', 'EndProperties', 'StageProperties']
 const numericStages = computed(() => {
