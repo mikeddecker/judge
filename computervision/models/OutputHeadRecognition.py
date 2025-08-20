@@ -69,7 +69,10 @@ class OutputHeadRecognition(nn.Module):
 
                     counts = torch.Tensor([prop_counts[prop_name].get(self.categorical_idx_to_valueId[row['propertyId']][k], 1) for k in range(num_classes+1)]).to(device)                    
                     max_count = counts.max()
-                    weights = (max_count / 2 / counts) ** 0.5
+                    # weights = torch.log1p(max_count / counts)
+                    weights = (max_count / counts) ** 0.33
+                    weights = weights / weights.mean()
+                    print(prop_name, weights)
                     self.loss_fns[prop_name] = torch.nn.CrossEntropyLoss(weights).to(device)
                 elif prop_type == "boolean":
                     layer = nn.Linear(input_neurons, 1)
@@ -78,7 +81,10 @@ class OutputHeadRecognition(nn.Module):
 
                     counts = torch.Tensor([prop_counts[prop_name].get(k, 1) for k in [False, True]]).to(device)
                     max_count = counts.max()
-                    weights = max_count / counts
+                    # weights = torch.log1p(max_count / counts)
+                    weights = (max_count / counts) ** 0.33
+                    weights = weights / weights.mean()
+                    print(prop_name, weights)
                     self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights)
                 elif prop_type == "numerical":
                     layer = nn.Linear(input_neurons, 1)
@@ -88,7 +94,10 @@ class OutputHeadRecognition(nn.Module):
                     step = property_row['step'] if property_row['step'] > 0.1 else 0.1
                     counts = torch.Tensor([prop_counts[prop_name].get(k * step, 1) for k in range(round(property_row['min'] / step), round(property_row['max'] / step))]).to(device)
                     max_count = counts.max()
-                    weights = max_count / counts
+                    # weights = torch.log1p(max_count / counts)
+                    weights = (max_count / counts) ** 0.33
+                    weights = weights / weights.mean()
+                    print(prop_name, weights)
                     self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights)
 
     def reset_metrics(self):
@@ -138,7 +147,7 @@ class OutputHeadRecognition(nn.Module):
                     self.metrics['recall'][prop_name]    = nsm.NumericStepRecall(step=step).to(device)
                     self.metrics['f1'][prop_name]        = nsm.NumericStepF1Score(step=step).to(device)
                     self.metrics['acc'][prop_name]       = nsm.NumericStepAccuracy(step=step).to(device)
-                    self.metrics['confusion'][prop_name] = nsm.NumericStepConfusionMatrix(step=step, min=min, max=max).to(device)
+                    self.metrics['confusion'][prop_name] = nsm.NumericStepConfusionMatrix(step=step, min=min, max=max, prop_name=prop_name).to(device)
 
     def forward(self, x):
         """
@@ -212,7 +221,7 @@ class OutputHeadRecognition(nn.Module):
                         raise
                 else :
                     target[output_head] = torch.tensor(0.0, device=device) # Dummy
-                    mask[output_head] = torch.tensor(True, device=device)
+                    mask[output_head] = torch.tensor(False, device=device)
 
         return target, mask
 

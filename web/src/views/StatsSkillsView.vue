@@ -5,6 +5,8 @@
 
   <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
 
+  <ConfusionMatrix v-for="(matrix, prop) in results['models']['MViT_extra_dense']['validation_results']['metrics']['confusion']" :name="prop" :confusion="matrix"></ConfusionMatrix>
+
   <Tabs value="total" class="mt-8">
     <TabList>
       <Tab value="total">Total</Tab>
@@ -61,12 +63,14 @@
       </TabPanel>
     </TabPanels>
   </Tabs>
+
 </template>
 
 <script setup>
 import { formatPercentage, getColor, round2decimals, union } from '@/helpers/utils'
 import { computed, nextTick, onMounted, ref } from 'vue'
 import BarChartTrainTest from '@/components/BarChartTrainTest.vue'
+import ConfusionMatrix from '@/components/ConfusionMatrix.vue';
 
 const props = defineProps({
   results: {

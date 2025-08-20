@@ -105,11 +105,15 @@ class NumericStepF1Score(Metric):
         return 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else torch.tensor(0.0)
 
 class NumericStepConfusionMatrix(Metric):
-    def __init__(self, step: float = 1.0, min: float = 0.0, max: float = 2.0, dist_sync_on_step: bool = False):
+    def __init__(self, prop_name:str, step: float = 1.0, min: float = 0.0, max: float = 2.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self.step = step
         self.num_classes = round((max - min) / step) + 1
+        self.min = min
+        self.max = max
         self.confusion_matrix = ConfusionMatrix('multiclass', num_classes=self.num_classes)
+        self.i = 0
+        self.prop_name = prop_name
 
     def update(self, preds: torch.Tensor, targets: torch.Tensor):
         preds = preds if preds.ndim == 1 else preds.squeeze(dim=1)
@@ -118,11 +122,17 @@ class NumericStepConfusionMatrix(Metric):
         pred_rounded = torch.round(preds / self.step) * self.step
         target_rounded = torch.round(targets / self.step) * self.step
 
+        pred_rounded = torch.clamp(pred_rounded, min=self.min, max=self.max)
+        target_rounded = torch.clamp(target_rounded, min=self.min, max=self.max)
+
         self.confusion_matrix.update(pred_rounded, target_rounded)
 
     def compute(self):
         return self.confusion_matrix.compute()
     
+    def reset(self):
+        self.confusion_matrix.reset()
+
     def to(self, *args, **kwargs):
         self.confusion_matrix.to(*args, **kwargs)
         super().to(*args, **kwargs)
