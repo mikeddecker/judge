@@ -32,6 +32,7 @@ SUPPORTED_IMAGE_FORMATS = ['.jpeg', '.png']
 
 Prerequisites
 - Install Docker (& Docker compose)
+- Check [post installation](https://docs.docker.com/engine/install/linux-postinstall/) of docker
 
 1. Start the docker container: `docker compose up -d`
 2. Create an empty database with .env same name as `MYSQLDB_DATABASE`
