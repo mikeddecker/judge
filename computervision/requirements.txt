@@ -23,5 +23,6 @@ tensorflow==2.19.0
 tinycss2==1.4.0
 tomli==2.0.1
 torchaudio==2.6.0
+torchmetrics
 ultralytics==8.3.78
 xformers==0.0.29.post3
