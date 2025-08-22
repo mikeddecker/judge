@@ -36,7 +36,6 @@ class DataRepository:
         self.__load_relativePaths_of_videos_with_framelabels()
 
     def __get_connection(self):
-        print(self.engine.pool.status())
         return self.engine.connect()
     
     def get_videoinfo(self, videoId):
