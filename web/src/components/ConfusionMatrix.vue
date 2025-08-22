@@ -1,23 +1,24 @@
 <template>
     <h3 class="text-xl font-bold mb-2 mt-4 w-fit">{{ name }}</h3>
     <table v-if="matrixColumns">
-        <tr>
-            <th class="border p-2 bg-gray-100"></th>
-            <th :colspan="matrixColumns.length" class="text-center bg-gray-200 font-bold">
-                Predicted
-            </th>
-        </tr>
-        <tr>
-            <th class="border p-2 bg-gray-100">Actual</th>
-            <th v-for="col in matrixColumns.length" :key="col" class="border p-2">
-                {{ col - 1 }}
-            </th>
-        </tr>
-
-        <tr v-for="label in matrixColumns">
-            <td class="text-center p-2 bg-gray-200">{{ transformedMatrix[label]['actual'] }}</td>
-            <td class="text-center p-2" :style="getCellStyle(label, predictionCount)" v-for="predictionCount in matrixColumns">{{ transformedMatrix[label][predictionCount] }}</td>
-        </tr>
+        <tbody>
+            <tr>
+                <th class="border p-2 bg-gray-100"></th>
+                <th :colspan="matrixColumns.length" class="text-center bg-gray-200 font-bold">
+                    Predicted
+                </th>
+            </tr>
+            <tr>
+                <th class="border p-2 bg-gray-100">Actual</th>
+                <th v-for="col in matrixColumns.length" :key="col" class="border p-2">
+                    {{ col - 1 }}
+                </th>
+            </tr>
+            <tr v-for="label in matrixColumns">
+                <td class="text-center p-2 bg-gray-200">{{ transformedMatrix[label]['actual'] }}</td>
+                <td class="text-center p-2" :style="getCellStyle(label, predictionCount)" v-for="predictionCount in matrixColumns">{{ transformedMatrix[label][predictionCount] }}</td>
+            </tr>
+        </tbody>
     </table>
 </template>
 
