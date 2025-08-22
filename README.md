@@ -45,7 +45,7 @@ For full details see [paper](./paper/bachelorproef/DeDeckerMikeBP.tex), preferab
 
 (private)
 - Freestyles from Belgium (as competed in national competitions e.g. [Belgium](https://gymfed.be))
-- Freestyles from international athletes ([IJRU](https://ijru.sport/)))
+- Freestyles from international athletes ([IJRU](https://ijru.sport/))
 
 ### Physical devices for training
 

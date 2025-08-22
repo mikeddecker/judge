@@ -14,6 +14,7 @@ peft==0.15.2
 pip-chill==1.0.3
 pymysql==1.1.1
 pyodbc==5.2.0
+python-dotenv==1.1.1
 scikit-image==0.25.2
 scikit-learn==1.6.0
 sentencepiece==0.2.0
