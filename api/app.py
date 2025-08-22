@@ -1,10 +1,14 @@
+import atexit
 import os
+import signal
+import sys
+import subprocess
 
 from config import ENVS
-from flask import Flask, request, jsonify, current_app, g
+from datetime import datetime
+from flask import Flask
 from flask_cors import CORS
-from flask_restful import Api, Resource
-from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Api
 from flask_cors import CORS
 from flask_migrate import Migrate, upgrade
 from helpers.ValueHelper import ValueHelper
@@ -20,13 +24,22 @@ from routers.mlLayerRouter import MLLayerRouter, MLLayerTypesRouter, MLLayerComp
 from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
 from services.videoService import VideoService
+from typing import cast
 
-DATABASE_URL = os.getenv('DATABASE_URL')
+MYSQLDB_ROOT_PASSWORD : str = cast(str, os.getenv("MYSQLDB_ROOT_PASSWORD"))
+MYSQLDB_HOST : str = cast(str, os.getenv("MYSQLDB_HOST"))
+MYSQLDB_DATABASE : str = cast(str, os.getenv("MYSQLDB_DATABASE"))
+MYSQLDB_LOCAL_PORT : str = cast(str, os.getenv("MYSQLDB_LOCAL_PORT"))
+MYSQLDB_BACKUP : str = cast(str, os.getenv("MYSQLDB_BACKUP"))
+assert MYSQLDB_ROOT_PASSWORD is not None, f"Fill in the MYSQLDB_ROOT_PASSWORD variable in the .env file, located in the api folder."
+assert MYSQLDB_HOST is not None, f"Fill in the MYSQLDB_HOST variable in the .env file, located in the api folder."
+assert MYSQLDB_DATABASE is not None, f"Fill in the MYSQLDB_DATABASE variable in the .env file, located in the api folder."
+assert MYSQLDB_LOCAL_PORT is not None, f"Fill in the MYSQLDB_LOCAL_PORT variable in the .env file, located in the api folder."
+assert MYSQLDB_BACKUP is not None, f"Fill in the MYSQLDB_BACKUP variable in the .env file, located in the api folder."
 
-# db = SQLAlchemy()
 migrate = Migrate()
 
-def create_app(config_object="config.Config"):
+def create_app(config_object:str="config.Config"):
     app = Flask(__name__)
     CORS(app)
     
@@ -44,7 +57,7 @@ def create_app(config_object="config.Config"):
 
 app = create_app()
 CORS(app)
-api = Api(app)
+api : Api = Api(app)
 
 # use api.add_resource to add the paths
 api.add_resource(FolderRouter, '/folders', '/folders/<int:folderId>')
@@ -95,6 +108,44 @@ os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'labels'), exist_ok=True)
 os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'train'), exist_ok=True)
 os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'test'), exist_ok=True)
 os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'val'), exist_ok=True)
+
+def backup_mysql_db(backup_dir: str = MYSQLDB_BACKUP):
+    """Create a MySQL database backup using mysqldump"""
+    os.makedirs(backup_dir, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d")
+    backup_file = os.path.join(backup_dir, f"{MYSQLDB_DATABASE}_{timestamp}.sql")
+
+    # Use env var to avoid "Using a password on the command line is insecure"
+    env = os.environ.copy()
+    env["MYSQL_PWD"] = MYSQLDB_ROOT_PASSWORD
+
+    dump_cmd = [
+        "mysqldump",
+        "-u", "root",
+        "-h", MYSQLDB_HOST,
+        "-P", str(MYSQLDB_LOCAL_PORT),
+        MYSQLDB_DATABASE,
+    ]
+
+    with open(backup_file, "w") as f:
+        subprocess.run(dump_cmd, stdout=f, check=True, env=env)
+
+    print(f"✅ Database backup created: {backup_file}")
+
+_shutdown_called = False
+def shutdown_handler(*args):
+    global _shutdown_called
+    if _shutdown_called:
+        return
+    _shutdown_called = True
+    print("⚠️ Shutting down Flask app, creating backup...")
+    backup_mysql_db()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, shutdown_handler) # Handle Ctrl+C and kill
+signal.signal(signal.SIGTERM, shutdown_handler) # Handle Ctrl+C and kill
+atexit.register(shutdown_handler) # Also run on interpreter exit
 
 if __name__ == '__main__':
     with app.app_context():
