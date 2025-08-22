@@ -168,7 +168,19 @@ const resetCanvasAndDrawBoxes = () => {
   // Draw current drawing box
   if (!canvasmodeIsDelete.value && !canvasmodeIsAcceptPredictedBox.value) {
     ctx.strokeStyle = boxColors[0]
-    ctx.strokeRect(mouseXstart.value * videoWidth.value, mouseYstart.value * videoHeight.value, (mouseX.value - mouseXstart.value) * videoWidth.value, (mouseY.value - mouseYstart.value) * videoHeight.value);
+    ctx.strokeRect(
+      mouseXstart.value * videoWidth.value,
+      0,
+      (mouseX.value - mouseXstart.value) * videoWidth.value, 
+      videoHeight.value,
+    );
+    ctx.strokeRect(
+      0,
+      mouseYstart.value * videoHeight.value,
+      videoWidth.value,
+      (mouseY.value - mouseYstart.value) * videoHeight.value
+    );
+
   }
 }
 
