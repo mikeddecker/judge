@@ -26,35 +26,24 @@ class DataRepository:
     VideoNames = {} # pandas dataframe
 
     def __init__(self):  
-        self.__load_relativePaths_of_videos_with_framelabels()
-
-    def __get_connection(self):
-        HOST = ENVS.DATABASE.HOST
+        HOST = ENVS.DATABASE.MYSQLDB_HOST
         PORT = ENVS.DATABASE.MYSQLDB_LOCAL_PORT
         DATABASE = ENVS.DATABASE.MYSQLDB_DATABASE
         USERNAME = ENVS.DATABASE.MYSQLDB_USERNAME
         PASSWORD = ENVS.DATABASE.MYSQLDB_ROOT_PASSWORD
         DATABASE_CONNECTION=f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
-        engine = sqlal.create_engine(DATABASE_CONNECTION)#
-        return engine.connect()
+        self.engine = sqlal.create_engine(DATABASE_CONNECTION, pool_recycle=30)#
+        self.__load_relativePaths_of_videos_with_framelabels()
 
+    def __get_connection(self):
+        print(self.engine.pool.status())
+        return self.engine.connect()
+    
     def get_videoinfo(self, videoId):
         qry = sqlal.text(f"""SELECT * FROM Videos WHERE id = {videoId}""")
         with self.__get_connection() as connection:
             return pd.read_sql(qry, con=connection)
         
-    def get_dd3_videoIds(self, ):
-        # TODO : update with validation & 'random' sampling
-        qry = sqlal.text(f"""SELECT id FROM Videos WHERE folderId = 3""")
-        with self.__get_connection() as connection:
-            return pd.read_sql(qry, con=connection)
-
-    def get_videos_having_boxes_of_type(self, type=1):
-        # TODO : update with validation & 'random' sampling
-        qry = sqlal.text(f"""SELECT * FROM Videos WHERE id IN (SELECT DISTINCT videoId FROM FrameLabels WHERE labeltype = {type})""")
-        with self.__get_connection() as connection:
-            return pd.read_sql(qry, con=connection)
-
     def get_framelabels(self, train_test_val):
         # TODO : update with validation & 'random' sampling
         if train_test_val == "train":

@@ -5,7 +5,7 @@ from collections import Counter
 from config import RECIPES, ENVS
 from flask_sqlalchemy import SQLAlchemy
 from helpers.helpers import load_json_file
-from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skillinfo_DoubleDutch, Skillinfo_DoubleDutch_Skill, Skillinfo_DoubleDutch_Turner, Skillinfo_DoubleDutch_Type, FrameLabelType
+from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, FrameLabelType
 from repository.models import Skill, LayerComposition, LayerProperty, LayerPropertyValue
 from sqlalchemy import desc, func, case, select, text
 from helpers.ConfigHelper import recognition_get_modelpaths

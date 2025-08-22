@@ -160,48 +160,6 @@ class TrainResultSkill(db.Model):
         db.PrimaryKeyConstraint('modelname', 'epoch', name='_modelname_epoch_pk_constraint'),
     )
 
-class Skillinfo_DoubleDutch_Type(db.Model):
-    __tablename__ = 'Skillinfo_DoubleDutch_Type'
-    id = db.Column(TINYINT(unsigned=True), primary_key=True, autoincrement=True)
-    name = db.Column(db.String(127), nullable=False)
-
-class Skillinfo_DoubleDutch_Turner(db.Model):
-    __tablename__ = 'Skillinfo_DoubleDutch_Turner'
-    id = db.Column(TINYINT(unsigned=True), primary_key=True, autoincrement=True)
-    name = db.Column(db.String(127), nullable=False)
-    level_dd = db.Column(TINYINT(unsigned=True), nullable=False, default="2")
-    level_cw = db.Column(TINYINT(unsigned=True), nullable=False, default="2")
-    cw_requires_both = db.Column(db.Boolean, nullable=False, default=False)
-    dd_requires_both = db.Column(db.Boolean, nullable=False, default=False)
-
-class Skillinfo_DoubleDutch_Skill(db.Model):
-    __tablename__ = 'Skillinfo_DoubleDutch_Skill'
-    id = db.Column(TINYINT(unsigned=True), primary_key=True, autoincrement=True)
-    name = db.Column(db.String(127), nullable=False)
-    level_dd = db.Column(db.String(8), nullable=False, default="2")
-    level_cw = db.Column(db.String(8), nullable=False, default="2")
-
-class Skillinfo_DoubleDutch(db.Model):
-    __tablename__ = 'Skillinfo_DoubleDutch'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
-    frameStart = db.Column(db.Integer, nullable=False)
-    frameEnd = db.Column(db.Integer, nullable=False)
-    type = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Type.id'), nullable=False)
-    rotations = db.Column(TINYINT(unsigned=True), nullable=False)
-    turner1 = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Turner.id'), nullable=False)
-    turner2 = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Turner.id'), nullable=False)
-    skill = db.Column(TINYINT(unsigned=True), db.ForeignKey('Skillinfo_DoubleDutch_Skill.id'), nullable=False)
-    hands = db.Column(TINYINT(unsigned=True), nullable=False)
-    feet = db.Column(TINYINT(unsigned=True), nullable=False)
-    turntable = db.Column(TINYINT(unsigned=True), nullable=False)
-    bodyRotations = db.Column(TINYINT(unsigned=True), nullable=False)
-    backwards = db.Column(db.Boolean, nullable=False)
-    sloppy = db.Column(db.Boolean, nullable=False)
-    hard2see = db.Column(db.Boolean, nullable=False, default=False)
-    fault = db.Column(db.Boolean, nullable=False, default=False)
-    labeldate = db.Column(db.DateTime, default=datetime.now)
-
 class Skill(db.Model):
     __tablename__ = 'Skills'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -224,29 +182,6 @@ class Skill(db.Model):
 #         }
 #     ]
 # }
-
-class Prediction_Frames(db.Model):
-    __tablename__ = 'Predictions_Localization'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
-    frameNr = db.Column(db.Integer, nullable=False)
-    
-    x1 = db.Column(db.Integer, nullable=False)
-    y1 = db.Column(db.Integer, nullable=False)
-    x2 = db.Column(db.Integer, nullable=False)
-    y2 = db.Column(db.Integer, nullable=False)
-    locationChecked = db.Column(db.Boolean, nullable=False, default=False)
-    
-    segmentSplitValue = db.Column(db.Float, nullable=True)
-    segmentsChecked = db.Column(db.Boolean, nullable=False, default=False)
-    
-    predictionDate = db.Column(db.DateTime, default=date.today())
-
-class ML_Model(db.Model):
-    __tablename__ = 'ML_Models'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    type = db.Column(db.String(30), nullable=False)
-    name = db.Column(db.String(127), nullable=False)
 
 class Jobs(db.Model):
     __tablename__ = 'Jobs'
