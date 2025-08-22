@@ -19,7 +19,7 @@ ENVS = SimpleNamespace(
         MYSQLDB_USERNAME = os.getenv('MYSQLDB_USERNAME'),
         MYSQLDB_LOCAL_PORT = os.getenv('MYSQLDB_LOCAL_PORT'),
         MYSQLDB_DOCKER_PORT = os.getenv('MYSQLDB_DOCKER_PORT'),
-        HOST = os.getenv('HOST'),
+        MYSQLDB_HOST = os.getenv('MYSQLDB_HOST'),
     ),
     DIRS = SimpleNamespace(
         VIDEOS = os.getenv("STORAGE_DIR_VIDEOS"),
