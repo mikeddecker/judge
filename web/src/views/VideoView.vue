@@ -474,7 +474,7 @@ async function addSkill() {
   buttonsDisabled.value = true
   videoinfo.value = await postSkill(videoinfo.value.Id, skillStore.selectedSkill)
   prepareNextLabel(frameEnd.value)
-  buttonsDisabled.value = true
+  buttonsDisabled.value = false
   showToastSuccess('Skill added')
 }
 
@@ -482,14 +482,14 @@ async function updateSkill() {
   buttonsDisabled.value = true
   videoinfo.value = await putSkill(videoinfo.value.Id, skillStore.selectedSkill)
   prepareNextLabel(skillStore.selectedSkill.FrameEnd)
-  buttonsDisabled.value = true
+  buttonsDisabled.value = false
   showToastSuccess('Skill updated')
 }
 
 async function toggleSkillsCompleted() {
   buttonsDisabled.value = true
   await updateVideoSkillsCompleted(videoinfo.value.Id, !videoinfo.value.Completed_Skill_Labels).then(() => videoinfo.value.Completed_Skill_Labels = ! videoinfo.value.Completed_Skill_Labels)
-  buttonsDisabled.value = true
+  buttonsDisabled.value = false
 }
 
 function shifPredictedSplitpoint(addFrames) {
@@ -607,11 +607,11 @@ const confirmRemoveSkill = (event) => {
       label: 'Delete'
     },
     accept: () => {
-      buttonsDisabled.value = True
+      buttonsDisabled.value = true
       deleteSkill(videoId.value, frameStart.value, frameEnd.value).then(() => {
         getVideoInfo(videoId.value).then(v => videoinfo.value = v).then(() => {
           skillStore.setSelectedSkill({ "FrameStart": frameStart.value, "Skillinfo": {} })
-          buttonsDisabled.value = False
+          buttonsDisabled.value = false
         })
       })
     },
