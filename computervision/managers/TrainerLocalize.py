@@ -6,6 +6,7 @@ import pandas as pd
 import yaml
 import shutil
 
+from colorama import Fore, Style
 from constants import ENVS
 from datetime import datetime 
 from dotenv import load_dotenv
@@ -157,7 +158,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
             # Re-validate previous trained model
             previous_raw_avg_team_box_io = validate_localize(modeldir=previous_folder, repo=repo)
         
-        print(f"Training increased/decreased from {previous_raw_avg_team_box_io} to {trained_raw_avg_team_box_iou} ({previous_raw_avg_team_box_io - trained_raw_avg_team_box_iou})")
+        print(f"Training {f"{Fore.GREEN}increased" if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou else f"{Fore.RED}decreased"}{Style.RESET_ALL} from {previous_raw_avg_team_box_io:.4f} to {trained_raw_avg_team_box_iou:.4f} ({Fore.GREEN if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou else Fore.RED}{(trained_raw_avg_team_box_iou - previous_raw_avg_team_box_io):.4f}{Style.RESET_ALL})")
         if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou:
             shutil.rmtree(previous_folder)
         else:
