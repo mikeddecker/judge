@@ -85,7 +85,7 @@ watch(() => props.currentFrameNr, (newFrameNr, oldFrameNr) => {
     videoElement.value.currentTime = newFrameNr / props.videoinfo.FPS
     resetCanvasAndDrawBoxes()
   }
-  if (modeIsSkills.value && videoElement.value.paused) {
+  if (modeIsSkills.value && videoElement.value.paused && newFrameNr && props.videoinfo.FPS) {
     videoElement.value.currentTime = newFrameNr / props.videoinfo.FPS
   }
 })
