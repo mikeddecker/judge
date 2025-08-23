@@ -14,7 +14,21 @@
 <script setup>
 import { computed } from 'vue';
 
-const props = defineProps(["videoinfo", "Skills", "currentFrame"])
+const props = defineProps({
+  videoinfo: {
+    required: true,
+    type: Object,
+  },
+  Skills: {
+    type: Object,
+    required: true,
+  },
+  currentFrame: {
+    required: true,
+    type: Number,
+  }
+})
+
 const FrameLength = computed(() => props.videoinfo ? props.videoinfo.FrameLength : 1000)
 const emit = defineEmits(["skill-clicked"])
 
@@ -46,6 +60,9 @@ function getColor(inCreation, isPrediction, skill) {
 }
 
 function getSkillSectionStyle(skill) {
+  if (!skill) {
+    console.log(skill)
+  }
   // Current frame
   if (Number.isInteger(skill)) {
     // current position
@@ -80,6 +97,7 @@ function getSkillSectionStyle(skill) {
       cursor: 'pointer'
   };
 }
+
 function handleClick(skillId, isPrediction) {
     emit('skill-clicked', skillId, isPrediction);
 }

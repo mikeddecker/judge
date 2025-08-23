@@ -27,7 +27,7 @@
                             <Button 
                             class="mx-2" aria-label="Duplicate" label="Duplicate" size="small"
                             v-tooltip="`Duplicate current label of ${compositionName} to all other instances`" 
-                            @click="skillStore.duplicateCompositionValues(compositionName, idx)"
+                            @click="() => duplicateCurrentInstance(compositionName, idx)"
                             ></Button>
                             <Button 
                             class="mx-2" aria-label="Delete" label="Delete" size="small"
@@ -77,6 +77,9 @@ import { getLayerCompositions } from '@/services/videoService';
 import { computed, onMounted, ref, watch } from 'vue';
 import LayerPropertyValueSelector from './LayerPropertyValueSelector.vue';
 import { useSkillStore } from '@/stores/skillStore';
+import { useToastUtils } from '@/helpers/toastUtils';
+
+const { showToastSuccess } = useToastUtils();
 
 const skillStore = useSkillStore()
 const props = defineProps({
@@ -101,6 +104,11 @@ const layercomposition = ref(null)
 onMounted(async () => {
     await getLayerCompositions().then(l => layercomposition.value = l)
 })
+
+const duplicateCurrentInstance = (compositionName, idx) => {
+    skillStore.duplicateCompositionValues(compositionName, idx)
+    showToastSuccess('Instance duplicated')
+}
 
 </script>
 

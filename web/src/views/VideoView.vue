@@ -4,6 +4,7 @@
     <div v-if="loading">Loading...</div>
     <span v-if="error" class="error">{{ error }}</span>
     <span v-if="croperror">{{ croperror }}</span>
+    <Toast/>
     
     <div id="videoview-content" v-if="!loading" class="flex gap-2">
       <div id="column-1" class="w-[97vw] h-[100vh]">
@@ -84,9 +85,9 @@
               <ConfirmPopup></ConfirmPopup>
               <SkillLabel v-if="modeIsSkills" :video-id="videoinfo.Id" :frame-start="frameStart" :frame-end="frameEnd"></SkillLabel>
               <div v-if="modeIsSkills" class="flex flex-wrap gap-2">
-                <Button v-if="!skillStore.selectedSkillIsEmpty && skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['a']" @shortkey="addSkill" @click="addSkill" aria-label="Add skill (a)" label="Add skill (a)" icon="pi pi-plus-circle" class="my-2"></Button>
-                <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" v-shortkey="['u']" @shortkey="updateSkill" @click="updateSkill" aria-label="Update skill (u)" label="Update skill (u)" icon="pi pi-pencil" class="my-2"></Button>
-                <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" @click="confirmRemoveSkill($event)" severity="danger" aria-label="Delete skill" label="Delete skill" icon="pi pi-pencil" class="my-2"></Button>
+                <Button v-if="!skillStore.selectedSkillIsEmpty && skillStore.isNewSkill && frameStart && frameEnd" :disabled="buttonsDisabled" v-shortkey="['a']" @shortkey="addSkill" @click="addSkill" aria-label="Add skill (a)" label="Add skill (a)" icon="pi pi-plus-circle" class="my-2"></Button>
+                <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" :disabled="buttonsDisabled" v-shortkey="['u']" @shortkey="updateSkill" @click="updateSkill" aria-label="Update skill (u)" label="Update skill (u)" icon="pi pi-pencil" class="my-2"></Button>
+                <Button v-if="!skillStore.selectedSkillIsEmpty && !skillStore.isNewSkill && frameStart && frameEnd" :disabled="buttonsDisabled" @click="confirmRemoveSkill($event)" severity="danger" aria-label="Delete skill" label="Delete skill" icon="pi pi-pencil" class="my-2"></Button>
               </div>
             </div>
             <div class="flex flex-wrap hidden">
@@ -97,15 +98,15 @@
         </Drawer>
       </div>
       
-      <Button icon="pi pi-arrow-down" v-shortkey="['arrowdown']" @shortkey="upDrawerVisible = true" @click="upDrawerVisible = true" />
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['a']" @shortkey="canvasMode = 'accept'"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['b']" @shortkey="selectedLabeltype = Object.keys(labeltypes)[1]"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['d']" @shortkey="canvasMode = 'draw'"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['e']" @shortkey="canvasMode = 'edit'"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['f']" @shortkey="selectedLabeltype = Object.keys(labeltypes)[0]"></Button>
-      <Button hidden v-if="modeIsLocalize" v-shortkey="['p']" @shortkey="setToPreviousFrame"></Button>
-      <Button hidden v-shortkey="['n']" @shortkey="() => handleKeyPress('n')"></Button>
-      <Button hidden v-shortkey="['r']" @shortkey="() => handleKeyPress('r')"></Button>
+      <Button :disabled="buttonsDisabled" icon="pi pi-arrow-down" v-shortkey="['arrowdown']" @shortkey="upDrawerVisible = true" @click="upDrawerVisible = true" />
+      <Button :disabled="buttonsDisabled" hidden v-if="modeIsLocalize" v-shortkey="['a']" @shortkey="canvasMode = 'accept'"></Button>
+      <Button :disabled="buttonsDisabled" hidden v-if="modeIsLocalize" v-shortkey="['b']" @shortkey="selectedLabeltype = Object.keys(labeltypes)[1]"></Button>
+      <Button :disabled="buttonsDisabled" hidden v-if="modeIsLocalize" v-shortkey="['d']" @shortkey="canvasMode = 'draw'"></Button>
+      <Button :disabled="buttonsDisabled" hidden v-if="modeIsLocalize" v-shortkey="['e']" @shortkey="canvasMode = 'edit'"></Button>
+      <Button :disabled="buttonsDisabled" hidden v-if="modeIsLocalize" v-shortkey="['f']" @shortkey="selectedLabeltype = Object.keys(labeltypes)[0]"></Button>
+      <Button :disabled="buttonsDisabled" hidden v-if="modeIsLocalize" v-shortkey="['p']" @shortkey="setToPreviousFrame"></Button>
+      <Button :disabled="buttonsDisabled" hidden v-shortkey="['n']" @shortkey="() => handleKeyPress('n')"></Button>
+      <Button :disabled="buttonsDisabled" hidden v-shortkey="['r']" @shortkey="() => handleKeyPress('r')"></Button>
     </div>
     <Button v-if="modeIsSkills" class="mb-8" @click="toggleSkillsCompleted">Toggle skills completed, now = {{ videoinfo.Completed_Skill_Labels }}</button>
   </div>
@@ -125,6 +126,9 @@ import LocalizeInfo from '@/components/LocalizeInfo.vue';
 import SkillBalk from '@/components/SkillBalk.vue';
 import SkillLabel from '@/components/SkillLabel.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
+import { useToastUtils } from '@/helpers/toastUtils';
+
+const { showToastSuccess } = useToastUtils();
 
 const confirm = useConfirm();
 const route = useRoute()
@@ -188,6 +192,8 @@ const skillOptions = ref({})
 const reversedSkillOptions = ref({})
 const selectedSkillLevel = ref(0)
 const selectedSkillIsPrediction = computed(() => skillStore.selectedSkill.hasOwnProperty('IsPrediction') && skillStore.selectedSkill.IsPrediction) 
+
+const buttonsDisabled = ref(false)
 
 watch(
   () => route.params.id,
@@ -465,17 +471,25 @@ function prepareNextLabel(fs) {
 }
 
 async function addSkill() {
+  buttonsDisabled.value = true
   videoinfo.value = await postSkill(videoinfo.value.Id, skillStore.selectedSkill)
   prepareNextLabel(frameEnd.value)
+  buttonsDisabled.value = true
+  showToastSuccess('Skill added')
 }
 
 async function updateSkill() {
+  buttonsDisabled.value = true
   videoinfo.value = await putSkill(videoinfo.value.Id, skillStore.selectedSkill)
   prepareNextLabel(skillStore.selectedSkill.FrameEnd)
+  buttonsDisabled.value = true
+  showToastSuccess('Skill updated')
 }
 
 async function toggleSkillsCompleted() {
-  updateVideoSkillsCompleted(videoinfo.value.Id, !videoinfo.value.Completed_Skill_Labels).then(() => videoinfo.value.Completed_Skill_Labels = ! videoinfo.value.Completed_Skill_Labels)
+  buttonsDisabled.value = true
+  await updateVideoSkillsCompleted(videoinfo.value.Id, !videoinfo.value.Completed_Skill_Labels).then(() => videoinfo.value.Completed_Skill_Labels = ! videoinfo.value.Completed_Skill_Labels)
+  buttonsDisabled.value = true
 }
 
 function shifPredictedSplitpoint(addFrames) {
@@ -593,9 +607,11 @@ const confirmRemoveSkill = (event) => {
       label: 'Delete'
     },
     accept: () => {
+      buttonsDisabled.value = True
       deleteSkill(videoId.value, frameStart.value, frameEnd.value).then(() => {
         getVideoInfo(videoId.value).then(v => videoinfo.value = v).then(() => {
           skillStore.setSelectedSkill({ "FrameStart": frameStart.value, "Skillinfo": {} })
+          buttonsDisabled.value = False
         })
       })
     },
@@ -607,7 +623,7 @@ const handleKeyPress = (key) => {
   switch (key) {
     case 'r':
       if (modeIsLocalize.value) { setToRandomFrame() }
-      if (modeIsSkills.value) { replaySection() }
+      if (modeIsSkills.value && frameStart.value && frameEnd.value) { replaySection() }
       return;
     case 'n':
       if (modeIsLocalize.value) { setToNextFrame() }

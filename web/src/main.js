@@ -30,6 +30,8 @@ import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
+import Toast from 'primevue/toast';
+import ToastService from 'primevue/toastservice';
 import Tooltip from 'primevue/tooltip'
 import { useSkillStore } from './stores/skillStore';
 
@@ -51,6 +53,7 @@ app.use(PrimeVue,
 )
 app.use(createPinia());
 app.use(ConfirmationService);
+app.use(ToastService);
 app.use(Vue3Shortkey, {
   prevent: ['input', 'textarea', 'select', '.p-dropdown', '.p-multiselect', '.p-select-label'], // ignore shortcuts while typing
   capture: true, // listen during capture phase
@@ -77,6 +80,7 @@ app.component('TabList', TabList);
 app.component('Tab', Tab);
 app.component('TabPanels', TabPanels);
 app.component('TabPanel', TabPanel);
+app.component('Toast', Toast)
 
 app.directive('tooltip', Tooltip)
 
