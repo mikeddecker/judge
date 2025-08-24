@@ -254,3 +254,36 @@ class StatsRepository:
 
         return model_results
 
+    def skill_counts_daily(self) -> dict:
+        grouped_data = self.db.session.query(
+            Skill.labeldate,
+            self.split_train_test_skill,
+            func.count().label("count")
+        ).group_by(
+            Skill.labeldate, self.split_train_test_skill
+        ).order_by(
+            Skill.labeldate
+        ).all()
+
+        # Zero counts
+        def counts_per_split():
+            return {'train': 0, 'test': 0}
+        
+        # Iterate and to make daily counts for every item (even if they are absent)
+        current_date = None
+        daily_data = {}
+        for row in grouped_data:
+            rowdate = row.labeldate.strftime("%Y-%m-%d")
+            if rowdate != current_date:
+                daily_data[rowdate] = { 
+                    'individual': counts_per_split(), 
+                    'cumulative': counts_per_split() if current_date is None else daily_data[current_date]['cumulative'].copy()
+                }
+                current_date = rowdate
+            
+            # Add count of current day, type to daily data
+            daily_data[current_date]['individual'][row.split] += row.count
+            daily_data[current_date]['cumulative'][row.split] += row.count
+
+        return daily_data
+

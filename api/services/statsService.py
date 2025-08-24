@@ -136,7 +136,10 @@ class StatsService:
                 'total': self.StatsRepo.skills_prop_value_frequencies(),
                 **{ lcn: self.StatsRepo.skills_prop_value_frequencies(lcn) for lcn in layercomposition_names }
             },
-            'skill_counts': self.StatsRepo.skill_counts(),
+            'skills': {
+                'total' : self.StatsRepo.skill_counts(),
+                'daily' : self.StatsRepo.skill_counts_daily(),
+            },
             'layercomposition_names': layercomposition_names,
         }
         

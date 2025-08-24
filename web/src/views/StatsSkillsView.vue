@@ -3,6 +3,9 @@
     direction="x" title="Skill counts" class="w-120"
   ></BarChartTrainTest>
 
+  <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getDailyChartOptions('Daily skill count')" class="h-[25rem]" />
+  <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getDailyChartOptions('Daily skill count (cumulative)')" class="h-[25rem]" />
+
   <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
 
   <ConfusionMatrix v-for="(matrix, prop) in results['models']['MViT']['validation_results']['metrics']['confusion']" :name="prop" :confusion="matrix"></ConfusionMatrix>
@@ -71,6 +74,7 @@ import { formatPercentage, getColor, round2decimals, union } from '@/helpers/uti
 import { computed, nextTick, onMounted, ref } from 'vue'
 import BarChartTrainTest from '@/components/BarChartTrainTest.vue'
 import ConfusionMatrix from '@/components/ConfusionMatrix.vue';
+import { getDailyChartOptions, transformDailyCounts } from '@/helpers/chartUtils';
 
 const props = defineProps({
   results: {
@@ -79,10 +83,12 @@ const props = defineProps({
   },
 })
 
-onMounted(() => {
-  console.log('Total prop_name_counts:', props.results['prop_name_counts']['total']);
-  console.log('Total prop_value_frequencies:', props.results['prop_value_frequencies']['total']);
+const dailyChartData = ref(null)
+const dailyChartDataCumulative = ref(null)
 
+onMounted(() => {
+  dailyChartData.value = transformDailyCounts(props.results['skills']['daily'], { 'train': 'train', 'test': 'test' }, false)
+  dailyChartDataCumulative.value = transformDailyCounts(props.results['skills']['daily'], { 'train': 'train', 'test': 'test' }, true)
 });
 
 const transformCounts = (values) => {
@@ -114,12 +120,12 @@ const skillcounts = computed(() => {
     datasets: [
       { 
         backgroundColor: getColor(1),
-        data: [props.results['skill_counts']['train']],
+        data: [props.results['skills']['total']['train']],
         label: 'Train'
       },
       { 
         backgroundColor: getColor(2),
-        data: [props.results['skill_counts']['test']],
+        data: [props.results['skills']['total']['test']],
         label: 'Test'
       },
     ]
@@ -148,6 +154,7 @@ const chartDataBestModel = computed(() => {
     datasets
   }
 })
+
 const chartOptionsBestModel = ref({
   responsive: true,
   plugins: {

@@ -18,9 +18,13 @@ export function getColor(skillprop) {
   switch (skillprop) {
     case 1:
     case '1':
+    case 'train':
+    case 'Train':
       return 'rgb(123, 222, 123)'
     case 2:
     case '2':
+    case 'test':
+    case 'Test':
       return 'rgb(123, 222, 222)'
     case 'Total':
       return `rgb(150, 50, 0)`
