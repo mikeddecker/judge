@@ -5,7 +5,7 @@
 
   <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
 
-  <ConfusionMatrix v-for="(matrix, prop) in results['models']['MViT_extra_dense']['validation_results']['metrics']['confusion']" :name="prop" :confusion="matrix"></ConfusionMatrix>
+  <ConfusionMatrix v-for="(matrix, prop) in results['models']['MViT']['validation_results']['metrics']['confusion']" :name="prop" :confusion="matrix"></ConfusionMatrix>
 
   <Tabs value="total" class="mt-8">
     <TabList>

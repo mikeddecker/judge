@@ -1,3 +1,4 @@
+from colorama import Fore, Style
 import numpy as np
 import torch
 import torch.nn as nn
@@ -92,13 +93,13 @@ class OutputHeadRecognition(nn.Module):
                     self.output_layers[output_head] = layer
 
                     step = property_row['step'] if property_row['step'] > 0.1 else 0.1
-                    counts = torch.Tensor([prop_counts[prop_name].get(k * step, 1) for k in range(round(property_row['min'] / step), round(property_row['max'] / step))]).to(device)
+                    counts = torch.Tensor([prop_counts[prop_name].get(k * step, 1) for k in range(round(property_row['min'] / step), round(property_row['max'] / step) + 1)]).to(device)
                     max_count = counts.max()
                     # weights = torch.log1p(max_count / counts)
                     weights = (max_count / counts) ** 0.33
                     weights = weights / weights.mean()
                     print(prop_name, weights)
-                    self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights)
+                    self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights, step=step)
 
     def reset_metrics(self):
         for metric_type, prop_name_metric in self.metrics.items():

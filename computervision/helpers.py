@@ -1,3 +1,4 @@
+from colorama import Fore, Style
 import cv2
 import json
 import keras
@@ -303,7 +304,29 @@ def draw_text(img, text,
 def get_localize_strategy_list():
     return ['raw', 'smoothing', 'smoothing_skip_small_iou', 'cosine']
 
-def weighted_mse_loss(input, target, weight):
+def weighted_mse_loss(input: torch.Tensor, target: torch.Tensor, weight: torch.Tensor, step: float = None):
+    # print(Fore.CYAN, "weight", weight, Style.RESET_ALL, step)
+    if step is None:
+        # print("target.long()", target.long())
+        if torch.any(target < 0) or torch.any(target >= weight.size(0)):
+            print(f"{Fore.YELLOW}Invalid index detected!",
+                "min idx:", target.min().item(),
+                "max idx:", target.max().item(),
+                "valid range:", 0, weight.size(0)-1, Style.RESET_ALL)
+            raise RuntimeError("Invalid index in weighted loss")
+        weight = weight[target.long()]
+    else:
+        rounded_target = torch.round(target / step)
+        rounded_target = torch.clamp(rounded_target, min=0, max=weight.size()[0]-1)
+        # print("rounded_target.long()", rounded_target.long())
+        if torch.any(rounded_target < 0) or torch.any(rounded_target >= weight.size(0)):
+            print(Fore.MAGENTA, "Invalid index detected!",
+                "min idx:", rounded_target.min().item(),
+                "max idx:", rounded_target.max().item(),
+                "valid range:", 0, weight.size(0)-1, Style.RESET_ALL)
+            raise RuntimeError("Invalid index in weighted loss")
+        weight = weight[rounded_target.long()]
+
     "https://discuss.pytorch.org/t/how-to-implement-weighted-mean-square-error/2547"
     return torch.sum(weight * (input - target) ** 2)
 
@@ -389,3 +412,4 @@ def localize_get_best_modelpath():
 
     modelpath = os.path.join(ENVS.DIRS.WEIGHTS.YOLO, best_size, best_trainround, "weights", "best.pt")
     return best_modelname, os.path.join(modelpath, ) # modelname = yolo11n, modelpath = '../runs/detect/train7/weights/best.pt'
+
