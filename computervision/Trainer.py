@@ -34,7 +34,7 @@ class Trainer:
                     skillTrainer.train(
                         recipe=RECIPES[step][recipename],
                         from_scratch=from_scratch,
-                        epochs=1,
+                        epochs=3,
                         save_anyway=save_anyway,
                         unfreeze_all_layers=False,
                         speedmode=speedmode
