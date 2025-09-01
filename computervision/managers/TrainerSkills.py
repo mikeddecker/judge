@@ -57,7 +57,7 @@ class TrainerSkills:
     def __init__(self):
         self.repo = DataRepository()
 
-    def train(self, recipe: SimpleNamespace, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, speedmode=SPEEDMODES[1]):
+    def train(self, recipe: SimpleNamespace, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, patience:int=5, speedmode=SPEEDMODES[1]):
         rundate = date.today().strftime('%Y%m%d')
 
         #########################################################################################
@@ -119,6 +119,7 @@ class TrainerSkills:
         # End video creation
         #########################################################################################
         try:
+            scheduler_patience = 2
             start = time.time()
             testrun = False
             modelname = recipe.model
@@ -159,8 +160,6 @@ class TrainerSkills:
             # Adapting the losses_over_time, as limiting to 10% can change occurences of faults, bodyrotations... a little
             # TODO : load previous model instead of current :)
             
-            # TODO : re-add weighted losses_over_time
-
             try:
                 best_model_revalidation_results = None
                 best_model_name = None
@@ -172,7 +171,7 @@ class TrainerSkills:
                     model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
                     model.load_state_dict(torch.load(pathBest, weights_only=True))
                     optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
+                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
                     print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
                     best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
             except Exception as e:
@@ -184,7 +183,7 @@ class TrainerSkills:
                     model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
                     model.load_state_dict(torch.load(path, weights_only=True))
                     optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
+                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
                     print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
                     revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
             except Exception as e:
@@ -193,7 +192,7 @@ class TrainerSkills:
             # For new training rounds
             model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
             optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.2)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
 
             classification_reports = {}
             epoch_start = 0
@@ -257,7 +256,6 @@ class TrainerSkills:
                 print(f"Epoch {epoch}, Validation Loss: {val_loss:.4f}")
                 print(f"Epoch {epoch}, Validation f1_avg: {color}{validation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
 
-                patience = 5
                 if epochsNoImprovement > patience:
                     print(f"No improvement for {epochsNoImprovement} epochs - stopping")
                     break
