@@ -95,5 +95,15 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.__refillBalancedSet()
 
     def __refillBalancedSet(self):
-        self.BalancedSet = self.Skills.sample(frac=1.)
+        self.BalancedSet = self.limit_skill_occurrences()
+
+    def limit_skill_occurrences(self):
+        counts = self.Skills['skillinfo_string'].value_counts()
+        max_allowed = int(round(counts.max() ** 0.5))
+
+        limited_df = pd.concat([
+            group.sample(n=min(len(group), max_allowed)) 
+            for _, group in self.Skills.groupby('skillinfo_string')
+        ])
+        return limited_df.reset_index(drop=True)
 

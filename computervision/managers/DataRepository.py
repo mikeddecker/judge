@@ -164,6 +164,7 @@ class DataRepository:
             df = pd.read_sql(qry, con=connection)
             # Convert 'skillinfo' column from JSON string to Python dict
             if 'skillinfo' in df.columns:
+                df['skillinfo_string'] = df['skillinfo']
                 df['skillinfo'] = df['skillinfo'].apply(json.loads)
             return df
                 

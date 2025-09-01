@@ -51,6 +51,7 @@ class OutputHeadRecognition(nn.Module):
     def init_layers(self, input_neurons: int, prop_counts: defaultdict[defaultdict[int]]):
         self.layers: dict[str, nn.Module] = {} # Key = prop_name, Value = Layer
         self.loss_fns: dict[str, callable] = {}
+        weight_alpha = 1.5
         for index, row in self.df_composition.iterrows():
             composition_name = row['compositionName']
             mapped_stage = map_stageNr(row['stage'])
@@ -68,10 +69,11 @@ class OutputHeadRecognition(nn.Module):
                     self.layers[prop_name] = layer
                     self.output_layers[output_head] = layer
 
-                    counts = torch.Tensor([prop_counts[prop_name].get(self.categorical_idx_to_valueId[row['propertyId']][k], 1) for k in range(num_classes+1)]).to(device)                    
+                    counts = torch.Tensor([prop_counts[prop_name].get(self.categorical_idx_to_valueId[row['propertyId']][k], 0) for k in range(num_classes+1)]).to(device)                    
                     max_count = counts.max()
-                    # weights = torch.log1p(max_count / counts)
-                    weights = (max_count / counts) ** 0.33
+                    counts = counts ** weight_alpha
+                    counts[counts == 0] = max_count
+                    weights = (max_count ** weight_alpha) / counts
                     weights = weights / weights.mean()
                     print(prop_name, weights)
                     self.loss_fns[prop_name] = torch.nn.CrossEntropyLoss(weights).to(device)
@@ -80,12 +82,12 @@ class OutputHeadRecognition(nn.Module):
                     self.layers[prop_name] = layer
                     self.output_layers[output_head] = layer
 
-                    counts = torch.Tensor([prop_counts[prop_name].get(k, 1) for k in [False, True]]).to(device)
+                    counts = torch.Tensor([prop_counts[prop_name].get(k, 0) for k in [False, True]]).to(device)
                     max_count = counts.max()
-                    # weights = torch.log1p(max_count / counts)
-                    weights = (max_count / counts) ** 0.33
+                    counts = counts ** weight_alpha
+                    counts[counts == 0] = max_count
+                    weights = (max_count ** weight_alpha) / counts
                     weights = weights / weights.mean()
-                    print(prop_name, weights)
                     self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights)
                 elif prop_type == "numerical":
                     layer = nn.Linear(input_neurons, 1)
@@ -93,10 +95,11 @@ class OutputHeadRecognition(nn.Module):
                     self.output_layers[output_head] = layer
 
                     step = property_row['step'] if property_row['step'] > 0.1 else 0.1
-                    counts = torch.Tensor([prop_counts[prop_name].get(k * step, 1) for k in range(round(property_row['min'] / step), round(property_row['max'] / step) + 1)]).to(device)
+                    counts = torch.Tensor([prop_counts[prop_name].get(k * step, 0) for k in range(round(property_row['min'] / step), round(property_row['max'] / step) + 1)]).to(device)
                     max_count = counts.max()
-                    # weights = torch.log1p(max_count / counts)
-                    weights = (max_count / counts) ** 0.33
+                    counts = counts ** weight_alpha
+                    counts[counts == 0] = max_count
+                    weights = (max_count ** weight_alpha) / counts
                     weights = weights / weights.mean()
                     print(prop_name, weights)
                     self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights, step=step)
