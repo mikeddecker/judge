@@ -1,5 +1,6 @@
 import json
 import os
+import pandas as pd
 import re
 from collections import Counter
 from config import RECIPES, ENVS
@@ -154,6 +155,21 @@ class StatsRepository:
             row.prop_name for row in qry.all()
         })
     
+    def skill_prop_value_names_dataframe(self):
+        query = self.db.session.query(
+            LayerProperty.id.label("property_id"),
+            LayerProperty.name.label("prop_name"),
+            LayerProperty.type,
+            LayerProperty.min,
+            LayerProperty.max,
+            LayerProperty.step,
+            LayerPropertyValue.id.label("value_id"),
+            LayerPropertyValue.name.label("value_name"),
+        ).outerjoin(
+            LayerPropertyValue, LayerProperty.id == LayerPropertyValue.propertyId
+        )
+        return pd.read_sql(query.statement, self.db.engine)
+
     def layercomposition_names(self) -> list[str]:
         layercomposition_names = self.db.session.query(
             LayerComposition.compositionName
@@ -195,11 +211,21 @@ class StatsRepository:
 
         return output
 
-    def skills_prop_value_frequencies(self, layercompositionname: str = None) -> dict:
+    def skills_prop_value_frequencies(self) -> dict:
         """
         Returns counts of each distinct value for a given property in skillinfo JSON.
         Example: {'Backwards': {0: 12, 1: 59}, 'CrossRestriction': {71: 443, 72: 223, 73: 150...} }
         """
+        df_prop_value_names = self.skill_prop_value_names_dataframe()
+        def map_prop_value(df: pd.DataFrame, prop_name: str, prop_value: str):
+            df_prop_name_filtered = df[df['prop_name'] == prop_name]
+            if df_prop_name_filtered.iloc[0]['type'] == 'categorical':
+                if prop_value == 0:
+                    return 0
+                return df_prop_name_filtered[df_prop_name_filtered['value_id'] == prop_value].iloc[0]['value_name']
+            else:
+                return prop_value
+
         query = self.db.session.query(
             Skill.skillinfo,
             self.split_train_test_skill
@@ -214,11 +240,17 @@ class StatsRepository:
             for lcn in layer_composition_names:
                 if lcn in row.skillinfo.keys() or lcn == 'total':
                     skill: dict = row.skillinfo if lcn == 'total' else row.skillinfo[lcn]
-                    for k,v in extract_key_number_pairs(skill):
-                        counts[lcn][k][row.split][v] += 1
+                    for property_name, value in extract_key_number_pairs(skill):
+                        counts[lcn][property_name][row.split][value] += 1
 
         return {
-            k: dict(values) for k, values in counts.items()
+            lcn: { 
+                prop_name: {
+                    split: {
+                        map_prop_value(df_prop_value_names, prop_name, value): count for value, count in value_counter.items() }
+                    for split, value_counter in prop_name_split_values.items() } 
+                for prop_name, prop_name_split_values in lcn_values.items() }
+            for lcn, lcn_values in counts.items()
         }
 
     def skill_counts(self) -> dict:
