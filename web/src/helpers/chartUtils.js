@@ -30,7 +30,7 @@ export const transformDailyCounts = (dailyData, types, cummulative) => {
   };
 }
 
-export const getDailyChartOptions = (title) => {
+export const getDailyChartOptions = (title, axisName = 'box count') => {
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -55,7 +55,7 @@ export const getDailyChartOptions = (title) => {
         display: true,
         title: {
           display: true,
-          text: 'box count'
+          text: axisName
         },
         // type: 'logarithmic',
         suggestedMin: 0,

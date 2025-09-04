@@ -9,8 +9,8 @@
     ></BarChartTrainTest>
   </div>
   
-  <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getDailyChartOptions('Daily skill count')" class="h-[25rem]" />
-  <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getDailyChartOptions('Daily skill count (cumulative)')" class="h-[25rem]" />
+  <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getDailyChartOptions('Daily skill count', 'skills')" class="h-[25rem]" />
+  <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getDailyChartOptions('Daily skill count (cumulative)', 'skills')" class="h-[25rem]" />
   
   <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
   
