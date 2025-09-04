@@ -1,71 +1,77 @@
 <template>
-  <BarChartTrainTest :values="skillcounts" 
-    direction="x" title="Skill counts" class="w-120"
-  ></BarChartTrainTest>
-
+  <div class="flex flex-wrap gap-6 mb-16">
+    <BarChartTrainTest :values="skillcounts" 
+    direction="x" title="Skill counts" class="flex-1"
+    ></BarChartTrainTest>
+    
+    <BarChartTrainTest :values="skillCompositionCounts" 
+    direction="x" title="composition counts" class="flex-2"
+    ></BarChartTrainTest>
+  </div>
+  
   <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getDailyChartOptions('Daily skill count')" class="h-[25rem]" />
   <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getDailyChartOptions('Daily skill count (cumulative)')" class="h-[25rem]" />
-
+  
   <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
-
+  
   <ConfusionMatrix v-for="(matrix, prop) in results['models']['MViT']['validation_results']['metrics']['confusion']" :name="prop" :confusion="matrix"></ConfusionMatrix>
-
+  
   <Tabs value="total" class="mt-8">
     <TabList>
       <Tab value="total">Total</Tab>
       <Tab
-        v-for="layercomposition in results['layercomposition_names']"
-        :key="layercomposition"
-        :value="layercomposition"
+      v-for="layercomposition in results['layercomposition_names']"
+      :key="layercomposition"
+      :value="layercomposition"
       >
-        {{ layercomposition }}
-      </Tab>
-    </TabList>
-
-    <TabPanels>
-      <TabPanel value="total">
+      {{ layercomposition }}
+    </Tab>
+  </TabList>
+  
+  <TabPanels>
+    <TabPanel value="total">
+      <BarChartTrainTest
+      :values="transformCounts(results['prop_name_counts']['total'])"
+      direction="y"
+      title="Total property counts"
+      :squared="true"
+      />
+      <div class="flex flex-wrap gap-8">
         <BarChartTrainTest
-          :values="transformCounts(results['prop_name_counts']['total'])"
-          direction="y"
-          title="Total property counts"
-          :squared="true"
+        v-for="(values, property) in results['prop_value_frequencies']['total']"
+        :values="transformCounts(values)"
+        direction="x"
+        :title="property"
+        class="w-120 flex-auto"
+        :squared="true"
         />
-        <div class="flex flex-wrap gap-8">
-          <BarChartTrainTest
-            v-for="(values, property) in results['prop_value_frequencies']['total']"
-            :values="transformCounts(values)"
-            direction="x"
-            :title="property"
-            class="w-120 flex-auto"
-            :squared="true"
-          />
         </div>
       </TabPanel>
 
       <TabPanel
-        v-for="layercomposition in results['layercomposition_names']"
-        :key="layercomposition"
-        :value="layercomposition"
+      v-for="layercomposition in results['layercomposition_names']"
+      :key="layercomposition"
+      :value="layercomposition"
       >
+      <BarChartTrainTest
+      :values="transformCounts(results['prop_name_counts'][layercomposition])"
+      direction="y"
+      :squared="true"
+      :title="`Property counts ${layercomposition}`"
+      />
+      <div class="flex flex-wrap gap-8">
         <BarChartTrainTest
-          :values="transformCounts(results['prop_name_counts'][layercomposition])"
-          direction="y"
-          :squared="true"
-          :title="`Property counts ${layercomposition}`"
+        v-for="(values, property) in results['prop_value_frequencies'][layercomposition]"
+        :values="transformCounts(values)"
+        direction="x"
+        :title="property"
+        class="w-120 flex-auto"
+        :squared="true"
         />
-        <div class="flex flex-wrap gap-8">
-          <BarChartTrainTest
-            v-for="(values, property) in results['prop_value_frequencies'][layercomposition]"
-            :values="transformCounts(values)"
-            direction="x"
-            :title="property"
-            class="w-120 flex-auto"
-            :squared="true"
-          />
-        </div>
-      </TabPanel>
-    </TabPanels>
-  </Tabs>
+      </div>
+    </TabPanel>
+  </TabPanels>
+</Tabs>
 
 </template>
 
@@ -126,6 +132,24 @@ const skillcounts = computed(() => {
       { 
         backgroundColor: getColor(2),
         data: [props.results['skills']['total']['test']],
+        label: 'Test'
+      },
+    ]
+  }
+})
+
+const skillCompositionCounts = computed(() => {
+  return {
+    labels: Object.keys(props.results['layercomposition_counts']),
+    datasets: [
+      { 
+        backgroundColor: getColor(1),
+        data: Object.values(props.results['layercomposition_counts']).map(train_test_values => train_test_values['train']),
+        label: 'Train'
+      },
+      { 
+        backgroundColor: getColor(2),
+        data: Object.values(props.results['layercomposition_counts']).map(train_test_values => train_test_values['test']),
         label: 'Test'
       },
     ]

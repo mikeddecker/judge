@@ -138,6 +138,7 @@ class StatsService:
                 'daily' : self.StatsRepo.skill_counts_daily(),
             },
             'layercomposition_names': layercomposition_names,
+            'layercomposition_counts': self.StatsRepo.skill_counts_composition()
         }
         
         return results

@@ -10,6 +10,7 @@ from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLab
 from repository.models import Skill, LayerComposition, LayerProperty, LayerPropertyValue
 from sqlalchemy import desc, func, case, select, text
 from helpers.ConfigHelper import recognition_get_modelpaths
+from collections import defaultdict
 
 def extract_key_number_pairs(obj):
     if isinstance(obj, list):
@@ -313,4 +314,33 @@ class StatsRepository:
             daily_data[current_date]['cumulative'][row.split] += row.count
 
         return daily_data
+
+    def skill_counts_composition(self) -> dict:
+        layer_composition_names = self.layercomposition_names()
+        query = self.db.session.query(
+            *[func.json_length(func.json_extract(Skill.skillinfo, f'$.{lcn}')).label(lcn) for lcn in layer_composition_names],
+            func.count().label('count'),
+            self.split_train_test_skill
+        ).group_by(
+            *[lcn for lcn in layer_composition_names],
+            self.split_train_test_skill
+        )
+
+        results = query.all()
+
+        dataset = defaultdict(lambda: Counter({'train': 0, 'test': 0}))
+        for row in results:
+            key_parts = [
+                f"{row[index]} {lcn}"
+                for index, lcn in enumerate(layer_composition_names)
+                if row[index] not in (None, 0)
+            ]
+            key = ', '.join(key_parts) if key_parts else "empty"
+
+            count = row.count
+            split = row.split
+
+            dataset[key][split] = count
+
+        return {k: dict(v) for k, v in dataset.items()}
 
