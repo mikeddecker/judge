@@ -201,26 +201,21 @@ class StatsRepository:
         Example: {'Backwards': {0: 12, 1: 59}, 'CrossRestriction': {71: 443, 72: 223, 73: 150...} }
         """
         query = self.db.session.query(
-            func.json_extract(Skill.skillinfo, f'$.{layercompositionname}').label('skillinfo') if layercompositionname else Skill.skillinfo,
-            self.split_train_test_skill
-        ).group_by(
-            func.json_extract(Skill.skillinfo, f'$.{layercompositionname}').label('skillinfo') if layercompositionname else Skill.skillinfo,
+            Skill.skillinfo,
             self.split_train_test_skill
         )
 
-        if layercompositionname:
-            query = query.filter(
-                func.json_search(Skill.skillinfo, 'one', layercompositionname) != None
-            )
-
         result = query.all()
 
-        prop_names = self.skills_prop_names(layercompositionname)
-        counts = { prop_name: { s: Counter() for s in ['train', 'test'] } for prop_name in prop_names }
+        layer_composition_names = self.layercomposition_names()
+        layer_composition_names.append('total')
+        counts = { lcn: { prop_name: { s: Counter() for s in ['train', 'test'] } for prop_name in self.skills_prop_names(None if lcn == 'total' else lcn) } for lcn in layer_composition_names }
         for row in result:
-            s = json.loads(row.skillinfo) if layercompositionname else row.skillinfo
-            for k,v in extract_key_number_pairs(s):
-                counts[k][row.split][v] += 1
+            for lcn in layer_composition_names:
+                if lcn in row.skillinfo.keys() or lcn == 'total':
+                    skill: dict = row.skillinfo if lcn == 'total' else row.skillinfo[lcn]
+                    for k,v in extract_key_number_pairs(skill):
+                        counts[lcn][k][row.split][v] += 1
 
         return {
             k: dict(values) for k, values in counts.items()

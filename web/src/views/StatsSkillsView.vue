@@ -138,7 +138,7 @@ const chartDataBestModel = computed(() => {
   console.log('metrics over time', metricsOverTime)
   const classes = Object.keys(metricsOverTime[0]['f1'])
   const epochs = Object.entries(metricsOverTime).map((_, idx) => `${idx}`)
-  console.log(classes, epochs)
+
   // Create one dataset per class
   const datasets = classes.map(cls => ({
     label: cls,
