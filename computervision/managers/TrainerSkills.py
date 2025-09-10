@@ -86,6 +86,9 @@ class TrainerSkills:
             return {
                 'val_loss' : val_loss / len(dataloader),
                 'f1_total_avg' : float(np.mean(list(metrics['f1'].values()))),
+                'accuracy_avg' : float(np.mean(list(metrics['acc'].values()))),
+                'precision_avg' : float(np.mean(list(metrics['precision'].values()))),
+                'recall_avg' : float(np.mean(list(metrics['recall'].values()))),
                 'metrics' : metrics
             }
         #########################################################################################
@@ -167,17 +170,15 @@ class TrainerSkills:
                     best_model_stats = load_json_file(best_stats_path)
                     best_model_name = best_model_stats['modelname']
                     best_model_backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[best_model_name].get_output_feature_dim(recipe)
-                    best_head = OutputHeadRecognition(best_model_backbone_output_neurons, df_layers, df_composition, max_instances_per_role)
+                    best_head = OutputHeadRecognition(best_model_backbone_output_neurons, df_layers, df_composition, max_instances_per_role, prop_counts)
                     model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
                     model.load_state_dict(torch.load(pathBest, weights_only=True))
                     optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
                     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
                     print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
                     best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
-            except Exception as e:
-                pass
+                    print(f"target best ({best_model_name}) - {best_model_revalidation_results['f1_total_avg']:.4f}")
 
-            try:                
                 revalidation_results = None
                 if not from_scratch and os.path.exists(path):
                     model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
@@ -186,8 +187,11 @@ class TrainerSkills:
                     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
                     print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
                     revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+                    print(f"target {modelname}: {revalidation_results['f1_total_avg']:.4f}")
+
             except Exception as e:
-                pass
+                print("revalidation went wrong")
+                raise e
             
             # For new training rounds
             model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
@@ -200,6 +204,7 @@ class TrainerSkills:
             metrics_over_time = {}
             modelstats = {}
             f1_avgs_over_time = []
+            acc_avgs_over_time = []
             if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPathCurrent):
                 checkpoint = torch.load(checkpointPath, weights_only=False)
                 modelstats = load_json_file(modelstatsPathCurrent)
@@ -209,6 +214,7 @@ class TrainerSkills:
                 epoch_start = modelstats['epoch'] + 1
                 losses_over_time = modelstats['losses_over_time']
                 f1_avgs_over_time = modelstats['f1_total_avgs_over_time']
+                acc_avgs_over_time = modelstats['acc_avgs_over_time']
                 metrics_over_time = {} if 'metrics_over_time' not in modelstats.keys() else modelstats['metrics_over_time']
                 classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
 
@@ -244,24 +250,28 @@ class TrainerSkills:
 
                 losses_over_time.append(val_loss)
                 f1_avgs_over_time.append(validation_results['f1_total_avg'])
+                acc_avgs_over_time.append(validation_results['accuracy_avg'])
                 scheduler.step(val_loss)
                 metrics_over_time[str(epoch)] = validation_results['metrics']
                 
-                minIndexAcc = f1_avgs_over_time.index(max(f1_avgs_over_time))
-                hasValAccImproved = len(losses_over_time) - minIndexAcc - 1 == 0
-                epochsNoImprovement = len(losses_over_time) - minIndexAcc - 1
+                minIndexF1 = f1_avgs_over_time.index(max(f1_avgs_over_time))
+                minIndexLoss = losses_over_time.index(min(losses_over_time))
+                hasValF1Improved = len(losses_over_time) - minIndexF1 - 1 == 0
+                hasValLossImproved = len(losses_over_time) - minIndexLoss - 1 == 0
+                epochsNoImprovement = len(losses_over_time) - max(minIndexF1, minIndexLoss) - 1
 
-                color = Fore.GREEN if hasValAccImproved else Fore.RED
+                color_acc = Fore.GREEN if hasValF1Improved else Fore.RED
+                color_loss = Fore.GREEN if hasValLossImproved else Fore.RED
                 print(f"Epoch {epoch}, Train Loss: {total_loss / len(dataloaderTrain):.4f}")
-                print(f"Epoch {epoch}, Validation Loss: {val_loss:.4f}")
-                print(f"Epoch {epoch}, Validation f1_avg: {color}{validation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
+                print(f"Epoch {epoch}, Validation Loss: {color_loss}{val_loss:.4f}{Style.RESET_ALL}")
+                print(f"Epoch {epoch}, Validation f1_avg: {color_acc}{validation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
 
                 if epochsNoImprovement > patience:
                     print(f"No improvement for {epochsNoImprovement} epochs - stopping")
                     break
 
                 # TODO : add .current.json & compare to previous run
-                if hasValAccImproved:
+                if hasValF1Improved or hasValLossImproved:
                     torch.save({
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
@@ -272,6 +282,7 @@ class TrainerSkills:
                         'epoch': epoch,
                         'validation_results': validation_results,
                         'f1_total_avgs_over_time' : f1_avgs_over_time,
+                        'acc_avgs_over_time' : acc_avgs_over_time,
                         'metrics_over_time': metrics_over_time,
                         'losses_over_time': losses_over_time,
                         'classification_reports' : None,
@@ -290,7 +301,7 @@ class TrainerSkills:
 
                     if not from_scratch and (not revalidation_results or validation_results['f1_total_avg'] > revalidation_results['f1_total_avg']):
                         if revalidation_results:
-                            print(f"Model {modelname} improved from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
+                            print(f"Current model {modelname} improved from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
                         with open(modelstatsPath, "w") as fp:
                             json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
                         

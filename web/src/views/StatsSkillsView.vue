@@ -14,7 +14,7 @@
   
   <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
   
-  <ConfusionMatrix v-for="(matrix, prop) in results['models']['MViT']['validation_results']['metrics']['confusion']" :name="prop" :confusion="matrix"></ConfusionMatrix>
+  <ConfusionMatrix v-for="(matrix, prop) in results['models'][selectedModel]['validation_results']['metrics']['confusion']" :name="prop" :confusion="matrix"></ConfusionMatrix>
   
   <Tabs value="total" class="mt-8">
     <TabList>
@@ -89,6 +89,8 @@ const props = defineProps({
   },
 })
 
+const selectedModel = ref('best')
+
 const dailyChartData = ref(null)
 const dailyChartDataCumulative = ref(null)
 
@@ -158,7 +160,7 @@ const skillCompositionCounts = computed(() => {
 
 const chartDataBestModel = computed(() => {
   console.log(props.results)
-  let metricsOverTime = props.results['models']['best']['metrics_over_time']
+  let metricsOverTime = props.results['models'][selectedModel.value]['metrics_over_time']
   console.log('metrics over time', metricsOverTime)
   const classes = Object.keys(metricsOverTime[0]['f1'])
   const epochs = Object.entries(metricsOverTime).map((_, idx) => `${idx}`)
