@@ -7,10 +7,11 @@ class NumericStepAccuracy(Metric):
     Works with continuous predictions in regression-like tasks.
     """
 
-    def __init__(self, step: float = 1.0, dist_sync_on_step: bool = False):
+    def __init__(self, prop_name: str, step: float = 1.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
         self.step = step
+        self.prop_name = prop_name
 
         # Metric state: accumulates counts across batches
         self.add_state("correct", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
@@ -37,9 +38,10 @@ class NumericStepAccuracy(Metric):
         return self.correct.float() / self.total if self.total > 0 else torch.tensor(0.0)
 
 class NumericStepPrecision(Metric):
-    def __init__(self, step: float = 1.0, dist_sync_on_step: bool = False):
+    def __init__(self, prop_name: str, step: float = 1.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self.step = step
+        self.prop_name = prop_name
         self.add_state("tp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
         self.add_state("fp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
@@ -59,9 +61,10 @@ class NumericStepPrecision(Metric):
         return self.tp.float() / denom if denom > 0 else torch.tensor(0.0)
 
 class NumericStepRecall(Metric):
-    def __init__(self, step: float = 1.0, dist_sync_on_step: bool = False):
+    def __init__(self, prop_name: str, step: float = 1.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self.step = step
+        self.prop_name = prop_name
         self.add_state("tp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
         self.add_state("fn", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
@@ -80,9 +83,10 @@ class NumericStepRecall(Metric):
         return self.tp.float() / denom if denom > 0 else torch.tensor(0.0)
 
 class NumericStepF1Score(Metric):
-    def __init__(self, step: float = 1.0, dist_sync_on_step: bool = False):
+    def __init__(self, prop_name: str, step: float = 1.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self.step = step
+        self.prop_name = prop_name
         self.add_state("tp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
         self.add_state("fp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
         self.add_state("fn", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
@@ -112,18 +116,25 @@ class NumericStepConfusionMatrix(Metric):
         self.min = min
         self.max = max
         self.confusion_matrix = ConfusionMatrix('multiclass', num_classes=self.num_classes)
-        self.i = 0
         self.prop_name = prop_name
 
     def update(self, preds: torch.Tensor, targets: torch.Tensor):
         preds = preds if preds.ndim == 1 else preds.squeeze(dim=1)
         targets = targets if preds.ndim == 1 else targets.squeeze(dim=1)
 
-        pred_rounded = torch.round(preds / self.step) * self.step
-        target_rounded = torch.round(targets / self.step) * self.step
+        pred_rounded = torch.round(preds / self.step)
+        target_rounded = torch.round(targets / self.step)
 
-        pred_rounded = torch.clamp(pred_rounded, min=self.min, max=self.max)
-        target_rounded = torch.clamp(target_rounded, min=self.min, max=self.max)
+        pred_rounded = torch.clamp(
+            pred_rounded,
+            min=round(self.min / self.step), 
+            max=round(self.max / self.step)
+        )
+        target_rounded = torch.clamp(
+            target_rounded,
+            min=round(self.min / self.step), 
+            max=round(self.max / self.step)
+        )
 
         self.confusion_matrix.update(pred_rounded, target_rounded)
 
@@ -137,31 +148,4 @@ class NumericStepConfusionMatrix(Metric):
         self.confusion_matrix.to(*args, **kwargs)
         super().to(*args, **kwargs)
         return self
-
-class NumericStepWeightedMSE(Metric):
-    def __init__(self, weights: torch.Tensor, step: float = 1.0, dist_sync_on_step: bool = False):
-        super().__init__(dist_sync_on_step=dist_sync_on_step)
-        self.step = step
-        self.weights = weights
-
-        self.register_buffer("weights", weights.float())
-
-        # Metric state: accumulates loss across batches
-        self.add_state("sum_loss", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
-        self.add_state("total", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
-
-    def update(self, preds: torch.Tensor, targets: torch.Tensor):
-        preds = preds if preds.ndim == 1 else preds.squeeze(dim=1)
-        targets = targets if preds.ndim == 1 else targets.squeeze(dim=1)
-
-        pred_rounded = torch.round(preds / self.step) * self.step
-        target_rounded = torch.round(targets / self.step) * self.step
-
-        weights = self.weights[target_rounded.long()]
-        loss_per_sample = weights * (pred_rounded - target_rounded) ** 2
-        self.sum_loss += loss_per_sample.sum()
-        self.total += target_rounded.numel()
-
-    def compute(self):
-        return self.sum_loss / self.total
 

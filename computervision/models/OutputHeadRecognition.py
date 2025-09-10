@@ -147,11 +147,11 @@ class OutputHeadRecognition(nn.Module):
                     step = 0.1 if step < 0.1 else step
                     min = float(property_row['min'])
                     max = float(property_row['max'])
-                    self.metrics['precision'][prop_name] = nsm.NumericStepPrecision(step=step).to(device)
-                    self.metrics['recall'][prop_name]    = nsm.NumericStepRecall(step=step).to(device)
-                    self.metrics['f1'][prop_name]        = nsm.NumericStepF1Score(step=step).to(device)
-                    self.metrics['acc'][prop_name]       = nsm.NumericStepAccuracy(step=step).to(device)
-                    self.metrics['confusion'][prop_name] = nsm.NumericStepConfusionMatrix(step=step, min=min, max=max, prop_name=prop_name).to(device)
+                    self.metrics['precision'][prop_name] = nsm.NumericStepPrecision(prop_name=prop_name, step=step).to(device)
+                    self.metrics['recall'][prop_name]    = nsm.NumericStepRecall(prop_name=prop_name, step=step).to(device)
+                    self.metrics['f1'][prop_name]        = nsm.NumericStepF1Score(prop_name=prop_name, step=step).to(device)
+                    self.metrics['acc'][prop_name]       = nsm.NumericStepAccuracy(prop_name=prop_name, step=step).to(device)
+                    self.metrics['confusion'][prop_name] = nsm.NumericStepConfusionMatrix(prop_name=prop_name, step=step, min=min, max=max).to(device)
 
     def forward(self, x):
         """
@@ -210,18 +210,19 @@ class OutputHeadRecognition(nn.Module):
 
                 # TODO : fix value of categorical: guess now is: propValueId and not index of ... + 1
                 if requires_gradient:
-                    value = int(label_dict[composition_name][i]['StageProperties'][mapped_stage][prop_name] if is_stage else label_dict[composition_name][i][mapped_stage][prop_name])
+                    value = label_dict[composition_name][i]['StageProperties'][mapped_stage][prop_name] if is_stage else label_dict[composition_name][i][mapped_stage][prop_name]
                     try:
                         if prop_type == 'categorical':
-                            target[output_head] = torch.tensor(int(self.categorical_valueId_to_idx[prop_id][value]), device=device)
+                            target[output_head] = torch.tensor(int(self.categorical_valueId_to_idx[prop_id][int(value)]), device=device)
                         elif prop_type == 'boolean':
                             target[output_head] = torch.tensor(int(value), device=device)
                         elif prop_type == 'numerical':
                             target[output_head] = torch.tensor(float(value), dtype=torch.float32, device=device)
                         mask[output_head] = torch.tensor(True, device=device)
                     except:
-                        print(f"Error for outputhead: {output_head}, prop_id: {prop_id}, value: {value}")
-                        print(f"{self.categorical_valueId_to_idx[prop_id]}")
+                        print(f"Error for outputhead: {output_head}, prop_id: {prop_id}, prop_type: {prop_type}, prop_name: {prop_name}, value: {value}")
+                        if prop_type == 'categorical':
+                            print(f"{self.categorical_valueId_to_idx[prop_id]}")
                         raise
                 else :
                     target[output_head] = torch.tensor(0.0, device=device) # Dummy

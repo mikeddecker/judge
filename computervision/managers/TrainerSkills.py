@@ -177,7 +177,7 @@ class TrainerSkills:
                     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
                     print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
                     best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
-                    print(f"target best ({best_model_name}) - {best_model_revalidation_results['f1_total_avg']:.4f}")
+                    print(f"{Fore.YELLOW}Target best ({best_model_name}) - {best_model_revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
 
                 revalidation_results = None
                 if not from_scratch and os.path.exists(path):
@@ -187,7 +187,7 @@ class TrainerSkills:
                     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
                     print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
                     revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
-                    print(f"target {modelname}: {revalidation_results['f1_total_avg']:.4f}")
+                    print(f"{Fore.MAGENTA}Target {modelname}: {revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
 
             except Exception as e:
                 print("revalidation went wrong")
@@ -307,7 +307,7 @@ class TrainerSkills:
                         
                         torch.save(model.state_dict(), path)
 
-                    if not from_scratch and (not best_model_revalidation_results or max(stats['f1_total_avgs_over_time']) > best_model_revalidation_results['f1_total_avg']):
+                    if not from_scratch and (not best_model_revalidation_results or validation_results['f1_total_avg'] > best_model_revalidation_results['f1_total_avg']):
                         if best_model_revalidation_results:
                             print(f"Model {modelname} improved the previous best model {best_model_name} from {best_model_revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
                         with open(best_stats_path, "w") as fp:
