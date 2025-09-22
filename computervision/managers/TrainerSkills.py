@@ -166,6 +166,7 @@ class TrainerSkills:
             try:
                 best_model_revalidation_results = None
                 best_model_name = None
+                revalidation_results = None
                 if not from_scratch and os.path.exists(pathBest):
                     best_model_stats = load_json_file(best_stats_path)
                     best_model_name = best_model_stats['modelname']
@@ -179,7 +180,6 @@ class TrainerSkills:
                     best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                     print(f"{Fore.YELLOW}Target best ({best_model_name}) - {best_model_revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
 
-                revalidation_results = None
                 if not from_scratch and os.path.exists(path):
                     model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
                     model.load_state_dict(torch.load(path, weights_only=True))
@@ -188,7 +188,11 @@ class TrainerSkills:
                     print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
                     revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                     print(f"{Fore.MAGENTA}Target {modelname}: {revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
-
+            except RuntimeError as e:
+                if "size mismatch" not in str(e):
+                    raise e
+                else:
+                    print(e)
             except Exception as e:
                 print("revalidation went wrong")
                 raise e
