@@ -1,4 +1,4 @@
-# Jurysporten en AI skillherkenning: gedaan met inconsistencies en subjectiviteit?
+# Jurysporten en AI skillherkenning: gedaan subjectiviteit?
 
 Skillherkenning door Artificiële Intelligentie staat voor de deur. In jurysporten zoals rope skipping, artistieke gymnastiek of synchroonzwemmen zou er binnenkort wel eens een machinaal gestuurde juryassistent de routine kunnen beoordelen en zo helpen bij het bepalen van de score van de oefening.
 
