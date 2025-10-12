@@ -55,5 +55,5 @@ Zodra de juryassistent nauwkeurig genoeg is, zal het consitent jureren over vers
 
 (Afbeelding: Grafiek van de accuracy)
 
-Deze technologie is niet enkel interessant voor rope skipping, maar ook voor gymnastiek, synchroonzwemmen, kunstschaatsen en andere sporten. Verder is het een flexibele technologie die aangepast kan worden naar de vereiste toepassing.
+Deze technologie is niet enkel interessant voor rope skipping, maar ook voor gymnastiek, synchroonzwemmen, kunstschaatsen en andere sporten. Verder is het een flexibele technologie die aangepast kan worden naar de vereiste toepassing, ook buiten jurysporten.
 
