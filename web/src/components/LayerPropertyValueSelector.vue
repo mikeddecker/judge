@@ -75,11 +75,17 @@ const isNumerical = computed(() => category.value == 'numerical')
 const value = computed({
   get() {
     return props.stageNr
-      ? skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage][props.stageNr][props.name]
-      : skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage][props.name]
+      ? skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage]?.[props.stageNr]?.[props.name]
+      : skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage]?.[props.name]
   },
   set(val) {
+    if (!Object.keys(skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex]).includes(props.stage)) {
+        skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage] = {}
+    }
     if (props.stageNr) {
+        if (!Object.keys(skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage]).includes(props.stageNr)) {
+            skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage][props.stageNr] = {}
+        }
         skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage][props.stageNr][props.name] = val;
     } else {
         skillStore.selectedSkill.Skillinfo[props.compositionName][props.compositionIndex][props.stage][props.name] = val;

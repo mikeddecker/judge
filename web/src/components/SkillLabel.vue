@@ -50,7 +50,7 @@
                         <Card class="flex-auto m-2">
                             <template #header>{{ 'StageProperties' }}</template>
                             <template #content style="display: flex;">
-                                <Card v-for="(stageLabel, stageNr) in label['StageProperties']" class="m-2 flex-auto">
+                                <Card v-for="(stageLabel, stageNr) in layercomposition[compositionName]['StageProperties'] " class="m-2 flex-auto">
                                     <template #header>{{ stageNr }}</template>
                                     <template #content>
                                         <LayerPropertyValueSelector 

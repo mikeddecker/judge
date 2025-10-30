@@ -89,7 +89,8 @@ class TrainerSkills:
                 'accuracy_avg' : float(np.mean(list(metrics['acc'].values()))),
                 'precision_avg' : float(np.mean(list(metrics['precision'].values()))),
                 'recall_avg' : float(np.mean(list(metrics['recall'].values()))),
-                'metrics' : metrics
+                'metrics' : metrics,
+                'confusion_values' : head.confusion_values,
             }
         #########################################################################################
         def create_or_recreate_cropped_videos(speedmode):

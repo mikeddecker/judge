@@ -23,17 +23,22 @@ export const useSkillStore = defineStore("skill", {
         })
         return stageDefaultValues
       }
+
+      let includeDefaultValues = false // TODO : add toggle in config.
+
       let selectedLayerComposition = this.layercomposition[selectedCompositionName]
-      let label = Object.fromEntries(Object.entries(selectedLayerComposition).map(([upperStage, upperStageValues]) => {
-        if (upperStage == 'compositionName') { return [ upperStage, upperStageValues ]}
-        if (upperStage == 'StageProperties') {
-          return [upperStage, Object.fromEntries(Object.entries(upperStageValues).map(([stageNr, stageValues]) => {
-              return [stageNr, getStageFocussedDefaultValues(stageValues)]
-          }))]
-        } else {
-          return [upperStage, getStageFocussedDefaultValues(upperStageValues)]
+      let label = !includeDefaultValues ? {} : Object.fromEntries(
+        Object.entries(selectedLayerComposition).map(([upperStage, upperStageValues]) => {
+          if (upperStage == 'compositionName') { return [ upperStage, upperStageValues ]}
+          if (upperStage == 'StageProperties') {
+            return [upperStage, Object.fromEntries(Object.entries(upperStageValues).map(([stageNr, stageValues]) => {
+                return [stageNr, getStageFocussedDefaultValues(stageValues)]
+            }))]
+          } else {
+            return [upperStage, getStageFocussedDefaultValues(upperStageValues)]
+          }
         }
-      }));
+      ));
       
       (this.selectedSkill['Skillinfo'][selectedCompositionName] ??= []).push(label); // Create or push to the array
     },

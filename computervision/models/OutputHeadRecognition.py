@@ -1,5 +1,7 @@
+from fileinput import isstdin
 from colorama import Fore, Style
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -21,6 +23,7 @@ class OutputHeadRecognition(nn.Module):
         self.df_layers = df_layers 
         self.df_composition = df_composition 
         self.max_instances_per_role = max_instances_per_role
+        self.confusion_values : dict[list[str]] = {}
 
         print(f"max instances per role")
         print(max_instances_per_role)
@@ -129,29 +132,36 @@ class OutputHeadRecognition(nn.Module):
                 if prop_name in self.metrics['acc'].keys():
                     continue
                 elif prop_type == "categorical":
-                    num_classes = self.df_layers[self.df_layers['propertyId'] == row['propertyId']]['value'].nunique()
+                    categorical_values : pd.DataFrame = self.df_layers[self.df_layers['propertyId'] == row['propertyId']]['value']
+                    num_classes = categorical_values.nunique()
                     num_classes += 1
                     self.metrics['precision'][prop_name] = torchmetrics.Precision(task="multiclass", average=average, num_classes=num_classes).to(device)
                     self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="multiclass", average=average, num_classes=num_classes).to(device)
                     self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="multiclass", average=average, num_classes=num_classes).to(device)
                     self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
                     self.metrics['confusion'][prop_name] = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=num_classes).to(device)
+                    self.confusion_values[prop_name] = categorical_values.values.tolist()
                 elif prop_type == "boolean":
                     self.metrics['precision'][prop_name] = torchmetrics.Precision(task="binary").to(device)
                     self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="binary").to(device)
                     self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="binary").to(device)
                     self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="binary").to(device)
                     self.metrics['confusion'][prop_name] = torchmetrics.ConfusionMatrix(task="binary").to(device)
+                    self.confusion_values[prop_name] = [False, True]
                 elif prop_type == "numerical":
                     step = float(property_row['step'])
                     step = 0.1 if step < 0.1 else step
                     min = float(property_row['min'])
                     max = float(property_row['max'])
+                    numerical_values = [min + step * i for i in range(int(1 + (max - min) // step))]
+                    numerical_values = [round(x, 2) for x in numerical_values]
+                    self.confusion_values[prop_name] = numerical_values
                     self.metrics['precision'][prop_name] = nsm.NumericStepPrecision(prop_name=prop_name, step=step).to(device)
                     self.metrics['recall'][prop_name]    = nsm.NumericStepRecall(prop_name=prop_name, step=step).to(device)
                     self.metrics['f1'][prop_name]        = nsm.NumericStepF1Score(prop_name=prop_name, step=step).to(device)
                     self.metrics['acc'][prop_name]       = nsm.NumericStepAccuracy(prop_name=prop_name, step=step).to(device)
                     self.metrics['confusion'][prop_name] = nsm.NumericStepConfusionMatrix(prop_name=prop_name, step=step, min=min, max=max).to(device)
+                print(prop_name, self.confusion_values[prop_name])
 
     def forward(self, x):
         """
@@ -178,56 +188,64 @@ class OutputHeadRecognition(nn.Module):
         """
         target, mask = {}, {}
 
-        for index, row in self.df_composition.iterrows():
-            composition_name = row['compositionName']
-            mapped_stage = map_stageNr(row['stage'])
-            property_row = self.df_layers[self.df_layers['propertyId'] == row['propertyId']].iloc[0] # TODO : create dict: composition.prop_name -> type
-            prop_name = row['name']
-            prop_type = property_row['type']
-            prop_id = row['propertyId']
+        try:
 
-            instance_indexes = range(self.max_instances_per_role[composition_name])
-            instance_indexes = reversed(instance_indexes) if flip_instances else instance_indexes
-            for i in instance_indexes:
-                output_head = '_'.join([composition_name, str(i), mapped_stage, prop_name])
+            for index, row in self.df_composition.iterrows():
+                composition_name = row['compositionName']
+                mapped_stage = map_stageNr(row['stage'])
+                property_row = self.df_layers[self.df_layers['propertyId'] == row['propertyId']].iloc[0] # TODO : create dict: composition.prop_name -> type
+                prop_name = row['name']
+                prop_type = property_row['type']
+                prop_id = row['propertyId']
 
-                is_stage = not mapped_stage_is_not_stageProperties(mapped_stage)
-                requires_gradient = True if \
-                    composition_name in label_dict.keys() \
-                    and i < len(label_dict[composition_name]) \
-                    and ( \
-                            ( \
-                                is_stage \
-                                and mapped_stage in label_dict[composition_name][i]['StageProperties'].keys() \
-                                and prop_name in label_dict[composition_name][i]['StageProperties'][mapped_stage].keys() \
-                            )  or ( \
-                                not is_stage \
-                                and mapped_stage in label_dict[composition_name][i].keys() \
-                                and prop_name in label_dict[composition_name][i][mapped_stage].keys() \
+                instance_indexes = range(self.max_instances_per_role[composition_name])
+                instance_indexes = reversed(instance_indexes) if flip_instances else instance_indexes
+                for i in instance_indexes:
+                    output_head = '_'.join([composition_name, str(i), mapped_stage, prop_name])
+
+                    is_stage = not mapped_stage_is_not_stageProperties(mapped_stage)
+                    requires_gradient = True if \
+                        composition_name in label_dict.keys() \
+                        and i < len(label_dict[composition_name]) \
+                        and ( \
+                                ( \
+                                    is_stage \
+                                    and 'StageProperties' in label_dict[composition_name][i] \
+                                    and mapped_stage in label_dict[composition_name][i]['StageProperties'].keys() \
+                                    and prop_name in label_dict[composition_name][i]['StageProperties'][mapped_stage].keys() \
+                                )  or ( \
+                                    not is_stage \
+                                    and mapped_stage in label_dict[composition_name][i].keys() \
+                                    and prop_name in label_dict[composition_name][i][mapped_stage].keys() \
+                                ) \
                             ) \
-                        ) \
-                    else False
+                        else False
 
-                # TODO : fix value of categorical: guess now is: propValueId and not index of ... + 1
-                if requires_gradient:
-                    value = label_dict[composition_name][i]['StageProperties'][mapped_stage][prop_name] if is_stage else label_dict[composition_name][i][mapped_stage][prop_name]
-                    try:
-                        if prop_type == 'categorical':
-                            target[output_head] = torch.tensor(int(self.categorical_valueId_to_idx[prop_id][int(value)]), device=device)
-                        elif prop_type == 'boolean':
-                            target[output_head] = torch.tensor(int(value), device=device)
-                        elif prop_type == 'numerical':
-                            target[output_head] = torch.tensor(float(value), dtype=torch.float32, device=device)
-                        mask[output_head] = torch.tensor(True, device=device)
-                    except:
-                        print(f"Error for outputhead: {output_head}, prop_id: {prop_id}, prop_type: {prop_type}, prop_name: {prop_name}, value: {value}")
-                        if prop_type == 'categorical':
-                            print(f"{self.categorical_valueId_to_idx[prop_id]}")
-                        raise
-                else :
-                    target[output_head] = torch.tensor(0.0, device=device) # Dummy
-                    mask[output_head] = torch.tensor(False, device=device)
-
+                    # TODO : fix value of categorical: guess now is: propValueId and not index of ... + 1
+                    if requires_gradient:
+                        value = label_dict[composition_name][i]['StageProperties'][mapped_stage][prop_name] if is_stage else label_dict[composition_name][i][mapped_stage][prop_name]
+                        try:
+                            if prop_type == 'categorical':
+                                target[output_head] = torch.tensor(int(self.categorical_valueId_to_idx[prop_id][int(value)]), device=device)
+                            elif prop_type == 'boolean':
+                                target[output_head] = torch.tensor(int(value), device=device)
+                            elif prop_type == 'numerical':
+                                target[output_head] = torch.tensor(float(value), dtype=torch.float32, device=device)
+                            mask[output_head] = torch.tensor(True, device=device)
+                        except:
+                            print(f"Error for outputhead: {output_head}, prop_id: {prop_id}, prop_type: {prop_type}, prop_name: {prop_name}, value: {value}")
+                            if prop_type == 'categorical':
+                                print(f"{self.categorical_valueId_to_idx[prop_id]}")
+                            raise
+                    else :
+                        target[output_head] = torch.tensor(0.0, device=device) # Dummy
+                        mask[output_head] = torch.tensor(False, device=device)
+        except:
+            print("Label to error", "labeldict")
+            print(label_dict)
+            if 'output_head' in locals():
+                print('Output head:', output_head)
+            raise
         return target, mask
 
     def compute_loss(self, preds, targets, masks):
