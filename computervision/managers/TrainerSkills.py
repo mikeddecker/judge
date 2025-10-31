@@ -195,8 +195,6 @@ class TrainerSkills:
             except RuntimeError as e:
                 if "size mismatch" not in str(e):
                     raise e
-                else:
-                    print(e)
             except Exception as e:
                 print("revalidation went wrong")
                 raise e
@@ -244,8 +242,15 @@ class TrainerSkills:
                         # Forward pass
                         outputs = model(batch_X / 255)
                         total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask)
-                        total_batch_loss.backward()
-                        optimizer.step()
+                        if total_batch_loss.requires_grad:
+                            total_batch_loss.backward()
+                            optimizer.step()
+                        else:
+                            # Optional: log once in a while to catch issues
+                            print("⚠️ Warning: loss tensor has no grad, skipping batch")
+                            print(batch_y)
+                            print(batch_mask)
+                            continue
                     
                     total_loss += total_batch_loss.item()
                     i+=1
