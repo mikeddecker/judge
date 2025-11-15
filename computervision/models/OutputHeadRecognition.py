@@ -55,6 +55,10 @@ class OutputHeadRecognition(nn.Module):
         self.layers: dict[str, nn.Module] = {} # Key = prop_name, Value = Layer
         self.loss_fns: dict[str, callable] = {}
         weight_alpha = 1.5
+
+        print("self.df_composition - init layers")
+        print(self.df_composition)
+
         for index, row in self.df_composition.iterrows():
             composition_name = row['compositionName']
             mapped_stage = map_stageNr(row['stage'])
@@ -192,6 +196,9 @@ class OutputHeadRecognition(nn.Module):
 
             for index, row in self.df_composition.iterrows():
                 composition_name = row['compositionName']
+                composition_head = f"composition_{composition_name}"
+                target[composition_head] = torch.tensor(len(label_dict[composition_name]) if composition_name in label_dict.keys() else 0, device=device)
+                mask[composition_head] = torch.tensor(True, device=device)
                 mapped_stage = map_stageNr(row['stage'])
                 property_row = self.df_layers[self.df_layers['propertyId'] == row['propertyId']].iloc[0] # TODO : create dict: composition.prop_name -> type
                 prop_name = row['name']
