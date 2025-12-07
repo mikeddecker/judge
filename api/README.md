@@ -5,16 +5,16 @@
 Fill in the .env
 
 ```env
-MYSQLDB_DATABASE = judge_db
-MYSQLDB_DATABASE_TEST = judge_test
-MYSQLDB_USERNAME = root
-MYSQLDB_ROOT_PASSWORD = root
-MYSQLDB_LOCAL_PORT = 3377
-MYSQLDB_DOCKER_PORT = 3306
-MYSQLDB_HOST = 127.0.0.1
+MYSQL_DATABASE = judge_db
+MYSQL_DATABASE_TEST = judge_test
+MYSQL_USERNAME = root
+MYSQL_ROOT_PASSWORD = root
+MYSQL_LOCAL_PORT = 3377
+MYSQL_DOCKER_PORT = 3306
+MYSQL_HOST = 127.0.0.1
 
 # The directory where MYSQL backups go
-MYSQLDB_BACKUP = /media/miked/Elements/Judge/results/backups
+MYSQL_BACKUP = /media/miked/Elements/Judge/results/backups
 
 # The directory where all videos are stored. They can be subcategorized in folders.
 STORAGE_DIR_VIDEOS = /media/miked/Elements/Judge/videos
@@ -27,13 +27,18 @@ TESTDIR = /tmp/judge
 
 # Connection strings for connecting with the database
 # They are based on the input data above, keep off.
-DATABASE_URL = mysql+pymysql://root:${MYSQLDB_ROOT_PASSWORD}@${MYSQLDB_HOST}:${MYSQLDB_LOCAL_PORT}/${MYSQLDB_DATABASE}
-DATABASE_URL_TEST =  mysql+pymysql://root:${MYSQLDB_ROOT_PASSWORD}@${MYSQLDB_HOST}:${MYSQLDB_LOCAL_PORT}/${MYSQLDB_DATABASE_TEST}
+DATABASE_URL = mysql+pymysql://${MYSQL_USERNAME}:${MYSQL_ROOT_PASSWORD}@${MYSQL_HOST}:${MYSQL_LOCAL_PORT}/${MYSQL_DATABASE}
+DATABASE_URL_TEST =  mysql+pymysql://${MYSQL_USERNAME}:${MYSQL_ROOT_PASSWORD}@${MYSQL_HOST}:${MYSQL_LOCAL_PORT}/${MYSQL_DATABASE_TEST}
+
+# Ports used by the API service
+# local port on your machine, docker port inside the container
+API_LOCAL_PORT=5555
+API_DOCKER_PORT=5555
+
 
 # Video data you want to support.
 SUPPORTED_VIDEO_FORMATS = ['.mov', '.mp4', '.MP4']
 SUPPORTED_IMAGE_FORMATS = ['.jpeg', '.png']
-
 ```
 
 Prerequisites
@@ -42,10 +47,10 @@ Prerequisites
 
 1. Install python requirements `pip install -r requirements.txt`. MYSQLCLIENT_CFLAGS and MYSQLCLIENT_LDFLAGS error? see fix below.
 1. Start the docker container: `docker compose up -d`
-2. Create an empty database with .env same name as `MYSQLDB_DATABASE`
+2. Create an empty database with .env same name as `MYSQL_DATABASE`
 3. Run the database migrations: `flask db upgrade`
 4. Run the app: `python app.py`
-5. Check if you can run `http://localhost:5555/folders` in your web browser (if not, check port forwarding e.g. `app.py` - `app.run(port=5555, debug=True)`)
+5. Check if you can run `http://localhost:${API_LOCAL_PORT}/folders` in your web browser (if not, check port forwarding e.g. `app.py` - `app.run(port=API_DOCKER_PORT, debug=True)`)
 
 ## Mysql error?
 

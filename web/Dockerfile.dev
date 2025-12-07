@@ -1,0 +1,18 @@
+# Stage 1: Build the Vue app
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose port for dev server
+EXPOSE ${WEB_LOCAL_PORT:-5173}
+
+# Start Vue dev server
+CMD sh -c "npm run dev"
+

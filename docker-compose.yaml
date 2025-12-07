@@ -1,0 +1,59 @@
+services:
+  mysqldb:
+    image: mysql:8.4
+    container_name: ai-judge-mysql-db
+    env_file: .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE=$MYSQL_DATABASE
+    ports:
+      - $MYSQL_LOCAL_PORT:$MYSQL_DOCKER_PORT
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 10
+      start_period: 7s
+    networks:
+      - ai-judge-network
+  api:
+    container_name: ai-judge-api
+    build: ./api
+    env_file: .env
+    ports:
+      - $API_LOCAL_PORT:$API_DOCKER_PORT
+    depends_on:
+      mysqldb:
+        condition: service_healthy      
+    networks:
+      - ai-judge-network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${API_DOCKER_PORT}/health"]
+      interval: 7s
+      retries: 5
+      start_period: 7s
+    volumes:
+      - ${STORAGE_DIR_VIDEOS}:${STORAGE_DIR_VIDEOS}
+      - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
+      - ${MYSQL_BACKUP}:${MYSQL_BACKUP}
+      - ./computervision/recipes.json:/machine_learning_recipes.json:ro
+  web:
+    container_name: ai-judge-web
+    build: ./web
+    env_file: .env
+    ports:
+      - $WEB_LOCAL_PORT:$WEB_DOCKER_PORT
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - ai-judge-network
+    restart: on-failure
+
+networks:
+  ai-judge-network:
+    driver: bridge
+
+volumes:
+  db_data:
+

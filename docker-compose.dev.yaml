@@ -1,0 +1,14 @@
+# Additional override params for docker-compose for development environment
+services:
+  api:
+    volumes:
+      - ./api:/app
+    command: ["python", "app.py"]
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.dev
+    volumes:
+    - ./web:/app
+    - /app/node_modules    # Preserve container node_modules
+

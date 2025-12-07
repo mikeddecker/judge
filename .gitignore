@@ -18,6 +18,9 @@ scripts/config/.ipynb_checkpoints/*
 # Ignore database trash
 db_data/*
 
+# Ignore recipes copy (TODO : better solution)
+api/machine_learning_recipes.json
+
 # Ignore venv (virtual environment)
 **/venv/*
 **/.venv/*
@@ -31,3 +34,4 @@ runs/*
 segmentplot*
 *.stats.json
 *.stats.current.json
+

@@ -11,6 +11,9 @@ jaraco.collections==5.1.0
 moviepy==2.1.2
 nbconvert==7.16.5
 nvidia-cuda-nvcc-cu12==12.5.82
+numpy
+opencv-python
+pandas
 peft==0.15.2
 pip-chill==1.0.3
 pymysql==1.1.1

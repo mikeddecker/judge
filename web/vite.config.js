@@ -14,5 +14,17 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    host: "0.0.0.0",
+    port: Number(process.env.WEB_DOCKER_PORT) || 5173,
+    proxy: {
+      "/api": {
+        target: "http://api:5555",
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, ""),
+      },
+    },
   }
 })
+

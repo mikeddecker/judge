@@ -26,11 +26,11 @@ class DataRepository:
     VideoNames = {} # pandas dataframe
 
     def __init__(self):  
-        HOST = ENVS.DATABASE.MYSQLDB_HOST
-        PORT = ENVS.DATABASE.MYSQLDB_LOCAL_PORT
-        DATABASE = ENVS.DATABASE.MYSQLDB_DATABASE
-        USERNAME = ENVS.DATABASE.MYSQLDB_USERNAME
-        PASSWORD = ENVS.DATABASE.MYSQLDB_ROOT_PASSWORD
+        HOST = ENVS.DATABASE.MYSQL_HOST
+        PORT = ENVS.DATABASE.MYSQL_DOCKER_PORT
+        DATABASE = ENVS.DATABASE.MYSQL_DATABASE
+        USERNAME = ENVS.DATABASE.MYSQL_USERNAME
+        PASSWORD = ENVS.DATABASE.MYSQL_ROOT_PASSWORD
         DATABASE_CONNECTION=f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
         self.engine = sqlal.create_engine(DATABASE_CONNECTION, pool_recycle=30)#
         self.__load_relativePaths_of_videos_with_framelabels()

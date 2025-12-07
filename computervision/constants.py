@@ -13,13 +13,13 @@ load_dotenv()
 
 ENVS = SimpleNamespace(
     DATABASE = SimpleNamespace(
-        MYSQLDB_DATABASE = os.getenv('MYSQLDB_DATABASE'),
-        MYSQLDB_DATABASE_TEST = os.getenv('MYSQLDB_DATABASE_TEST'),
-        MYSQLDB_ROOT_PASSWORD = os.getenv('MYSQLDB_ROOT_PASSWORD'),
-        MYSQLDB_USERNAME = os.getenv('MYSQLDB_USERNAME'),
-        MYSQLDB_LOCAL_PORT = os.getenv('MYSQLDB_LOCAL_PORT'),
-        MYSQLDB_DOCKER_PORT = os.getenv('MYSQLDB_DOCKER_PORT'),
-        MYSQLDB_HOST = os.getenv('MYSQLDB_HOST'),
+        MYSQL_DATABASE = os.getenv('MYSQL_DATABASE'),
+        MYSQL_DATABASE_TEST = os.getenv('MYSQL_DATABASE_TEST'),
+        MYSQL_ROOT_PASSWORD = os.getenv('MYSQL_ROOT_PASSWORD'),
+        MYSQL_USERNAME = os.getenv('MYSQL_USERNAME'),
+        MYSQL_LOCAL_PORT = os.getenv('MYSQL_LOCAL_PORT'),
+        MYSQL_DOCKER_PORT = os.getenv('MYSQL_DOCKER_PORT'),
+        MYSQL_HOST = os.getenv('MYSQL_HOST'),
     ),
     DIRS = SimpleNamespace(
         VIDEOS = os.getenv("STORAGE_DIR_VIDEOS"),
@@ -64,7 +64,7 @@ RECIPES = {
         recipename: SimpleNamespace(**kwargs, name=recipename) 
         for recipename, kwargs in step_recipes.items()
     }
-    for step, step_recipes in load_json_file('../recipes.json').items()
+    for step, step_recipes in load_json_file('recipes.json').items()
 }
 
 JOB_TYPES = ['TRAIN', 'PREDICT']
