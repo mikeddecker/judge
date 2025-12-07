@@ -56,8 +56,7 @@ NVIDIA GeForce RTX™ 4050 Laptop GPU 5898MiB.
 ### Installation guide
 
 Prerequisites
-- Install Node.js version 18.3 or higher
-- Install Docker (& Docker compose) - used for the mysql database
+- Install Docker (& Docker compose) - used for the mysql database, api and web app
 
 There are 3 projects:
 - [API](./api/README.md) - providing data to the web app & containing docker logic
@@ -72,10 +71,9 @@ There are 3 projects:
 
 When everything is installed, you can start the projects.
 
-1. In the api folder - start up docker - `docker compose up -d`
-2. In the api folder - `python app.py`
-3. In the web folder - `npm run dev`
-4. In the computervision folder - `python JobExecutor.py`
+1. Create a `.env` file from `.env.example`
+1. In the main folder: `docker compose up`
+4. In the computervision folder - `python JobExecutor.py` -> TODO : add to docker service
 
 ### BACKUP
 
