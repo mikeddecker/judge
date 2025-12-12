@@ -14,15 +14,16 @@
                     {{ col - 1 }}
                 </th>
             </tr>
-            <tr v-for="label in matrixColumns">
-                <td class="text-center p-2 bg-gray-200">{{ transformedMatrix[label]['actual'] }}</td>
-                <td class="text-center p-2" :style="getCellStyle(label, predictionCount)" v-for="predictionCount in matrixColumns">{{ transformedMatrix[label][predictionCount] }}</td>
+            <tr v-for="actualIndex in matrixColumns">
+                <td class="text-center p-2 bg-gray-200">{{ actualIndex }}</td>
+                <td class="text-center p-2" :style="getCellStyle(actualIndex, predictedIndex)" v-for="predictedIndex in matrixColumns">{{ transformedMatrix[actualIndex][predictedIndex] }}</td>
             </tr>
         </tbody>
     </table>
 </template>
 
 <script setup>
+import chroma from 'chroma-js';
 import { ref, onMounted } from 'vue'
 
 const props = defineProps({
@@ -37,11 +38,13 @@ const props = defineProps({
 })
 const transformedMatrix = ref(null)
 const matrixColumns = ref(null)
+const diagonalScale = chroma.scale(['#ff6061', '#77dd77']).mode('lab'); // red to green, soft
+const offDiagonalScale = chroma.scale(['#aec6cf', '#ff6961']).mode('lab'); // blueish to red, soft
 
 // Transform 2D array into row objects
 const transformMatrix = (matrix) => {
     return matrix.map((row, rowIndex) => {
-        let obj = { actual: rowIndex }
+        let obj = {}
         row.forEach((val, colIndex) => {
             obj[colIndex] = val
         })
@@ -54,16 +57,24 @@ const getColumns = (matrix) => {
 }
 
 // Heatmap cell style
-const getCellStyle = (label, prediction) => {
-    const value = transformedMatrix.value[label][prediction]
-    const total = sum(Object.values(transformedMatrix.value[label])) - transformedMatrix.value[label]['actual']
-    const intensity = total > 0 ? value / total : 0
-    const bgColor = `rgba(${(1-intensity) * 255}, 200, 90, ${0.15 + intensity * 0.85})`
+const getCellStyle = (actualIndex, predictionIndex) => {
+    const value = transformedMatrix.value[actualIndex][predictionIndex]
+    const total = sum(Object.values(transformedMatrix.value[actualIndex]))
+    const intensity = Math.pow(total > 0 ? value / total : 0, 0.5);
+
+    // Calculate background color using Chroma.js
+    const bgColor = actualIndex === predictionIndex 
+        ? diagonalScale(intensity).alpha(0.6 + 0.4 * intensity).css() // slightly transparent
+        : offDiagonalScale(intensity).alpha(0.25 + 0.7 * intensity).css(); 
+
+    const color1 = actualIndex === predictionIndex ? 'white' : 'black';
+    const color2 = actualIndex === predictionIndex ? 'black' : 'white';
+
     return {
         backgroundColor: bgColor,
-        color: intensity > 0.5 ? 'white' : 'black',
+        color: intensity > 0.25 ? color1 : color2,
         fontWeight: value > 0 ? 'bold' : 'normal'
-    }
+    };
 }
 
 onMounted(() => {
