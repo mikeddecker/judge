@@ -58,8 +58,10 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         print(f'DataGeneratorSkills {train_test_val} init done')
         self.on_epoch_end()
 
-    def __len__(self):
+    def __len__(self, balanced=True):
         'Denotes the number of batches per epoch'
+        if not balanced:
+            return len(self.Skills)
         if self.isTestrun:
             return min(280, len(self.BalancedSet))
         return len(self.BalancedSet) // self.batch_size if self.train_test_val == 'train' else len(self.Skills) // self.batch_size
@@ -98,6 +100,9 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         self.BalancedSet = self.limit_skill_occurrences()
 
     def limit_skill_occurrences(self):
+        if self.train_test_val != 'train':
+            return self.Skills
+        
         counts = self.Skills['skillinfo_string'].value_counts()
         max_allowed = int(round(counts.max() ** 0.5))
 

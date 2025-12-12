@@ -9,6 +9,11 @@ import Aura from '@primevue/themes/aura'
 import ConfirmationService from 'primevue/confirmationservice';
 import Vue3Shortkey from '@gregdev/vue3-shortkey'
 
+// Chart.js and annotation plugin
+import { Chart as ChartJS, registerables } from 'chart.js';
+import annotationPlugin from 'chartjs-plugin-annotation';
+ChartJS.register(...registerables, annotationPlugin);
+
 // PrimeVue components
 import Button from "primevue/button"
 import Card from 'primevue/card';

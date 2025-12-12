@@ -302,8 +302,8 @@ class TrainerSkills:
                         'confusion_matrix': None,
                         'final_classification_reports' : None,
                         'time' : time.time() - start,
-                        'length_train': len(train_generator),
-                        'length_val': len(val_generator),
+                        'length_train': len(train_generator, balanced=False), # Needs to be balanced
+                        'length_val': len(val_generator, balanced=False), # Needs to be balanced
                         'rundate': rundate,
                         'modelname': modelname,
                         'recipe': recipe

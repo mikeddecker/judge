@@ -126,6 +126,7 @@ class StatsService:
             'best' : {
                 'f1-macro-avg' : 0
             },
+            'selectedModel': selectedModel,
             'models' : self.StatsRepo.skills_metrics(),
             'modelcomparison' : {},
             'prop_name_counts' : {
@@ -138,9 +139,10 @@ class StatsService:
                 'daily' : self.StatsRepo.skill_counts_daily(),
             },
             'layercomposition_names': layercomposition_names,
-            'layercomposition_counts': self.StatsRepo.skill_counts_composition()
+            'layercomposition_counts': self.StatsRepo.skill_counts_composition(),
         }
-        
+        print('selectedModel', selectedModel)
+
         return results
 
     def getLocalizeResults(self):

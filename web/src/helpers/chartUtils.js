@@ -30,7 +30,7 @@ export const transformDailyCounts = (dailyData, types, cummulative) => {
   };
 }
 
-export const getDailyChartOptions = (title, axisName = 'box count') => {
+export const getDailyChartOptions = (title, axisName = 'box count', hlines = []) => {
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -39,6 +39,26 @@ export const getDailyChartOptions = (title, axisName = 'box count') => {
         display: true,
         text: title
       },
+      annotation: hlines.length
+        ? {
+            annotations: hlines.reduce((acc, val, index) => {
+              acc[`hline${index}`] = {
+                type: 'line',
+                yMin: val,
+                yMax: val,
+                borderColor: getColor(index + 1),
+                borderWidth: 2,
+                borderDash: [6, 6],
+                label: {
+                  content: `${val}`,
+                  enabled: true,
+                  position: 'start'
+                }
+              };
+              return acc;
+            }, {})
+          }
+        : undefined
     },
     interaction: {
       intersect: false,

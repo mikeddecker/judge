@@ -1,4 +1,5 @@
 <template>
+  <h1>{{ results['models'][selectedModel]['modelname'] }} - {{ results['models'][selectedModel]['rundate'] }}</h1>
   <div class="flex flex-wrap gap-6 mb-16">
     <BarChartTrainTest :values="skillcounts" 
     direction="x" title="Skill counts" class="flex-1"
@@ -10,7 +11,7 @@
   </div>
   
   <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getDailyChartOptions('Daily skill count', 'skills')" class="h-[25rem]" />
-  <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getDailyChartOptions('Daily skill count (cumulative)', 'skills')" class="h-[25rem]" />
+  <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getDailyChartOptions('Daily skill count (cumulative)', 'skills', [results['models'][selectedModel]['length_train'], results['models'][selectedModel]['length_val']])" class="h-[25rem]" />
   
   <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
   
@@ -49,29 +50,29 @@
       </TabPanel>
 
       <TabPanel
-      v-for="layercomposition in results['layercomposition_names']"
-      :key="layercomposition"
-      :value="layercomposition"
-      >
-      <BarChartTrainTest
-      :values="transformCounts(results['prop_name_counts'][layercomposition])"
-      direction="y"
-      :squared="true"
-      :title="`Property counts ${layercomposition}`"
-      />
-      <div class="flex flex-wrap gap-8">
+        v-for="layercomposition in results['layercomposition_names']"
+        :key="layercomposition"
+        :value="layercomposition"
+        >
         <BarChartTrainTest
-        v-for="(values, property) in results['prop_value_frequencies'][layercomposition]"
-        :values="transformCounts(values)"
-        direction="x"
-        :title="property"
-        class="w-120 flex-auto"
+        :values="transformCounts(results['prop_name_counts'][layercomposition])"
+        direction="y"
         :squared="true"
+        :title="`Property counts ${layercomposition}`"
         />
-      </div>
-    </TabPanel>
-  </TabPanels>
-</Tabs>
+        <div class="flex flex-wrap gap-8">
+          <BarChartTrainTest
+          v-for="(values, property) in results['prop_value_frequencies'][layercomposition]"
+          :values="transformCounts(values)"
+          direction="x"
+          :title="property"
+          class="w-120 flex-auto"
+          :squared="true"
+          />
+        </div>
+      </TabPanel>
+    </TabPanels>
+  </Tabs>
 
 </template>
 
@@ -159,9 +160,7 @@ const skillCompositionCounts = computed(() => {
 })
 
 const chartDataBestModel = computed(() => {
-  console.log(props.results)
   let metricsOverTime = props.results['models'][selectedModel.value]['metrics_over_time']
-  console.log('metrics over time', metricsOverTime)
   const classes = Object.keys(metricsOverTime[0]['f1'])
   const epochs = Object.entries(metricsOverTime).map((_, idx) => `${idx}`)
 
