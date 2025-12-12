@@ -1,9 +1,12 @@
 # Additional override params for docker-compose for development environment
 services:
   api:
+    environment:
+      - FLASK_ENV=development
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./api:/app
-    command: ["python", "app.py"]
+    command: ["flask", "run", "--host=0.0.0.0", "--port=${API_DOCKER_PORT}", "--reload"]
   web:
     build:
       context: ./web
