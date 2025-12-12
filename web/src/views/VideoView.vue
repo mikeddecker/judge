@@ -584,9 +584,10 @@ const predictBoxes = async () => {
 
 const poll4Boxes = async () => {
   let noBoxes = true
-  while (noBoxes) {
+  maxTries = 30
+  while (noBoxes && maxTries > 0) {
     hasLocalizePredictions(videoinfo.value.Id).then(hasBoxes => noBoxes = !hasBoxes)
-    console.log('polling for boxes')
+    maxTries -= 1
     await sleep(2000)
   }
   getLocalizePredictions(videoinfo.value.Id).then(boxes => console.log('boxes', locationPredictions.value = boxes))
@@ -619,7 +620,6 @@ const confirmRemoveSkill = (event) => {
 };
 
 const handleKeyPress = (key) => {
-  console.log('handle key', key, modeIsLocalize.value)
   switch (key) {
     case 'r':
       if (modeIsLocalize.value) { setToRandomFrame() }
