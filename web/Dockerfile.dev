@@ -7,9 +7,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy source code
-COPY . .
-
 # Expose port for dev server
 EXPOSE ${WEB_LOCAL_PORT:-5173}
 

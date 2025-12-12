@@ -52,7 +52,7 @@ def restore_latest_mysql_backup(backup_dir: str = MYSQL_BACKUP):
     # Find the latest .sql backup file
     sql_files = [f for f in os.listdir(backup_dir) if f.endswith(".sql")]
     if not sql_files:
-        print(f"⚠️ No database backup found to restore from: ({latest_backup})")
+        print(f"⚠️ No database backup found to restore from")
         return
     
     # Sort by modification time descending, pick the newest
