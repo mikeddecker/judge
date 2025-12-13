@@ -215,6 +215,7 @@ class TrainerSkills:
             metrics_over_time = {}
             modelstats = {}
             f1_avgs_over_time = []
+            f1_avg_over_losses_over_time = []
             acc_avgs_over_time = []
             if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPathCurrent):
                 checkpoint = torch.load(checkpointPath, weights_only=False)
@@ -225,6 +226,7 @@ class TrainerSkills:
                 epoch_start = modelstats['epoch'] + 1
                 losses_over_time = modelstats['losses_over_time']
                 f1_avgs_over_time = modelstats['f1_total_avgs_over_time']
+                f1_avg_over_losses_over_time = modelstats['f1_avg_over_losses_over_time']
                 acc_avgs_over_time = modelstats['acc_avgs_over_time']
                 metrics_over_time = {} if 'metrics_over_time' not in modelstats.keys() else modelstats['metrics_over_time']
                 classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
@@ -278,11 +280,21 @@ class TrainerSkills:
                 hasValLossImproved = len(losses_over_time) - minIndexLoss - 1 == 0
                 epochsNoImprovement = len(losses_over_time) - max(minIndexF1, minIndexLoss) - 1
 
+                # Testing f1_avg over loss improvement for early stopping
+                f1_avg_over_loss = validation_results['f1_total_avg'] / val_loss
+                f1_avg_over_losses_over_time.append(f1_avg_over_loss)
+                hasAccOverLossImproved = len(f1_avg_over_losses_over_time) - 1 == f1_avg_over_losses_over_time.index(max(f1_avg_over_losses_over_time))
+                f1_avg_over_loss_improvement = f1_avg_over_loss / (f1_avg_over_losses_over_time[-2] if len(f1_avg_over_losses_over_time) > 1 else "/") - 1
+
                 color_acc = Fore.GREEN if hasValF1Improved else Fore.RED
                 color_loss = Fore.GREEN if hasValLossImproved else Fore.RED
+                color_f1_avg_over_loss = Fore.GREEN if hasAccOverLossImproved else Fore.RED
                 print(f"Epoch {epoch}, Train Loss: {total_loss / len(dataloaderTrain):.4f}")
                 print(f"Epoch {epoch}, Validation Loss: {color_loss}{val_loss:.4f}{Style.RESET_ALL}")
                 print(f"Epoch {epoch}, Validation f1_avg: {color_acc}{validation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
+                print(f"Epoch {epoch}, Validation f1_avg / loss: {color_f1_avg_over_loss}{f1_avg_over_loss:.4f}{Style.RESET_ALL}")
+                if len(f1_avg_over_losses_over_time) > 1:
+                    print(f"Epoch {epoch}, f1_avg / loss improvement: {f1_avg_over_loss_improvement:.2%}%")
 
                 if epochsNoImprovement > patience:
                     print(f"No improvement for {epochsNoImprovement} epochs - stopping")
@@ -300,6 +312,7 @@ class TrainerSkills:
                         'epoch': epoch,
                         'validation_results': validation_results,
                         'f1_total_avgs_over_time' : f1_avgs_over_time,
+                        'f1_avg_over_losses_over_time' : f1_avg_over_losses_over_time,
                         'acc_avgs_over_time' : acc_avgs_over_time,
                         'metrics_over_time': metrics_over_time,
                         'losses_over_time': losses_over_time,
