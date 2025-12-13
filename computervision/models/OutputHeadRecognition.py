@@ -16,17 +16,17 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class OutputHeadRecognition(nn.Module):
     """Template by ChatGPT 2025-08-07, altered to incorporate stages"""
-    def __init__(self, input_neurons: int, df_layers, df_composition, max_instances_per_role, prop_counts: defaultdict[defaultdict[int|float]]):
+    def __init__(self, input_neurons: int, df_layers, df_composition, max_instances_per_composition: pd.Series, prop_counts: defaultdict[defaultdict[int|float]]):
         super().__init__()
 
         self.output_layers = nn.ModuleDict()
         self.df_layers = df_layers 
         self.df_composition = df_composition 
-        self.max_instances_per_role = max_instances_per_role
+        self.max_instances_per_composition : pd.Series = max_instances_per_composition
         self.confusion_values : dict[list[str]] = {}
 
         print(f"max instances per role")
-        print(max_instances_per_role)
+        print(max_instances_per_composition)
 
         self.init_categorical_mappings()
         self.init_layers(input_neurons, prop_counts)
@@ -56,9 +56,24 @@ class OutputHeadRecognition(nn.Module):
         self.loss_fns: dict[str, callable] = {}
         weight_alpha = 1.5
 
+        # Add layers for composition counts e.g.:
+        # DDSwitch      1
+        # Jumper        2
+        # SingleRope    4
+        # Turner        4
+        # 1, 2, 4, 4 neurons respectively
+        for composition, max_instances in self.max_instances_per_composition.items():
+            output_head = f"composition_{composition}"
+            self.output_layers[output_head] = nn.Linear(input_neurons, max_instances + 1)
+            self.loss_fns[output_head] = nn.CrossEntropyLoss().to(device)
+
         print("self.df_composition - init layers")
         print(self.df_composition)
 
+        # Add layers for each property e.g.:
+        # DDSwitch_0_StageProperties_Hands
+        # Jumper_1_StageProperties_Feet
+        # SingleRope_0_StageProperties_Backwards
         for index, row in self.df_composition.iterrows():
             composition_name = row['compositionName']
             mapped_stage = map_stageNr(row['stage'])
@@ -66,7 +81,7 @@ class OutputHeadRecognition(nn.Module):
             prop_name = row['name']
             prop_type = property_row['type']
 
-            for i in range(self.max_instances_per_role[composition_name]):
+            for i in range(self.max_instances_per_composition[composition_name]):
                 output_head = '_'.join([composition_name, str(i), mapped_stage, prop_name])
                 if prop_name in self.layers.keys():
                     self.output_layers[output_head] = self.layers[prop_name]
@@ -125,6 +140,16 @@ class OutputHeadRecognition(nn.Module):
             'confusion': {},
         }
         self.reset_metrics()
+        for composition_name, max_amount in self.max_instances_per_composition.items():
+            # Composition name = DDSwitch, Jumper, SingleRope, Turner... # TODO : enforce unique!
+            num_classes = max_amount + 1
+            self.metrics['precision'][composition_name] = torchmetrics.Precision(task="multiclass", average=average, num_classes=num_classes).to(device)
+            self.metrics['recall'][composition_name]    = torchmetrics.Recall(task="multiclass", average=average, num_classes=num_classes).to(device)
+            self.metrics['f1'][composition_name]        = torchmetrics.F1Score(task="multiclass", average=average, num_classes=num_classes).to(device)
+            self.metrics['acc'][composition_name]       = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
+            self.metrics['confusion'][composition_name] = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=num_classes).to(device)
+            self.confusion_values[composition_name] = list(range(num_classes))
+
         for index, row in self.df_composition.iterrows():
             composition_name = row['compositionName']
             mapped_stage = map_stageNr(row['stage'])
@@ -132,7 +157,7 @@ class OutputHeadRecognition(nn.Module):
             prop_name = row['name']
             prop_type = property_row['type']
 
-            if self.max_instances_per_role[composition_name] > 0:
+            if self.max_instances_per_composition[composition_name] > 0:
                 if prop_name in self.metrics['acc'].keys():
                     continue
                 elif prop_type == "categorical":
@@ -205,7 +230,7 @@ class OutputHeadRecognition(nn.Module):
                 prop_type = property_row['type']
                 prop_id = row['propertyId']
 
-                instance_indexes = range(self.max_instances_per_role[composition_name])
+                instance_indexes = range(self.max_instances_per_composition[composition_name])
                 instance_indexes = reversed(instance_indexes) if flip_instances else instance_indexes
                 for i in instance_indexes:
                     output_head = '_'.join([composition_name, str(i), mapped_stage, prop_name])
@@ -255,7 +280,7 @@ class OutputHeadRecognition(nn.Module):
             raise
         return target, mask
 
-    def compute_loss(self, preds, targets, masks):
+    def compute_loss(self, preds, targets, masks, skillId=None):
         """
         preds: dict[str, Tensor] where each tensor is [B, C] or [B, 1]
         targets: dict[str, Tensor] where each tensor is [B, 1]
@@ -277,13 +302,18 @@ class OutputHeadRecognition(nn.Module):
                 pred_valid = pred_val[valid_idx]
                 target_valid = target_val[valid_idx]
 
-                prop_name = output_head.split('_')[-1]
-                if pred_valid.ndim > 1 and pred_valid.shape[1] > 1:
-                    # Categorical
-                    loss = self.loss_fns[prop_name](pred_valid, target_valid.long())
+                if "composition_" in output_head:
+                    # Composition count prediction
+                    target_val = targets[output_head].long()  # shape [B]
+                    loss = self.loss_fns[output_head](pred_val.squeeze(dim=1), target_val)
                 else:
-                    # Boolean or numerical
-                    loss = self.loss_fns[prop_name](pred_valid.squeeze(dim=1), target_valid.float())
+                    prop_name = output_head.split('_')[-1]
+                    if pred_valid.ndim > 1 and pred_valid.shape[1] > 1:
+                        # Categorical
+                        loss = self.loss_fns[prop_name](pred_valid, target_valid.long())
+                    else:
+                        # Boolean or numerical
+                        loss = self.loss_fns[prop_name](pred_valid.squeeze(dim=1), target_valid.float())
 
                 total_loss += loss
                 total_count += 1
@@ -306,13 +336,11 @@ class OutputHeadRecognition(nn.Module):
             mask_val = masks[output_head]
             output_head_splits = output_head.split('_')
 
-            if len(output_head_splits) == 1:
-                # compositionName: count
-                raise NotImplementedError(f"Counts prediction not yet implemented")
-            elif len(output_head_splits) != 4:
+            if len(output_head_splits) != 4 and len(output_head_splits) != 2:
                 raise ValueError(f"Something went wrong with output_head:", output_head)
+            
             composition_name = output_head_splits[0]
-            prop_name = output_head_splits[3]
+            prop_name = output_head_splits[1] if "composition_" in output_head else output_head_splits[3]
 
             valid_idx = mask_val.bool().nonzero(as_tuple=False).squeeze(-1)
             if valid_idx.numel() == 0:

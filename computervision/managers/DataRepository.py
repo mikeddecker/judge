@@ -138,10 +138,10 @@ class DataRepository:
 
     def get_skills_of_fully_segmented_videos(self, train_test_val):
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE MOD(videoId, 10) <> 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")  
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) <> 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")  
 
         if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE MOD(videoId, 10) = 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) = 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
@@ -150,12 +150,13 @@ class DataRepository:
 
     def get_skills(self, train_test_val, videoId:int=None):
         """videoId is optional, then it returns only skills from that videoId"""
+        # TODO : Make warning or error on train page displaying skills having null values
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         and_where_videoId = f"AND videoId = {videoId}" if videoId else ""
         if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE MOD(videoId, 10) = 5 {and_where_videoId}""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) = 5 {and_where_videoId}""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
@@ -304,7 +305,7 @@ class DataRepository:
             # counts[prop_name][value] = occurrence count
             counts = defaultdict(lambda: defaultdict(int))
             for chunk_dataframe in pd.read_sql("SELECT skillinfo FROM Skills", connection, chunksize=50000):
-                print(f"Dataframe with {len(chunk_dataframe)} rows")
+                print(f"DataRepo - get_skill_prop_counts: processing {len(chunk_dataframe)} rows")
 
                 for row in chunk_dataframe.itertuples(index=False):
                     s = json.loads(row.skillinfo)

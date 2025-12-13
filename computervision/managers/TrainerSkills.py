@@ -68,17 +68,22 @@ class TrainerSkills:
             head : OutputHeadRecognition = model.head
 
             with torch.no_grad():
-                for batch_X, batch_y, batch_mask in tqdm(dataloader):
+                for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloader):
                     with torch.amp.autocast(device_type=device):
                         optimizer.zero_grad()
                         outputs = model(batch_X / 255)
 
-                        # Loss
-                        total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask)
-                        val_loss += total_batch_loss.item()
+                        try:
+                            
+                            # Loss
+                            total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask)
+                            val_loss += total_batch_loss.item()
 
-                        # Accuracy
-                        current_f1 = head.update_metrics(outputs, batch_y, batch_mask)
+                            # Accuracy
+                            current_f1 = head.update_metrics(outputs, batch_y, batch_mask)
+                        except Exception as e:
+                            print(f"❌ Error during validation on skill ☣️ {skill_id} ☣️")
+                            raise e
 
                 metrics = head.compute_metrics()
                 head.reset_metrics()
@@ -235,21 +240,21 @@ class TrainerSkills:
                 model.train()
                 total_loss = 0.0
                 i = 0
-                for batch_X, batch_y, batch_mask in tqdm(dataloaderTrain):
+                for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloaderTrain):
                     with torch.amp.autocast(device_type='cuda'):
                         optimizer.zero_grad()  # Clear gradients
                         
                         # Forward pass
                         outputs = model(batch_X / 255)
-                        total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask)
+                        total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask, skillId=skill_id)
                         if total_batch_loss.requires_grad:
                             total_batch_loss.backward()
                             optimizer.step()
                         else:
-                            # Optional: log once in a while to catch issues
-                            print("⚠️ Warning: loss tensor has no grad, skipping batch")
-                            print(batch_y)
-                            print(batch_mask)
+                            # Allow to continue training, but display a warning
+                            print(f"⚠️ Warning (Skill {skill_id}): loss tensor has no grad, skipping batch")
+                            pprint({ k: v for k, v in batch_y.items() if k.startswith("composition_") })
+                            pprint({ k: v for k, v in batch_mask.items() if k.startswith("composition_") })
                             continue
                     
                     total_loss += total_batch_loss.item()
@@ -302,8 +307,8 @@ class TrainerSkills:
                         'confusion_matrix': None,
                         'final_classification_reports' : None,
                         'time' : time.time() - start,
-                        'length_train': len(train_generator, balanced=False), # Needs to be balanced
-                        'length_val': len(val_generator, balanced=False), # Needs to be balanced
+                        'length_train': len(train_generator.Skills),
+                        'length_val': len(val_generator.Skills),
                         'rundate': rundate,
                         'modelname': modelname,
                         'recipe': recipe

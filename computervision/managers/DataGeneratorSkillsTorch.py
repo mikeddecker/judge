@@ -73,6 +73,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         videoId = skillinfo_row["videoId"]
         frameStart = skillinfo_row["frameStart"]
         frameEnd = skillinfo_row["frameEnd"]
+        skillId = skillinfo_row["id"]
 
         X, flip_turner = load_skill_batch_X_torch(
             frameloader=self.frameloader,
@@ -90,7 +91,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             print(f"Error for skill: {skillinfo_row['id']}")
             raise
 
-        return X, target, mask
+        return X, target, mask, skillId
 
     def on_epoch_end(self):
         self.Skills = self.Skills.sample(frac=1.)
