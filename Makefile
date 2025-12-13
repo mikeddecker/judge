@@ -44,6 +44,9 @@ rebuild-dev: ## Rebuild dev without cache
 rebuild-prod: ## Rebuild prod without cache
 	$(COMPOSE_PROD) build --no-cache
 
+restart-cv: ## Restart the computervision service
+	$(COMPOSE_DEV) restart computervision
+
 prune: ## Clean all docker trash
 	docker system prune -f
 

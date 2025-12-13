@@ -49,6 +49,19 @@ services:
     networks:
       - ai-judge-network
     restart: on-failure
+  computervision:
+    container_name: ai-judge-computer-vision
+    build: ./computervision
+    gpus: all
+    env_file: .env
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - ai-judge-network
+    volumes:
+      - ${STORAGE_DIR_VIDEOS}:${STORAGE_DIR_VIDEOS}
+      - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
 
 networks:
   ai-judge-network:
