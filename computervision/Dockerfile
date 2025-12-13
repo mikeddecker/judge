@@ -19,9 +19,7 @@ WORKDIR /app
 
 # Copy and install dependencies
 COPY requirements.txt .
-RUN python -m pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir watchfiles
 
 # Copy code (only used in production via normal docker-compose)
 # In development, this will be overridden by a volume mount
