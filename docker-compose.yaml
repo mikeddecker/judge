@@ -62,6 +62,7 @@ services:
     volumes:
       - ${STORAGE_DIR_VIDEOS}:${STORAGE_DIR_VIDEOS}
       - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
+      - torch_cache:/root/.cache/torch
 
 networks:
   ai-judge-network:
@@ -69,4 +70,5 @@ networks:
 
 volumes:
   db_data:
+  torch_cache:
 
