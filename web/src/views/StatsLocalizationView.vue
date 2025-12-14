@@ -71,17 +71,25 @@ const barChartFramesTrainTest = computed(() => {
     :value="videosWithLabels" 
     scrollable scrollHeight="400px"
   >
-    <Column
-      v-for="(value, prop) in Object.values(videosWithLabels)[0]"
-      :key="prop"
-      sortable
-      :field="prop"
-      :header="prop"
-    >
+    <Column header="VideoId" sortable field="id"><template #body="slotProps">{{ slotProps.data.id }}</template></Column>
+    <Column header="Name" sortable field="name"><template #body="slotProps">{{ slotProps.data.name }}</template></Column>
+    <Column header="Distribution">
       <template #body="slotProps">
-        {{ ['name'].includes(prop) ? slotProps.data[prop] : slotProps.data[prop] }}
+        <SkillBalk class="min-w-3xs"
+          :videoinfo="{FrameLength: slotProps.data.frameLength}"
+          :Skills="[]"
+          :currentFrame="0"
+          :labeledFrames="slotProps.data.labeledFrameNrs"
+        />
       </template>
     </Column>
+    <Column header="Density (Labels/sec)" sortable field="density"><template #body="slotProps">{{ slotProps.data.density.toFixed(2) }}</template></Column>
+    <!-- <Column header="Labels x FPS / Duration" sortable field="labelsTimesFpsOverDuration"><template #body="slotProps">{{ slotProps.data.labelsTimesFpsOverDuration.toFixed(2) }}</template></Column> -->
+    <Column header="Duration" sortable field="duration"><template #body="slotProps">{{ slotProps.data.duration }}</template></Column>
+    <Column header="FPS" sortable field="fps"><template #body="slotProps">{{ slotProps.data.fps }}</template></Column>
+    <Column header="Labeled Frames" sortable field="frameCount"><template #body="slotProps">{{ slotProps.data.frameCount }}</template></Column>
+    <Column header="Total Frames" sortable field="frameLength"><template #body="slotProps">{{ slotProps.data.frameLength }}</template></Column>
+    <Column header="Boxes" sortable field="totalBoxes"><template #body="slotProps">{{ slotProps.data.totalBoxes }}</template></Column>
     <Column header="Link">
       <template #body="slotProps">
         <Button 
@@ -91,16 +99,7 @@ const barChartFramesTrainTest = computed(() => {
           size="small" severity="secondary"></Button>
       </template>
     </Column>
-    <Column header="Frame Labels">
-      <template #body="slotProps">
-        <SkillBalk 
-          :videoinfo="{FrameLength: slotProps.data.frameLength}"
-          :Skills="[]"
-          :currentFrame="0"
-          :labeledFrames="slotProps.data.labeledFrameNrs"
-        />
-      </template>
-    </Column>
+
   </DataTable>
 
   <h3>Localization Recipes Performance</h3>

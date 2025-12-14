@@ -7,7 +7,7 @@
         class="skill-section"
         @click="handleClick(s.Id, s.hasOwnProperty('IsPrediction') ? s.hasOwnProperty('IsPrediction') : false)">
       </div>
-      <div v-show="currentFrame" :style="getSkillSectionStyle(currentFrame)"></div>
+      <div v-if="currentFrame" :style="getSkillSectionStyle(currentFrame)"></div>
       <div v-for="frame in props.labeledFrames" :key="frame" :style="getFrameLineStyle(frame)"></div>
     </div>
 </template>
@@ -22,15 +22,16 @@ const props = defineProps({
   },
   Skills: {
     type: Object,
-    required: true,
+    required: false,
   },
   currentFrame: {
-    required: true,
+    required: false,
     type: Number,
   },
   labeledFrames: {
     type: Array,
-    default: () => []
+    default: () => [],
+    required: false,
   }
 })
 
@@ -66,7 +67,7 @@ function getColor(inCreation, isPrediction, skill) {
 
 function getSkillSectionStyle(skill) {
   if (!skill) {
-    console.log(skill)
+    console.log('not skill', skill)
   }
   // Current frame
   if (Number.isInteger(skill)) {

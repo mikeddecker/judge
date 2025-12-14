@@ -78,7 +78,7 @@ onMounted(async () => {
 async function getStatistics() {
   getStats('general').then(r => generalStats.value = r)
   getStats('localize').then(r => localizeStats.value = r)
-  getStats('localize_video_labelinfo').then(r => videosWithLabels.value = r).then(() => console.log(videosWithLabels.value))
+  getStats('localize_video_labelinfo').then(r => videosWithLabels.value = r)
   getStats('segmentation').then(r => segmentationStats.value = r)
   getStats('recognition').then(r => recognitionStats.value = r)
   getStats('judge').then(r => judgeStats.value = r)
