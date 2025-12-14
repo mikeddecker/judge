@@ -1,6 +1,5 @@
 from colorama import Fore, Style
 import cv2
-import json
 import keras
 import math
 import matplotlib.patches as patches
@@ -9,7 +8,6 @@ import numpy as np
 import pandas as pd
 import os
 import random
-import sys
 import torch
 import yaml
 

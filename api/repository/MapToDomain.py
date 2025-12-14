@@ -6,10 +6,8 @@ from domain.tag import Tag
 from domain.tagGroup import TagGroup
 from domain.skill import Skill
 from domain.videoinfo import VideoInfo
-from helpers.ConfigHelper import get_discipline_DoubleDutch_config
-from repository.models import Folder as FolderDB, Video as VideoDB, FrameLabel, Skill as SkillDB, Jobs as JobDB
-from repository.models import Tag as TagDB, TagGroup as TagGroupDB, LayerComposition as LayerCompositionDB, LayerProperty
-from typing import List
+from repository.models import Folder as FolderDB, Video as VideoDB, Skill as SkillDB, Jobs as JobDB
+from repository.models import Tag as TagDB, TagGroup as TagGroupDB, LayerComposition as LayerCompositionDB
 
 class MapToDomain:
     def map_folder(folderDB: FolderDB) -> Folder:

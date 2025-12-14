@@ -1,5 +1,3 @@
-from domain.tag import Tag
-from domain.tagGroup import TagGroup
 from domain.layerComposition import LayerComposition
 from repository.db import db
 from repository.folderRepo import FolderRepository
@@ -7,10 +5,8 @@ from repository.videoRepo import VideoRepository
 from repository.jobRepo import JobRepository
 from repository.tagRepo import TagRepository
 from repository.MLLayerRepo import MLLayerRepository
-from typing import List
 from helpers.ValueHelper import ValueHelper
 from config import LAYER_TYPES
-from pprint import pprint
 
 class MLLayerService:
     """Provides the video information of videos"""

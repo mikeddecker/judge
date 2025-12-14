@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 import json
-import numpy as np
 import os
 import pandas as pd
 import sqlalchemy as sqlal
 
 from collections import defaultdict
 from constants import ENVS
-from datetime import datetime
-from sqlalchemy.exc import SQLAlchemyError
 
 def extract_key_number_pairs(obj):
     if isinstance(obj, list):

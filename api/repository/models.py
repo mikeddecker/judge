@@ -1,9 +1,9 @@
 # from flask_sqlalchemy import SQLAlchemy
 from repository.db import db
 from sqlalchemy import CheckConstraint
-from sqlalchemy.dialects.mysql import TINYINT, SMALLINT, JSON
+from sqlalchemy.dialects.mysql import SMALLINT, JSON
 from sqlalchemy.ext.mutable import MutableDict
-from datetime import datetime, date
+from datetime import datetime
 
 class Folder(db.Model):
     __tablename__ = 'Folders'

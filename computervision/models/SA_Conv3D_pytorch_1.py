@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import Module, Parameter
-import numpy as np
 import pandas as pd
 from models.torch_output_layers import create_pytorch_segmentation_output_layers, forward_skill_output_layers, forward_segmentation_output_layers
 

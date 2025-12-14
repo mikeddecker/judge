@@ -5,22 +5,19 @@ import numpy as np
 import pandas as pd
 import time
 import json
-import sys
 import gc
 import os
 import torch
-import yaml
 
 from base_utils import load_json_file
 from constants import ENVS, PYTORCH_MODELS_SKILLS
-from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values
+from helpers import load_skill_batch_X_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values
 from localizor_with_strats import predict_and_save_locations
 from managers.DataRepository import DataRepository
 from managers.FrameLoader import FrameLoader
 from models.OutputHeadRecognition import OutputHeadRecognition
 from moviepy import VideoFileClip, VideoClip
 from tqdm import tqdm
-from Trainer import models, trainparams
 from helpers import localize_get_best_modelpath
 
 torch.backends.cudnn.benchmark = True

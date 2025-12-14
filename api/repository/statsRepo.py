@@ -1,14 +1,12 @@
-import json
 import os
 import pandas as pd
-import re
 from collections import Counter, defaultdict
 from config import RECIPES, ENVS
 from flask_sqlalchemy import SQLAlchemy
 from helpers.helpers import load_json_file
-from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, FrameLabelType
+from repository.models import Video as VideoInfoDB, FrameLabel, FrameLabelType
 from repository.models import Skill, LayerComposition, LayerProperty, LayerPropertyValue
-from sqlalchemy import desc, func, case, select, text
+from sqlalchemy import func, case
 from helpers.ConfigHelper import recognition_get_modelpaths
 
 def extract_key_number_pairs(obj):

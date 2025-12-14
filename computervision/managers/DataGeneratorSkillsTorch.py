@@ -1,13 +1,8 @@
-import keras
-import numpy as np
 import pandas as pd
-import random
-import math
-import sys
 import torch
 
 from models.OutputHeadRecognition import OutputHeadRecognition
-from helpers import load_skill_batch_X_torch, load_skill_batch_y_torch, adaptSkillLabels
+from helpers import load_skill_batch_X_torch
 
 from managers.DataRepository import DataRepository
 from managers.FrameLoader import FrameLoader

@@ -4,8 +4,7 @@ import time
 import json
 from managers.DataRepository import DataRepository
 from Predictor import Predictor
-from Trainer import Trainer, trainparams, max_rounds
-from managers.TrainerLocalize import train_yolo_model, validate_localize
+from Trainer import Trainer
 from sqlalchemy.orm import close_all_sessions
 from constants import RECIPES
 from pprint import pprint

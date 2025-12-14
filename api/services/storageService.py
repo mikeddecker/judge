@@ -3,7 +3,6 @@
 
 # Nice to have : Browse and navigate storage to find renames that happend on the drive
 
-
 import os
 import time
 import traceback
@@ -14,13 +13,10 @@ import subprocess
 from config import ENVS
 from colorama import Fore, Style
 from domain.folder import Folder
-from domain.videoinfo import VideoInfo
-from domain.frameinfo import FrameInfo
 from helpers.ValueHelper import ValueHelper
 from services.videoService import VideoService
 from services.folderService import FolderService
 from repository.db import db
-
 
 # pseudo cache
 cache = {
@@ -137,7 +133,6 @@ class StorageService:
                         frameNr_for_image = math.floor(info["frameLength"] * 0.2)
                         self.__create_video_image(videoId=inserted_video.Id, name=content, folder=parent, frameNr=frameNr_for_image)
                         print(f"{Fore.LIGHTMAGENTA_EX}Created image:{Style.RESET_ALL} {content}")
-
 
                 elif content.split(".")[-1] in ENVS.SUPPORTED_IMAGE_FORMATS:
                     print(f"{Fore.LIGHTMAGENTA_EX}Detected image:{Style.RESET_ALL} {content} (currently skipped)")
@@ -270,3 +265,4 @@ class StorageService:
                                             )
         frameNr_for_image = math.floor(info["frameLength"] * 0.2)
         self.__create_video_image(videoId=created_video_info.Id, name=name, folder=folder, frameNr=frameNr_for_image)
+

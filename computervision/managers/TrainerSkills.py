@@ -1,10 +1,8 @@
 import functools
 import gc
 import json
-import pandas as pd
 import os
 import torch
-import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 import time
@@ -18,12 +16,10 @@ from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
 from pprint import pprint
-from sklearn.metrics import classification_report, confusion_matrix
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 from tqdm import tqdm
-from datetime import datetime, date
-from helpers import weighted_mse_loss
-from base_utils import load_json_file, dump_json_file
+from datetime import date
+from base_utils import load_json_file
 from models.OutputHeadRecognition import OutputHeadRecognition
 from types import SimpleNamespace
 from localizor_with_strats import predict_and_save_locations

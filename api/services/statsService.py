@@ -1,11 +1,6 @@
-import os
-import json
-import yaml
-import pandas as pd
 from .videoService import VideoService # TODO : move to repo
 from .jobService import JobService # TODO : move to repo
-from helpers.ConfigHelper import PYTORCH_MODELS_SKILLS, get_discipline_DoubleDutch_config, recognition_get_modelpaths
-from helpers.helpers import load_json_file
+from helpers.ConfigHelper import PYTORCH_MODELS_SKILLS, get_discipline_DoubleDutch_config
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository

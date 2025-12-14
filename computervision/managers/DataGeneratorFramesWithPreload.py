@@ -1,6 +1,5 @@
 import keras
 import numpy as np
-import pandas as pd
 from DataRepository import DataRepository
 
 # Didn't improve loading time

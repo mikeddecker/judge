@@ -6,7 +6,7 @@ from domain.folder import Folder
 from domain.frameinfo import FrameInfo
 from domain.skill import Skill
 from domain.videoinfo import VideoInfo
-from helpers.ConfigHelper import get_discipline_DoubleDutch_config, localize_get_best_modelpath
+from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 from helpers.ValueHelper import ValueHelper
 from helpers.helpers import load_json_file
 from repository.db import db

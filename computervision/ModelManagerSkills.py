@@ -1,23 +1,19 @@
 import keras
-import numpy as np
 import os
 import sys
-import tensorflow as tf
 import pandas as pd
 
 from datetime import datetime
 
 sys.path.append('.')
 
-from helpers import iou, my_mse_loss_fn, metric_mse_max_numeric_accuracy
+from helpers import metric_mse_max_numeric_accuracy
 from FrameLoader import FrameLoader
 from DataGeneratorSkills import DataGeneratorSkills
 from DataRepository import DataRepository
 
 from models.GoogleNet import get_model as get_model_googlenet
 from models.GoogleNet_extra_dense import get_model as get_model_googlenet_extra_dense
-from models.MobileNetV3Small import get_model as get_model_mobilenet
-from models.RandomCNN import get_model as get_model_randomcnn
 from models.vitransformer_enc import get_model as get_model_vit
 from models.ViViTransformer_enc import get_model as get_model_ViViT
 from models.SA_ConvLSTM_Deepseek_adaption import get_model as get_model_SA_ConvLSTM_deepseek

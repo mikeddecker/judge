@@ -2,15 +2,12 @@ import cv2
 import json
 import numpy as np
 import os
-import pandas as pd
 import yaml
 import shutil
 
 from colorama import Fore, Style
 from constants import ENVS
 from datetime import datetime 
-from dotenv import load_dotenv
-from base_utils import load_json_file
 from localizor_with_strats import validate_localize
 from managers.DataRepository import DataRepository
 from ultralytics import YOLO

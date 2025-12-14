@@ -7,9 +7,6 @@
 # Based on https://keras.io/examples/vision/object_detection_using_vision_transformer/
 
 import keras
-import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
 
 
 def mlp(x, hidden_units, dropout_rate):

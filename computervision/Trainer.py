@@ -1,6 +1,6 @@
 from managers.TrainerSkills import TrainerSkills
 from managers.TrainerSegments import TrainerSegments
-from managers.TrainerLocalize import train_yolo_model, validate_localize
+from managers.TrainerLocalize import train_yolo_model
 from managers.DataRepository import DataRepository
 from constants import PYTORCH_MODELS_SKILLS
 from constants import RECIPES, SPEEDMODES

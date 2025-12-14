@@ -1,14 +1,11 @@
-import json
 
-from config import STAGE_MAP
 from datetime import datetime
 from domain.layerComposition import LayerComposition
 from flask_sqlalchemy import SQLAlchemy
 from repository.models import LayerProperty, LayerPropertyValue, LayerComposition as LayerCompositionDB, Skill as SkillDB
 from repository.MapToDomain import MapToDomain
-from sqlalchemy import and_, func, or_
+from sqlalchemy import or_
 from sqlalchemy.orm.attributes import flag_modified
-from pprint import pprint
 
 class MLLayerRepository:
     def __init__(self, db : SQLAlchemy):

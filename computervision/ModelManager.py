@@ -1,5 +1,4 @@
 import keras
-import numpy as np
 import os
 import sys
 import tensorflow as tf
@@ -17,7 +16,6 @@ from managers.DataRepository import DataRepository
 from models.GoogleNet import get_model as get_model_googlenet
 from models.GoogleNet_extra_dense import get_model as get_model_googlenet_extra_dense
 from models.MobileNetV3Small import get_model as get_model_mobilenet
-from models.RandomCNN import get_model as get_model_randomcnn
 from models.vitransformer_enc import get_model as get_model_vit
 
 import tensorflow as tf

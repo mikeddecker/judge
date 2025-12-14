@@ -1,6 +1,5 @@
 import keras
 import numpy as np
-import pandas as pd
 from managers.DataRepository import DataRepository
 from managers.FrameLoader import FrameLoader
 

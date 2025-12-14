@@ -1,24 +1,17 @@
 import keras
-import numpy as np
 import os
 import sys
-import tensorflow as tf
 import pandas as pd
 
 from datetime import datetime
 
 sys.path.append('.')
 
-from helpers import iou, my_mse_loss_fn, metric_mse_segmentation_close_accuracy, off_by_0_1, off_by_0_2, off_by_0_33
+from helpers import off_by_0_1, off_by_0_2, off_by_0_33
 from managers.FrameLoader import FrameLoader
 from managers.DataGeneratorSegmentation import DataGeneratorSegmentation
 from managers.DataRepository import DataRepository
 
-from models.GoogleNet import get_model as get_model_googlenet
-from models.GoogleNet_extra_dense import get_model as get_model_googlenet_extra_dense
-from models.MobileNetV3Small import get_model as get_model_mobilenet
-from models.RandomCNN import get_model as get_model_randomcnn
-from models.vitransformer_enc import get_model as get_model_vit
 from models.ViViTransformer_enc_segmentation import get_model as get_model_ViViT
 
 

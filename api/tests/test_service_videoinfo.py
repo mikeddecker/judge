@@ -9,7 +9,6 @@ from flask import Flask, current_app
 from flask_migrate import Migrate
 from flask_testing import TestCase
 from repository.db import db
-from repository.models import Folder as FolderDB
 from services.folderService import FolderService
 from services.videoService import VideoService
 from tests.TestHelper import TestHelper

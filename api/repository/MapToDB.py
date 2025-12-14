@@ -1,8 +1,6 @@
-from domain.folder import Folder
 from domain.frameinfo import FrameInfo
 from domain.videoinfo import VideoInfo
-from repository.models import Folder as FolderDB, FrameLabel
-from sqlalchemy.orm.session import Session
+from repository.models import FrameLabel
 
 class MapToDB:
     def map_frameInfo(video: VideoInfo, frameInfo: FrameInfo) -> FrameLabel:

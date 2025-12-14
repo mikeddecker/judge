@@ -1,6 +1,4 @@
 import torch
-import torch.nn.functional as F
-import sys
 
 def create_pytorch_segmentation_output_layers(lastNNeurons:int, timesteps:int):
     return torch.nn.Linear(lastNNeurons, timesteps)

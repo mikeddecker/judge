@@ -1,16 +1,12 @@
-from fileinput import isstdin
-from colorama import Fore, Style
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torchmetrics
 import metrics.NumericStepMetrics as nsm
 
 from collections import defaultdict
 from helpers import map_stageNr, mapped_stage_is_not_stageProperties, weighted_mse_loss
-from pprint import pprint
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

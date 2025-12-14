@@ -9,14 +9,11 @@
 import keras
 import pandas as pd
 import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
 
 import tensorflow as tf
-from keras.layers import Layer, ConvLSTM2D, ConvLSTM3D, Conv2D, Conv3D, Multiply, Add, Activation, TimeDistributed, Flatten, Dense
+from keras.layers import Layer, Conv2D, Conv3D, Activation, Flatten, Dense
 from tensorflow.keras import backend as K
 
-import sys
 
 
 class SelfAttention(Layer):

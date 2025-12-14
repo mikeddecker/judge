@@ -2,10 +2,8 @@ import keras
 import numpy as np
 import pandas as pd
 import random
-import math
 from managers.DataRepository import DataRepository
 from managers.FrameLoader import FrameLoader
-import sys
 
 
 # TODO : change to tf dataset, so prefetch is possible https://medium.com/analytics-vidhya/write-your-own-custom-data-generator-for-tensorflow-keras-1252b64e41c3
