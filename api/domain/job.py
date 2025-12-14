@@ -12,7 +12,7 @@ class Job:
             job_arguments: dict = {},
             request_time: datetime = None,
             status_details: str = None,
-        ):
+        ) -> None:
 
         assert type in JOB_TYPES, f'JobType ({type}) must be in {JOB_TYPES}'
         assert step in JOB_STEPS, f'Job step ({step}) must be in {JOB_STEPS}'
@@ -29,13 +29,13 @@ class Job:
             assert job_arguments['recipe'] is not None, f"Recipe may not be None for predict jobs"
             ValueHelper.check_raise_string(job_arguments['recipe'])
 
-        self.id = id
-        self.type = type
-        self.step = step
+        self.id: int = id
+        self.type: str = type
+        self.step: str = step
         self.job_arguments = job_arguments
-        self.request_time = request_time if request_time else datetime.now()
-        self.status = status
-        self.status_details = status_details
+        self.request_time: datetime = request_time if request_time else datetime.now()
+        self.status: str = status
+        self.status_details: str = status_details
     
     def to_dict(self):
         return {

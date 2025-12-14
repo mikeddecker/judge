@@ -9,7 +9,6 @@ from datetime import datetime
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
-from flask_cors import CORS
 from flask_migrate import Migrate, upgrade
 from helpers.ValueHelper import ValueHelper
 from repository.db import db

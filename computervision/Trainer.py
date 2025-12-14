@@ -6,7 +6,7 @@ from constants import PYTORCH_MODELS_SKILLS
 from constants import RECIPES, SPEEDMODES
 
 class Trainer:
-    def train(self, step, recipename, from_scratch, save_anyway, speedmode=SPEEDMODES[1]):
+    def train(self, step, recipename, from_scratch, save_anyway, speedmode=SPEEDMODES[0]) -> None:
         match step:
             case 'LOCALIZE':
                 train_yolo_model(RECIPES[step][recipename].size, repo=DataRepository())
@@ -29,7 +29,8 @@ class Trainer:
                     trainparams=RECIPES[step][recipename],
                 )
             case 'SKILL':
-                if modelname in PYTORCH_MODELS_SKILLS.keys():
+                # recipename was modelname, prior to refactor
+                if recipename in PYTORCH_MODELS_SKILLS.keys():
                     skillTrainer = TrainerSkills()
                     skillTrainer.train(
                         recipe=RECIPES[step][recipename],
@@ -84,9 +85,9 @@ trainparams["SwinT_s"] = swinparams
 
 modelname = "SA_Conv3D"
 modelname = "MViT"
-max_rounds = [4, 60]
+max_rounds: list[int] = [4, 60]
 
-models = [
+models: list[str] = [
     'MViT',
     'Resnet_MC3',
     # 'SA_Conv3D',

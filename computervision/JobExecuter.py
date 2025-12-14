@@ -27,8 +27,10 @@ while no_shutdown_job:
         close_all_sessions()
         continue
     else:
-        print(job)
-        pprint(job["job_arguments"])
+        print(f"Processing job ID: {job['id']}, Type: {job['type']}, Step: {job['step']}")
+        job_arguments = json.loads(job["job_arguments"])
+        print("Job arguments:")
+        pprint(job_arguments)
 
     job_arguments = json.loads(job["job_arguments"])
     if job["type"] == "PREDICT":
