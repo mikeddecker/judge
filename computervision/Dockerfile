@@ -28,5 +28,5 @@ COPY . .
 # Not required for computervision service
 # EXPOSE ${API_DOCKER_PORT:-5555}
 
-CMD ["python", "JobExecutor.py"]
+CMD ["python", "JobExecuter.py"]
 
