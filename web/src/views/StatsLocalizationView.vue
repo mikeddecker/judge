@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { formatPercentage, getColor } from '@/helpers/utils'
 import { getDailyChartOptions, transformDailyCounts } from '@/helpers/chartUtils'
 import { computed, onMounted, ref } from 'vue'
+import SkillBalk from '@/components/SkillBalk.vue'
 
 const router = useRouter()
 
@@ -88,6 +89,16 @@ const barChartFramesTrainTest = computed(() => {
           rounded icon="pi pi-external-link"
           variant="text"
           size="small" severity="secondary"></Button>
+      </template>
+    </Column>
+    <Column header="Frame Labels">
+      <template #body="slotProps">
+        <SkillBalk 
+          :videoinfo="{FrameLength: slotProps.data.frameLength}"
+          :Skills="[]"
+          :currentFrame="0"
+          :labeledFrames="slotProps.data.labeledFrameNrs"
+        />
       </template>
     </Column>
   </DataTable>

@@ -8,6 +8,7 @@
         @click="handleClick(s.Id, s.hasOwnProperty('IsPrediction') ? s.hasOwnProperty('IsPrediction') : false)">
       </div>
       <div v-show="currentFrame" :style="getSkillSectionStyle(currentFrame)"></div>
+      <div v-for="frame in props.labeledFrames" :key="frame" :style="getFrameLineStyle(frame)"></div>
     </div>
 </template>
   
@@ -26,6 +27,10 @@ const props = defineProps({
   currentFrame: {
     required: true,
     type: Number,
+  },
+  labeledFrames: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -98,8 +103,17 @@ function getSkillSectionStyle(skill) {
   };
 }
 
-function handleClick(skillId, isPrediction) {
-    emit('skill-clicked', skillId, isPrediction);
+function getFrameLineStyle(frame) {
+  const relativeStart = frame / FrameLength.value;
+  const left = relativeStart * 100;
+  return {
+    width: `1px`,
+    left: `${left}%`,
+    position: 'absolute',
+    height: '100%',
+    backgroundColor: 'black',
+    opacity: 0.7
+  };
 }
 </script>
   
