@@ -1,7 +1,10 @@
 <script setup>
+import { useRouter } from 'vue-router'
 import { formatPercentage, getColor } from '@/helpers/utils'
 import { getDailyChartOptions, transformDailyCounts } from '@/helpers/chartUtils'
 import { computed, onMounted, ref } from 'vue'
+
+const router = useRouter()
 
 const props = defineProps({
   results: {
@@ -76,6 +79,15 @@ const barChartFramesTrainTest = computed(() => {
     >
       <template #body="slotProps">
         {{ ['name'].includes(prop) ? slotProps.data[prop] : slotProps.data[prop] }}
+      </template>
+    </Column>
+    <Column header="Link">
+      <template #body="slotProps">
+        <Button 
+          @click="() => router.push(`/video/${slotProps.data.id}`)" 
+          rounded icon="pi pi-external-link"
+          variant="text"
+          size="small" severity="secondary"></Button>
       </template>
     </Column>
   </DataTable>

@@ -173,9 +173,10 @@ class StatsRepository:
             videos.append({
                 'id': vid,
                 'name': data['name'],
+                'duration': data['duration'],
                 'fps': data['fps'],
                 'frameLength': data['frameLength'],
-                'labeledFramesCount': len(labeled_frame_nrs),
+                'frameCount': len(labeled_frame_nrs),
                 'totalBoxes': total_boxes,
                 'density': density,
                 'labeledFrameNrs': sorted(labeled_frame_nrs)
