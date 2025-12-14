@@ -1,19 +1,11 @@
-# Computer vision
+# Computer vision 🤖
 
-Read jobs from the `mysql` database (see [api](../api/README.md))
-Execute training of models and predicting locations/segments/skills.
+Read jobs from the `mysql` database (see [api](../api/README.md)) and perform them.
+Execute training of models and predicition of locations/segments/skills.
 
-## Install
+## Setup
 
-```bash
-pip install -r requirements.txt
-```
+The computer vision service is now part of the docker setup! No manual installation needed.
 
-## Start service
-
-```bash
-python JobExecutor.py
-```
-
-! https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+! https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html (for GPU support)
 

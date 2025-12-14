@@ -67,13 +67,59 @@ There are 3 projects:
   - View video and model statistics
 - [CV/Computer Vision](./computervision/README.md) - providing a job executor training AI models.
 
-### Starting up
+### Starting up 🚀
 
-When everything is installed, you can start the projects.
+When everything is installed, you can start the projects with ease!
 
-1. Create a `.env` file from `.env.example`
-1. In the main folder: `docker compose up`
-4. In the computervision folder - `python JobExecutor.py` -> TODO : add to docker service
+1. Create a `.env` file based on the `.env.example` (copy the settings below or from the file)
+
+   ```env
+   MYSQL_DATABASE = judge_db
+   MYSQL_DATABASE_TEST = judge_test
+   MYSQL_USERNAME = root
+   MYSQL_ROOT_PASSWORD = root
+   MYSQL_LOCAL_PORT = 3377
+   MYSQL_DOCKER_PORT = 3306
+   MYSQL_HOST = mysqldb
+
+   # The directory where MYSQL backups go
+   MYSQL_BACKUP = /media/miked/Elements/Judge/results/backups
+
+   # The directory where all videos are stored. They can be subcategorized in folders.
+   STORAGE_DIR_VIDEOS = /media/miked/Elements/Judge/videos
+
+   # The directory where all the app's generated data will come.
+   STORAGE_DIR_GENERATED_DATA = /media/miked/Elements/Judge/results
+
+   # Directory for test purposes
+   TESTDIR = /tmp/judge
+
+   # Connection strings for connecting with the database
+   # They are based on the input data above, keep off.
+   DATABASE_URL = mysql+pymysql://${MYSQL_USERNAME}:${MYSQL_ROOT_PASSWORD}@${MYSQL_HOST}:${MYSQL_DOCKER_PORT}/${MYSQL_DATABASE}
+   DATABASE_URL_TEST =  mysql+pymysql://${MYSQL_USERNAME}:${MYSQL_ROOT_PASSWORD}@${MYSQL_HOST}:${MYSQL_DOCKER_PORT}/${MYSQL_DATABASE_TEST}
+
+   # Ports used by the API service
+   # local port on your machine, docker port inside the container
+   API_LOCAL_PORT=5555
+   API_DOCKER_PORT=5555
+   WEB_LOCAL_PORT=5173
+   WEB_DOCKER_PORT=5173
+
+   # Video data you want to support.
+   SUPPORTED_VIDEO_FORMATS = ['.mov', '.mp4', '.MP4']
+   SUPPORTED_IMAGE_FORMATS = ['.jpeg', '.png']
+
+   # Computervision service settings
+   NVIDIA_VISIBLE_DEVICES=all
+   NVIDIA_DRIVER_CAPABILITIES=compute,utility
+   ```
+
+2. Run `make dev` to start everything up! 🐳
+
+3. To stop, run `make dev-down` 😴
+
+4. For detached mode (background), use `make dev-detached` or `make dev -d` 🌟
 
 ### BACKUP
 

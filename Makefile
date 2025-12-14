@@ -11,6 +11,9 @@ SERVICE = api
 dev: ## Run development environment (with volume hot reload)
 	$(COMPOSE_DEV) up --build
 
+dev-detached: ## Run development environment in detached mode
+	$(COMPOSE_DEV) up --build -d
+
 dev-down: ## Stop dev environment
 	$(COMPOSE_DEV) down
 

@@ -1,6 +1,10 @@
-# web
+# web 🌐
 
 This template should help get you started developing with Vue 3 in Vite.
+
+## Setup
+
+The web app is fully dockerized! Just follow the [main README setup](../README.md).
 
 ## Screens
 
