@@ -17,7 +17,7 @@
           <StatsGeneral v-if="generalStats" :stats="generalStats"></StatsGeneral>
         </TabPanel>        
         <TabPanel value="localization">
-          <StatsLocalizationView v-if="localizeStats && frameLabelTypes" :results="localizeStats" :frame-label-types="frameLabelTypes"></StatsLocalizationView>
+          <StatsLocalizationView v-if="localizeStats && frameLabelTypes && videosWithLabels" :results="localizeStats" :frame-label-types="frameLabelTypes" :videos-with-labels="videosWithLabels"></StatsLocalizationView>
           <ResultsLocalizationView></ResultsLocalizationView>
         </TabPanel>
         <TabPanel value="segmentation">
@@ -59,6 +59,7 @@ const localizeStats = ref(null)
 const segmentationStats = ref(null)
 const recognitionStats = ref(null)
 const judgeStats = ref(null)
+const videosWithLabels = ref(null)
 
 const frameLabelTypes = ref(null)
 
@@ -77,6 +78,7 @@ onMounted(async () => {
 async function getStatistics() {
   getStats('general').then(r => generalStats.value = r)
   getStats('localize').then(r => localizeStats.value = r)
+  getStats('localize_video_labelinfo').then(r => videosWithLabels.value = r).then(() => console.log(videosWithLabels.value))
   getStats('segmentation').then(r => segmentationStats.value = r)
   getStats('recognition').then(r => recognitionStats.value = r)
   getStats('judge').then(r => judgeStats.value = r)

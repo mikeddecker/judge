@@ -11,6 +11,10 @@ const props = defineProps({
   frameLabelTypes: {
     type: Object,
     required: true
+  },
+  videosWithLabels: {
+    type: Array,
+    required: true
   }
 })
 
@@ -58,6 +62,25 @@ const barChartFramesTrainTest = computed(() => {
   <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getDailyChartOptions('Daily box count')" class="h-[25rem]" />
   <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getDailyChartOptions('Daily box count (cumulative)')" class="h-[25rem]" />
 
+  <h3>Videos with Labels</h3>
+  <DataTable
+    :value="videosWithLabels" 
+    scrollable scrollHeight="400px"
+  >
+    <Column
+      v-for="(value, prop) in Object.values(videosWithLabels)[0]"
+      :key="prop"
+      sortable
+      :field="prop"
+      :header="prop"
+    >
+      <template #body="slotProps">
+        {{ ['name'].includes(prop) ? slotProps.data[prop] : slotProps.data[prop] }}
+      </template>
+    </Column>
+  </DataTable>
+
+  <h3>Localization Recipes Performance</h3>
   <DataTable :value="Object.values(results['recipes'])">
     <Column
       v-for="(value, prop) in Object.values(results['recipes'])[0]"

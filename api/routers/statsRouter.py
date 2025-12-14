@@ -18,6 +18,8 @@ class StatsRouter(Resource):
                 return self.statsService.getGeneralStats(), 200
             case 'localize':
                 return self.statsService.getLocalizeResults(), 200
+            case 'localize_video_labelinfo':
+                return self.statsService.getLocalizeLabelinfoPerVideo(), 200
             case 'segmentation':
                 return {}, 200
             case 'recognition':
@@ -26,5 +28,4 @@ class StatsRouter(Resource):
                 return self.statsService.get_score_comparison(videoIds=videoIds), 200
             case _:
                 return f'Forbidden {stat}', 404
-
 

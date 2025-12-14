@@ -159,6 +159,9 @@ class StatsService:
 
         return results
 
+    def getLocalizeLabelinfoPerVideo(self):
+        return self.StatsRepo.get_localize_labelinfo_per_video()
+
     def getGeneralStats(self) -> dict:
         return {
             'videos' : self.videoService.count()

@@ -40,7 +40,8 @@ h2 {
 h3 {
   font-size: 1.25rem;
   font-weight: 400;
-  color: var(--vt-c-ligth-green)
+  margin-top: 4rem;
+  color: var(--vt-c-ligth-green);
 }
 
 h4 {

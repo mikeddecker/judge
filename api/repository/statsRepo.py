@@ -2,7 +2,7 @@ import json
 import os
 import pandas as pd
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from config import RECIPES, ENVS
 from flask_sqlalchemy import SQLAlchemy
 from helpers.helpers import load_json_file
@@ -10,7 +10,6 @@ from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLab
 from repository.models import Skill, LayerComposition, LayerProperty, LayerPropertyValue
 from sqlalchemy import desc, func, case, select, text
 from helpers.ConfigHelper import recognition_get_modelpaths
-from collections import defaultdict
 
 def extract_key_number_pairs(obj):
     if isinstance(obj, list):
@@ -136,6 +135,54 @@ class StatsRepository:
                 }
         return results
     
+    def get_localize_labelinfo_per_video(self):
+        # Get videos with labels, including density and labeled frame numbers
+        query = self.db.session.query(
+            FrameLabel.videoId,
+            FrameLabel.frameNr,
+            func.count().label('boxes'),
+            VideoInfoDB.name,
+            VideoInfoDB.fps,
+            VideoInfoDB.duration,
+            VideoInfoDB.frameLength,
+            VideoInfoDB.training
+        ).join(VideoInfoDB, FrameLabel.videoId == VideoInfoDB.id).group_by(
+            FrameLabel.videoId, FrameLabel.frameNr,
+            VideoInfoDB.name, VideoInfoDB.fps, VideoInfoDB.duration, VideoInfoDB.frameLength, VideoInfoDB.training
+        ).order_by(FrameLabel.videoId, FrameLabel.frameNr)
+
+        results = query.all()
+
+        video_dict = defaultdict(lambda: {'name': '', 'fps': 0, 'frameLength': 0, 'training': False, 'duration': 0, 'frames': []})
+
+        for row in results:
+            vid = row.videoId
+            video_dict[vid]['frames'].append({'frameNr': row.frameNr, 'boxes': row.boxes})
+            video_dict[vid]['name'] = row.name
+            video_dict[vid]['fps'] = row.fps
+            video_dict[vid]['frameLength'] = row.frameLength
+            video_dict[vid]['training'] = row.training
+            video_dict[vid]['duration'] = row.duration
+
+        videos = []
+        for vid, data in video_dict.items():
+            labeled_frames = data['frames']
+            total_boxes = sum(f['boxes'] for f in labeled_frames)
+            labeled_frame_nrs = [f['frameNr'] for f in labeled_frames]
+            density = len(labeled_frame_nrs) * data['fps'] / data['frameLength'] if data['frameLength'] > 0 else 0
+            videos.append({
+                'id': vid,
+                'name': data['name'],
+                'fps': data['fps'],
+                'frameLength': data['frameLength'],
+                'labeledFramesCount': len(labeled_frame_nrs),
+                'totalBoxes': total_boxes,
+                'density': density,
+                'labeledFrameNrs': sorted(labeled_frame_nrs)
+            })
+
+        return videos
+
     def skills_prop_names(self, layercompositionname:str=None) -> list[str]:
         prop_name = case(
                 (LayerComposition.name == None, LayerProperty.name),
