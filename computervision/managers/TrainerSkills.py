@@ -198,7 +198,7 @@ class TrainerSkills:
                     revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                     print(f"{Fore.MAGENTA}Target {modelname}: {revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
             except RuntimeError as e:
-                if "size mismatch" not in str(e):
+                if "size mismatch" not in str(e) and "Missing key(s) in state_dict" not in str(e):
                     raise e
             except Exception as e:
                 print("revalidation went wrong")
@@ -226,7 +226,7 @@ class TrainerSkills:
                 epoch_start = modelstats['epoch'] + 1
                 losses_over_time = modelstats['losses_over_time']
                 f1_avgs_over_time = modelstats['f1_total_avgs_over_time']
-                f1_avg_over_losses_over_time = modelstats['f1_avg_over_losses_over_time']
+                f1_avg_over_losses_over_time = [] if 'f1_avg_over_losses_over_time' not in modelstats.keys() else modelstats['f1_avg_over_losses_over_time']
                 acc_avgs_over_time = modelstats['acc_avgs_over_time']
                 metrics_over_time = {} if 'metrics_over_time' not in modelstats.keys() else modelstats['metrics_over_time']
                 classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
@@ -284,7 +284,7 @@ class TrainerSkills:
                 f1_avg_over_loss = validation_results['f1_total_avg'] / val_loss
                 f1_avg_over_losses_over_time.append(f1_avg_over_loss)
                 hasAccOverLossImproved = len(f1_avg_over_losses_over_time) - 1 == f1_avg_over_losses_over_time.index(max(f1_avg_over_losses_over_time))
-                f1_avg_over_loss_improvement = f1_avg_over_loss / (f1_avg_over_losses_over_time[-2] if len(f1_avg_over_losses_over_time) > 1 else "/") - 1
+                f1_avg_over_loss_improvement = ((f1_avg_over_loss / f1_avg_over_losses_over_time[-2]) if len(f1_avg_over_losses_over_time) > 1 else 0) - 1
 
                 color_acc = Fore.GREEN if hasValF1Improved else Fore.RED
                 color_loss = Fore.GREEN if hasValLossImproved else Fore.RED
