@@ -23,3 +23,7 @@ services:
       - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
     command: ["python", "JobExecuter.py"]
 
+  api-test:
+    environment:
+      - PYTHONUNBUFFERED=1
+

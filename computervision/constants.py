@@ -14,7 +14,6 @@ load_dotenv()
 ENVS = SimpleNamespace(
     DATABASE = SimpleNamespace(
         MYSQL_DATABASE = os.getenv('MYSQL_DATABASE'),
-        MYSQL_DATABASE_TEST = os.getenv('MYSQL_DATABASE_TEST'),
         MYSQL_ROOT_PASSWORD = os.getenv('MYSQL_ROOT_PASSWORD'),
         MYSQL_USERNAME = os.getenv('MYSQL_USERNAME'),
         MYSQL_LOCAL_PORT = os.getenv('MYSQL_LOCAL_PORT'),

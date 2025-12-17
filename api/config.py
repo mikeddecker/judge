@@ -5,22 +5,30 @@ from types import SimpleNamespace
 from helpers.helpers import load_json_file
 
 load_dotenv()
+MYSQL_USERNAME = os.getenv('MYSQL_USERNAME')
+MYSQL_ROOT_PASSWORD = os.getenv('MYSQL_ROOT_PASSWORD')
+MYSQL_HOST = os.getenv('MYSQL_HOST')
+MYSQL_DOCKER_PORT = os.getenv('MYSQL_DOCKER_PORT')
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+
+# Distinction will be made in container / call method
+DATABASE_URL = f"mysql+pymysql://{MYSQL_USERNAME}:{MYSQL_ROOT_PASSWORD}@{MYSQL_HOST}:{MYSQL_DOCKER_PORT}/{MYSQL_DATABASE}"
 
 class Config:
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.getenv(f"DATABASE_URL")  # For development or testing purposes
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
     print(f"Using database URL: {SQLALCHEMY_DATABASE_URI}")
 
 class TestConfig:
     TESTING = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.getenv(f"DATABASE_URL_TEST")  # For development or testing purposes
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    print(f"Using database URL: {SQLALCHEMY_DATABASE_URI}")
 
 ENVS = SimpleNamespace(
     DATABASE = SimpleNamespace(
         MYSQL_DATABASE = os.getenv('MYSQL_DATABASE'),
-        MYSQL_DATABASE_TEST = os.getenv('MYSQL_DATABASE_TEST'),
         MYSQL_ROOT_PASSWORD = os.getenv('MYSQL_ROOT_PASSWORD'),
         MYSQL_USERNAME = os.getenv('MYSQL_USERNAME'),
         MYSQL_LOCAL_PORT = os.getenv('MYSQL_LOCAL_PORT'),

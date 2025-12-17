@@ -1,4 +1,5 @@
 services:
+  # Production services
   mysqldb:
     image: mysql:8.4
     container_name: ai-judge-mysql-db
@@ -8,11 +9,17 @@ services:
       - MYSQL_DATABASE=$MYSQL_DATABASE
     ports:
       - $MYSQL_LOCAL_PORT:$MYSQL_DOCKER_PORT
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      retries: 10
-      start_period: 7s
+      test:
+        [
+          "CMD-SHELL",
+          "mysql -h localhost -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1' || exit 1"
+        ]
+      interval: 5s
+      retries: 20
+      start_period: 5s
     networks:
       - ai-judge-network
   api:
@@ -23,7 +30,9 @@ services:
       - $API_LOCAL_PORT:$API_DOCKER_PORT
     depends_on:
       mysqldb:
-        condition: service_healthy      
+        condition: service_healthy    
+      api-test:
+        condition: service_completed_successfully  
     networks:
       - ai-judge-network
     restart: on-failure
@@ -64,11 +73,28 @@ services:
       - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
       - torch_cache:/root/.cache/torch
 
+  # Testing services
+  api-test:
+    container_name: ai-judge-api-test
+    build: ./api
+    env_file: .env.test
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    networks:
+      - ai-judge-network
+    command: ["python", "-m", "unittest", "discover"]
+    volumes:
+      - api_test:${STORAGE_DIR_VIDEOS}
+      - api_test:${STORAGE_DIR_GENERATED_DATA}
+      - api_test:${MYSQL_BACKUP}
+      - ./computervision/recipes.json:/machine_learning_recipes.json:ro
+
 networks:
   ai-judge-network:
     driver: bridge
 
 volumes:
-  db_data:
   torch_cache:
+  api_test:
 

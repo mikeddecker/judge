@@ -27,7 +27,7 @@ class VideoInfo:
     Skills: Set[Skill] = set()
 
     def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float, duration: float, width:int, height:int, completed_skill_labels: bool = False, judgeDiffScore: int = None):
-        self.Frames = []  # Initialize frames as an empty dictionary
+        self.Frames = []  # Initialize frames as an empty list
         self.Skills = set()  # Initialize skills as an empty set
 
         self.__setId(id)
@@ -151,13 +151,12 @@ class VideoInfo:
             raise ValueError(f"Can not remove a label that is not labeled, got frameNr = {frameNr}")
         self.Frames.remove(label)
     
-    def update_framelabel(self, label: FrameInfo): 
-        if label is None or not isinstance(label, FrameInfo):
-            raise ValueError(f"Label is not a {FrameInfo} got {label}")
-        if not self.has_frame_been_labeled(frameNr=label.FrameNr):
-            raise ValueError(f"Label has not yet been labeled, got {label.FrameNr}")
-        self.add_framelabel(label)
-    
+    def contains_frame_with_number(self, frameNr: int) -> bool:
+        for f in self.Frames:
+            if f.FrameNr == frameNr:
+                return True
+        return False
+
     ####################
     # Section : Skills #
     ####################
@@ -168,6 +167,7 @@ class VideoInfo:
             raise ValueError(f"Skill {skill} is already in the list.")
         if self.has_skill_overlap(skill.FrameStart, skill.FrameEnd):
             raise ValueError(f"Skill has overlap with another skill")
+        
         self.Skills.add(skill)
 
     def get_skill(self, start, end) -> None:
@@ -178,7 +178,7 @@ class VideoInfo:
     
     def has_skill_overlap(self, start, end, skillId=None) -> bool:
         for s in self.Skills:
-            if ((start <= s.FrameStart and end > s.FrameStart) or end >= s.FrameEnd and start < s.FrameEnd) and (skillId is not None and s.Id != skillId):
+            if not (start >= s.FrameEnd or end <= s.FrameStart):
                 return True
         return False
     

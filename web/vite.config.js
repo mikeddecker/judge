@@ -20,7 +20,7 @@ export default defineConfig({
     port: Number(process.env.WEB_DOCKER_PORT) || 5173,
     proxy: {
       "/api": {
-        target: "http://api:5555",
+        target: `http://api:${Number(process.env.API_DOCKER_PORT)}`,
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, ""),
       },

@@ -9,14 +9,29 @@ from tests.TestHelper import TestHelper
 
 FOLDER_INSTANCE_VALID = Folder(id=1, name='competition', parent=None)
 def get_video() -> VideoInfo:
-    return VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
+    return VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
 
 def get_frame() -> FrameInfo:
     return FrameInfo(frameNr=0, x=0.5, y=0.5, width=0.5, height=0.5)
 
-# TODO : get_relative_video_path
-# TODO : image_path
-# TODO : test fps
+def test_get_relative_video_path(self):
+    video = get_video()
+    expected_path = os.path.join("competition", "dd3-nationals.mp4")
+    self.assertEqual(video.get_relative_video_path(), expected_path)
+
+def test_get_image_path(self):
+    video = get_video()
+    # TODO: Update when image_path is implemented
+    self.assertEqual(video.get_image_path(), "/home/miked/Pictures/Screenshots/dd3.png")
+
+def test_fps_property(self):
+    video = get_video()
+    self.assertEqual(video.FPS, 25.2)
+
+def test_get_duration(self):
+    video = get_video()
+    expected_duration = 500 / 25.2
+    self.assertAlmostEqual(video.get_duration(), expected_duration)
 
 class DomainVideoTestSuite(unittest.TestCase):
     """Domain folder test cases."""
@@ -32,7 +47,7 @@ class DomainVideoTestSuite(unittest.TestCase):
         (1, "some-freestyles.mp4"),
     ])
     def test_ctor_valid(self, id, name):
-        video = VideoInfo(id=id, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
+        video = VideoInfo(id=id, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
         self.assertEqual(id, video.Id, f"Video id incorrectly initialized {id}, {video.Id}")
         self.assertEqual(name, video.Name, f"Videoname incorrectly initialized {name}, {video.Name}")
         self.assertEqual(FOLDER_INSTANCE_VALID, video.Folder, f"Videofolder incorrectly initialized")
@@ -40,22 +55,22 @@ class DomainVideoTestSuite(unittest.TestCase):
     @parameterized.expand(TestHelper.generate_empty_strings())
     def test_ctor_invalid_name_empty(self, name):
         with self.assertRaises(ValueError):
-            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
+            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
 
     @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore_extensions())
     def test_ctor_invalid_name_word_digits_underscore(self, name):
         with self.assertRaises(ValueError):
-            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
+            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
 
     @parameterized.expand(TestHelper.generate_invalid_ids())
     def test_ctor_invalid_id(self, id):
         with self.assertRaises(ValueError):
-            VideoInfo(id=id, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2)
+            VideoInfo(id=id, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
 
     @parameterized.expand([7, "text", True, ValueError])
     def test_ctor_invalid_folder_not_a_folder(self, parent):
         with self.assertRaises(ValueError):
-            VideoInfo(id=1, name="dd3-nationals.mp4", folder=parent, frameLength=500, fps=25.2)
+            VideoInfo(id=1, name="dd3-nationals.mp4", folder=parent, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
     
     #############################################
     # Test immutable properties & private method
@@ -80,7 +95,6 @@ class DomainVideoTestSuite(unittest.TestCase):
             video = get_video()
             video.__setId(88)
 
-
     ##################################
     # Test frames: ADD
     ##################################
@@ -92,7 +106,7 @@ class DomainVideoTestSuite(unittest.TestCase):
         video = get_video()
         fi = get_frame()
         video.add_framelabel(label=fi)
-        self.assertTrue(video.has_frame_been_labeled(fi.FrameNr))
+        self.assertTrue(video.has_frame_been_labeled(fi))
         self.assertEqual(video.Frames[fi.FrameNr], fi)
         self.assertTrue(len(video.Frames) == 1)
 
@@ -110,8 +124,8 @@ class DomainVideoTestSuite(unittest.TestCase):
         for fi in frames:
             video.add_framelabel(label=fi)
 
-        self.assertIn(122, video.Frames.keys())
-        self.assertIn(499, video.Frames.keys())
+        self.assertTrue(video.contains_frame_with_number(122)),
+        self.assertTrue(video.contains_frame_with_number(499))
         self.assertEqual(len(video.Frames), len(frames))
 
     def test_add_frame_invalid_jumperVisible_centered(self):
@@ -145,45 +159,16 @@ class DomainVideoTestSuite(unittest.TestCase):
         fi = get_frame()
         fi = FrameInfo(frameNr=nr, x=fi.X, y=fi.Y, width=fi.Width, height=fi.Height, jumperVisible=fi.JumperVisible)
         video.add_framelabel(fi)
-        self.assertTrue(video.has_frame_been_labeled(frameNr=nr))
-        self.assertIn(nr, video.Frames.keys())
+        self.assertTrue(video.has_frame_been_labeled(fi))
+        self.assertTrue(video.contains_frame_with_number(nr))
 
     @parameterized.expand([0,1,20,1235])
     def test_has_frame_not_contained(self, nr):
         video = get_video()
         fi = get_frame()
         fi = FrameInfo(frameNr=nr, x=fi.X, y=fi.Y, width=fi.Width, height=fi.Height, jumperVisible=fi.JumperVisible)
-        self.assertFalse(video.has_frame_been_labeled(frameNr=nr))
-        self.assertNotIn(nr, video.Frames.keys())
-
-
-    ##################################
-    # Test frames: update_framelabel
-    ##################################
-    def test_update_frame_valid(self):
-        video = get_video()
-        fi = get_frame()
-        video.add_framelabel(fi)
-        fi2 = FrameInfo(frameNr=fi.FrameNr, x=0.77, y=fi.Y, width=0.77, height=fi.Height, jumperVisible=fi.JumperVisible)
-        video.update_framelabel(fi2)
-        self.assertTrue(video.has_frame_been_labeled(frameNr=fi.FrameNr))
-        self.assertIn(fi2.FrameNr, video.Frames.keys())
-        self.assertEqual(fi2, video.Frames[fi.FrameNr])
-        self.assertNotEqual(fi, video.Frames[fi.FrameNr])
-
-    def test_update_frame_invalid_not_yet_labeled(self):
-        video = get_video()
-        fi = get_frame()
-        video.add_framelabel(fi)
-        fi2 = FrameInfo(frameNr=fi.FrameNr + 20, x=0.77, y=fi.Y, width=0.77, height=fi.Height, jumperVisible=fi.JumperVisible)
-        with self.assertRaises(ValueError):
-            video.update_framelabel(fi2)
-
-    @parameterized.expand([True, get_video(), lambda x: [x]])
-    def test_update_frame_invalid_not_a_label(self, not_a_label):
-        video = get_video()
-        with self.assertRaises(ValueError):
-            video.update_framelabel(label=not_a_label)
+        self.assertFalse(video.has_frame_been_labeled(fi))
+        self.assertFalse(video.contains_frame_with_number(nr))
 
     ##################################
     # Test frames: remove framelabel
@@ -193,22 +178,26 @@ class DomainVideoTestSuite(unittest.TestCase):
         fi = get_frame()
         vid.add_framelabel(fi)
         self.assertTrue(len(vid.Frames) == 1)
-        vid.remove_framelabel(fi.FrameNr)
+        vid.remove_framelabel(fi.FrameNr, label=fi)
         self.assertTrue(len(vid.Frames) == 0)
 
     def test_remove_frame_invalid_not_labeled(self):
-        vid = get_video()
-        fi = get_frame()
+        vid : VideoInfo = get_video()
+        fi : FrameInfo = get_frame()
         vid.add_framelabel(fi)
 
         with self.assertRaises(ValueError):
-            vid.remove_framelabel(fi.FrameNr + 20)
+            vid.remove_framelabel(fi.FrameNr + 20, label=FrameInfo(
+                frameNr=fi.FrameNr,
+                x = 0.4, y = 0.6, width= 0.6, height=0.33, 
+                labeltype = 1
+            ))
 
     @parameterized.expand([-123, -1, TestHelper.MAX_FRAMENR + 1])
     def test_remove_frame_invalid_invalid_frameNr(self, invalid_frameId):
         vid = get_video()
         with self.assertRaises(ValueError):
-            vid.remove_framelabel(frameNr=invalid_frameId)
+            vid.remove_framelabel(frameNr=invalid_frameId, label={})
 
     ####################
     # Section : Skills #
@@ -219,12 +208,45 @@ class DomainVideoTestSuite(unittest.TestCase):
     
     def test_add_skill_valid(self):
         video = get_video()
-        skill = Skill(5, "crouger")
+        skill = Skill(5, {"name": "crouger"}, start=10, end=20)
         video.add_skill(skill)
         self.assertIn(skill, video.Skills, f"Skill is not in property Skills")
 
-    # TODO : add tests
-    
+    def test_add_skill_duplicate(self):
+        video = get_video()
+        skill = Skill(5, {"name": "crouger"}, start=10, end=20)
+        video.add_skill(skill)
+        with self.assertRaises(ValueError):
+            video.add_skill(skill)
 
+    def test_add_skill_overlap(self):
+        video = get_video()
+        skill1 = Skill(5, {"name": "crouger"}, start=10, end=20)
+        skill2 = Skill(6, {"name": "another"}, start=15, end=25)
+        video.add_skill(skill1)
+        with self.assertRaises(ValueError):
+            video.add_skill(skill2)
+
+    def test_get_skill_existing(self):
+        video = get_video()
+        skill = Skill(5, {"name": "crouger"}, start=10, end=20)
+        video.add_skill(skill)
+        retrieved = video.get_skill(10, 20)
+        self.assertEqual(retrieved, skill)
+
+    def test_get_skill_non_existing(self):
+        video = get_video()
+        retrieved = video.get_skill(10, 20)
+        self.assertIsNone(retrieved)
+
+    def test_remove_skill(self):
+        video = get_video()
+        skill = Skill(5, {"name": "crouger"}, start=10, end=20)
+        video.add_skill(skill)
+        video.remove_skill(skill)
+        self.assertNotIn(skill, video.Skills)
+    
 if __name__ == '__main__':
+    print("🧿 Running Domain Video")
     unittest.main()
+

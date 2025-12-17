@@ -1,9 +1,12 @@
 import os
 
 from helpers.ValueHelper import ValueHelper
-from typing import Optional
+from typing import Optional, Self
 
 class Folder:
+    Id:int
+    Name:str
+    Parent:'Folder'
     PROPERTIES = ["Id", "Name", "Parent"]
     def __init__(self, id: int, name: str, parent: Optional['Folder'] = None):
         self.__setId(id)
@@ -45,11 +48,17 @@ class Folder:
 
         object.__setattr__(self, 'Name', name)
     
-    def __setParent(self, parent):
+    def __setParent(self, parent: 'Folder'):
         if hasattr(self, 'Parent') and self.Parent is not None:
             raise AttributeError(f"Cannot modify Parent once it is set")
         if parent is not None and not isinstance(parent, Folder):
             raise ValueError(f"parent is not a {Folder}, got instead {type(parent)}")
+        
+        ancestor = parent
+        while ancestor:
+            if ancestor.Id == self.Id:
+                raise ValueError(f"(Grand)Parent has the same Id ({parent.Id})")
+            ancestor = ancestor.Parent
 
         # Set the Parent attribute, avoiding recursion by using object.__setattr__.
         object.__setattr__(self, 'Parent', parent)

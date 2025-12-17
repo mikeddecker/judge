@@ -38,6 +38,7 @@ assert MYSQL_DOCKER_PORT is not None, f"Fill in the MYSQL_DOCKER_PORT variable i
 assert MYSQL_BACKUP is not None, f"Fill in the MYSQL_BACKUP variable in the .env file, located in the api folder."
 
 API_DOCKER_PORT : str = cast(str, os.getenv("API_DOCKER_PORT", "5555"))
+print(f"🔧 Starting API on port: {API_DOCKER_PORT}")
 
 migrate = Migrate()
 
@@ -46,7 +47,8 @@ def restore_latest_mysql_backup(backup_dir: str = MYSQL_BACKUP):
     Restore the latest MySQL backup from a directory.
     """
     if not os.path.exists(backup_dir):
-        raise FileNotFoundError(f"Backup directory does not exist: {backup_dir}")
+        print(f"⚠️ Backup directory does not exist: {backup_dir}, no backup restored.")
+        return
 
     # Find the latest .sql backup file
     sql_files = [f for f in os.listdir(backup_dir) if f.endswith(".sql")]
@@ -85,7 +87,9 @@ def create_app(config_object:str="config.Config"):
     # Load configuration from config file or environment variable
     app.config.from_object(config_object)
     
-    restore_latest_mysql_backup()
+    if not app.config.get('TESTING', False):
+        print("⏳ Restoring latest MySQL backup before starting the app...")
+        restore_latest_mysql_backup()
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)

@@ -4,7 +4,6 @@ from parameterized import parameterized
 from domain.folder import Folder
 from domain.frameinfo import FrameInfo
 from domain.videoinfo import VideoInfo
-from dotenv import load_dotenv
 from flask import Flask, current_app
 from flask_migrate import Migrate
 from flask_testing import TestCase
@@ -14,12 +13,11 @@ from services.videoService import VideoService
 from tests.TestHelper import TestHelper
 from typing import List
 
-load_dotenv()
-TESTDIR = os.getenv("TESTDIR") 
-if os.path.exists(TESTDIR):
-    os.system(f"rm -rf {TESTDIR}/*")
+STORAGE_DIR_VIDEOS = os.getenv("STORAGE_DIR_VIDEOS") 
+if os.path.exists(STORAGE_DIR_VIDEOS):
+    os.system(f"rm -rf {STORAGE_DIR_VIDEOS}/*")
 else:
-    os.mkdir(TESTDIR)
+    os.mkdir(STORAGE_DIR_VIDEOS)
 
 # TODO : update tests width, height, fps... are required
 # TODO : unique name in folder
@@ -29,7 +27,7 @@ class VideoServiceTest(TestCase):
     some_folder = None
     some_nested_folder = None
     vidname = None
-    
+
     ##################################
     # Preparing each test
     ##################################
@@ -43,10 +41,11 @@ class VideoServiceTest(TestCase):
         with app.app_context():
             db.create_all()
         
-        self.folderService = FolderService(TESTDIR)
-        self.videoService = VideoService(TESTDIR)
-
-
+        self.folderService = FolderService()
+        self.videoService = VideoService()
+        with app.app_context():
+            self.videoService.initiate()
+        
         return app
     
     def setUp(self):
@@ -71,7 +70,7 @@ class VideoServiceTest(TestCase):
         db.drop_all()
     
     def test_setUp(self):
-        assert os.path.exists(self.videoService.StorageFolder), f"Folder {self.videoService.StorageFolder} doesn't exist"
+        assert os.path.exists(STORAGE_DIR_VIDEOS), f"Folder {STORAGE_DIR_VIDEOS} doesn't exist"
         assert self.videoService.count() == 0, "Databank not empty"
 
     ##################################
@@ -82,38 +81,24 @@ class VideoServiceTest(TestCase):
         Joins the relative path, depending on the operating system, then creates the folder.
         """
         # NICE_TO_HAVE : check existence here
-        os.mkdir(os.path.join(TESTDIR, *relative_path))
+        os.mkdir(os.path.join(STORAGE_DIR_VIDEOS, *relative_path))
 
     def make_video_in_folder(self, videoname: str, folder: Folder):
         """
         Create the video in the given folder.
         """
-        with open(os.path.join(TESTDIR, folder.get_relative_path(), videoname), 'w') as fp:
+        with open(os.path.join(STORAGE_DIR_VIDEOS, folder.get_relative_path(), videoname), 'w') as fp:
             pass
 
     ##################################
     # Test constructor
     ##################################
     def test_ctor_valid(self):
-        assert os.path.exists(TESTDIR), f"Folder {TESTDIR} doesn't exist"
-        service = VideoService(TESTDIR)
+        assert os.path.exists(STORAGE_DIR_VIDEOS), f"Folder {STORAGE_DIR_VIDEOS} doesn't exist"
+        service = VideoService()
         assert isinstance(service, VideoService)
-        assert TESTDIR == service.StorageFolder, f"Storage folder in service is not the same"
-        assert os.path.exists(self.videoService.StorageFolder), f"Folder {self.videoService.StorageFolder} doesn't exist"
-
-    def test_ctor_invalid_no_folder(self):
-        with self.assertRaises(TypeError):
-            VideoService()
-
-    @parameterized.expand(TestHelper.generate_empty_strings())
-    def test_ctor_invalid_folder_empty(self, empty_folder):
-        with self.assertRaises(ValueError):
-            VideoService(storage_folder=empty_folder)
-    
-    def test_ctor_invalid_folder_does_not_exist(self):
-        non_existing_folder = "something_random_qsjdkmfjqmsj"
-        with self.assertRaises(NotADirectoryError):
-            VideoService(storage_folder=non_existing_folder)
+        # assert STORAGE_DIR_VIDEOS == service..StorageFolder, f"Storage folder in service is not the same"
+        # assert os.path.exists(self.videoService.StorageFolder), f"Folder {self.videoService.StorageFolder} doesn't exist"
 
     ##################################
     # Test add
@@ -191,7 +176,7 @@ class VideoServiceTest(TestCase):
 
     def test_exists_on_drive_invalid_does_not_exists(self):
         testname = "test_exists_on_drive_invalid_does_not_exists.mp4"
-        assert not self.videoService.exists_on_drive(name=testname, folder=self.some_folder), f"Video {testname} does not exist in {TESTDIR}"
+        assert not self.videoService.exists_on_drive(name=testname, folder=self.some_folder), f"Video {testname} does not exist in {STORAGE_DIR_VIDEOS}"
 
     def test_exists_on_drive_invalid_does_not_exists_in_nested_folder(self):
         testname = "test_exists_on_drive_invalid_does_not_exists_in_nested_folder.mp4"
@@ -268,12 +253,11 @@ class VideoServiceTest(TestCase):
 
     def test_get_valid_loads_frameInfo(self):
         inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
-        frameinfo1 = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
-        frameinfo2 = FrameInfo(250, x=0.4, y=0.5, width=0.8, height=0.6, jumperVisible=True)
-        frameinfo3 = FrameInfo(355, x=0.5, y=0.6, width=0.8, height=0.8, jumperVisible=True)
-        frameinfo4 = FrameInfo(250, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True)
-        frameinfo5 = FrameInfo(255, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True)
-
+        frameinfo1 = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False, labeltype=1)
+        frameinfo2 = FrameInfo(250, x=0.4, y=0.5, width=0.8, height=0.6, jumperVisible=True, labeltype=1)
+        frameinfo3 = FrameInfo(355, x=0.5, y=0.6, width=0.8, height=0.8, jumperVisible=True, labeltype=1)
+        frameinfo4 = FrameInfo(250, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True, labeltype=1)
+        frameinfo5 = FrameInfo(255, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True, labeltype=1)
 
         inserted_videoinfo = self.videoService.set_frameInfo(frameinfo1, video=inserted_videoinfo)
         inserted_videoinfo = self.videoService.set_frameInfo(frameinfo2, video=inserted_videoinfo)
@@ -283,7 +267,7 @@ class VideoServiceTest(TestCase):
         fetched_videoinfo = self.videoService.get(id=inserted_videoinfo.Id)
 
         assert fetched_videoinfo == inserted_videoinfo, f"Videos differentiated from each other got \n {fetched_videoinfo} \n and \n {inserted_videoinfo}"
-        assert len(fetched_videoinfo.Frames) == 4
+        assert len(fetched_videoinfo.Frames) == 5
 
     # TODO : fetches current skills and labels
 
@@ -324,63 +308,61 @@ class VideoServiceTest(TestCase):
         with self.assertRaises(LookupError):
             self.videoService.get_videos(folderId=155)
 
-
     ##################################
     # Test frameInfo (by frameNr)
     ##################################
     def test_set_frameInfo_valid_new(self):
         inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
-        frameinfo = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
+        frameinfo = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False, labeltype=1)
         inserted_videoinfo = self.videoService.set_frameInfo(frameinfo, video=inserted_videoinfo)
         fetched_videoinfo = self.videoService.get(id=inserted_videoinfo.Id)
 
         assert fetched_videoinfo == inserted_videoinfo, f"Videos differentiated from each other got \n {fetched_videoinfo} \n and \n {inserted_videoinfo}"
-        assert len(fetched_videoinfo.Frames) == 1
+        assert len(fetched_videoinfo.Frames) == 1, f"Length of frames is not 1, got {len(fetched_videoinfo.Frames)}"
 
     def test_set_frameInfo_valid_update(self):
         inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
-        frameinfo2 = FrameInfo(250, x=0.4, y=0.5, width=0.8, height=0.6, jumperVisible=True)
-        frameinfo4 = FrameInfo(250, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True)
+        frameinfo2 = FrameInfo(250, x=0.4, y=0.5, width=0.8, height=0.6, jumperVisible=True, labeltype=1)
+        frameinfo4 = FrameInfo(250, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True, labeltype=1)
 
         inserted_videoinfo = self.videoService.set_frameInfo(frameinfo2, video=inserted_videoinfo)
         inserted_videoinfo = self.videoService.set_frameInfo(frameinfo4, video=inserted_videoinfo)
         fetched_videoinfo = self.videoService.get(id=inserted_videoinfo.Id)
 
         assert fetched_videoinfo == inserted_videoinfo, f"Videos differentiated from each other got \n {fetched_videoinfo} \n and \n {inserted_videoinfo}"
-        assert len(fetched_videoinfo.Frames) == 1
+        assert len(fetched_videoinfo.Frames) == 2, f"Length of frames is not 2, got {len(fetched_videoinfo.Frames)}"
 
     def test_set_frameInfo_invalid_out_of_bounds(self):
         inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
-        frameinfo5 = FrameInfo(555, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True)
+        frameinfo5 = FrameInfo(555, x=0.3, y=0.6, width=0.8, height=0.6, jumperVisible=True, labeltype=1)
 
         with self.assertRaises(ValueError):
             inserted_videoinfo = self.videoService.set_frameInfo(frameinfo5, video=inserted_videoinfo)
 
     def test_remove_frameInfo_valid(self):
         inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
-        frameinfo = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
+        frameinfo = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False, labeltype=1)
         inserted_videoinfo = self.videoService.set_frameInfo(frameinfo, video=inserted_videoinfo)
         fetched_videoinfo = self.videoService.get(id=inserted_videoinfo.Id)
-        assert len(fetched_videoinfo.Frames) == 1
+        assert len(fetched_videoinfo.Frames) == 1, f"Length of frames is not 1, got {len(fetched_videoinfo.Frames)}"
         assert fetched_videoinfo == inserted_videoinfo, f"Videos differentiated from each other got \n {fetched_videoinfo} \n and \n {inserted_videoinfo}"
-        updated_videoInfo = self.videoService.remove_frameInfo(frameNr=frameinfo.FrameNr, video=fetched_videoinfo)
-        assert len(updated_videoInfo.Frames) == 0
+        updated_videoInfo = self.videoService.remove_frameInfo(frameNr=frameinfo.FrameNr, video=fetched_videoinfo, frameinfo=frameinfo)
+        assert len(updated_videoInfo.Frames) == 0, f"Length of frames is not 0, got {len(fetched_videoinfo.Frames)}"
 
     def test_remove_frameInfo_invalid_does_not_exists(self):
         inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
-        frameinfo = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
+        frameinfo = FrameInfo(0, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False, labeltype=1)
         assert len(inserted_videoinfo.Frames) == 0
         with self.assertRaises(ValueError):
-            updated_videoInfo = self.videoService.remove_frameInfo(frameNr=frameinfo.FrameNr, video=inserted_videoinfo)
+            updated_videoInfo = self.videoService.remove_frameInfo(frameNr=frameinfo.FrameNr, video=inserted_videoinfo, frameinfo=frameinfo)
 
     def test_remove_frameInfo_invalid_frameNr_out_of_bounds(self):
         inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
-        frameinfo = FrameInfo(505, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False)
+        frameinfo = FrameInfo(505, x=0.5, y=0.5, width=1.0, height=1.0, jumperVisible=False, labeltype=1)
         
         assert len(inserted_videoinfo.Frames) == 0
         with self.assertRaises(ValueError):
-            self.videoService.remove_frameInfo(frameNr=frameinfo.FrameNr, video=inserted_videoinfo)
-
+            self.videoService.remove_frameInfo(frameNr=frameinfo.FrameNr, video=inserted_videoinfo, frameinfo=frameinfo)
 
     ##################################
     # Test rename (by id & new_name)
@@ -399,10 +381,6 @@ class VideoServiceTest(TestCase):
     ##################################
     # Test immutable properties
     ##################################
-    def test_immutable_property_storage_folder(self):
-        with self.assertRaises(AttributeError):
-            self.videoService.StorageFolder = "another_folder"
-    
     def test_immutable_property_video_repo(self):
         with self.assertRaises(AttributeError):
             self.videoService.VideoRepo = "another_repo"
@@ -410,5 +388,4 @@ class VideoServiceTest(TestCase):
         # Even another object doesn't work
         with self.assertRaises(AttributeError):
             self.videoService.VideoRepo = Folder(1, "folderke")
-        
-        
+

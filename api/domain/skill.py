@@ -13,8 +13,8 @@ class Skill:
             self,
             id: int,
             skillinfo: dict,
-            start: int = None, 
-            end: int = None
+            start: int, 
+            end: int
         ):
         """Either provide dotted name or parts (rotations, skilltype, onehanded, turners...)"""
         self.__setId(id)
@@ -27,7 +27,7 @@ class Skill:
             if name == 'Id':
                 self.__setId(value)
             # Prevent setting immutable attributes after it is set in __init__
-            if name in ["Folder"]:
+            if name in ["Folder", "SkillInfo"]:
                 raise AttributeError(f"Cannot modify '{name}' once it is set")
         elif name not in self.PROPERTIES:
             raise NameError(f"Property {name} does not exist")
@@ -50,7 +50,6 @@ class Skill:
         """
         assert info is not None, "SkillInfo may not be None"
         assert type(info) == dict, f"Info must be of type Dict, got {type(info)} - {info}"
-        assert len(info.keys()) >= 1
 
         # TODO : new checks?
         self.SkillInfo = info

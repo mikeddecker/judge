@@ -14,15 +14,14 @@ config = context.config
 fileConfig(config.config_file_name)
 logger = logging.getLogger('alembic.env')
 
-
 def get_engine():
     try:
+        return current_app.extensions['migrate'].db.engine
         # this works with Flask-SQLAlchemy<3 and Alchemical
         return current_app.extensions['migrate'].db.get_engine()
     except (TypeError, AttributeError):
         # this works with Flask-SQLAlchemy>=3
         return current_app.extensions['migrate'].db.engine
-
 
 def get_engine_url():
     try:
@@ -30,7 +29,6 @@ def get_engine_url():
             '%', '%%')
     except AttributeError:
         return str(get_engine().url).replace('%', '%%')
-
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -44,12 +42,10 @@ target_db = current_app.extensions['migrate'].db
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-
 def get_metadata():
     if hasattr(target_db, 'metadatas'):
         return target_db.metadatas[None]
     return target_db.metadata
-
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
@@ -70,7 +66,6 @@ def run_migrations_offline():
 
     with context.begin_transaction():
         context.run_migrations()
-
 
 def run_migrations_online():
     """Run migrations in 'online' mode.
@@ -106,8 +101,8 @@ def run_migrations_online():
         with context.begin_transaction():
             context.run_migrations()
 
-
 if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+

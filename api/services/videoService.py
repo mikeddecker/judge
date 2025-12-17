@@ -22,7 +22,6 @@ class VideoService:
     PROPERTIES = [
         "VideoRepo",
         "FolderRepo",
-        "StorageFolder",
         "jobService",
     ]
     def __init__(self):

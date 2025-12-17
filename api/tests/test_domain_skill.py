@@ -14,46 +14,42 @@ FOLDER_INSTANCE_VALID = Folder(1, 'competition', None)
 class DomainSkillTestSuite(unittest.TestCase):
     """Domain folder test cases."""
     @parameterized.expand([
-        (1, "QU.s.EB.AS.o"),
-        (2, "QU.s.EB.AS.o"),
-        (987, "QU.s.EB.AS.o"),
-        (1, "Gym.cartwheel"),
-        (1, "R.1h"),
+        (1, {}),
+        (2, {}),
+        (987, {}),
+        (1, {}),
+        (1, {}),
     ])
-    def test_ctor_valid(self, id, dottedName):
-        skill = Skill(
-            id=1, 
-            dottedName='s.EB.AS.o', # optional,
-            ddtype = DDtype.DOUBLEDUTCH,
-            start=123, end=456)
+    def test_ctor_valid(self, id, info):
+        skill = Skill(id=1, skillinfo=info, start=123, end=456)
         assert skill.Id == 1
     
-    @parameterized.expand(TestHelper.generate_empty_strings())
-    def test_ctor_invalid_name(self, dottedName):
-        with self.assertRaises(ValueError):
-            Skill(1, dottedName)
+    # @parameterized.expand(TestHelper.generate_empty_strings())
+    # def test_ctor_invalid_name(self, empty_string):
+    #     with self.assertRaises(ValueError):
+    #         Skill(1, empty_string)
 
     @parameterized.expand(TestHelper.generate_invalid_ids())
     def test_ctor_invalid_id(self, id):
         with self.assertRaises(ValueError):
-            Skill(id, "toad", None)
+            Skill(id, {}, start=10, end=20)
 
     def test_change_id_immutable(self):
         with self.assertRaises(AttributeError):
-            video = Skill(1, "toad")
-            video.Id = 7
+            skill = Skill(1, {}, start=10, end=20)
+            skill.Id = 7
 
-    def test_change_name_immutable(self):
+    def test_change_info_immutable(self):
         with self.assertRaises(AttributeError):
-            video = Skill(1, "toad", None)
-            video.DottedName = "elephant"
+            skill = Skill(1, {}, start=10, end=20)
+            skill.SkillInfo = {"Jumper" : {}}
 
     def test_change_id_private_method(self):
         with self.assertRaises(AttributeError):
-            video = VideoInfo(id=1, name="toad", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.5)
-            video.__setId(88)
-
-
+            skill = Skill(1, {}, start=10, end=20)
+            skill.__setId(88)
 
 if __name__ == '__main__':
+    print("🧿 Running Domain Skill")
     unittest.main()
+

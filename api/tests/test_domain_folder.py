@@ -17,9 +17,10 @@ class DomainFolderTestSuite(unittest.TestCase):
     ])
     def test_ctor_valid(self, id, name, parentname):
         folderparent = Folder(id, parentname, None) if parentname else None
-        folder = Folder(id, name, folderparent)
+        childId = id + 1
+        folder = Folder(childId, name, folderparent)
         self.assertEqual(name, folder.Name, f"Foldername incorrectly initialized {name}, {folder.Name}")
-        self.assertEqual(id, folder.Id, f"Folder id incorrectly initialized {id}, {folder.Id}")
+        self.assertEqual(childId, folder.Id, f"Folder id incorrectly initialized {id}, {folder.Id}")
         self.assertEqual(folderparent, folder.Parent, f"Parent of folder incorrectly initialized")
 
     @parameterized.expand(TestHelper.generate_empty_strings())
@@ -75,14 +76,14 @@ class DomainFolderTestSuite(unittest.TestCase):
     
     def test_get_relative_path_one_parent(self):
         main = Folder(1, "main", None)
-        comp = Folder(1, "competition", main)
+        comp = Folder(2, "competition", main)
         path = os.path.join("main", "competition")
-        self.assertEqual("main/competition", comp.get_relative_path())
+        self.assertEqual(path, comp.get_relative_path())
     
     def test_get_relative_path_multi_parent(self):
         folder = Folder(1, "root", None)
         foldernames = ["root"]
-        for i in range(10):
+        for i in range(2, 12):
             j = i + 1
             folder = Folder(j, f"subfolder{j}", folder)
             foldernames.append(f"subfolder{j}")
@@ -113,22 +114,40 @@ class DomainFolderTestSuite(unittest.TestCase):
         pass
 
     def test_equals_invalid_name_and_id(self):
-        pass
+        folder1 = Folder(id=1, name="competition")
+        folder2 = Folder(id=2, name="competition")
+        self.assertNotEqual(folder1, folder2)
 
     def test_equals_invalid_with_parent(self):
-        pass
+        parent_1 = Folder(id=3, name="parent1")
+        parent_2 = Folder(id=4, name="parent2")
+        folder1 = Folder(id=1, name="name_1", parent=parent_1)
+        folder2 = Folder(id=1, name="name_1", parent=parent_2)
+        self.assertNotEqual(folder1, folder2)
 
     def test_equals_invalid_nested_parent(self):
-        pass
+        grandparent1 = Folder(id=5, name="grand1")
+        grandparent2 = Folder(id=6, name="grand2")
+        parent1 = Folder(id=3, name="parent", parent=grandparent1)
+        parent2 = Folder(id=4, name="parent", parent=grandparent2)
+        folder1 = Folder(id=1, name="child", parent=parent1)
+        folder2 = Folder(id=1, name="child", parent=parent2)
+        self.assertNotEqual(folder1, folder2)
 
     ############################################
     # Nice to haves
     ############################################
     def test_ctor_invalid_parent_has_same_folderId(self):
-        pass
+        parent = Folder(id=1, name="parent")
+        with self.assertRaises(ValueError):
+            Folder(id=1, name="child", parent=parent)
 
     def test_ctor_invalid_nested_parent_has_same_folderId(self):
-        pass
+        grandparent = Folder(id=1, name="grandparent")
+        parent = Folder(id=2, name="parent", parent=grandparent)
+        with self.assertRaises(ValueError):
+            Folder(id=1, name="child", parent=parent)
 
 if __name__ == '__main__':
     unittest.main()
+

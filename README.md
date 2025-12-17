@@ -75,7 +75,6 @@ When everything is installed, you can start the projects with ease!
 
    ```env
    MYSQL_DATABASE = judge_db
-   MYSQL_DATABASE_TEST = judge_test
    MYSQL_USERNAME = root
    MYSQL_ROOT_PASSWORD = root
    MYSQL_LOCAL_PORT = 3377
@@ -91,13 +90,10 @@ When everything is installed, you can start the projects with ease!
    # The directory where all the app's generated data will come.
    STORAGE_DIR_GENERATED_DATA = /media/miked/Elements/Judge/results
 
-   # Directory for test purposes
-   TESTDIR = /tmp/judge
 
    # Connection strings for connecting with the database
    # They are based on the input data above, keep off.
    DATABASE_URL = mysql+pymysql://${MYSQL_USERNAME}:${MYSQL_ROOT_PASSWORD}@${MYSQL_HOST}:${MYSQL_DOCKER_PORT}/${MYSQL_DATABASE}
-   DATABASE_URL_TEST =  mysql+pymysql://${MYSQL_USERNAME}:${MYSQL_ROOT_PASSWORD}@${MYSQL_HOST}:${MYSQL_DOCKER_PORT}/${MYSQL_DATABASE_TEST}
 
    # Ports used by the API service
    # local port on your machine, docker port inside the container
