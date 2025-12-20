@@ -100,7 +100,7 @@ const barChartFramesTrainTest = computed(() => {
           size="small" severity="secondary"></Button>
       </template>
     </Column>
-
+    <template #footer> In total there are {{ videosWithLabels ? videosWithLabels.length : 0 }} videos with location labels. </template>
   </DataTable>
 
   <h3>Localization Recipes Performance</h3>
