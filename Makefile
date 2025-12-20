@@ -2,7 +2,7 @@
 # Variables
 # -----------------------------
 COMPOSE_DEV = docker compose -f docker-compose.yaml -f docker-compose.dev.yaml
-COMPOSE_PROD = docker compose -f docker-compose.yaml
+COMPOSE_PROD = docker compose -f docker-compose.yaml -f docker-compose.prod.yaml
 SERVICE = api
 SSD_MOUNT=/mnt/judge-drive
 
@@ -14,16 +14,16 @@ check-ssd:
 # Development Commands
 # -----------------------------
 dev: check-ssd ## Run development environment (with volume hot reload)
-	$(COMPOSE_DEV) up --build
+	$(COMPOSE_DEV) --profile dev up --build
 
 dev-detached: check-ssd ## Run development environment in detached mode
-	$(COMPOSE_DEV) up --build -d
+	$(COMPOSE_DEV) --profile dev up --build -d
 
 dev-down: check-ssd ## Stop dev environment
-	$(COMPOSE_DEV) down --remove-orphans
+	$(COMPOSE_DEV) --profile dev down --remove-orphans
 
 dev-logs: ## Show logs
-	$(COMPOSE_DEV) logs -f $(SERVICE)
+	$(COMPOSE_DEV) --profile dev logs -f $(SERVICE)
 
 dev-shell: ## Open shell inside API container
 	$(COMPOSE_DEV) exec $(SERVICE) sh
@@ -32,10 +32,10 @@ dev-shell: ## Open shell inside API container
 # Production Commands
 # -----------------------------
 prod: check-ssd ## Run production environment
-	$(COMPOSE_PROD) up --build
+	$(COMPOSE_PROD) --profile prod up --build
 
 prod-down: check-ssd ## Stop production
-	$(COMPOSE_PROD) down
+	$(COMPOSE_PROD) --profile prod down
 
 prod-logs: check-ssd ## Production logs
 	$(COMPOSE_PROD) logs -f $(SERVICE)
@@ -47,10 +47,10 @@ prod-shell: ## Shell inside API prod container
 # Utility Commands
 # -----------------------------
 rebuild-dev: ## Rebuild dev without cache
-	$(COMPOSE_DEV) build --no-cache
+	$(COMPOSE_DEV) --profile dev build --no-cache
 
 rebuild-prod: ## Rebuild prod without cache
-	$(COMPOSE_PROD) build --no-cache
+	$(COMPOSE_PROD) --profile prod build --no-cache
 
 restart-cv: ## Restart the computervision service
 	$(COMPOSE_DEV) restart computervision

@@ -1,0 +1,8 @@
+# Additional parameter for prod:
+services:
+  api:
+    depends_on:
+      mysqldb:
+        condition: service_healthy    
+      api-test:
+        condition: service_completed_successfully

@@ -3,6 +3,10 @@ services:
   mysqldb:
     image: mysql:8.4
     container_name: ai-judge-mysql-db
+    profiles:
+      - dev
+      - prod
+      - test
     env_file: .env
     environment:
       - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
@@ -25,14 +29,15 @@ services:
   api:
     container_name: ai-judge-api
     build: ./api
+    profiles:
+      - dev
+      - prod
     env_file: .env
     ports:
       - $API_LOCAL_PORT:$API_DOCKER_PORT
     depends_on:
       mysqldb:
         condition: service_healthy    
-      api-test:
-        condition: service_completed_successfully  
     networks:
       - ai-judge-network
     restart: on-failure
@@ -49,6 +54,9 @@ services:
   web:
     container_name: ai-judge-web
     build: ./web
+    profiles:
+      - dev
+      - prod
     env_file: .env
     ports:
       - $WEB_LOCAL_PORT:$WEB_DOCKER_PORT
@@ -61,6 +69,9 @@ services:
   computervision:
     container_name: ai-judge-computer-vision
     build: ./computervision
+    profiles:
+      - prod
+      - dev
     gpus: all
     env_file: .env
     depends_on:
@@ -77,6 +88,9 @@ services:
   api-test:
     container_name: ai-judge-api-test
     build: ./api
+    profiles:
+      - test
+      - prod
     env_file: .env.test
     depends_on:
       mysqldb:
