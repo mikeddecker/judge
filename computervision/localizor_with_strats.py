@@ -47,7 +47,7 @@ def calculate_iou(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y_m
     iou = intersection_area / union
     return iou
 
-def calculate_iou_df(df_a, df_b):
+def calculate_iou_df(df_a: pd.DataFrame, df_b : pd.DataFrame):
     xa, ya, wa, ha = df_a['x'], df_a['y'], df_a['width'], df_a['height']
     xb, yb, wb, hb = df_b['x'], df_b['y'], df_b['width'], df_b['height']
 
@@ -75,7 +75,7 @@ def calculate_iou_df(df_a, df_b):
     union = area1 + area2 - intersection
 
     # IoU calculation
-    return np.where(union > 0, intersection / union, 0)
+    return np.where(union > 0, intersection / union, 0).tolist()
 
 def calculate_angle(new_x_min, new_y_min, new_x_max, new_y_max, old_x_min, old_y_min, old_x_max, old_y_max):
     new_center_x = (new_x_min + new_x_max) / 2

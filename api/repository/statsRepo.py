@@ -129,10 +129,11 @@ class StatsRepository:
                     'model': key,
                     'team_raw_avg' : ious_all['raw']['val']['avg'],
                     'team_smoothing_avg' : ious_all['smoothing']['val']['avg'],
-                    **recipe_results['results_dict']
+                    **recipe_results['results_dict'],
+                    'ious': { **ious_all },
                 }
         return results
-    
+
     def get_localize_labelinfo_per_video(self):
         # Get videos with labels, including density and labeled frame numbers
         query = self.db.session.query(
@@ -168,7 +169,6 @@ class StatsRepository:
             total_boxes = sum(f['boxes'] for f in labeled_frames)
             labeled_frame_nrs = [f['frameNr'] for f in labeled_frames]
             density = len(labeled_frame_nrs) * data['fps'] / data['frameLength']
-            # density2 = len(labeled_frame_nrs) * data['fps'] / data['duration']
             videos.append({
                 'id': vid,
                 'name': data['name'],
@@ -177,7 +177,6 @@ class StatsRepository:
                 'frameLength': data['frameLength'],
                 'frameCount': len(labeled_frame_nrs),
                 'totalBoxes': total_boxes,
-                # 'labelsTimesFpsOverDuration': density2,
                 'density': density,
                 'labeledFrameNrs': sorted(labeled_frame_nrs)
             })
