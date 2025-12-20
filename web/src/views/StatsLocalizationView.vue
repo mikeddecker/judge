@@ -81,6 +81,7 @@ const barChartFramesTrainTest = computed(() => {
     <Column key="metrics/recall(B)" field="metrics/recall(B)" header="metrics/recall(B)" sortable><template #body="slotProps">{{ formatPercentage(slotProps.data['metrics/recall(B)']) }}</template></Column>
   </DataTable>
 
+  <h3>Performance per video</h3>
 </template>
 
 <style scoped>
