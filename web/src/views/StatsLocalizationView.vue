@@ -82,6 +82,13 @@ const barChartFramesTrainTest = computed(() => {
   </DataTable>
 
   <h3>Performance per video</h3>
+  <pre>
+    Add buttons: yolo n, yolo m, yolo s,
+    Add buttons: raw, smoothing ...
+    Then show table based on selected.
+    
+    (Wait until localize models have run and [0.833   0.79222] tables have turned into actual tables, instead of strings)
+  </pre>
 </template>
 
 <style scoped>
