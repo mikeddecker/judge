@@ -18,7 +18,6 @@
         </TabPanel>        
         <TabPanel value="localization">
           <StatsLocalizationView v-if="localizeStats && frameLabelTypes && videosWithLabels" :results="localizeStats" :frame-label-types="frameLabelTypes" :videos-with-labels="videosWithLabels"></StatsLocalizationView>
-          <ResultsLocalizationView></ResultsLocalizationView>
         </TabPanel>
         <TabPanel value="segmentation">
           <ResultsSegmentationView v-if="segmentationStats" :results="segmentationStats"></ResultsSegmentationView>
