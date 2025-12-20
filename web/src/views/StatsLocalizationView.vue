@@ -70,6 +70,7 @@ const barChartFramesTrainTest = computed(() => {
   <DataTable
     :value="videosWithLabels" 
     scrollable scrollHeight="400px"
+    sortField="density" sortOrder="1"
   >
     <Column header="VideoId" sortable field="id"><template #body="slotProps">{{ slotProps.data.id }}</template></Column>
     <Column header="Name" sortable field="name"><template #body="slotProps">{{ slotProps.data.name }}</template></Column>
