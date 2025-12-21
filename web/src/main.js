@@ -92,5 +92,5 @@ app.directive('tooltip', Tooltip)
 app.mount('#app')
 
 // Load all data
-const skillStore = useSkillStore().loadData()
+useSkillStore().loadData()
 

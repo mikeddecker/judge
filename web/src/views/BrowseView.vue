@@ -3,6 +3,7 @@ import FolderContainer from '@/components/FolderContainer.vue';
 import VideoInfoContainer from '@/components/VideoInfoContainer.vue';
 import { discoverDrive, getFolder } from '@/services/videoService';
 import { onMounted, ref } from 'vue';
+import { useBrowseStore } from '@/stores/browseStore';
 
 const count = ref(0)
 const children = ref([])
@@ -16,6 +17,7 @@ const testLabels1 = ref(0)
 const testPercentage = ref(0)
 const currentLabelType = ref(2)
 const completed = ref(0)
+const browseStore = useBrowseStore()
 
 const changeFolder = (newFolderId) => {
   getFolder(newFolderId)
@@ -30,6 +32,7 @@ const changeFolder = (newFolderId) => {
     testLabels1.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount : 0), 0)
 
     completed.value = Object.values(response.Videos).filter((v) => v.Completed_Skill_Labels).length
+    browseStore.setLastVisitedFolder(newFolderId)
   })
   .catch(error => {
     console.error('Error fetching data:', error);
@@ -37,7 +40,7 @@ const changeFolder = (newFolderId) => {
 }
 
 onMounted(async () => {
-  changeFolder(folderId.value)
+  changeFolder(browseStore.lastVisitedFolder)
 })
 </script>
 
@@ -60,3 +63,4 @@ onMounted(async () => {
 
 }
 </style>
+

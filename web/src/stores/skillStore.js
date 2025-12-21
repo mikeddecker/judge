@@ -1,4 +1,3 @@
-// Create a new store instance.
 import { getLayerCompositions } from "@/services/videoService";
 import { defineStore } from "pinia";
 import { toRaw } from "vue";
