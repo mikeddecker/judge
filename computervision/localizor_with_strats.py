@@ -392,16 +392,20 @@ def validate_localize(modeldir: str, repo: DataRepository):
 
                 ious_video = calculate_iou_df(predicted_relative_boxes, df_teamlabels)
                 
-                ious_all[s][train_or_val]['sum'] += ious_video.sum()
+                ious_min = min(ious_video)
+                ious_max = max(ious_video)
+                ious_avg = sum(ious_video) / len(ious_video)
+
+                ious_all[s][train_or_val]['sum'] += sum(ious_video)
                 ious_all[s][train_or_val]['total'] += len(ious_video)
-                ious_all[s][train_or_val]['min'] = min(ious_all[s][train_or_val]['min'], ious_video.min())
-                ious_all[s][train_or_val]['max'] = max(ious_all[s][train_or_val]['max'], ious_video.max())
+                ious_all[s][train_or_val]['min'] = min(ious_all[s][train_or_val]['min'], ious_min)
+                ious_all[s][train_or_val]['max'] = max(ious_all[s][train_or_val]['max'], ious_max)
                 ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
                 ious_all[s][train_or_val]['videos'][int(videoId)] = {
                     'ious': ious_video,
-                    'min': ious_video.min(),
-                    'max': ious_video.max(),
-                    'avg': ious_video.mean(),
+                    'min': ious_min,
+                    'max': ious_max,
+                    'avg': ious_avg,
                 }
 
         except Exception as e:
