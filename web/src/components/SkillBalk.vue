@@ -104,6 +104,10 @@ function getSkillSectionStyle(skill) {
   };
 }
 
+function handleClick(skillId, isPrediction) {
+    emit('skill-clicked', skillId, isPrediction);
+}
+
 function getFrameLineStyle(frame) {
   const relativeStart = frame / FrameLength.value;
   const left = relativeStart * 100;
