@@ -28,7 +28,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
             'train': 'images/train',
             'val': 'images/val',
             'names': {i: name for i, name in enumerate(repo.get_frame_label_types())},
-            'weights': [3,2]
+            'weights': [3,5,2]
         }
 
         # Save to a YAML file
@@ -84,7 +84,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
             y = row["y"]
             w = row["width"]
             h = row["height"]
-            classIdx = row['labeltype'] - 1
+            classIdx = row['labeltype']
 
             video_path = get_video_path(repo, videoId)
             image_name = f"v{videoId:06d}fnr{frameNr:07d}"

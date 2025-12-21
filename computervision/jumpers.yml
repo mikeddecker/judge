@@ -2,8 +2,10 @@ path: /mnt/judge-drive/Judge/results/labels-ultralytics-yolo
 train: images/train
 val: images/val
 names:
-  0: foreground-person
-  1: background-person
+  0: team
+  1: foreground-person
+  2: background-person
 weights:
 - 3
+- 5
 - 2

@@ -220,7 +220,7 @@ def localize_jumpers(
         predicted_classes.append(result[0].boxes.cls.tolist())
 
         # Filter foreground jumpers
-        xyxy_boxes = result[0].boxes.xyxy[result[0].boxes.cls == 0]
+        xyxy_boxes = result[0].boxes.xyxy[result[0].boxes.cls == 1]
 
         if xyxy_boxes.shape[0] > 0:
             xmin = max(0, int(xyxy_boxes[:, 0].min().item()) - padding_x)

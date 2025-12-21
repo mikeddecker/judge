@@ -43,10 +43,10 @@ class DataRepository:
     def get_framelabels(self, train_test_val):
         # TODO : update with validation & 'random' sampling
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) <> 5 ORDER BY videoId, frameNr""")
+            qry = sqlal.text(f"""SELECT * FROM FrameLabelsAll WHERE MOD(videoId, 10) <> 5 ORDER BY videoId, frameNr""")
 
         if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM FrameLabels WHERE MOD(videoId, 10) = 5 ORDER BY videoId, frameNr""")
+            qry = sqlal.text(f"""SELECT * FROM FrameLabelsAll WHERE MOD(videoId, 10) = 5 ORDER BY videoId, frameNr""")
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
@@ -278,11 +278,14 @@ class DataRepository:
     def get_video_path(self, videoId):
         return os.path.join(ENVS.DIRS.VIDEOS, self.VideoNames.loc[videoId, "name"])
     
-    def get_frame_label_types(self):
+    def get_frame_label_types(self, include_team=True):
         with self.__get_connection() as connection:
             qry = sqlal.text(f"""SELECT info FROM FrameLabelTypes""")
             flts = pd.read_sql(qry, con=connection)
-            return flts['info'].to_list()
+            flts = flts['info'].to_list()
+            if include_team:
+                flts.insert(0, 'team')
+            return flts
 
     def get_skill_prop_counts(self):
         with self.__get_connection() as connection:
