@@ -1,5 +1,6 @@
 <template>
     <h3 class="text-xl font-bold mb-2 mt-4 w-fit">{{ name }}</h3>
+    <!-- Keep matrixColumns for indexing -->
     <table v-if="matrixColumns">
         <tbody>
             <tr>
@@ -14,9 +15,19 @@
                     {{ col - 1 }}
                 </th>
             </tr>
-            <tr v-for="actualIndex in matrixColumns">
-                <td class="text-center p-2 bg-gray-200">{{ actualIndex }}</td>
-                <td class="text-center p-2" :style="getCellStyle(actualIndex, predictedIndex)" v-for="predictedIndex in matrixColumns">{{ transformedMatrix[actualIndex][predictedIndex] }}</td>
+            <tr>
+                <th class="border p-2 bg-gray-100">Actual</th>
+                <th v-for="predictedHeader of headers" :key="predictedHeader" class="border p-2">
+                    {{ predictedHeader }}
+                </th>
+            </tr>
+            <tr v-for="(actualHeader, actualIndex) in headers">
+                <td class="text-center p-2 bg-gray-200">{{ actualHeader }}</td>
+                <td 
+                    class="text-center p-2" 
+                    :style="getCellStyle(actualIndex, predictedIndex)" 
+                    v-for="(predictedHeader, predictedIndex) in headers"
+                >{{ transformedMatrix[actualIndex][predictedIndex] }}</td>
             </tr>
         </tbody>
     </table>
@@ -31,9 +42,13 @@ const props = defineProps({
         type: String,
         required: true,
     },
-    confusion: {
+    values: {
         type: Array[Array],
         required: true
+    },
+    headers: {
+        type: Array,
+        required: true,
     }
 })
 const transformedMatrix = ref(null)
@@ -78,8 +93,8 @@ const getCellStyle = (actualIndex, predictionIndex) => {
 }
 
 onMounted(() => {
-    transformedMatrix.value = transformMatrix(props.confusion)
-    matrixColumns.value = getColumns(props.confusion)
+    transformedMatrix.value = transformMatrix(props.values)
+    matrixColumns.value = getColumns(props.values)
 });
 
 function sum(array) {

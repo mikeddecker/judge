@@ -166,6 +166,7 @@ class OutputHeadRecognition(nn.Module):
                     self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
                     self.metrics['confusion'][prop_name] = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=num_classes).to(device)
                     self.confusion_values[prop_name] = categorical_values.values.tolist()
+                    self.confusion_values[prop_name].insert(0, None)
                 elif prop_type == "boolean":
                     self.metrics['precision'][prop_name] = torchmetrics.Precision(task="binary").to(device)
                     self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="binary").to(device)

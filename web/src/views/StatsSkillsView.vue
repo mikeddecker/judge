@@ -15,7 +15,11 @@
   
   <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
   
-  <ConfusionMatrix v-for="(matrix, prop) in results['models'][selectedModel]['validation_results']['metrics']['confusion']" :name="prop" :confusion="matrix"></ConfusionMatrix>
+  <ConfusionMatrix 
+    v-for="(matrix, prop) in results['models'][selectedModel]['validation_results']['metrics']['confusion']" 
+    :name="prop" :values="matrix"
+    :headers="results['models'][selectedModel]['validation_results']['confusion_values'][prop]"
+  ></ConfusionMatrix>
   
   <Tabs value="total" class="mt-8">
     <TabList>
