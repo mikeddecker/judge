@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import os
 import random
+import shutil
+import time
 import torch
 import yaml
 
@@ -410,4 +412,14 @@ def localize_get_best_modelpath():
 
     modelpath = os.path.join(ENVS.DIRS.WEIGHTS.YOLO, best_size, best_trainround, "weights", "best.pt")
     return best_modelname, os.path.join(modelpath, ) # modelname = yolo11n, modelpath = '../runs/detect/train7/weights/best.pt'
+
+def safe_rmtree(path, retries=10, delay=1.5):
+    for i in range(retries):
+        try:
+            shutil.rmtree(path)
+            return
+        except OSError as e:
+            if i == retries - 1:
+                raise
+            time.sleep(delay)
 

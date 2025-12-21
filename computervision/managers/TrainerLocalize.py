@@ -7,7 +7,8 @@ import shutil
 
 from colorama import Fore, Style
 from constants import ENVS
-from datetime import datetime 
+from datetime import datetime
+from helpers import safe_rmtree
 from localizor_with_strats import validate_localize
 from managers.DataRepository import DataRepository
 from ultralytics import YOLO
@@ -157,7 +158,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
         
         print(f"Training {f"{Fore.GREEN}increased" if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou else f"{Fore.RED}decreased"}{Style.RESET_ALL} from {previous_raw_avg_team_box_io:.4f} to {trained_raw_avg_team_box_iou:.4f} ({Fore.GREEN if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou else Fore.RED}{(trained_raw_avg_team_box_iou - previous_raw_avg_team_box_io):.4f}{Style.RESET_ALL})")
         if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou:
-            shutil.rmtree(previous_folder)
+            safe_rmtree(previous_folder)
         else:
-            shutil.rmtree(save_dir)
+            safe_rmtree(save_dir)
 
