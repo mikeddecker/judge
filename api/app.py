@@ -80,6 +80,12 @@ def restore_latest_mysql_backup(backup_dir: str = MYSQL_BACKUP):
 
     print(f"✅ Database restored from: {latest_backup}")
 
+    views_sql = os.path.join(os.getcwd(), 'repository', 'views.sql')    
+    print(f"⏳ Running {views_sql}")
+    with open(views_sql, "r") as f:
+        subprocess.run(restore_cmd, stdin=f, check=True, env=env)
+    print(f"✅ {views_sql} applied successfully")
+
 def create_app(config_object:str="config.Config"):
     app = Flask(__name__)
     CORS(app)
@@ -96,7 +102,6 @@ def create_app(config_object:str="config.Config"):
 
     with app.app_context():
         upgrade()
-    
     return app
 
 app = create_app()
