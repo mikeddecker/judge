@@ -1,4 +1,4 @@
-path: /media/miked/Elements/Judge/results/labels-ultralytics-yolo
+path: /mnt/judge-drive/Judge/results/labels-ultralytics-yolo
 train: images/train
 val: images/val
 names:
