@@ -24,10 +24,12 @@ const props = defineProps({
 })
 
 const models = computed(() => Object.keys(props.results['recipes']))
+const smoothTechniques = computed(() => selectedModel.value ? Object.keys(props.results['recipes'][selectedModel.value]['ious']) : [])
 const selectedModel = ref(Object.keys(props.results['recipes'])[0])
+const selectedSmoothTechnique = ref(Object.keys(props.results['recipes'][selectedModel.value]['ious'])[0])
 const tabledIous = computed(() => {
   return Object.fromEntries(
-    Object.entries(props.results['recipes'][selectedModel.value]['ious']['raw']['val']['videos']).map(
+    Object.entries(props.results['recipes'][selectedModel.value]['ious'][selectedSmoothTechnique.value]['val']['videos']).map(
       ([videoId, scores]) => [videoId, {
         videoId: Number(videoId),
         ...scores,
@@ -97,26 +99,22 @@ const barChartFramesTrainTest = computed(() => {
   </DataTable>
 
   <h3>Performance per video</h3>
-  <pre>
-    Add buttons: yolo n, yolo m, yolo s,
-    Add buttons: raw, smoothing ...
-    Then show table based on selected.
-    
-    (Wait until localize models have run and [0.833   0.79222] tables have turned into actual tables, instead of strings)
-  </pre>
-
-  <div class="flex gap-2">
+  <div class="flex gap-2 my-4">
     <Button 
       v-for="model in models" :label="model" :aria-label="model"
       severity="success" variant="text" raised
       :class="selectedModel == model ? 'p-button-highlight' : ''"
       @click="selectedModel = model"
     ></Button>
+    <Button 
+      v-for="smoothTechnique in smoothTechniques" :label="smoothTechnique" :aria-label="smoothTechnique"
+      severity="success" variant="text" raised
+      :class="selectedSmoothTechnique == smoothTechnique ? 'p-button-highlight' : ''"
+      @click="selectedSmoothTechnique = smoothTechnique"
+    ></Button>
   </div>
 
   <TableIous :ious="tabledIous"></TableIous>
-
-  <pre>{{ models }}</pre>
 </template>
 
 <style scoped>

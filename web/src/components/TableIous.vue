@@ -1,5 +1,4 @@
 <template>
-
   <DataTable
     :value="Object.values(ious)" 
     scrollable scrollHeight="400px"
@@ -9,7 +8,6 @@
     <Column header="avg" sortable field="avg"><template #body="slotProps">{{ slotProps.data.avg.toFixed(2) }}</template></Column>
     <Column header="min" sortable field="avg"><template #body="slotProps">{{ slotProps.data.min.toFixed(2) }}</template></Column>
     <Column header="max" sortable field="max"><template #body="slotProps">{{ slotProps.data.max.toFixed(2) }}</template></Column>
-    <!-- <Column header="min_second" sortable :field="slotProps.data.ious[1] ? slotProps.data.ious[1] : ''"><template #body="slotProps">{{ slotProps.data.avg.toFixed(2) }}</template></Column> -->
     <Column header="Link">
       <template #body="slotProps">
         <Button 
@@ -19,11 +17,8 @@
           size="small" severity="secondary"></Button>
       </template>
     </Column>
-    <template #footer> In total there are {{ ious ? ious.length : 0 }} validation videos with location labels. </template>
+    <template #footer> In total there are {{ ious ? Object.keys(ious).length : 0 }} validation videos with location labels. </template>
   </DataTable>
-
-  <p></p>
-  <pre>{{ ious }}</pre>
 </template>
 
 <script setup>
