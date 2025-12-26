@@ -178,7 +178,7 @@ class VideoInfo:
     
     def has_skill_overlap(self, start, end, skillId=None) -> bool:
         for s in self.Skills:
-            if not (start >= s.FrameEnd or end <= s.FrameStart):
+            if not (start >= s.FrameEnd or end <= s.FrameStart) and s.Id != skillId:
                 return True
         return False
     
