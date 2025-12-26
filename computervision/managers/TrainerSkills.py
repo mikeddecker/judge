@@ -53,7 +53,7 @@ class TrainerSkills:
     def __init__(self):
         self.repo = DataRepository()
 
-    def train(self, recipe: SimpleNamespace, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, patience:int=5, speedmode=SPEEDMODES[1]):
+    def train(self, recipe: SimpleNamespace, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, patience:int=3, speedmode=SPEEDMODES[1]):
         rundate = date.today().strftime('%Y%m%d')
 
         #########################################################################################
@@ -124,7 +124,7 @@ class TrainerSkills:
         # End video creation
         #########################################################################################
         try:
-            scheduler_patience = 2
+            scheduler_patience = 1
             start = time.time()
             testrun = False
             modelname = recipe.model
