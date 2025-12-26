@@ -149,11 +149,11 @@ class DataRepository:
         """videoId is optional, then it returns only skills from that videoId"""
         # TODO : Make warning or error on train page displaying skills having null values
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) <> 5 AND id < 1204""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         and_where_videoId = f"AND videoId = {videoId}" if videoId else ""
         if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) = 5 {and_where_videoId} AND id < 1204""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) = 5 {and_where_videoId}""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
