@@ -47,3 +47,4 @@ class Job:
             'status' : self.status,
             'status_details' : self.status_details,
         }
+    

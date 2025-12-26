@@ -149,11 +149,11 @@ class DataRepository:
         """videoId is optional, then it returns only skills from that videoId"""
         # TODO : Make warning or error on train page displaying skills having null values
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) <> 5 AND id < 1204""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         and_where_videoId = f"AND videoId = {videoId}" if videoId else ""
         if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) = 5 {and_where_videoId}""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) = 5 {and_where_videoId} AND id < 1204""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
 
         if train_test_val == "test":
             raise ValueError(f"Changed test to val !!")
@@ -165,6 +165,12 @@ class DataRepository:
                 df['skillinfo_string'] = df['skillinfo']
                 df['skillinfo'] = df['skillinfo'].apply(json.loads)
             return df
+        
+    def update_skill(self, skillId, skillinfo):
+        with self.__get_connection() as connection:
+            qry = sqlal.text(f"UPDATE Skills SET skillinfo = :skillinfo WHERE id = :id")
+            connection.execute(qry, {'id': skillId, 'skillinfo': skillinfo})
+            connection.commit()
                 
     def __load_relativePaths_of_videos_with_framelabels(self):
         with self.__get_connection() as connection:

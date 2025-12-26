@@ -28,4 +28,5 @@ class StatsRouter(Resource):
                 return self.statsService.get_score_comparison(videoIds=videoIds), 200
             case _:
                 return f'Forbidden {stat}', 404
+            
 
