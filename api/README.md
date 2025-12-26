@@ -13,6 +13,7 @@ Database migrations and setup are handled automatically in the docker containers
 (this has not been tried in the dockerized environment yet!)
 
 ```bash
+make dev-bash # Enters the bash shell of the api
 flask db migrate -m "Initial migration"  # Generates the migration script for changes to the database
 flask db upgrade         # Applies the migration to the database
 ```

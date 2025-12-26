@@ -25,8 +25,8 @@ dev-down: check-ssd ## Stop dev environment
 dev-logs: ## Show logs
 	$(COMPOSE_DEV) --profile dev logs -f $(SERVICE)
 
-dev-shell: ## Open shell inside API container
-	$(COMPOSE_DEV) exec $(SERVICE) sh
+dev-bash: ## Open shell inside API container
+	$(COMPOSE_DEV) exec -it $(SERVICE) bash
 
 # -----------------------------
 # Production Commands
@@ -40,8 +40,8 @@ prod-down: check-ssd ## Stop production
 prod-logs: check-ssd ## Production logs
 	$(COMPOSE_PROD) logs -f $(SERVICE)
 
-prod-shell: ## Shell inside API prod container
-	$(COMPOSE_PROD) exec $(SERVICE) sh
+prod-bash: ## Shell inside API prod container
+	$(COMPOSE_PROD) exec -it $(SERVICE) bash
 
 # -----------------------------
 # Utility Commands

@@ -1,5 +1,6 @@
 from domain.tag import Tag
 from domain.tagGroup import TagGroup
+from domain.videoinfo import VideoInfo
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
@@ -66,3 +67,9 @@ class TagService:
         ValueHelper.check_raise_string_keywords_comma_separated(keywords)
         assert self.TagRepo.has_tag(tag_id), f"Tag with id {tag_id} does not exist"
         return self.TagRepo.update_tag_keywords(tag_id, keywords)
+
+    def link_video_to_tag(self, tag_id: int, video_id: int):
+        ValueHelper.check_raise_id(tag_id)
+        ValueHelper.check_raise_id(video_id)
+        
+

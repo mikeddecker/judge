@@ -5,6 +5,7 @@ from config import ENVS
 from domain.folder import Folder
 from domain.frameinfo import FrameInfo
 from domain.skill import Skill
+from domain.tag import Tag
 from domain.videoinfo import VideoInfo
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 from helpers.ValueHelper import ValueHelper
@@ -38,7 +39,7 @@ class VideoService:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
-    def add(self, name: str, folder: Folder, frameLength: float, width: float, height: float, fps: float, ytid: str = None) -> VideoInfo:
+    def add(self, name: str, folder: Folder, frameLength: float, width: float, height: float, fps: float, ytid: str = None, tags: list[Tag] = []) -> VideoInfo:
         """Adds the given video to the database
         
         TODO : After localization; add meta information loader
@@ -67,6 +68,7 @@ class VideoService:
             duration=duration,
             fps=fps,
             srcinfo=ytid, # TODO : make better
+            tags=tags,
         )
     
     def add_skill(self, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict) -> Skill:

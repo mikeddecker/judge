@@ -72,7 +72,7 @@ class MapToDomain:
         return TagGroup(
             id = tagGroupDB.id,
             name = tagGroupDB.name,
-            tags = [Tag(id = t.id, name = t.name) for t in tagGroupDB.tags]
+            tags = [Tag(id = t.id, name = t.name, keywords=t.keywords) for t in tagGroupDB.tags]
         )
     
     def map_layercomposition(compositionValuesDB: list[LayerCompositionDB]) -> LayerComposition:

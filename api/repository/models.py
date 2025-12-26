@@ -9,7 +9,7 @@ class Folder(db.Model):
     __tablename__ = 'Folders'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(127), nullable=False)
-    parentId = db.Column(db.Integer, db.ForeignKey('Folders.id'), nullable=True)
+    parentId = db.Column(db.Integer, db.ForeignKey('Folders.id', ondelete='CASCADE'), nullable=True)
     parent = db.relationship('Folder', remote_side=[id], backref='children', lazy='joined')
     videos = db.relationship('Video', backref='folder', lazy='dynamic') # Loaded lazily, so videoIDs are accecible, but full fetch only when explicitly asked
 
@@ -42,7 +42,7 @@ class TagGroup(db.Model):
     __tablename__ = 'TagGroups'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(127), nullable=False, unique=True)
-    parentId = db.Column(db.Integer, db.ForeignKey('TagGroups.id'), nullable=True)
+    parentId = db.Column(db.Integer, db.ForeignKey('TagGroups.id', ondelete='CASCADE'), nullable=True)
     parent = db.relationship('TagGroup', remote_side=[id], backref='children', lazy='joined')
     tags = db.relationship('Tag', backref='group', lazy=True)
 
@@ -56,14 +56,14 @@ class Tag(db.Model):
 
 # Association table for Video <-> Tag (Many-to-Many)
 video_tag = db.Table('video_tag',
-    db.Column('videoId', db.Integer, db.ForeignKey('Videos.id'), primary_key=True),
-    db.Column('tagId', db.Integer, db.ForeignKey('Tags.id'), primary_key=True)
+    db.Column('videoId', db.Integer, db.ForeignKey('Videos.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('tagId', db.Integer, db.ForeignKey('Tags.id', ondelete='CASCADE'), primary_key=True)
 )
 
 class Video(db.Model):
     __tablename__ = 'Videos'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    folderId = db.Column(db.Integer, db.ForeignKey('Folders.id'), nullable=False)
+    folderId = db.Column(db.Integer, db.ForeignKey('Folders.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     frameLength = db.Column(db.Integer, nullable=False)
     duration = db.Column(db.Float, nullable=False)
@@ -77,7 +77,7 @@ class Video(db.Model):
     source = db.Column(db.Integer, nullable=True)
     sourceInfo = db.Column(db.String(255), nullable=True)
     completed_skill_labels = db.Column(db.Boolean, nullable=False, default=False)
-    competition = db.Column(db.Integer, db.ForeignKey('CompetitionInfo.id'))
+    competition = db.Column(db.Integer, db.ForeignKey('CompetitionInfo.id', ondelete='CASCADE'))
     judgeDiffScore = db.Column(db.Float, nullable=True)
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
@@ -109,14 +109,14 @@ class FrameLabelType(db.Model):
 class FrameLabel(db.Model):
     __tablename__ = 'FrameLabels'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
+    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=False)
     frameNr = db.Column(SMALLINT(unsigned=True), nullable=False)
     x = db.Column(db.Float, nullable=False)
     y = db.Column(db.Float, nullable=False)
     width = db.Column(db.Float, nullable=False)
     height = db.Column(db.Float, nullable=False)
     jumperVisible = db.Column(db.Boolean, nullable=False, default=True)
-    labeltype = db.Column(db.Integer, db.ForeignKey('FrameLabelTypes.id'), nullable=False, default=1)
+    labeltype = db.Column(db.Integer, db.ForeignKey('FrameLabelTypes.id', ondelete='CASCADE'), nullable=False, default=1)
     labeldatetime = db.Column(db.DateTime, default=datetime.now)
     labeldate = db.Column(db.Date, default=lambda: datetime.now().date())
     labeltime = db.Column(db.Time, default=lambda: datetime.now().time())
@@ -163,7 +163,7 @@ class TrainResultSkill(db.Model):
 class Skill(db.Model):
     __tablename__ = 'Skills'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id'), nullable=False)
+    videoId = db.Column(db.Integer, db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=False)
     frameStart = db.Column(db.Integer, nullable=False)
     frameEnd = db.Column(db.Integer, nullable=False)
     skillinfo = db.Column(MutableDict.as_mutable(JSON), nullable=False)
@@ -221,7 +221,7 @@ class LayerProperty(db.Model):
 class LayerPropertyValue(db.Model):
     __tablename__ = 'LayerPropertyValues'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    propertyId = db.Column(db.Integer, db.ForeignKey('LayerProperties.id'), nullable=False)
+    propertyId = db.Column(db.Integer, db.ForeignKey('LayerProperties.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.String(50), nullable=False)
     creationDate = db.Column(db.DateTime, default=datetime.now)
     lastUpdated = db.Column(db.DateTime, default=datetime.now)
@@ -238,7 +238,7 @@ class LayerComposition(db.Model):
     compositionName = db.Column(db.String(50), nullable=False)
     name = db.Column(db.String(50), nullable=True)
     stage = db.Column(db.Integer, CheckConstraint('stage >= -1'), nullable=True)
-    propertyId = db.Column(db.Integer, db.ForeignKey('LayerProperties.id'), nullable=False)
+    propertyId = db.Column(db.Integer, db.ForeignKey('LayerProperties.id', ondelete='CASCADE'), nullable=False)
     property = db.relationship('LayerProperty', backref='compositions', lazy='joined')
     defaultValue = db.Column(db.String(15), nullable=True)
     focussed = db.Column(db.Boolean, nullable=False, default=True)

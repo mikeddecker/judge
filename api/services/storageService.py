@@ -10,12 +10,16 @@ import cv2
 import math
 import subprocess
 
+from pprint import pprint
+
 from config import ENVS
 from colorama import Fore, Style
 from domain.folder import Folder
+from domain.tag import Tag
 from helpers.ValueHelper import ValueHelper
 from services.videoService import VideoService
 from services.folderService import FolderService
+from services.tagService import TagService
 from repository.db import db
 
 # pseudo cache
@@ -37,6 +41,7 @@ class StorageService:
             raise NotADirectoryError(f"StorageFolder {ENVS.DIRS.VIDEOS} does not exist")
         self.VideoService = VideoService()
         self.FolderService = FolderService()
+        self.TagService = TagService()
 
     def discover_drive_cached_version(self, deleteOrphans: bool = False):
         """Pseudo cache method"""
@@ -63,6 +68,8 @@ class StorageService:
         try:
             print(f"{Fore.YELLOW}Discovering folder:{Style.RESET_ALL}", f"{ENVS.DIRS.VIDEOS} (root)")
             new_videos, orphans = self.__discover_folder(ENVS.DIRS.VIDEOS, parent=None, isRoot=True, deleteOrphans=deleteOrphans)
+            print(f"{Fore.GREEN}Done {Style.RESET_ALL} exploring drive{Style.RESET_ALL}")
+
             return {
                 "metadata" : {
                     "new-videos" : "folderId -> name",
@@ -89,16 +96,18 @@ class StorageService:
         new_videos = {}
         orphans = {}
 
+        tags = self.TagService.get_tags()
+
         for content in folder_content:
             contentPath = os.path.join(currentFolderPath, content)
             
             # Rename files with spaces
-            if content.__contains__(" "):
+            if content.__contains__(" ") or content.__contains__("_"):
                 old_name = contentPath
-                contentPath = contentPath.replace(" ", "-")
-                content = content.replace(" ", "-")
+                contentPath = contentPath.replace(" ", "-").replace("_", "-")
+                content = content.replace(" ", "-").replace("_", "-")
                 os.rename(old_name, contentPath)
-                print(f"{Fore.MAGENTA}File or folder contains spaces, renamed with (-) dashes:{Style.RESET_ALL}", content)
+                print(f"{Fore.MAGENTA}File or folder contains spaces and underscores, renamed with (-) dashes:{Style.RESET_ALL}", content)
             
             # Temp save dirs, to provide better output
             # Otherwise videos, and folders interlap with each other
@@ -110,17 +119,19 @@ class StorageService:
                 if isRoot:
                     print(f"{Fore.YELLOW}Skipping file in root:{Style.RESET_ALL} {content}")
                 elif content.split(".")[-1] in ENVS.SUPPORTED_VIDEO_FORMATS:
-                    info = self.__enrich_video_data(name=content, folder=parent)
 
                     if self.VideoService.exists_in_database(name=content, folder=parent):
                         del videos_in_folder_according_to_database[content]
                     else:
                         print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content} {Fore.GREEN}NEW{Style.RESET_ALL}")
+                        info = self.__enrich_video_data(name=content, folder=parent, tags=tags)
+
                         inserted_video = self.VideoService.add(name=content, folder=parent, 
                             frameLength=info["frameLength"],
                             width=info["width"],
                             height=info["height"],
-                            fps=info["fps"]
+                            fps=info["fps"],
+                            tags=info["tags"]
                         )
                         
                         # Bookkeeping
@@ -163,10 +174,10 @@ class StorageService:
                 new_videos[folderId] = videonames
             for folderId, orphanlist in orph.items():
                 orphans[folderId] = orphanlist
-        
+
         return new_videos, orphans
 
-    def __enrich_video_data(self, name: str, folder: Folder) -> dict:
+    def __enrich_video_data(self, name: str, folder: Folder, tags: list[Tag]) -> dict:
         info = {
             "name" : name,
             "folderId" : folder.Id,
@@ -180,9 +191,17 @@ class StorageService:
         info["frameLength"] = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         info["width"] = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         info["height"] = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        info["tags"] = []
 
         cap.release()
         cv2.destroyAllWindows()
+
+        # Tags
+        parts = name.lower().split('.')[0].split("-")
+        for tag in tags:
+            for video_name_part in parts:
+                if tag.contains_keyword(video_name_part):
+                    info["tags"].append(tag)
 
         return info
     

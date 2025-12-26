@@ -13,7 +13,8 @@ class TagRepository:
     def add(self, name: str, group: str | None) -> Tag:
         if group:
             groupDB = self.db.session.query(TagGroupDB).filter_by(name=group).first()
-            new_tag = TagDB(name=name, keywords=f"{name.lower()},{name.upper()}", group=groupDB)
+            keywords = name.lower() if name.lower() == name.upper() else f"{name.lower()},{name.upper()}"
+            new_tag = TagDB(name=name, keywords=keywords, group=groupDB)
         else:
             new_tag = TagDB(name = name)
         
@@ -86,3 +87,4 @@ class TagRepository:
         tagdb : TagDB = self.db.session.get(TagDB, ident=tag_id)
         tagdb.keywords = keywords
         self.db.session.commit()
+
