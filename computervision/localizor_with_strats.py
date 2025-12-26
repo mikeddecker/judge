@@ -402,7 +402,7 @@ def validate_localize(modeldir: str, repo: DataRepository):
                 ious_all[s][train_or_val]['max'] = max(ious_all[s][train_or_val]['max'], ious_max)
                 ious_all[s][train_or_val]['avg'] = ious_all[s][train_or_val]['sum'] / ious_all[s][train_or_val]['total']
                 ious_all[s][train_or_val]['videos'][int(videoId)] = {
-                    'ious': ious_video,
+                    'ious': list(sorted(ious_video)),
                     'min': ious_min,
                     'max': ious_max,
                     'avg': ious_avg,

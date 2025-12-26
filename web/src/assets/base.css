@@ -95,3 +95,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.p-button-highlight {
+  background-color: var(--p-button-primary-active-background);
+}

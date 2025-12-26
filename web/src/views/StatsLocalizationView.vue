@@ -4,6 +4,7 @@ import { formatPercentage, getColor } from '@/helpers/utils'
 import { getDailyChartOptions, transformDailyCounts } from '@/helpers/chartUtils'
 import { computed, onMounted, ref } from 'vue'
 import TableDensity from '@/components/TableDensity.vue'
+import TableIous from '@/components/TableIous.vue'
 
 const router = useRouter()
 
@@ -20,6 +21,20 @@ const props = defineProps({
     type: Array,
     required: true
   }
+})
+
+const models = computed(() => Object.keys(props.results['recipes']))
+const selectedModel = ref(Object.keys(props.results['recipes'])[0])
+const tabledIous = computed(() => {
+  return Object.fromEntries(
+    Object.entries(props.results['recipes'][selectedModel.value]['ious']['raw']['val']['videos']).map(
+      ([videoId, scores]) => [videoId, {
+        videoId: Number(videoId),
+        ...scores,
+        labels: scores.ious.length
+      }]
+    )
+  )
 })
 
 const dailyChartData = ref(null)
@@ -89,6 +104,19 @@ const barChartFramesTrainTest = computed(() => {
     
     (Wait until localize models have run and [0.833   0.79222] tables have turned into actual tables, instead of strings)
   </pre>
+
+  <div class="flex gap-2">
+    <Button 
+      v-for="model in models" :label="model" :aria-label="model"
+      severity="success" variant="text" raised
+      :class="selectedModel == model ? 'p-button-highlight' : ''"
+      @click="selectedModel = model"
+    ></Button>
+  </div>
+
+  <TableIous :ious="tabledIous"></TableIous>
+
+  <pre>{{ models }}</pre>
 </template>
 
 <style scoped>

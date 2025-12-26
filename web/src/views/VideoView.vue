@@ -30,7 +30,7 @@
               <Button @click="playJustALittleFurther(+1)" class="bg-teal-600">+1</Button>
               <Button @click="playJustALittleFurther(+2)" class="bg-teal-600">+2</Button>
               <Button @click="playJustALittleFurther(+5)" class="bg-teal-600">+5</Button>
-              <Button @click="playJustALittleFurther(+10)" class="bg-teal-600" ref="focusBtn">+10</Button>
+              <Button @click="playJustALittleFurther(+10)" class="bg-teal-600">+10</Button>
               <Button @click="playJustALittleFurther(+15)" class="bg-teal-600">+15</Button>
               <Button @click="playJustALittleFurther(+25)" class="bg-teal-600">+25</Button>
               <Button v-show="skillStore.selectedSkill.Id" @click="deselectSkill">Deselect skill</Button>
@@ -635,10 +635,6 @@ const handleKeyPress = (key) => {
 </script>
 
 <style scoped>
-.p-button-highlight {
-  background-color: var(--p-button-primary-active-background);
-}
-
 .error {
   color: red;
 }
