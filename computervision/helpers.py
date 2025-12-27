@@ -13,11 +13,27 @@ import time
 import torch
 import yaml
 
-from managers.FrameLoader import FrameLoader
-from constants import ENVS
 from base_utils import load_json_file
+from collections import defaultdict
+from constants import ENVS
+from managers.FrameLoader import FrameLoader
+from types import SimpleNamespace
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+class NumpyTypeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif hasattr(obj, "ndim"):  # torch.Tensor
+            return obj.item() if obj.ndim == 0 else obj.tolist()
+        elif isinstance(obj, np.generic):
+            return obj.item()
+        elif isinstance(obj, SimpleNamespace):
+            return obj.__dict__
+        elif isinstance(obj, defaultdict):
+            return dict(obj)
+        return super().default(obj)
 
 def plot(imgs, bboxes=None, row_title=None, **imshow_kwargs):
     """

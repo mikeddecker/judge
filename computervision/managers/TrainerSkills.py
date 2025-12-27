@@ -27,19 +27,6 @@ from helpers import localize_get_best_modelpath
 
 from constants import RECIPES, SPEEDMODES
 
-class NumpyTypeEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif hasattr(obj, "ndim"):  # torch.Tensor
-            return obj.item() if obj.ndim == 0 else obj.tolist()
-        elif isinstance(obj, np.generic):
-            return obj.item()
-        elif isinstance(obj, SimpleNamespace):
-            return obj.__dict__
-        elif isinstance(obj, defaultdict):
-            return dict(obj)
-        return super().default(obj)
 
 load_dotenv()
 
