@@ -13,6 +13,25 @@ class Job:
             request_time: datetime = None,
             status_details: str = None,
         ) -> None:
+        f"""
+        Docstring for __init__
+        
+        :param self: The Job instance
+        :param type: {JOB_TYPES}
+        :type type: str
+        :param step: {JOB_STEPS}
+        :type step: str
+        :param status: Status of the job (in progress, on hold)
+        :type status: str
+        :param id: Job database identifier
+        :type id: int
+        :param job_arguments: JSON dict containing specific job arguments
+        :type job_arguments: dict
+        :param request_time: Time the job was requested
+        :type request_time: datetime
+        :param status_details: Additional info about the status
+        :type status_details: str
+        """
 
         assert type in JOB_TYPES, f'JobType ({type}) must be in {JOB_TYPES}'
         assert step in JOB_STEPS, f'Job step ({step}) must be in {JOB_STEPS}'
