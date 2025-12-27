@@ -57,42 +57,6 @@ class TrainerSkills:
         rundate = date.today().strftime('%Y%m%d')
 
         #########################################################################################
-        def validate(model, dataloader, optimizer, device='cuda'):
-            model.eval()
-            val_loss = 0.0
-
-            head : OutputHeadRecognition = model.head
-
-            with torch.no_grad():
-                for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloader):
-                    with torch.amp.autocast(device_type=device):
-                        optimizer.zero_grad()
-                        outputs = model(batch_X / 255)
-
-                        try:
-                            
-                            # Loss
-                            total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask)
-                            val_loss += total_batch_loss.item()
-
-                            # Accuracy
-                            current_f1 = head.update_metrics(outputs, batch_y, batch_mask)
-                        except Exception as e:
-                            print(f"❌ Error during validation on skill ☣️ {skill_id} ☣️")
-                            raise e
-
-                metrics = head.compute_metrics()
-                head.reset_metrics()
-
-            return {
-                'val_loss' : val_loss / len(dataloader),
-                'f1_total_avg' : float(np.mean(list(metrics['f1'].values()))),
-                'accuracy_avg' : float(np.mean(list(metrics['acc'].values()))),
-                'precision_avg' : float(np.mean(list(metrics['precision'].values()))),
-                'recall_avg' : float(np.mean(list(metrics['recall'].values()))),
-                'metrics' : metrics,
-                'confusion_values' : head.confusion_values,
-            }
         #########################################################################################
         def create_or_recreate_cropped_videos(speedmode):
             unique_videoIds = self.repo.get_videoIds_of_videos_with_skills()
@@ -180,7 +144,7 @@ class TrainerSkills:
                         optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
                         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
                         print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
-                        best_model_revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+                        best_model_revalidation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                         print(f"{Fore.YELLOW}Target best ({best_model_name}) - {best_model_revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
                     except:
                         print(f"{Fore.RED}Error loading (weigths of) best model.{Style.RESET_ALL} Highly likely because of new parameters, this run becomes default best")
@@ -191,7 +155,7 @@ class TrainerSkills:
                     optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
                     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
                     print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
-                    revalidation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+                    revalidation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                     print(f"{Fore.MAGENTA}Target {modelname}: {revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
             except RuntimeError as e:
                 if "size mismatch" not in str(e) and "Missing key(s) in state_dict" not in str(e):
@@ -258,7 +222,7 @@ class TrainerSkills:
                     total_loss += total_batch_loss.item()
                     i+=1
                 
-                validation_results = validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
+                validation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                 val_loss = validation_results['val_loss']
                 
                 # Call the epoch end self, because it is not called by DataLoader, although it shuffles.
@@ -347,4 +311,41 @@ class TrainerSkills:
         finally:
             torch.cuda.empty_cache()
             gc.collect()
+
+    def __validate(self, model, dataloader, optimizer, device='cuda'):
+        model.eval()
+        val_loss = 0.0
+
+        head : OutputHeadRecognition = model.head
+
+        with torch.no_grad():
+            for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloader):
+                with torch.amp.autocast(device_type=device):
+                    optimizer.zero_grad()
+                    outputs = model(batch_X / 255)
+
+                    try:
+                        
+                        # Loss
+                        total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask)
+                        val_loss += total_batch_loss.item()
+
+                        # Accuracy
+                        current_f1 = head.update_metrics(outputs, batch_y, batch_mask)
+                    except Exception as e:
+                        print(f"❌ Error during validation on skill ☣️ {skill_id} ☣️")
+                        raise e
+
+            metrics = head.compute_metrics()
+            head.reset_metrics()
+
+        return {
+            'val_loss' : val_loss / len(dataloader),
+            'f1_total_avg' : float(np.mean(list(metrics['f1'].values()))),
+            'accuracy_avg' : float(np.mean(list(metrics['acc'].values()))),
+            'precision_avg' : float(np.mean(list(metrics['precision'].values()))),
+            'recall_avg' : float(np.mean(list(metrics['recall'].values()))),
+            'metrics' : metrics,
+            'confusion_values' : head.confusion_values,
+        }
 
