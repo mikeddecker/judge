@@ -584,7 +584,7 @@ const predictBoxes = async () => {
 
 const poll4Boxes = async () => {
   let noBoxes = true
-  maxTries = 30
+  let maxTries = 30
   while (noBoxes && maxTries > 0) {
     hasLocalizePredictions(videoinfo.value.Id).then(hasBoxes => noBoxes = !hasBoxes)
     maxTries -= 1
