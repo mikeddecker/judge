@@ -47,6 +47,15 @@
       "dim": 224,
       "learning_rate": 0.00004
     }
+  },
+  "SEGLO": {
+    "MViT": {
+      "model": "MViT",
+      "base_model": "MViT",
+      "default_weights": "DEFAULT",
+      "dim": 224,
+      "learning_rate": 0.00004
+    }
   }
 }
 
