@@ -3,35 +3,36 @@
     "yolo11n": {
       "size": "n",
       "model": "yolo11n",
-      "base_model": "YOLO",
+      "architecture": "YOLO",
       "default_weights": "yolo11n.pt"
     },
     "yolo11s": {
       "size": "s",
       "model": "yolo11s",
-      "base_model": "YOLO",
+      "architecture": "YOLO",
       "default_weights": "yolo11s.pt"
     },
     "yolo11m": {
       "size": "m",
       "model": "yolo11m",
-      "base_model": "YOLO",
+      "architecture": "YOLO",
       "default_weights": "yolo11m.pt"
     }
   },
   "SKILL": {
     "MViT": {
       "model": "MViT",
-      "base_model": "MViT",
+      "architecture": "MViT",
       "default_weights": "DEFAULT",
       "dim": 224,
       "timesteps": 16,
       "batch_size": 2,
-      "learning_rate": 0.0001
+      "learning_rate": 0.0001,
+      "localize": true
     },
     "MViT_extra_dense": {
       "model": "MViT_extra_dense",
-      "base_model": "MViT",
+      "architecture": "MViT",
       "default_weights": "DEFAULT",
       "dim": 224,     
       "timesteps": 16,
@@ -42,7 +43,7 @@
   "SEGMENT": {
     "MViT": {
       "model": "MViT",
-      "base_model": "MViT",
+      "architecture": "MViT",
       "default_weights": "DEFAULT",
       "dim": 224,
       "learning_rate": 0.00004
@@ -51,7 +52,7 @@
   "SEGLO": {
     "MViT": {
       "model": "MViT",
-      "base_model": "MViT",
+      "architecture": "MViT",
       "default_weights": "DEFAULT",
       "dim": 224,
       "learning_rate": 0.00004

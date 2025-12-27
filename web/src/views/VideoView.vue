@@ -250,7 +250,7 @@ const normal2Reverse = (ns) => {
 
 onMounted(async () => {
   getJobOptions('LOCALIZE').then(o => {
-    localizeModelOptions.value = Object.fromEntries(Object.entries(o).filter(([model, details]) => details['base_model'] == 'YOLO'))
+    localizeModelOptions.value = Object.fromEntries(Object.entries(o).filter(([model, details]) => details['architecture'] == 'YOLO'))
   })
   await loadVideo(videoId.value)
   await getFrameLabelTypes().then(types => {

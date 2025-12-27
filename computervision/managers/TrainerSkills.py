@@ -27,7 +27,6 @@ from helpers import localize_get_best_modelpath
 
 from constants import RECIPES, SPEEDMODES
 
-
 load_dotenv()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

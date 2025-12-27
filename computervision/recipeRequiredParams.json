@@ -1,0 +1,26 @@
+{
+  "GENERAL": {
+    "MViT": [
+      "dim", "timesteps", "batch_size", "learning_rate"
+    ]
+  },
+  "LOCALIZE": {
+    "YOLO": [
+      "size",
+      "model"
+
+    ]
+  },
+  "SEGMENT": {
+    "MViT": []  
+  },
+  "SEGLO": {
+    "MViT": []
+  },
+  "SKILL": {
+    "MViT": [
+      "localize"
+    ]
+  }
+}
+
