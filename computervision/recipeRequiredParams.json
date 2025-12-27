@@ -1,26 +1,36 @@
 {
   "GENERAL": {
-    "MViT": [
-      "dim", "timesteps", "batch_size", "learning_rate"
-    ]
+    "MViT": {
+      "required": [
+        "dim", "timesteps", "batch_size", "learning_rate"
+      ],
+      "optional" : [
+        "default_weights"
+      ]
+    }
   },
   "LOCALIZE": {
-    "YOLO": [
-      "size",
-      "model"
-
-    ]
+    "YOLO": {
+      "required": [
+        "size",
+        "model"
+      ],
+      "optional": [
+        "default_weights"
+      ]
+    }
   },
   "SEGMENT": {
-    "MViT": []  
+    "MViT": { "required": [], "optional": [] }
   },
   "SEGLO": {
-    "MViT": []
+    "MViT": { "required": [], "optional": [] }
   },
   "SKILL": {
-    "MViT": [
-      "localize"
-    ]
+    "MViT": { 
+      "required": [], 
+      "optional": ["localize"]
+    }
   }
 }
 
