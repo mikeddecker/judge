@@ -26,7 +26,11 @@ class MViT(nn.Module):
     @staticmethod
     def get_output_feature_dim(recipe: SimpleNamespace) -> int:
         input_shape = (3, recipe.timesteps, recipe.dim, recipe.dim)
-        mvit = models.video.mvit_v1_b(weights=recipe.default_weights).to('cuda').eval()
+        if hasattr(recipe, "weights"):
+            mvit = models.video.mvit_v1_b(weights=recipe.weights).to('cuda').eval()
+        else:
+            mvit = models.video.mvit_v1_b().to('cuda').eval()
+
         mvit.head = torch.nn.Identity()
 
         with torch.no_grad():

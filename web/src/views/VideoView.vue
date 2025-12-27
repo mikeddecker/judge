@@ -572,7 +572,7 @@ const predictBoxes = async () => {
     'type': 'PREDICT',
     'step': 'LOCALIZE',
     'videoId': videoinfo.value.Id,
-    'weights': selectedWeights.value == 'default' ? localizeModelOptions.value[selectedLocalizeModel.value]['default_weights'] : 'best',
+    'weights': selectedWeights.value == 'default' ? localizeModelOptions.value[selectedLocalizeModel.value]['weights'] : 'best',
     'model': localizeModelOptions.value[selectedLocalizeModel.value]['model'],
     'model_kwargs' : localizeModelOptions.value[selectedLocalizeModel.value]
   }

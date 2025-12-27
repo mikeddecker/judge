@@ -32,7 +32,8 @@ class MViT_Dense(nn.Module):
     @staticmethod
     def get_output_feature_dim(recipe: SimpleNamespace) -> int:
         input_shape = (3, recipe.timesteps, recipe.dim, recipe.dim)
-        mvit = models.video.mvit_v1_b(weights=recipe.default_weights).to('cuda').eval()
+        weights = "DEFAULT" if not hasattr(recipe, "use_existing_weights") else recipe.use_existing_weights
+        mvit = models.video.mvit_v1_b(weights=weights).to('cuda').eval()
         mvit.head = torch.nn.Identity()
 
         with torch.no_grad():

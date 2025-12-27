@@ -4,26 +4,26 @@
       "size": "n",
       "model": "yolo11n",
       "architecture": "YOLO",
-      "default_weights": "yolo11n.pt"
+      "weights": "yolo11n.pt"
     },
     "yolo11s": {
       "size": "s",
       "model": "yolo11s",
       "architecture": "YOLO",
-      "default_weights": "yolo11s.pt"
+      "weights": "yolo11s.pt"
     },
     "yolo11m": {
       "size": "m",
       "model": "yolo11m",
       "architecture": "YOLO",
-      "default_weights": "yolo11m.pt"
+      "weights": "yolo11m.pt"
     }
   },
   "SKILL": {
     "MViT": {
       "model": "MViT",
       "architecture": "MViT",
-      "default_weights": "DEFAULT",
+      "weights": "DEFAULT",
       "dim": 224,
       "timesteps": 16,
       "batch_size": 2,
@@ -33,7 +33,7 @@
     "MViT_extra_dense": {
       "model": "MViT_extra_dense",
       "architecture": "MViT",
-      "default_weights": "DEFAULT",
+      "weights": "DEFAULT",
       "dim": 224,     
       "timesteps": 16,
       "batch_size": 1,
@@ -44,7 +44,7 @@
     "MViT": {
       "model": "MViT",
       "architecture": "MViT",
-      "default_weights": "DEFAULT",
+      "weights": "DEFAULT",
       "dim": 224,
       "learning_rate": 0.00004
     }
@@ -53,7 +53,7 @@
     "MViT": {
       "model": "MViT",
       "architecture": "MViT",
-      "default_weights": "DEFAULT",
+      "weights": "DEFAULT",
       "dim": 224,
       "learning_rate": 0.00004
     }

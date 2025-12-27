@@ -10,8 +10,9 @@ import random
 
 from collections import defaultdict
 from colorama import Fore, Style
-from constants import ENVS, PYTORCH_MODELS_SKILLS, PYTORCH_MODELS_SKILLS_TEST
+from constants import RECIPES, SPEEDMODES, ENVS, PYTORCH_MODELS_SKILLS, PYTORCH_MODELS_SKILLS_TEST
 from dotenv import load_dotenv
+from helpers import NumpyTypeEncoder
 from managers.DataRepository import DataRepository
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
@@ -25,15 +26,13 @@ from types import SimpleNamespace
 from localizor_with_strats import predict_and_save_locations
 from helpers import localize_get_best_modelpath
 
-from constants import RECIPES, SPEEDMODES
+DEVICE = torch.DEVICE('cuda' if torch.cuda.is_available() else 'cpu')
+SCHEDULER_PATIENCE = 1
 
+print(f"Using DEVICE: {DEVICE}")
 load_dotenv()
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f"Using device: {device}")
-
 torch.backends.cudnn.benchmark = True
-scaler = torch.GradScaler()
 
 class TrainerSkills:
     def __init__(self):
@@ -41,47 +40,15 @@ class TrainerSkills:
 
     def train(self, recipe: SimpleNamespace, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, patience:int=3, speedmode=SPEEDMODES[1]):
         rundate = date.today().strftime('%Y%m%d')
+        start = time.time()
 
-        #########################################################################################
-        #########################################################################################
-        def create_or_recreate_cropped_videos(speedmode):
-            unique_videoIds = self.repo.get_videoIds_of_videos_with_skills()
-            existing_cropped_videoIds = []
-            existing_redo_subset = set()
-            new_videos = set()
-
-            for videoId in unique_videoIds:
-                vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}', f'{videoId}_cropped.mp4')
-                if not os.path.exists(vpath):
-                    new_videos.add(videoId)
-                else:
-                    existing_cropped_videoIds.append(videoId)
-
-            recipename, weightpath = localize_get_best_modelpath()
-            random.shuffle(existing_cropped_videoIds)
-            for i in range(int(np.sqrt(len(existing_cropped_videoIds))) if speedmode == SPEEDMODES[1] else 0):
-                existing_redo_subset.add(existing_cropped_videoIds[i])
-
-            print(f"Speedmode={speedmode}: Predict and create videocrops")
-            predict_and_save_locations(
-                recipename=recipename,
-                weights=weightpath,
-                repo=self.repo,
-                videoIds=new_videos.union(existing_redo_subset),
-                saveAsVideo=True
-            )
-            
-        # End video creation
-        #########################################################################################
         try:
-            scheduler_patience = 1
-            start = time.time()
             testrun = False
             modelname = recipe.model
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
 
-            create_or_recreate_cropped_videos(speedmode=speedmode)
+            self.__create_or_recreate_cropped_videos(speedmode=speedmode)
 
             os.makedirs(os.path.join(ENVS.DIRS.WEIGHTS.SKILLS), exist_ok=True)
             path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}.state_dict.pt")
@@ -125,10 +92,10 @@ class TrainerSkills:
                     best_model_backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[best_model_name].get_output_feature_dim(recipe)
                     best_head = OutputHeadRecognition(best_model_backbone_output_neurons, df_layers, df_composition, max_instances_per_role, prop_counts)
                     try:                        
-                        model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(device)
+                        model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(DEVICE)
                         model.load_state_dict(torch.load(pathBest, weights_only=True))
                         optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
+                        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.2)
                         print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
                         best_model_revalidation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                         print(f"{Fore.YELLOW}Target best ({best_model_name}) - {best_model_revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
@@ -136,10 +103,10 @@ class TrainerSkills:
                         print(f"{Fore.RED}Error loading (weigths of) best model.{Style.RESET_ALL} Highly likely because of new parameters, this run becomes default best")
 
                 if not from_scratch and os.path.exists(path):
-                    model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
+                    model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(DEVICE)
                     model.load_state_dict(torch.load(path, weights_only=True))
                     optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
+                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.2)
                     print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
                     revalidation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                     print(f"{Fore.MAGENTA}Target {modelname}: {revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
@@ -151,11 +118,10 @@ class TrainerSkills:
                 raise e
             
             # For new training rounds
-            model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(device)
+            model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(DEVICE)
             optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=scheduler_patience, factor=0.2)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.2)
 
-            classification_reports = {}
             epoch_start = 0
             losses_over_time = []
             metrics_over_time = {}
@@ -189,7 +155,7 @@ class TrainerSkills:
                 total_loss = 0.0
                 i = 0
                 for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloaderTrain):
-                    with torch.amp.autocast(device_type='cuda'):
+                    with torch.amp.autocast(DEVICE_type='cuda'):
                         optimizer.zero_grad()  # Clear gradients
                         
                         # Forward pass
@@ -298,7 +264,7 @@ class TrainerSkills:
             torch.cuda.empty_cache()
             gc.collect()
 
-    def __validate(self, model, dataloader, optimizer, device='cuda'):
+    def __validate(self, model, dataloader, optimizer, DEVICE='cuda'):
         model.eval()
         val_loss = 0.0
 
@@ -306,7 +272,7 @@ class TrainerSkills:
 
         with torch.no_grad():
             for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloader):
-                with torch.amp.autocast(device_type=device):
+                with torch.amp.autocast(DEVICE_type=DEVICE):
                     optimizer.zero_grad()
                     outputs = model(batch_X / 255)
 
@@ -335,3 +301,29 @@ class TrainerSkills:
             'confusion_values' : head.confusion_values,
         }
 
+    def __create_or_recreate_cropped_videos(self, speedmode: str):
+        unique_videoIds = self.repo.get_videoIds_of_videos_with_skills()
+        existing_cropped_videoIds = []
+        existing_redo_subset = set()
+        new_videos = set()
+
+        for videoId in unique_videoIds:
+            vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}', f'{videoId}_cropped.mp4')
+            if not os.path.exists(vpath):
+                new_videos.add(videoId)
+            else:
+                existing_cropped_videoIds.append(videoId)
+
+        recipename, weightpath = localize_get_best_modelpath()
+        random.shuffle(existing_cropped_videoIds)
+        for i in range(int(np.sqrt(len(existing_cropped_videoIds))) if speedmode == SPEEDMODES[1] else 0):
+            existing_redo_subset.add(existing_cropped_videoIds[i])
+
+        print(f"Speedmode={speedmode}: Predict and create videocrops")
+        predict_and_save_locations(
+            recipename=recipename,
+            weights=weightpath,
+            repo=self.repo,
+            videoIds=new_videos.union(existing_redo_subset),
+            saveAsVideo=True
+        )

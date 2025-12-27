@@ -106,7 +106,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
 
     num_val_images = len(os.listdir(os.path.join(ENVS.DIRS.YOLO_LABELS, LABELS_FOLDER, 'val')))
 
-    variantWeightName = f'yolo11{variant}.pt'
+    variantWeightName = f'yolo11{variant}.pt' # TODO : use recipes.weights if set (optional)
     model = YOLO(variantWeightName)
     args = dict(
         model=variantWeightName, 
