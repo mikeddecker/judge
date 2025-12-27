@@ -47,20 +47,20 @@ const predictedBoxClassesCurrentFrame = computed(() => props.predictedBoxes && p
 const boxesHovering = ref([])
 const predictedBoxesHovering = ref([])
 
-const boxColors = [
+const drawColors = [
   '#bfdbfe',
-  '#fef9c3',
-  '#dc2626',
-  '#fdba74',
-  '#ec4899',
-  '#bbf7d0',
-  '#fee2e2',
-  '#f3f4f6',
-  '#67e8f9',
-  '#ffffff',
-  '#000000',
-  '#555555',
-  '#ee2299',
+]
+
+const boxColors = [
+  '#ffd69f', // Team
+  '#00ff00', // Foreground
+  '#0000ff', // Background
+]
+
+const predColors = [
+  '#dddbc4', // Team
+  '#accdbe', // Foreground
+  '#c0bfd8', // Background
 ]
 
 const mouseX = ref(0)
@@ -132,8 +132,8 @@ const resetCanvasAndDrawBoxes = () => {
     Object.entries(predictedBoxesCurrentFrame.value).forEach(([idx, box]) => {
       // Received boxes are: array of 4 elements = array[xmin, ymin, xmax, ymax] but absolute values!
       let clsIdx = predictedBoxClassesCurrentFrame.value[idx]
-      if (clsIdx < 2) {
-        ctx.strokeStyle = boxColors[10 + clsIdx]
+      if (clsIdx < 3) {
+        ctx.strokeStyle = predColors[clsIdx]
         const xleft = box[0] / props.videoinfo.Width * videoWidth.value
         const yleft = box[1] / props.videoinfo.Height * videoHeight.value
         const w = (box[2] - box[0]) / props.videoinfo.Width * videoWidth.value
@@ -157,7 +157,7 @@ const resetCanvasAndDrawBoxes = () => {
   let cfnr = String(Math.round(props.currentFrameNr ? props.currentFrameNr : 0))
   let teambox = props.videoinfo.TeamBoxes && Object.keys(props.videoinfo.TeamBoxes).includes(cfnr) ? props.videoinfo.TeamBoxes[cfnr] : null
   if (teambox) {
-    ctx.strokeStyle = boxColors[12]
+    ctx.strokeStyle = boxColors[0]
     const xleft = teambox['xmin'] * videoWidth.value
     const yleft = teambox['ymin'] * videoHeight.value
     const w = teambox['width'] * videoWidth.value
@@ -167,7 +167,7 @@ const resetCanvasAndDrawBoxes = () => {
 
   // Draw current drawing box
   if (!canvasmodeIsDelete.value && !canvasmodeIsAcceptPredictedBox.value) {
-    ctx.strokeStyle = boxColors[0]
+    ctx.strokeStyle = drawColors[0]
     ctx.strokeRect(
       mouseXstart.value * videoWidth.value,
       0,
