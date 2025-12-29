@@ -4,6 +4,8 @@ import numpy as np
 import os
 import yaml
 import shutil
+import torch
+import errno
 
 from colorama import Fore, Style
 from constants import ENVS
@@ -156,7 +158,24 @@ def train_yolo_model(variant: str, repo: DataRepository):
             # Re-validate previous trained model
             previous_raw_avg_team_box_io = validate_localize(modeldir=previous_folder, repo=repo)
         
+        torch.cuda.synchronize()
+        
         print(f"Training {f"{Fore.GREEN}increased" if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou else f"{Fore.RED}decreased"}{Style.RESET_ALL} from {previous_raw_avg_team_box_io:.4f} to {trained_raw_avg_team_box_iou:.4f} ({Fore.GREEN if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou else Fore.RED}{(trained_raw_avg_team_box_iou - previous_raw_avg_team_box_io):.4f}{Style.RESET_ALL})")
+        try:
+            if previous_raw_avg_team_box_io * 1.01 < trained_raw_avg_team_box_iou:
+                safe_rmtree(previous_folder)
+            else:
+                safe_rmtree(save_dir)
+        except OSError as e:
+            if e.errno == errno.ENOTEMPTY:
+                print(
+                    f"{Fore.YELLOW}[WARN]{Style.RESET_ALL} "
+                    f"Could not remove directory (not empty): {e.filename}. Continuing."
+                )
+                continue
+            else:
+                raise
+
         if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou:
             safe_rmtree(previous_folder)
         else:
