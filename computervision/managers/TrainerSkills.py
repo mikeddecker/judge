@@ -10,10 +10,10 @@ import random
 
 from collections import defaultdict
 from colorama import Fore, Style
-from constants import RECIPES, SPEEDMODES, ENVS, PYTORCH_MODELS_SKILLS, PYTORCH_MODELS_SKILLS_TEST
+from constants import RECIPES, SPEEDMODES, ENVS, PYTORCH_MODELS_SKILLS
 from dotenv import load_dotenv
 from helpers import NumpyTypeEncoder
-from managers.DataRepository import DataRepository
+from managers.DataRepository import REPO
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
 from pprint import pprint
@@ -26,7 +26,8 @@ from types import SimpleNamespace
 from localizor_with_strats import predict_and_save_locations
 from helpers import localize_get_best_modelpath
 
-DEVICE = torch.DEVICE('cuda' if torch.cuda.is_available() else 'cpu')
+DEVICE_TYPE = 'cuda' if torch.cuda.is_available() else 'cpu'
+DEVICE = torch.device(DEVICE_TYPE)
 SCHEDULER_PATIENCE = 1
 
 print(f"Using DEVICE: {DEVICE}")
@@ -35,8 +36,7 @@ load_dotenv()
 torch.backends.cudnn.benchmark = True
 
 class TrainerSkills:
-    def __init__(self):
-        self.repo = DataRepository()
+    _optimizer = None
 
     def train(self, recipe: SimpleNamespace, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, patience:int=3, speedmode=SPEEDMODES[1]):
         rundate = date.today().strftime('%Y%m%d')
@@ -44,6 +44,7 @@ class TrainerSkills:
 
         try:
             testrun = False
+            epochs = 5 if testrun else epochs
             modelname = recipe.model
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
@@ -51,21 +52,21 @@ class TrainerSkills:
             self.__create_or_recreate_cropped_videos(speedmode=speedmode)
 
             os.makedirs(os.path.join(ENVS.DIRS.WEIGHTS.SKILLS), exist_ok=True)
-            path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}.state_dict.pt")
-            pathBest = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"best.state_dict.pt")
+            path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.state_dict.pt")
+            pathBest = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"best{'_testrun' if testrun else ''}.state_dict.pt")
             checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.checkpoint.pt")
             modelstatsPath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.stats.json")
             modelstatsPathCurrent = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.stats.current.json")
             best_stats_path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"best{'_testrun' if testrun else ''}.stats.json")
             
-            df_layers, df_composition, max_instances_per_role = self.repo.get_recognition_config()
-            backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[modelname].get_output_feature_dim(recipe)
-            prop_counts = self.repo.get_skill_prop_counts()
+            df_layers, df_composition, max_instances_per_role = REPO.get_recognition_config()
+            backbone_output_neurons = PYTORCH_MODELS_SKILLS[modelname].get_output_feature_dim(recipe)
+            prop_counts = REPO.get_skill_prop_counts()
             head = OutputHeadRecognition(backbone_output_neurons, df_layers, df_composition, max_instances_per_role, prop_counts)
             
             DefaultGeneratorSkills = functools.partial(
                 DataGeneratorSkills, 
-                frameloader=FrameLoader(self.repo),
+                frameloader=FrameLoader(REPO),
                 head=head,
                 train_test_val="train",
                 dim=(recipe.dim,recipe.dim),
@@ -89,13 +90,12 @@ class TrainerSkills:
                 if not from_scratch and os.path.exists(pathBest):
                     best_model_stats = load_json_file(best_stats_path)
                     best_model_name = best_model_stats['modelname']
-                    best_model_backbone_output_neurons = PYTORCH_MODELS_SKILLS_TEST[best_model_name].get_output_feature_dim(recipe)
+                    best_model_backbone_output_neurons = PYTORCH_MODELS_SKILLS[best_model_name].get_output_feature_dim(recipe)
                     best_head = OutputHeadRecognition(best_model_backbone_output_neurons, df_layers, df_composition, max_instances_per_role, prop_counts)
                     try:                        
                         model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(DEVICE)
                         model.load_state_dict(torch.load(pathBest, weights_only=True))
                         optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.2)
                         print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
                         best_model_revalidation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                         print(f"{Fore.YELLOW}Target best ({best_model_name}) - {best_model_revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
@@ -155,7 +155,7 @@ class TrainerSkills:
                 total_loss = 0.0
                 i = 0
                 for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloaderTrain):
-                    with torch.amp.autocast(DEVICE_type='cuda'):
+                    with torch.amp.autocast(device_type=DEVICE_TYPE):
                         optimizer.zero_grad()  # Clear gradients
                         
                         # Forward pass
@@ -264,7 +264,7 @@ class TrainerSkills:
             torch.cuda.empty_cache()
             gc.collect()
 
-    def __validate(self, model, dataloader, optimizer, DEVICE='cuda'):
+    def __validate(self, model, dataloader, optimizer):
         model.eval()
         val_loss = 0.0
 
@@ -272,18 +272,11 @@ class TrainerSkills:
 
         with torch.no_grad():
             for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloader):
-                with torch.amp.autocast(DEVICE_type=DEVICE):
-                    optimizer.zero_grad()
+                with torch.amp.autocast(device_type=DEVICE_TYPE):
                     outputs = model(batch_X / 255)
-
                     try:
-                        
-                        # Loss
-                        total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask)
-                        val_loss += total_batch_loss.item()
-
-                        # Accuracy
-                        current_f1 = head.update_metrics(outputs, batch_y, batch_mask)
+                        val_loss += head.compute_loss(outputs, batch_y, batch_mask).item() # Loss
+                        head.update_metrics(outputs, batch_y, batch_mask) # Accuracy
                     except Exception as e:
                         print(f"❌ Error during validation on skill ☣️ {skill_id} ☣️")
                         raise e
@@ -298,11 +291,11 @@ class TrainerSkills:
             'precision_avg' : float(np.mean(list(metrics['precision'].values()))),
             'recall_avg' : float(np.mean(list(metrics['recall'].values()))),
             'metrics' : metrics,
-            'confusion_values' : head.confusion_values,
+            'confusion_heads' : head.confusion_heads,
         }
 
     def __create_or_recreate_cropped_videos(self, speedmode: str):
-        unique_videoIds = self.repo.get_videoIds_of_videos_with_skills()
+        unique_videoIds = REPO.get_videoIds_of_videos_with_skills()
         existing_cropped_videoIds = []
         existing_redo_subset = set()
         new_videos = set()
@@ -323,7 +316,8 @@ class TrainerSkills:
         predict_and_save_locations(
             recipename=recipename,
             weights=weightpath,
-            repo=self.repo,
+            repo=REPO,
             videoIds=new_videos.union(existing_redo_subset),
             saveAsVideo=True
         )
+

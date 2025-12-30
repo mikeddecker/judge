@@ -18,7 +18,7 @@
   <ConfusionMatrix 
     v-for="(matrix, prop) in results['models'][selectedModel]['validation_results']['metrics']['confusion']" 
     :name="prop" :values="matrix"
-    :headers="results['models'][selectedModel]['validation_results']['confusion_values'][prop]"
+    :headers="results['models'][selectedModel]['validation_results']['confusion_heads'][prop]"
   ></ConfusionMatrix>
   
   <Tabs value="total" class="mt-8">

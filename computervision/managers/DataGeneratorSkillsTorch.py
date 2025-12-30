@@ -58,7 +58,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         if not balanced:
             return len(self.Skills)
         if self.isTestrun:
-            return min(280, len(self.BalancedSet))
+            return min(180, len(self.BalancedSet))
         return len(self.BalancedSet) // self.batch_size if self.train_test_val == 'train' else len(self.Skills) // self.batch_size
 
     def __getitem__(self, batch_nr, normalize=True):

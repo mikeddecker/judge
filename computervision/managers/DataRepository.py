@@ -320,3 +320,4 @@ class DataRepository:
 
             return counts
 
+REPO = DataRepository()

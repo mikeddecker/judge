@@ -19,7 +19,7 @@ class OutputHeadRecognition(nn.Module):
         self.df_layers = df_layers 
         self.df_composition = df_composition 
         self.max_instances_per_composition : pd.Series = max_instances_per_composition
-        self.confusion_values : dict[list[str]] = {}
+        self.confusion_heads : dict[list[str]] = {}
 
         print(f"max instances per role")
         print(max_instances_per_composition)
@@ -144,7 +144,7 @@ class OutputHeadRecognition(nn.Module):
             self.metrics['f1'][composition_name]        = torchmetrics.F1Score(task="multiclass", average=average, num_classes=num_classes).to(device)
             self.metrics['acc'][composition_name]       = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
             self.metrics['confusion'][composition_name] = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=num_classes).to(device)
-            self.confusion_values[composition_name] = list(range(num_classes))
+            self.confusion_heads[composition_name] = list(range(num_classes))
 
         for index, row in self.df_composition.iterrows():
             composition_name = row['compositionName']
@@ -165,29 +165,30 @@ class OutputHeadRecognition(nn.Module):
                     self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="multiclass", average=average, num_classes=num_classes).to(device)
                     self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
                     self.metrics['confusion'][prop_name] = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=num_classes).to(device)
-                    self.confusion_values[prop_name] = categorical_values.values.tolist()
-                    self.confusion_values[prop_name].insert(0, None)
+                    self.confusion_heads[prop_name] = categorical_values.values.tolist()
+                    self.confusion_heads[prop_name].insert(0, None)
                 elif prop_type == "boolean":
                     self.metrics['precision'][prop_name] = torchmetrics.Precision(task="binary").to(device)
                     self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="binary").to(device)
                     self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="binary").to(device)
                     self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="binary").to(device)
                     self.metrics['confusion'][prop_name] = torchmetrics.ConfusionMatrix(task="binary").to(device)
-                    self.confusion_values[prop_name] = [False, True]
+                    self.confusion_heads[prop_name] = [False, True]
                 elif prop_type == "numerical":
                     step = float(property_row['step'])
                     step = 0.1 if step < 0.1 else step
                     min = float(property_row['min'])
                     max = float(property_row['max'])
-                    numerical_values = [min + step * i for i in range(int(1 + (max - min) // step))]
+                    epsilon = step / 8 # Float round errors otherwise.
+                    numerical_values = [min + step * i for i in range(int(1 + (max - min + epsilon) // step))]
                     numerical_values = [round(x, 2) for x in numerical_values]
-                    self.confusion_values[prop_name] = numerical_values
+                    self.confusion_heads[prop_name] = numerical_values
                     self.metrics['precision'][prop_name] = nsm.NumericStepPrecision(prop_name=prop_name, step=step).to(device)
                     self.metrics['recall'][prop_name]    = nsm.NumericStepRecall(prop_name=prop_name, step=step).to(device)
                     self.metrics['f1'][prop_name]        = nsm.NumericStepF1Score(prop_name=prop_name, step=step).to(device)
                     self.metrics['acc'][prop_name]       = nsm.NumericStepAccuracy(prop_name=prop_name, step=step).to(device)
                     self.metrics['confusion'][prop_name] = nsm.NumericStepConfusionMatrix(prop_name=prop_name, step=step, min=min, max=max).to(device)
-                print(prop_name, self.confusion_values[prop_name])
+                print(prop_name, self.confusion_heads[prop_name])
 
     def forward(self, x):
         """

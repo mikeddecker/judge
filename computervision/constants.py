@@ -46,7 +46,7 @@ PYTORCH_MODELS_SKILLS = {
     "SwinT_s" : get_SwinT('s'),
 }
 
-PYTORCH_MODELS_SKILLS_TEST = {
+PYTORCH_MODELS_SKILLS = {
     "MViT" : MViT,
     "MViT_extra_dense" : MViT_Dense,
     # "SA_Conv3D" : SA_Conv3D_pytorch_1,
