@@ -198,6 +198,7 @@ const canvasMouseMoves = (event) => {
   if (!canvasmodeIsDraw.value) {
     boxesHovering.value = boxes.value
     .filter(box => box.FrameNr == Math.round(props.currentFrameNr))
+    .filter(box => box.LabelType = props.labeltype)
     .filter(box => {
       let minXbox = box.X - box.Width / 2
       let maxXbox = box.X + box.Width / 2
