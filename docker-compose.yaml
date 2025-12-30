@@ -43,7 +43,7 @@ services:
     restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${API_DOCKER_PORT}/health"]
-      interval: 7s
+      interval: 15s
       retries: 5
       start_period: 7s
     volumes:
