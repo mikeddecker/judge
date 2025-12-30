@@ -160,12 +160,13 @@ def train_yolo_model(variant: str, repo: DataRepository):
         
         torch.cuda.synchronize()
         
-        print(f"Training {f"{Fore.GREEN}increased" if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou else f"{Fore.RED}decreased"}{Style.RESET_ALL} from {previous_raw_avg_team_box_io:.4f} to {trained_raw_avg_team_box_iou:.4f} ({Fore.GREEN if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou else Fore.RED}{(trained_raw_avg_team_box_iou - previous_raw_avg_team_box_io):.4f}{Style.RESET_ALL})")
+        model_improved = previous_raw_avg_team_box_io * 1.01 < trained_raw_avg_team_box_iou
+        print(f"Training {f"{Fore.GREEN}increased" if model_improved else f"{Fore.RED}decreased"}{Style.RESET_ALL} from {previous_raw_avg_team_box_io:.4f} to {trained_raw_avg_team_box_iou:.4f} ({Fore.GREEN if model_improved else Fore.RED}{(trained_raw_avg_team_box_iou - previous_raw_avg_team_box_io):.4f}{Style.RESET_ALL})")
         try:
-            if previous_raw_avg_team_box_io * 1.01 < trained_raw_avg_team_box_iou:
-                safe_rmtree(previous_folder)
+            if model_improved:
+                shutil.rmtree(previous_folder)
             else:
-                safe_rmtree(save_dir)
+                shutil.rmtree(save_dir)
         except OSError as e:
             if e.errno == errno.ENOTEMPTY:
                 print(
@@ -175,9 +176,4 @@ def train_yolo_model(variant: str, repo: DataRepository):
                 continue
             else:
                 raise
-
-        if previous_raw_avg_team_box_io < trained_raw_avg_team_box_iou:
-            safe_rmtree(previous_folder)
-        else:
-            safe_rmtree(save_dir)
 
