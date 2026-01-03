@@ -1,5 +1,6 @@
 <template>
   <h1>{{ results['models'][selectedModel]['modelname'] }} - {{ results['models'][selectedModel]['rundate'] }}</h1>
+  <span>f1 average over time: {{ formatPercentage(f1_avg) }}</span>
   <div class="flex flex-wrap gap-6 mb-16">
     <BarChartTrainTest :values="skillcounts" 
     direction="x" title="Skill counts" class="flex-1"
@@ -103,6 +104,11 @@ onMounted(() => {
   dailyChartData.value = transformDailyCounts(props.results['skills']['daily'], { 'train': 'train', 'test': 'test' }, false)
   dailyChartDataCumulative.value = transformDailyCounts(props.results['skills']['daily'], { 'train': 'train', 'test': 'test' }, true)
 });
+
+const f1_avg = computed(() => {
+  let f1_avg_over_time = props.results.models[selectedModel.value]['f1_total_avgs_over_time']
+  return f1_avg_over_time[f1_avg_over_time.length - 1]
+})
 
 const transformCounts = (values) => {
     let labels = union(
