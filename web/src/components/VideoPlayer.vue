@@ -63,6 +63,8 @@ const predColors = [
   '#c0bfd8', // Background
 ]
 
+const hoveringBoxColor = '#ff0000'
+
 const mouseX = ref(0)
 const mouseY = ref(0)
 const mouseXstart = ref(0)
@@ -180,7 +182,19 @@ const resetCanvasAndDrawBoxes = () => {
       videoWidth.value,
       (mouseY.value - mouseYstart.value) * videoHeight.value
     );
-
+  }
+  
+  // Draw predicted boxes hovering (of chosen labeltype)
+  if (canvasmodeIsAcceptPredictedBox.value) {
+    Object.entries(predictedBoxesHovering.value).forEach(([idx, box]) => {
+      // Received boxes are: array of 4 elements = array[xmin, ymin, xmax, ymax] but absolute values!
+      ctx.strokeStyle = hoveringBoxColor
+      const xleft = box[0] / props.videoinfo.Width * videoWidth.value
+      const yleft = box[1] / props.videoinfo.Height * videoHeight.value
+      const w = (box[2] - box[0]) / props.videoinfo.Width * videoWidth.value
+      const h = (box[3] - box[1]) / props.videoinfo.Height * videoHeight.value
+      ctx.strokeRect(xleft, yleft, w, h, 0.3);
+    })
   }
 }
 
@@ -198,7 +212,7 @@ const canvasMouseMoves = (event) => {
   if (!canvasmodeIsDraw.value) {
     boxesHovering.value = boxes.value
     .filter(box => box.FrameNr == Math.round(props.currentFrameNr))
-    .filter(box => box.LabelType = props.labeltype)
+    .filter(box => canvasmodeIsDelete.value || box.LabelType == props.labeltype)
     .filter(box => {
       let minXbox = box.X - box.Width / 2
       let maxXbox = box.X + box.Width / 2
@@ -208,12 +222,14 @@ const canvasMouseMoves = (event) => {
     })
 
     predictedBoxesHovering.value = props.predictedBoxes?.boxes[props.currentFrameNr].filter(
-      (boxArray) => {
+      (boxArray, boxIndex) => {
+        let predictedBoxLabelType = predictedBoxClassesCurrentFrame.value[boxIndex]
         let minXbox = boxArray[0] / props.videoinfo.Width
         let maxXbox = boxArray[2] / props.videoinfo.Width
         let minYbox = boxArray[1] / props.videoinfo.Height
         let maxYbox = boxArray[3] / props.videoinfo.Height
-        return minXbox < mouseX.value && mouseX.value < maxXbox && minYbox < mouseY.value && mouseY.value < maxYbox
+        return predictedBoxLabelType == props.labeltype &&
+          minXbox < mouseX.value && mouseX.value < maxXbox && minYbox < mouseY.value && mouseY.value < maxYbox
       }
     )
   }
