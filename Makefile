@@ -10,10 +10,16 @@ SSD_MOUNT=/mnt/judge-drive
 check-ssd:
 	@mount | grep -q $(SSD_MOUNT) || (echo "Error: SSD is not mounted at $(SSD_MOUNT)!" && exit 1)
 
+docker-pull:
+	docker pull python:3.12-slim
+	docker pull node:20-alpine
+	docker pull nginx:alpine
+	docker pull mysql:8.4
+
 # -----------------------------
 # Development Commands
 # -----------------------------
-dev: check-ssd ## Run development environment (with volume hot reload)
+dev: check-ssd ## Run development environment (with volume hot reload)	
 	$(COMPOSE_DEV) --profile dev up --build
 
 dev-detached: check-ssd ## Run development environment in detached mode

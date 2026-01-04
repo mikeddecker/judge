@@ -324,7 +324,7 @@ export const getLayerTypes = async () => {
   }
 };
 
-export const moveLayerProperty = async (compositionName, key, sourceStage, destStage, stageNr) => {
+export const moveLayer = async (compositionName, key, sourceStage, destStage, stageNr) => {
   return await api.post('/layers/move', { compositionName, key, sourceStage, destStage, stageNr }, { headers: { 'Content-Type': 'application/json' }})
   .then(function (response) {
     return response.data;
@@ -363,8 +363,8 @@ export const getLayerCompositions = async () => {
   }
 };
 
-export const addLayerComposition = async (compositionName, stage, propertyId, name) => {
-  return await api.post('/layercompositions', { compositionName, stage, propertyId, name }, { headers: { 'Content-Type': 'application/json' }})
+export const addLayerComposition = async (compositionName, stage, layerId, name) => {
+  return await api.post('/layercompositions', { compositionName, stage, layerId, name }, { headers: { 'Content-Type': 'application/json' }})
   .then(function (response) {
     return response.data;
   })
@@ -373,8 +373,8 @@ export const addLayerComposition = async (compositionName, stage, propertyId, na
   });
 };
 
-export const updateLayerCompositionAttributeValue = async (compositionName, stage, propertyname, attribute, value) => {
-  return await api.post('/layercompositions/attribute', { compositionName, stage, propertyname, attribute, value }, { headers: { 'Content-Type': 'application/json' }})
+export const updateLayerCompositionAttributeValue = async (compositionName, stage, layername, attribute, value) => {
+  return await api.post('/layercompositions/attribute', { compositionName, stage, layername, attribute, value }, { headers: { 'Content-Type': 'application/json' }})
   .then(function (response) {
     return response.data;
   })

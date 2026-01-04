@@ -2,7 +2,7 @@
 from datetime import datetime
 from domain.layerComposition import LayerComposition
 from flask_sqlalchemy import SQLAlchemy
-from repository.models import LayerProperty, LayerPropertyValue, LayerComposition as LayerCompositionDB, Skill as SkillDB
+from repository.models import Layer, LayerValue, LayerComposition as LayerCompositionDB, Skill as SkillDB
 from repository.MapToDomain import MapToDomain
 from sqlalchemy import or_
 from sqlalchemy.orm.attributes import flag_modified
@@ -12,7 +12,7 @@ class MLLayerRepository:
         self.db = db
     
     def add_layer(self, name: str, type:str, min: float = None, max: float = None, step: float = None) -> dict:
-        newLayer = LayerProperty(
+        newLayer = Layer(
             name = name,
             type = type,
         )
@@ -27,36 +27,36 @@ class MLLayerRepository:
     
     def add_value(self, layerId: int, valueName: str) -> dict:
         """Returns the full layervalue"""
-        layer = self.db.session.query(LayerProperty).filter_by(id=layerId).first()
+        layer = self.db.session.query(Layer).filter_by(id=layerId).first()
         if layer is None:
             raise ValueError(f"LayerId does not exist ({layerId})")
         if layer.type != 'categorical':
             raise ValueError(f"layer is not categorical")
         
-        layerValue = LayerPropertyValue(
-            name = valueName, property = layer
+        layerValue = LayerValue(
+            name = valueName, layer = layer
         )
         self.db.session.add(layerValue)
         self.db.session.commit()
         return layerValue.to_dict()
     
     def has_layer(self, layerId: int) -> bool:
-        return self.db.session.query(LayerProperty).filter_by(id=layerId).scalar() is not None
+        return self.db.session.query(Layer).filter_by(id=layerId).scalar() is not None
     
     def has_value(self, layerValueId: int) -> bool:
-        return self.db.session.query(LayerPropertyValue).filter_by(id=layerValueId).scalar() is not None
+        return self.db.session.query(LayerValue).filter_by(id=layerValueId).scalar() is not None
     
-    def get(self, layerId: int) -> LayerProperty:
-        return self.db.session.get(LayerProperty, ident=layerId)
+    def get(self, layerId: int) -> Layer:
+        return self.db.session.get(Layer, ident=layerId)
 
     def get_all(self) -> dict:
         """
-        Returns all layerproperties
+        Returns all layers
         """
-        return [lp.to_dict() for lp in self.db.session.query(LayerProperty).order_by(LayerProperty.name).all()]
+        return [lp.to_dict() for lp in self.db.session.query(Layer).order_by(Layer.name).all()]
 
     def update_layer(self, layerId: int, name: str, min: float = None, max: float = None, step: float = None) -> dict:
-        layer = self.db.session.get(LayerProperty, ident=layerId)
+        layer = self.db.session.get(Layer, ident=layerId)
         layer.name = name
         layer.min = min
         layer.max = max
@@ -67,19 +67,19 @@ class MLLayerRepository:
         return layer.to_dict()
 
     def update_value_name(self, layerValueId: int, name: str):
-        layervalue : LayerPropertyValue = self.db.session.get(LayerPropertyValue, ident=layerValueId)
+        layervalue : LayerValue = self.db.session.get(LayerValue, ident=layerValueId)
         layervalue.name = name
         self.db.session.commit()
-        return layervalue.property.to_dict()
+        return layervalue.layer.to_dict()
 
     def get_layer_compositions(self) -> dict[str, LayerComposition]:
         compositionValuesDB : list[LayerCompositionDB] = self.db.session.query(
             LayerCompositionDB
         ).join(
-            LayerCompositionDB.property
+            LayerCompositionDB.layer
         ).order_by(
-            LayerCompositionDB.name,
-            LayerProperty.name
+            LayerCompositionDB.compositionName,
+            Layer.name
         ).all()
 
         compositions : dict[str, list[LayerCompositionDB]] = dict()
@@ -91,12 +91,12 @@ class MLLayerRepository:
         
         return {compositionName: MapToDomain.map_layercomposition(compositionValues) for compositionName, compositionValues in compositions.items()}
 
-    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, propertyId: int, name: str | None) -> dict[str, LayerComposition]:
+    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int, name: str | None) -> dict[str, LayerComposition]:
         """Return all layer compositions"""
         newLayerCompositionDB = LayerCompositionDB(
             compositionName=compositionName,
             stage=stage,
-            propertyId=propertyId,
+            layerId=layerId,
             name=name
         )
 
@@ -105,22 +105,22 @@ class MLLayerRepository:
 
         return self.get_layer_compositions()
     
-    def update_layer_compostion_attribute_value(self, compositionName: str,  stage: int, propertyname: str, attribute: str, value):
+    def update_layer_compostion_attribute_value(self, compositionName: str,  stage: int, layername: str, attribute: str, value):
         layer_composition_row: LayerCompositionDB = self.db.session.query(
             LayerCompositionDB
         ).join(
-            LayerCompositionDB.property
+            LayerCompositionDB.layer
         ).filter(
             LayerCompositionDB.compositionName==compositionName,
             LayerCompositionDB.stage==stage,
             or_(
-                LayerCompositionDB.name==propertyname,
-                LayerProperty.name==propertyname,
+                LayerCompositionDB.name==layername,
+                Layer.name==layername,
             )
         ).first()
 
         if layer_composition_row is None:
-            raise ValueError(f"{compositionName} - {stage} - {propertyname} does not exist")
+            raise ValueError(f"{compositionName} - {stage} - {layername} does not exist")
         
         match attribute:
             case 'defaultValue':
@@ -133,7 +133,7 @@ class MLLayerRepository:
 
         return self.get_layer_compositions()
 
-    def move_skill_property(self, composition_name:str, source:str, dest:str, key:str, stage:str|int=None):
+    def move_skill_layer(self, composition_name:str, source:str, dest:str, key:str, stage:str|int=None):
         """
         Moves a key-value pair from one section to another within a given composition and entry.
 
@@ -163,20 +163,20 @@ class MLLayerRepository:
                         if key not in skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"][stage].keys():
                             continue
 
-                        propvalue = skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"][stage].pop(key)
+                        layervalue = skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"][stage].pop(key)
                     else:
                         if key not in skillDB.skillinfo[composition_name][composition_entry_index][source].keys():
                             continue
-                        propvalue = skillDB.skillinfo[composition_name][composition_entry_index][source].pop(key)
+                        layervalue = skillDB.skillinfo[composition_name][composition_entry_index][source].pop(key)
 
                     # Determine destination dictionary
                     if dest == "StageProperties":
                         if stage is None:
                             raise ValueError("Stage number required for StageProperties destination.")
                         skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"].setdefault(stage, {})
-                        skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"][stage][key] = propvalue
+                        skillDB.skillinfo[composition_name][composition_entry_index]["StageProperties"][stage][key] = layervalue
                     else:
-                        skillDB.skillinfo[composition_name][composition_entry_index][dest][key] = propvalue
+                        skillDB.skillinfo[composition_name][composition_entry_index][dest][key] = layervalue
 
                 skillDB.skillinfo = dict(skillDB.skillinfo)
                 skillDB.updated = movingTime
@@ -191,12 +191,12 @@ class MLLayerRepository:
                 layer_composition_part: LayerCompositionDB = self.db.session.query(LayerCompositionDB).filter_by(compositionName=composition_name, stage=source_stage_nr, name=key).first()
                 if layer_composition_part is None:
                     # Meaning, no custom name
-                    layerprop : LayerProperty = self.db.session.query(LayerProperty).filter_by(name=key).first()
+                    layerprop : Layer = self.db.session.query(Layer).filter_by(name=key).first()
                     if layerprop is None:
                         raise ValueError(f"Layer (Key) {key} does not exist")
-                    layer_composition_part: LayerCompositionDB = self.db.session.query(LayerCompositionDB).filter_by(compositionName=composition_name, stage=source_stage_nr, propertyId=layerprop.id).first()
+                    layer_composition_part: LayerCompositionDB = self.db.session.query(LayerCompositionDB).filter_by(compositionName=composition_name, stage=source_stage_nr, layerId=layerprop.id).first()
                     if layer_composition_part is None:
-                        raise ValueError(f"Unknown error: could not find composition {composition_name} - stage {source_stage_nr} - property (key={key} - id={layerprop.id})")
+                        raise ValueError(f"Unknown error: could not find composition {composition_name} - stage {source_stage_nr} - layer (key={key} - id={layerprop.id})")
 
                 layer_composition_part.stage = dest_stage_nr
                 

@@ -63,9 +63,9 @@ class MLLayerService:
         ValueHelper.check_raise_string_only_abc123space(name)
         assert self.MlLayerRepo.has_layer(layerId), f"Layer ({layerId}) does not exist"
 
-        layerproperty = self.MlLayerRepo.get(layerId)
+        layer = self.MlLayerRepo.get(layerId)
 
-        if layerproperty.type == 'numerical':
+        if layer.type == 'numerical':
             assert min is not None, f"Min value for numerical values must be filled in"
             assert max is not None, f"Max value for numerical values must be filled in"
             ValueHelper.check_raise_float(min)
@@ -87,21 +87,21 @@ class MLLayerService:
     def get_layer_compositions(self) -> dict[str, LayerComposition]:
         return self.MlLayerRepo.get_layer_compositions()
     
-    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, propertyId: int, name: str | None) -> dict[str, LayerComposition]:
+    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int, name: str | None) -> dict[str, LayerComposition]:
         ValueHelper.check_raise_string_only_abc123(compositionName)
-        ValueHelper.check_raise_id(propertyId)
+        ValueHelper.check_raise_id(layerId)
         if stage is not None:
             assert isinstance(stage, int), f"Stage must be an integer"
             assert stage >= -1, f"Stage must be an integer >= -1"
         if name is not None:
             ValueHelper.check_raise_string_only_abc123(name)
         
-        assert self.MlLayerRepo.has_layer(propertyId), f"LayerPropertyId {propertyId} does not exist"
+        assert self.MlLayerRepo.has_layer(layerId), f"LayerId {layerId} does not exist"
         
         return self.MlLayerRepo.add_layer_compostion_stage(
             compositionName=compositionName, 
             stage=stage, 
-            propertyId=propertyId, 
+            layerId=layerId, 
             name=name
         )
 
@@ -118,12 +118,12 @@ class MLLayerService:
         return self.MlLayerRepo.update_layer_compostion_attribute_value(
             compositionName=compositionName, 
             stage=stage,
-            propertyname=name,
+            layername=name,
             attribute=attribute,
             value=value,
         )
 
-    def move_skill_property(self, composition_name:str, source:str, dest:str, key:str, stage:str|int=None):
+    def move_skill_layer(self, composition_name:str, source:str, dest:str, key:str, stage:str|int=None):
         """
         Moves a key-value pair from one section to another within a given composition and entry.
 
@@ -145,5 +145,5 @@ class MLLayerService:
 
         # TODO : assert exists
 
-        self.MlLayerRepo.move_skill_property(composition_name=composition_name, source=source, dest=dest, key=key, stage=stage)
+        self.MlLayerRepo.move_skill_layer(composition_name=composition_name, source=source, dest=dest, key=key, stage=stage)
 

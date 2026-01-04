@@ -7,6 +7,8 @@ import metrics.NumericStepMetrics as nsm
 
 from collections import defaultdict
 from helpers import map_stageNr, mapped_stage_is_not_stageProperties, weighted_mse_loss
+from helpers import get_confusion_average, get_numeric_metric_average
+from managers.RepoGeneral import REPO
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -15,11 +17,16 @@ class OutputHeadRecognition(nn.Module):
     def __init__(self, input_neurons: int, df_layers, df_composition, max_instances_per_composition: pd.Series, prop_counts: defaultdict[defaultdict[int|float]]):
         super().__init__()
 
-        self.output_layers = nn.ModuleDict()
-        self.df_layers = df_layers 
-        self.df_composition = df_composition 
-        self.max_instances_per_composition : pd.Series = max_instances_per_composition
         self.confusion_heads : dict[list[str]] = {}
+        self.df_layers, self.df_composition, self.max_instances_per_composition = REPO.get_recognition_config()
+        self.df_layers : pd.DataFrame = df_layers
+        self.df_composition : pd.DataFrame = df_composition 
+        self.max_instances_per_composition : pd.Series = max_instances_per_composition
+        self.output_layers = nn.ModuleDict()
+
+        backbone_output_neurons = PYTORCH_MODELS_SKILLS[modelname].get_output_feature_dim(recipe)
+        prop_counts = REPO.get_skill_prop_counts()
+
 
         print(f"max instances per role")
         print(max_instances_per_composition)
@@ -29,10 +36,10 @@ class OutputHeadRecognition(nn.Module):
         self.init_metrics()
 
     def init_categorical_mappings(self):
-        # Precompute categorical mappings: {propertyId: {valueId: class_idx}}
+        # Precompute categorical mappings: {layerId: {valueId: class_idx}}
         self.categorical_valueId_to_idx = {}
         self.categorical_idx_to_valueId = {}
-        for prop_id, group_df in self.df_layers[self.df_layers['type'] == 'categorical'].groupby('propertyId'):
+        for prop_id, group_df in self.df_layers[self.df_layers['type'] == 'categorical'].groupby('layerId'):
             self.categorical_valueId_to_idx[int(prop_id)] = {
                 int(row['valueId']): idx + 1   # +1 so 0 is reserved for "absent"
                 for idx, row in group_df.reset_index().iterrows()
@@ -43,12 +50,12 @@ class OutputHeadRecognition(nn.Module):
             }
             self.categorical_valueId_to_idx[prop_id] = { **self.categorical_valueId_to_idx[prop_id], 0:0 }
             self.categorical_idx_to_valueId[prop_id] = { **self.categorical_idx_to_valueId[prop_id], 0:0 }
-        print(f"property maps")
+        print(f"init_categorical_mappings maps")
         print(self.categorical_idx_to_valueId)
         print(self.categorical_valueId_to_idx)
 
     def init_layers(self, input_neurons: int, prop_counts: defaultdict[defaultdict[int]]):
-        self.layers: dict[str, nn.Module] = {} # Key = prop_name, Value = Layer
+        self.layers: dict[str, nn.Module] = {} # Key = layerName, Value = Layer
         self.loss_fns: dict[str, callable] = {}
         weight_alpha = 1.5
 
@@ -66,70 +73,70 @@ class OutputHeadRecognition(nn.Module):
         print("self.df_composition - init layers")
         print(self.df_composition)
 
-        # Add layers for each property e.g.:
+        # Add output layer heads for each layer e.g.:
         # DDSwitch_0_StageProperties_Hands
         # Jumper_1_StageProperties_Feet
         # SingleRope_0_StageProperties_Backwards
         for index, row in self.df_composition.iterrows():
             composition_name = row['compositionName']
             mapped_stage = map_stageNr(row['stage'])
-            property_row = self.df_layers[self.df_layers['propertyId'] == row['propertyId']].iloc[0]
-            prop_name = row['name']
-            prop_type = property_row['type']
+            layer_row = self.df_layers[self.df_layers['layerId'] == row['layerId']].iloc[0]
+            layerName = row['name']
+            prop_type = layer_row['type']
 
             for i in range(self.max_instances_per_composition[composition_name]):
-                output_head = '_'.join([composition_name, str(i), mapped_stage, prop_name])
-                if prop_name in self.layers.keys():
-                    self.output_layers[output_head] = self.layers[prop_name]
+                output_head = '_'.join([composition_name, str(i), mapped_stage, layerName])
+                if layerName in self.layers.keys():
+                    self.output_layers[output_head] = self.layers[layerName]
                 elif prop_type == "categorical":
-                    num_classes = self.df_layers[self.df_layers['propertyId'] == row['propertyId']]['value'].nunique()
+                    num_classes = self.df_layers[self.df_layers['layerId'] == row['layerId']]['value'].nunique()
                     layer = nn.Linear(input_neurons, num_classes + 1) # Account for 0 class
-                    self.layers[prop_name] = layer
+                    self.layers[layerName] = layer
                     self.output_layers[output_head] = layer
 
-                    counts = torch.Tensor([prop_counts[prop_name].get(self.categorical_idx_to_valueId[row['propertyId']][k], 0) for k in range(num_classes+1)]).to(device)                    
+                    counts = torch.Tensor([prop_counts[layerName].get(self.categorical_idx_to_valueId[row['layerId']][k], 0) for k in range(num_classes+1)]).to(device)                    
                     max_count = counts.max()
                     counts = counts ** weight_alpha
                     counts[counts == 0] = max_count
                     weights = (max_count ** weight_alpha) / counts
                     weights = weights / weights.mean()
-                    print(prop_name, weights)
-                    self.loss_fns[prop_name] = torch.nn.CrossEntropyLoss(weights).to(device)
+                    print(layerName, weights)
+                    self.loss_fns[layerName] = torch.nn.CrossEntropyLoss(weights).to(device)
                 elif prop_type == "boolean":
                     layer = nn.Linear(input_neurons, 1)
-                    self.layers[prop_name] = layer
+                    self.layers[layerName] = layer
                     self.output_layers[output_head] = layer
 
-                    counts = torch.Tensor([prop_counts[prop_name].get(k, 0) for k in [False, True]]).to(device)
+                    counts = torch.Tensor([prop_counts[layerName].get(k, 0) for k in [False, True]]).to(device)
                     max_count = counts.max()
                     counts = counts ** weight_alpha
                     counts[counts == 0] = max_count
                     weights = (max_count ** weight_alpha) / counts
                     weights = weights / weights.mean()
-                    self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights)
+                    self.loss_fns[layerName] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights)
                 elif prop_type == "numerical":
                     layer = nn.Linear(input_neurons, 1)
-                    self.layers[prop_name] = layer
+                    self.layers[layerName] = layer
                     self.output_layers[output_head] = layer
 
-                    step = property_row['step'] if property_row['step'] > 0.1 else 0.1
-                    counts = torch.Tensor([prop_counts[prop_name].get(k * step, 0) for k in range(round(property_row['min'] / step), round(property_row['max'] / step) + 1)]).to(device)
+                    step = layer_row['step'] if layer_row['step'] > 0.1 else 0.1
+                    counts = torch.Tensor([prop_counts[layerName].get(k * step, 0) for k in range(round(layer_row['min'] / step), round(layer_row['max'] / step) + 1)]).to(device)
                     max_count = counts.max()
                     counts = counts ** weight_alpha
                     counts[counts == 0] = max_count
                     weights = (max_count ** weight_alpha) / counts
                     weights = weights / weights.mean()
-                    print(prop_name, weights)
-                    self.loss_fns[prop_name] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights, step=step)
+                    print(layerName, weights)
+                    self.loss_fns[layerName] = lambda input, target: weighted_mse_loss(input=input, target=target, weight=weights, step=step)
 
     def reset_metrics(self):
-        for metric_type, prop_name_metric in self.metrics.items():
-            for prop_name, metric in prop_name_metric.items():
+        for metric_type, layerName_metric in self.metrics.items():
+            for layerName, metric in layerName_metric.items():
                 metric.reset()
     
     def init_metrics(self, average='macro'):
         self.metrics: dict[str, dict[str, torchmetrics.Metric]] = {
-            'precision': {}, # prop_name: Metric
+            'precision': {}, # layerName: Metric
             'recall': {},
             'f1': {},
             'acc': {},
@@ -149,46 +156,46 @@ class OutputHeadRecognition(nn.Module):
         for index, row in self.df_composition.iterrows():
             composition_name = row['compositionName']
             mapped_stage = map_stageNr(row['stage'])
-            property_row = self.df_layers[self.df_layers['propertyId'] == row['propertyId']].iloc[0]
-            prop_name = row['name']
-            prop_type = property_row['type']
+            layer_row = self.df_layers[self.df_layers['layerId'] == row['layerId']].iloc[0]
+            layerName = row['name']
+            prop_type = layer_row['type']
 
             if self.max_instances_per_composition[composition_name] > 0:
-                if prop_name in self.metrics['acc'].keys():
+                if layerName in self.metrics['acc'].keys():
                     continue
                 elif prop_type == "categorical":
-                    categorical_values : pd.DataFrame = self.df_layers[self.df_layers['propertyId'] == row['propertyId']]['value']
+                    categorical_values : pd.DataFrame = self.df_layers[self.df_layers['layerId'] == row['layerId']]['value']
                     num_classes = categorical_values.nunique()
                     num_classes += 1
-                    self.metrics['precision'][prop_name] = torchmetrics.Precision(task="multiclass", average=average, num_classes=num_classes).to(device)
-                    self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="multiclass", average=average, num_classes=num_classes).to(device)
-                    self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="multiclass", average=average, num_classes=num_classes).to(device)
-                    self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
-                    self.metrics['confusion'][prop_name] = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=num_classes).to(device)
-                    self.confusion_heads[prop_name] = categorical_values.values.tolist()
-                    self.confusion_heads[prop_name].insert(0, None)
+                    self.metrics['precision'][layerName] = torchmetrics.Precision(task="multiclass", average=average, num_classes=num_classes).to(device)
+                    self.metrics['recall'][layerName]    = torchmetrics.Recall(task="multiclass", average=average, num_classes=num_classes).to(device)
+                    self.metrics['f1'][layerName]        = torchmetrics.F1Score(task="multiclass", average=average, num_classes=num_classes).to(device)
+                    self.metrics['acc'][layerName]       = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes).to(device)
+                    self.metrics['confusion'][layerName] = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=num_classes).to(device)
+                    self.confusion_heads[layerName] = categorical_values.values.tolist()
+                    self.confusion_heads[layerName].insert(0, None)
                 elif prop_type == "boolean":
-                    self.metrics['precision'][prop_name] = torchmetrics.Precision(task="binary").to(device)
-                    self.metrics['recall'][prop_name]    = torchmetrics.Recall(task="binary").to(device)
-                    self.metrics['f1'][prop_name]        = torchmetrics.F1Score(task="binary").to(device)
-                    self.metrics['acc'][prop_name]       = torchmetrics.Accuracy(task="binary").to(device)
-                    self.metrics['confusion'][prop_name] = torchmetrics.ConfusionMatrix(task="binary").to(device)
-                    self.confusion_heads[prop_name] = [False, True]
+                    self.metrics['precision'][layerName] = torchmetrics.Precision(task="binary").to(device)
+                    self.metrics['recall'][layerName]    = torchmetrics.Recall(task="binary").to(device)
+                    self.metrics['f1'][layerName]        = torchmetrics.F1Score(task="binary").to(device)
+                    self.metrics['acc'][layerName]       = torchmetrics.Accuracy(task="binary").to(device)
+                    self.metrics['confusion'][layerName] = torchmetrics.ConfusionMatrix(task="binary").to(device)
+                    self.confusion_heads[layerName] = [False, True]
                 elif prop_type == "numerical":
-                    step = float(property_row['step'])
+                    step = float(layer_row['step'])
                     step = 0.1 if step < 0.1 else step
-                    min = float(property_row['min'])
-                    max = float(property_row['max'])
+                    min = float(layer_row['min'])
+                    max = float(layer_row['max'])
                     epsilon = step / 8 # Float round errors otherwise.
                     numerical_values = [min + step * i for i in range(int(1 + (max - min + epsilon) // step))]
                     numerical_values = [round(x, 2) for x in numerical_values]
-                    self.confusion_heads[prop_name] = numerical_values
-                    self.metrics['precision'][prop_name] = nsm.NumericStepPrecision(prop_name=prop_name, step=step).to(device)
-                    self.metrics['recall'][prop_name]    = nsm.NumericStepRecall(prop_name=prop_name, step=step).to(device)
-                    self.metrics['f1'][prop_name]        = nsm.NumericStepF1Score(prop_name=prop_name, step=step).to(device)
-                    self.metrics['acc'][prop_name]       = nsm.NumericStepAccuracy(prop_name=prop_name, step=step).to(device)
-                    self.metrics['confusion'][prop_name] = nsm.NumericStepConfusionMatrix(prop_name=prop_name, step=step, min=min, max=max).to(device)
-                print(prop_name, self.confusion_heads[prop_name])
+                    self.confusion_heads[layerName] = numerical_values
+                    self.metrics['precision'][layerName] = nsm.NumericStepPrecision(layerName=layerName, step=step).to(device)
+                    self.metrics['recall'][layerName]    = nsm.NumericStepRecall(layerName=layerName, step=step).to(device)
+                    self.metrics['f1'][layerName]        = nsm.NumericStepF1Score(layerName=layerName, step=step).to(device)
+                    self.metrics['acc'][layerName]       = nsm.NumericStepAccuracy(layerName=layerName, step=step).to(device)
+                    self.metrics['confusion'][layerName] = nsm.NumericStepConfusionMatrix(layerName=layerName, step=step, min=min, max=max).to(device)
+                print(layerName, self.confusion_heads[layerName])
 
     def forward(self, x):
         """
@@ -223,15 +230,15 @@ class OutputHeadRecognition(nn.Module):
                 target[composition_head] = torch.tensor(len(label_dict[composition_name]) if composition_name in label_dict.keys() else 0, device=device)
                 mask[composition_head] = torch.tensor(True, device=device)
                 mapped_stage = map_stageNr(row['stage'])
-                property_row = self.df_layers[self.df_layers['propertyId'] == row['propertyId']].iloc[0] # TODO : create dict: composition.prop_name -> type
-                prop_name = row['name']
-                prop_type = property_row['type']
-                prop_id = row['propertyId']
+                layer_row = self.df_layers[self.df_layers['layerId'] == row['layerId']].iloc[0] # TODO : create dict: composition.layerName -> type
+                layerName = row['name']
+                prop_type = layer_row['type']
+                prop_id = row['layerId']
 
                 instance_indexes = range(self.max_instances_per_composition[composition_name])
                 instance_indexes = reversed(instance_indexes) if flip_instances else instance_indexes
                 for i in instance_indexes:
-                    output_head = '_'.join([composition_name, str(i), mapped_stage, prop_name])
+                    output_head = '_'.join([composition_name, str(i), mapped_stage, layerName])
 
                     is_stage = not mapped_stage_is_not_stageProperties(mapped_stage)
                     requires_gradient = True if \
@@ -242,18 +249,18 @@ class OutputHeadRecognition(nn.Module):
                                     is_stage \
                                     and 'StageProperties' in label_dict[composition_name][i] \
                                     and mapped_stage in label_dict[composition_name][i]['StageProperties'].keys() \
-                                    and prop_name in label_dict[composition_name][i]['StageProperties'][mapped_stage].keys() \
+                                    and layerName in label_dict[composition_name][i]['StageProperties'][mapped_stage].keys() \
                                 )  or ( \
                                     not is_stage \
                                     and mapped_stage in label_dict[composition_name][i].keys() \
-                                    and prop_name in label_dict[composition_name][i][mapped_stage].keys() \
+                                    and layerName in label_dict[composition_name][i][mapped_stage].keys() \
                                 ) \
                             ) \
                         else False
 
                     # TODO : fix value of categorical: guess now is: propValueId and not index of ... + 1
                     if requires_gradient:
-                        value = label_dict[composition_name][i]['StageProperties'][mapped_stage][prop_name] if is_stage else label_dict[composition_name][i][mapped_stage][prop_name]
+                        value = label_dict[composition_name][i]['StageProperties'][mapped_stage][layerName] if is_stage else label_dict[composition_name][i][mapped_stage][layerName]
                         try:
                             if prop_type == 'categorical':
                                 target[output_head] = torch.tensor(int(self.categorical_valueId_to_idx[prop_id][int(value)]), device=device)
@@ -263,7 +270,7 @@ class OutputHeadRecognition(nn.Module):
                                 target[output_head] = torch.tensor(float(value), dtype=torch.float32, device=device)
                             mask[output_head] = torch.tensor(True, device=device)
                         except:
-                            print(f"Error for outputhead: {output_head}, prop_id: {prop_id}, prop_type: {prop_type}, prop_name: {prop_name}, value: {value}")
+                            print(f"Error for outputhead: {output_head}, prop_id: {prop_id}, prop_type: {prop_type}, layerName: {layerName}, value: {value}")
                             if prop_type == 'categorical':
                                 print(f"{self.categorical_valueId_to_idx[prop_id]}")
                             raise
@@ -305,13 +312,13 @@ class OutputHeadRecognition(nn.Module):
                     target_val = targets[output_head].long()  # shape [B]
                     loss = self.loss_fns[output_head](pred_val.squeeze(dim=1), target_val)
                 else:
-                    prop_name = output_head.split('_')[-1]
+                    layerName = output_head.split('_')[-1]
                     if pred_valid.ndim > 1 and pred_valid.shape[1] > 1:
                         # Categorical
-                        loss = self.loss_fns[prop_name](pred_valid, target_valid.long())
+                        loss = self.loss_fns[layerName](pred_valid, target_valid.long())
                     else:
                         # Boolean or numerical
-                        loss = self.loss_fns[prop_name](pred_valid.squeeze(dim=1), target_valid.float())
+                        loss = self.loss_fns[layerName](pred_valid.squeeze(dim=1), target_valid.float())
 
                 total_loss += loss
                 total_count += 1
@@ -338,7 +345,7 @@ class OutputHeadRecognition(nn.Module):
                 raise ValueError(f"Something went wrong with output_head:", output_head)
             
             composition_name = output_head_splits[0]
-            prop_name = output_head_splits[1] if "composition_" in output_head else output_head_splits[3]
+            layerName = output_head_splits[1] if "composition_" in output_head else output_head_splits[3]
 
             valid_idx = mask_val.bool().nonzero(as_tuple=False).squeeze(-1)
             if valid_idx.numel() == 0:
@@ -348,22 +355,37 @@ class OutputHeadRecognition(nn.Module):
             target_valid = target_val[valid_idx]
             # target_valid = target_valid if target_valid.ndim == 1 else target_valid.squeeze(dim=1)
 
-            self.metrics['precision'][prop_name].update(pred_valid, target_valid)
-            self.metrics['recall'][prop_name].update(pred_valid, target_valid)
-            self.metrics['f1'][prop_name].update(pred_valid, target_valid)
-            self.metrics['acc'][prop_name].update(pred_valid, target_valid)
-            self.metrics['confusion'][prop_name].update(pred_valid, target_valid)
-
-        return np.mean([self.metrics['f1'][pn].compute().item() for pn in self.metrics['f1'].keys()])
+            self.metrics['precision'][layerName].update(pred_valid, target_valid)
+            self.metrics['recall'][layerName].update(pred_valid, target_valid)
+            self.metrics['f1'][layerName].update(pred_valid, target_valid)
+            self.metrics['acc'][layerName].update(pred_valid, target_valid)
+            self.metrics['confusion'][layerName].update(pred_valid, target_valid)
     
     def compute_metrics(self):
         """
         Computes precision, recall, f1, and accuracy for each output_head in preds using torchmetrics.
         """
+        prop_metrics = {
+            metric_type: {
+                propname: (
+                    metric.compute().item()
+                    if metric.compute().ndim == 0 
+                    else metric.compute().tolist()
+                ) for propname, metric in propname_metric.items()
+            } for metric_type, propname_metric in self.metrics.items()
+        }
+
+        avg_metrics = {}
+
+        for metric_type, values in prop_metrics.items():
+            if metric_type == "confusion":
+                avg_metrics[metric_type] = get_confusion_average(values)
+            else:
+                avg_metrics[metric_type] = get_numeric_metric_average(values)
+
         return {
-            type: {
-                propname: metric.compute().item() if metric.compute().ndim == 0 else metric.compute().tolist()
-                for propname, metric in propname_metric.items()
-            } for type, propname_metric in self.metrics.items()
+            "individual": prop_metrics,
+            "avg": avg_metrics,
+            "confusion_heads": self.confusion_heads,
         }
 

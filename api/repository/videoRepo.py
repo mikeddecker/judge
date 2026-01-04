@@ -204,7 +204,7 @@ class VideoRepository:
         ValueHelper.check_raise_frameNr(start)
         ValueHelper.check_raise_frameNr(end)
 
-        # Likewise checks can be done, to check whether values of layerproperties exist
+        # Likewise checks can be done, to check whether values of layers exist
         assert self.db.session.query(VideoInfoDB).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"        
 
         skill = SkillDB(

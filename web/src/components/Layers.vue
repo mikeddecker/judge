@@ -19,7 +19,7 @@
         </template>
       </Listbox>
       <IftaLabel v-if="slotProps.data.type == 'categorical'" class="my-2">
-        <InputText :id="`new_layer_value_${slotProps.data.propertyId}`" v-model="new_layer_value" variant="filled"/>
+        <InputText :id="`new_layer_value_${slotProps.data.layerId}`" v-model="new_layer_value" variant="filled"/>
         <label for="new_layer_value">Add value</label>
       </IftaLabel>
       <Button v-if="!new_layer_value_is_empty" class="" icon="pi pi-database" @click="() => createNewLayerValue(slotProps.data.id)" label="Add layer value" aria-label="Add layer value"></Button>

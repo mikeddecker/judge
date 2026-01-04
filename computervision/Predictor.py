@@ -13,7 +13,7 @@ from base_utils import load_json_file
 from constants import ENVS, PYTORCH_MODELS_SKILLS
 from helpers import load_skill_batch_X_torch, load_segment_batch_X_torch, load_segment_batch_y_torch, adaptSkillLabels, mapBalancedSkillIndexToLabel, draw_text, calculate_splitpoint_values
 from localizor_with_strats import predict_and_save_locations
-from managers.DataRepository import DataRepository
+from managers.RepoGeneral import DataRepository
 from managers.FrameLoader import FrameLoader
 from models.OutputHeadRecognition import OutputHeadRecognition
 from moviepy import VideoFileClip, VideoClip
@@ -445,3 +445,4 @@ if __name__ == "__main__":
     models = ['SwinT_s']
     dates = ["20250525", "20250524"]
     dates = ["20250525"]
+

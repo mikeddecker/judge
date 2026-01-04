@@ -1,6 +1,6 @@
 import keras
 import numpy as np
-from DataRepository import DataRepository
+from managers.RepoGeneral import DataRepository
 
 # Didn't improve loading time
 
@@ -85,6 +85,6 @@ class DataGeneratorFramesWithPreload(keras.utils.Sequence):
             y_values.append(ys)
         return np.array(frames), np.array(y_values, dtype=np.float32)
 
-
     def on_epoch_end(self):
         self.Frames = self.Frames.sample(frac=1.)
+

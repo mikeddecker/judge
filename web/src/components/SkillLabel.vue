@@ -38,13 +38,13 @@
                         <Card v-for="(upperStage, i) in ['GeneralProperties', 'StartProperties', 'EndProperties']" class="m-2 flex-auto">
                             <template #header>{{ upperStage }}</template>
                             <template #content>
-                                <LayerPropertyValueSelector 
+                                <LayerValueSelector 
                                     v-for="(layerValue, layerKey) in layercomposition[compositionName][upperStage]" 
                                     :composition-name="compositionName" :composition-index="idx" 
                                     :name="layerKey" :stage="upperStage" 
-                                    :property="layercomposition[compositionName][upperStage][layerKey]['property']" 
+                                    :layer="layercomposition[compositionName][upperStage][layerKey]['layer']" 
                                     :focussed="layerValue.focussed">
-                                </LayerPropertyValueSelector>
+                                </LayerValueSelector>
                             </template>
                         </Card>
                         <Card class="flex-auto m-2">
@@ -53,13 +53,13 @@
                                 <Card v-for="(stageLabel, stageNr) in layercomposition[compositionName]['StageProperties'] " class="m-2 flex-auto">
                                     <template #header>{{ stageNr }}</template>
                                     <template #content>
-                                        <LayerPropertyValueSelector 
+                                        <LayerValueSelector 
                                             v-for="(layerValue, layerKey) in layercomposition[compositionName]['StageProperties'][stageNr]" 
                                             :composition-name="compositionName" :composition-index="idx" 
                                             :name="layerKey" stage="StageProperties" :stage-nr="stageNr" 
-                                            :property="layercomposition[compositionName]['StageProperties'][stageNr][layerKey]['property']" 
+                                            :layer="layercomposition[compositionName]['StageProperties'][stageNr][layerKey]['layer']" 
                                             :focussed="layerValue.focussed">
-                                        </LayerPropertyValueSelector>
+                                        </LayerValueSelector>
                                     </template>
                                 </Card>
                             </template>
@@ -75,7 +75,7 @@
 <script setup>
 import { getLayerCompositions } from '@/services/videoService';
 import { computed, onMounted, ref, watch } from 'vue';
-import LayerPropertyValueSelector from './LayerPropertyValueSelector.vue';
+import LayerValueSelector from './LayerValueSelector.vue';
 import { useSkillStore } from '@/stores/skillStore';
 import { useToastUtils } from '@/helpers/toastUtils';
 

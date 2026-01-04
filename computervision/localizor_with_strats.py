@@ -8,7 +8,7 @@ import time
 
 from constants import ENVS, DIM
 from helpers import get_localize_strategy_list
-from managers.DataRepository import DataRepository
+from managers.RepoGeneral import DataRepository
 from moviepy import ImageSequenceClip
 from tqdm import tqdm
 from ultralytics import YOLO

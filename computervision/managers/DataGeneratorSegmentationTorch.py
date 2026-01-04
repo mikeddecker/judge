@@ -1,11 +1,9 @@
 import pandas as pd
 import random
 import torch
-from .DataRepository import DataRepository
+from .RepoGeneral import DataRepository
 from .FrameLoader import FrameLoader
 from helpers import calculate_splitpoint_values, load_segment_batch_X_torch, load_segment_batch_y_torch
-
-
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -108,6 +106,6 @@ class DataGeneratorSegmentation(torch.utils.data.Dataset):
             }
             dfs_train_batches.append(pd.DataFrame(trainvalues))
 
-
         self.df_frames = pd.concat(dfs)
         self.df_batches = pd.concat(dfs_train_batches).sample(frac=1.)
+

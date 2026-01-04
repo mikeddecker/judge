@@ -4,7 +4,7 @@ import torch
 import torch.optim as optim
 
 from constants import ENVS, PYTORCH_MODELS_SKILLS
-from managers.DataRepository import DataRepository
+from managers.RepoGeneral import DataRepository
 from managers.DataGeneratorSegmentationTorch import DataGeneratorSegmentation
 from managers.FrameLoader import FrameLoader
 from torch.utils.data import DataLoader
@@ -34,7 +34,7 @@ class TrainerSegments:
         
         return val_loss / len(dataloader)
 
-    def train(self, modelname, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
+    def train(self, modelname, from_scratch, epochs, unfreeze_all_layers=False, trainparams: dict= {}, learning_rate=1e-5):
         try:
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
@@ -42,7 +42,6 @@ class TrainerSegments:
             path = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_segmentation.state_dict.pt")
             checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS, f"{modelname}_segmentation.checkpoint.pt")
 
-            
             DIM = 224
             repo = DataRepository()
             model = PYTORCH_MODELS_SKILLS[modelname](skill_or_segment="segments", modelinfo=trainparams, df_table_counts=repo.get_skill_category_counts()).to(device)
@@ -141,3 +140,4 @@ class TrainerSegments:
         finally:
             torch.cuda.empty_cache()
             gc.collect()
+

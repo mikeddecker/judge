@@ -7,11 +7,11 @@ class NumericStepAccuracy(Metric):
     Works with continuous predictions in regression-like tasks.
     """
 
-    def __init__(self, prop_name: str, step: float = 1.0, dist_sync_on_step: bool = False):
+    def __init__(self, layerName: str, step: float = 1.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
 
         self.step = step
-        self.prop_name = prop_name
+        self.layerName = layerName
 
         # Metric state: accumulates counts across batches
         self.add_state("correct", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
@@ -38,10 +38,10 @@ class NumericStepAccuracy(Metric):
         return self.correct.float() / self.total if self.total > 0 else torch.tensor(0.0)
 
 class NumericStepPrecision(Metric):
-    def __init__(self, prop_name: str, step: float = 1.0, dist_sync_on_step: bool = False):
+    def __init__(self, layerName: str, step: float = 1.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self.step = step
-        self.prop_name = prop_name
+        self.layerName = layerName
         self.add_state("tp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
         self.add_state("fp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
@@ -61,10 +61,10 @@ class NumericStepPrecision(Metric):
         return self.tp.float() / denom if denom > 0 else torch.tensor(0.0)
 
 class NumericStepRecall(Metric):
-    def __init__(self, prop_name: str, step: float = 1.0, dist_sync_on_step: bool = False):
+    def __init__(self, layerName: str, step: float = 1.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self.step = step
-        self.prop_name = prop_name
+        self.layerName = layerName
         self.add_state("tp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
         self.add_state("fn", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
@@ -83,10 +83,10 @@ class NumericStepRecall(Metric):
         return self.tp.float() / denom if denom > 0 else torch.tensor(0.0)
 
 class NumericStepF1Score(Metric):
-    def __init__(self, prop_name: str, step: float = 1.0, dist_sync_on_step: bool = False):
+    def __init__(self, layerName: str, step: float = 1.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self.step = step
-        self.prop_name = prop_name
+        self.layerName = layerName
         self.add_state("tp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
         self.add_state("fp", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
         self.add_state("fn", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
@@ -109,14 +109,14 @@ class NumericStepF1Score(Metric):
         return 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else torch.tensor(0.0)
 
 class NumericStepConfusionMatrix(Metric):
-    def __init__(self, prop_name:str, step: float = 1.0, min: float = 0.0, max: float = 2.0, dist_sync_on_step: bool = False):
+    def __init__(self, layerName:str, step: float = 1.0, min: float = 0.0, max: float = 2.0, dist_sync_on_step: bool = False):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
         self.step = step
         self.num_classes = round((max - min) / step) + 1
         self.min = min
         self.max = max
         self.confusion_matrix = ConfusionMatrix('multiclass', num_classes=self.num_classes)
-        self.prop_name = prop_name
+        self.layerName = layerName
 
     def update(self, preds: torch.Tensor, targets: torch.Tensor):
         preds = preds if preds.ndim == 1 else preds.squeeze(dim=1)

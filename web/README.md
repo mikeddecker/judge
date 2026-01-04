@@ -157,11 +157,11 @@ Future: more stats
 #### Recognition
 
 - Skill count train/test
-- (Current best) model property f1 accuracy graph
+- (Current best) model layer f1 accuracy graph
 
 For each of Total & Layercomposition (e.g. Turner, Jumper, SR)
 - Total amount of labeled layers
-- Count of each property value (e.g. AS: 12, CL: 23, open/0: 1031, toad: 8)
+- Count of each layer value (e.g. AS: 12, CL: 23, open/0: 1031, toad: 8)
 
 Future more stats
 - Skill counts / tag

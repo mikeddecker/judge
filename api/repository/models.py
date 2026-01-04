@@ -3,6 +3,7 @@ from repository.db import db
 from sqlalchemy import CheckConstraint
 from sqlalchemy.dialects.mysql import SMALLINT, JSON
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import Mapped
 from datetime import datetime
 
 class Folder(db.Model):
@@ -193,8 +194,8 @@ class Jobs(db.Model):
     status = db.Column(db.String(30), nullable=False)
     status_details = db.Column(db.String(127))
 
-class LayerProperty(db.Model):
-    __tablename__ = 'LayerProperties'
+class Layer(db.Model):
+    __tablename__ = 'Layers'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), nullable=False)
     type = db.Column(db.String(15), nullable=False)
@@ -204,8 +205,7 @@ class LayerProperty(db.Model):
     creationDate = db.Column(db.DateTime, default=datetime.now)
     lastUpdated = db.Column(db.DateTime, default=datetime.now)
 
-    # categories = db.relationship('LayerPropertyValue', backref='property', lazy='dynamic')
-    categories = db.relationship('LayerPropertyValue', backref='property', lazy=True)
+    categories = db.relationship('LayerValue', backref='layer', lazy=True)
 
     def to_dict(self):
         return {
@@ -218,10 +218,10 @@ class LayerProperty(db.Model):
             'categories': [c.to_dict() for c in sorted(self.categories, key=lambda c: c.name)]
         }
 
-class LayerPropertyValue(db.Model):
-    __tablename__ = 'LayerPropertyValues'
+class LayerValue(db.Model):
+    __tablename__ = 'LayerValues'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    propertyId = db.Column(db.Integer, db.ForeignKey('LayerProperties.id', ondelete='CASCADE'), nullable=False)
+    layerId = db.Column(db.Integer, db.ForeignKey('Layers.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.String(50), nullable=False)
     creationDate = db.Column(db.DateTime, default=datetime.now)
     lastUpdated = db.Column(db.DateTime, default=datetime.now)
@@ -236,19 +236,18 @@ class LayerComposition(db.Model):
     __tablename__ = 'LayerComposition'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     compositionName = db.Column(db.String(50), nullable=False)
-    name = db.Column(db.String(50), nullable=True)
     stage = db.Column(db.Integer, CheckConstraint('stage >= -1'), nullable=True)
-    propertyId = db.Column(db.Integer, db.ForeignKey('LayerProperties.id', ondelete='CASCADE'), nullable=False)
-    property = db.relationship('LayerProperty', backref='compositions', lazy='joined')
+    layerId = db.Column(db.Integer, db.ForeignKey('Layers.id', ondelete='CASCADE'), nullable=False)
+    layer : Mapped[Layer] = db.relationship('Layer', backref='compositions', lazy='joined')
     defaultValue = db.Column(db.String(15), nullable=True)
     focussed = db.Column(db.Boolean, nullable=False, default=True)
     creationDate = db.Column(db.DateTime, default=datetime.now)
     lastUpdated = db.Column(db.DateTime, default=datetime.now)
 
-    def defaultValueConvert(self, value: str, property: LayerProperty):
+    def defaultValueConvert(self, value: str, layer: Layer):
         if value is None:
             return value
-        match property.type:
+        match layer.type:
             case 'boolean':
                 return True if value in ['true', 'True', 1, '1'] else False
             case 'categorical':
@@ -260,10 +259,9 @@ class LayerComposition(db.Model):
         return {
             'id': self.id,
             'compositionName' : self.compositionName,
-            'name': self.name,
             'stage' : self.stage,
-            'property' : self.property.to_dict(),
-            'defaultValue': self.defaultValueConvert(self.defaultValue, self.property),
+            'layer' : self.layer.to_dict(),
+            'defaultValue': self.defaultValueConvert(self.defaultValue, self.layer),
             'focussed': self.focussed,
         }
 

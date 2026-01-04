@@ -35,14 +35,14 @@
         <Select v-if="sourceFilterVisible" v-model="selectedLayerToMove" :options="sourceFilterdLayers" placeholder="select layer"></Select>
         <Button 
             v-if="selectedSourceStage && selectedDestStage && selectedLayerToMove && ((selectedSourceOrDestIsStageProperties && selectedStageNr) || !selectedSourceOrDestIsStageProperties)" 
-            aria-label="Move property" label="Move property" icon="pi pi-move" 
+            aria-label="Move layer" label="Move layer" icon="pi pi-move" 
             @click="moveProperty"
         ></Button>
     </div>
 </template>
 
 <script setup>
-import { addLayerComposition, getLayers, moveLayerProperty, updateLayerCompositionAttributeValue } from '@/services/videoService';
+import { addLayerComposition, getLayers, moveLayer, updateLayerCompositionAttributeValue } from '@/services/videoService';
 import { computed, onMounted, ref } from 'vue';
 import LayerCompositionElementCard from './LayerCompositionElementCard.vue';
 
@@ -57,7 +57,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['composition-saved', 'moved:property'])
+const emit = defineEmits(['composition-saved', 'moved:layer'])
 
 // Add
 const selectedStage = ref(null)
@@ -112,8 +112,8 @@ const saveComposition = async () => {
     emit('composition-saved')
 }
 
-const moveProperty = async () => {
-    await moveLayerProperty(
+const changeComposition = async () => {
+    await moveLayer(
         props.compositionName, 
         selectedLayerToMove.value, 
         selectedSourceStage.value, 
@@ -124,7 +124,7 @@ const moveProperty = async () => {
     selectedSourceStage.value = null
     selectedDestStage.value = null
     selectedStageNr.value = null
-    emit('moved:property')
+    emit('moved:layer')
 }
 </script>
 

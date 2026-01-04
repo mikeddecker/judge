@@ -7,17 +7,9 @@ import sqlalchemy as sqlal
 
 from collections import defaultdict
 from constants import ENVS
-
-def extract_key_number_pairs(obj):
-    if isinstance(obj, list):
-        for item in obj:
-            yield from extract_key_number_pairs(item)
-    else:
-        for k, v in obj.items():
-            if isinstance(v, (int, float)):
-                yield (k, v)
-            elif isinstance(v, (dict, list)):
-                yield from extract_key_number_pairs(v)
+from helpers import extract_key_number_pairs
+from typing import Iterable
+from sqlalchemy.engine import Connection, Engine
 
 class DataRepository:
     VideoNames = {} # pandas dataframe
@@ -29,16 +21,17 @@ class DataRepository:
         USERNAME = ENVS.DATABASE.MYSQL_USERNAME
         PASSWORD = ENVS.DATABASE.MYSQL_ROOT_PASSWORD
         DATABASE_CONNECTION=f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
-        self.engine = sqlal.create_engine(DATABASE_CONNECTION, pool_recycle=30)#
+        self.engine: Engine = sqlal.create_engine(DATABASE_CONNECTION, pool_recycle=30)#
         self.__load_relativePaths_of_videos_with_framelabels()
 
-    def __get_connection(self):
+    def __get_connection(self) -> Connection:
         return self.engine.connect()
     
     def get_videoinfo(self, videoId):
         qry = sqlal.text(f"""SELECT * FROM Videos WHERE id = {videoId}""")
         with self.__get_connection() as connection:
             return pd.read_sql(qry, con=connection)
+            
         
     def get_framelabels(self, train_test_val):
         # TODO : update with validation & 'random' sampling
@@ -77,25 +70,71 @@ class DataRepository:
         with self.__get_connection() as connection:
             return pd.read_sql(qry, con=connection)
         
-    def get_recognition_config(self):
+    def get_skill_layers(self) -> pd.DataFrame:
+        """
+        Returns df_layers
+        Column: layerId
+        Column: layer (layername)
+        Column: type (boolean, categorical, numerical)
+        Column: value (layer instance e.g. Toad, Cross, SideSwing)
+        Column: valueId (id of the layerValue)
+        Column: min (numerical)
+        Column: max (numerical)
+        Column: step (numerical)
+        """
         qry_layers = f"""
-            SELECT lp.id as propertyId, lp.name as layer, lp.type, lpv.name as value, lpv.id as valueId, lp.min, lp.max, lp.step
-            FROM LayerProperties lp
-            LEFT OUTER JOIN LayerPropertyValues lpv ON lp.id = lpv.propertyId
+            SELECT lp.id as layerId, lp.name as layer, lp.type, lpv.name as value, lpv.id as valueId, lp.min, lp.max, lp.step
+            FROM Layers lp
+            LEFT OUTER JOIN LayerValues lpv ON lp.id = lpv.layerId
+            ORDER BY lp.id, lpv.name;
+        """
+        with self.__get_connection() as connection:
+            return pd.read_sql(qry_layers, con=connection)
+
+    def get_skill_compositions(self) -> pd.DataFrame:
+        """
+        Returns df_composition, df_max_instances_per_role
+        Colunm: compositionName
+        stage
+        layerId (layerId)
+        name (name of the )
+        """
+        with self.__get_connection() as connection:
+            qry_compositions = f"""
+                SELECT lc.compositionName, lc.stage, lc.layerId,
+                CASE
+                    WHEN lc.name is NULL THEN lp.name
+                    ELSE lc.name
+                END AS name
+                FROM LayerComposition lc
+                JOIN Layers lp ON lp.id = lc.layerId
+                ORDER BY lc.compositionName, lc.stage, lc.layerId
+            """
+            df_composition = pd.read_sql(qry_compositions, con=connection)
+
+        return df_composition
+    def get_max_instances_per_role(self, distinct_compositions: Iterable):
+        """
+        Returns df_layers, df_composition, df_max_instances_per_role
+        """
+        qry_layers = f"""
+            SELECT lp.id as layerId, lp.name as layer, lp.type, lpv.name as value, lpv.id as valueId, lp.min, lp.max, lp.step
+            FROM Layers lp
+            LEFT OUTER JOIN LayerValues lpv ON lp.id = lpv.layerId
             ORDER BY lp.id, lpv.name;
         """
         with self.__get_connection() as connection:
             df_layers = pd.read_sql(qry_layers, con=connection)
             
             qry_compositions = f"""
-                SELECT lc.compositionName, lc.stage, lc.propertyId,
+                SELECT lc.compositionName, lc.stage, lc.layerId,
                 CASE
                     WHEN lc.name is NULL THEN lp.name
                     ELSE lc.name
                 END AS name
                 FROM LayerComposition lc
-                JOIN LayerProperties lp ON lp.id = lc.propertyId
-                ORDER BY lc.compositionName, lc.stage, lc.propertyId
+                JOIN Layers lp ON lp.id = lc.layerId
+                ORDER BY lc.compositionName, lc.stage, lc.layerId
             """
             df_composition = pd.read_sql(qry_compositions, con=connection)
 
@@ -105,7 +144,7 @@ class DataRepository:
 
             df_max_lengths = pd.read_sql(f"""SELECT {json_qry} FROM Skills;""", con=connection).iloc[0]
 
-        return df_layers, df_composition, df_max_lengths
+        return df_max_lengths
             
     def get_team_boxes(self) -> pd.DataFrame:
         qry = sqlal.text("""
@@ -295,20 +334,20 @@ class DataRepository:
 
     def get_skill_prop_counts(self):
         with self.__get_connection() as connection:
-            distinct_prop_names = """
+            distinct_layerNames = """
                 SELECT
                 DISTINCT CASE
                     WHEN lc.name is NULL THEN lp.name
                     ELSE lc.name
                 END AS name
                 FROM LayerComposition lc
-                JOIN LayerProperties lp ON lp.id = lc.propertyId
+                JOIN Layers lp ON lp.id = lc.layerId
             """
-            distinct_prop_names = pd.read_sql(distinct_prop_names, con=connection)['name'].to_list()
+            distinct_layerNames = pd.read_sql(distinct_layerNames, con=connection)['name'].to_list()
 
             connection.execution_options(stream_results=True)
 
-            # counts[prop_name][value] = occurrence count
+            # counts[layerName][value] = occurrence count
             counts = defaultdict(lambda: defaultdict(int))
             for chunk_dataframe in pd.read_sql("SELECT skillinfo FROM Skills", connection, chunksize=50000):
                 print(f"DataRepo - get_skill_prop_counts: processing {len(chunk_dataframe)} rows")
@@ -321,3 +360,4 @@ class DataRepository:
             return counts
 
 REPO = DataRepository()
+

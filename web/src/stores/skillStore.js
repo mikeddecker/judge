@@ -12,12 +12,12 @@ export const useSkillStore = defineStore("skill", {
   actions: {
     setSelectedSkill(skill) { this.selectedSkill = skill },
     async addComposition(selectedCompositionName) {
-      const getStageFocussedDefaultValues = (layerproperty) => {
+      const getStageFocussedDefaultValues = (layer) => {
         // Fills in stage with default values 
         let stageDefaultValues = {}
-        Object.entries(layerproperty).forEach(([propertyname, propertyinfo]) => {
-          if (propertyinfo.focussed) {
-            stageDefaultValues[propertyname] = propertyinfo.defaultValue
+        Object.entries(layer).forEach(([layername, layerinfo]) => {
+          if (layerinfo.focussed) {
+            stageDefaultValues[layername] = layerinfo.defaultValue
           }
         })
         return stageDefaultValues

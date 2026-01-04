@@ -84,7 +84,7 @@ class MapToDomain:
         endProps = dict()
         stageProps = dict()
         for cDB in compositionValuesDB:
-            cName = cDB.name if cDB.name else cDB.property.name
+            cName = cDB.layer.name
             c = cDB.to_dict()
             match cDB.stage:
                 case None:

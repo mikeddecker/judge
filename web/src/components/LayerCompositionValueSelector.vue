@@ -17,9 +17,9 @@
         </div>
         <InputNumber v-if="isNumerical" class="w-20" inputClass="w-full" v-model="innervalue" 
         :id="guidvalue"
-        :step="property['step']" 
-        :min="property['min']" 
-        :max="property['max']" 
+        :step="layer['step']" 
+        :min="layer['min']" 
+        :max="layer['max']" 
         :minFractionDigits="0" 
         :maxFractionDigits="2" 
         show-buttons 
@@ -46,7 +46,7 @@ const props = defineProps({
         type: String,
         required: true,
     },
-    property: {
+    layer: {
         type: Object,
         required: true
     },
@@ -61,8 +61,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:value', 'update:focussed'])
 
-const category = computed(() => props.property['type'])
-const categoryOptions = computed(() => [ {id: 0, name:''}, ...props.property['categories']])
+const category = computed(() => props.layer['type'])
+const categoryOptions = computed(() => [ {id: 0, name:''}, ...props.layer['categories']])
 const isBoolean = computed(() => category.value == 'boolean')
 const isCategorical = computed(() => category.value == 'categorical')
 const isNumerical = computed(() => category.value == 'numerical')

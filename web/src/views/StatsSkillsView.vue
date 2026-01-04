@@ -37,17 +37,17 @@
   <TabPanels>
     <TabPanel value="total">
       <BarChartTrainTest
-      :values="transformCounts(results['prop_name_counts']['total'])"
+      :values="transformCounts(results['layerName_counts']['total'])"
       direction="y"
-      title="Total property counts"
+      title="Total layer counts"
       :squared="true"
       />
       <div class="flex flex-wrap gap-8">
         <BarChartTrainTest
-        v-for="(values, property) in results['prop_value_frequencies']['total']"
+        v-for="(values, layer) in results['prop_value_frequencies']['total']"
         :values="transformCounts(values)"
         direction="x"
-        :title="property"
+        :title="layer"
         class="w-120 flex-auto"
         :squared="true"
         />
@@ -60,17 +60,17 @@
         :value="layercomposition"
         >
         <BarChartTrainTest
-        :values="transformCounts(results['prop_name_counts'][layercomposition])"
+        :values="transformCounts(results['layerName_counts'][layercomposition])"
         direction="y"
         :squared="true"
-        :title="`Property counts ${layercomposition}`"
+        :title="`Layer counts ${layercomposition}`"
         />
         <div class="flex flex-wrap gap-8">
           <BarChartTrainTest
-          v-for="(values, property) in results['prop_value_frequencies'][layercomposition]"
+          v-for="(values, layer) in results['prop_value_frequencies'][layercomposition]"
           :values="transformCounts(values)"
           direction="x"
-          :title="property"
+          :title="layer"
           class="w-120 flex-auto"
           :squared="true"
           />

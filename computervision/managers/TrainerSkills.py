@@ -13,7 +13,8 @@ from colorama import Fore, Style
 from constants import RECIPES, SPEEDMODES, ENVS, PYTORCH_MODELS_SKILLS
 from dotenv import load_dotenv
 from helpers import NumpyTypeEncoder
-from managers.DataRepository import REPO
+from managers.RepoGeneral import REPO
+from managers.RepoStats import REPO_STATS
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
 from pprint import pprint
@@ -28,7 +29,7 @@ from helpers import localize_get_best_modelpath
 
 DEVICE_TYPE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEVICE = torch.device(DEVICE_TYPE)
-SCHEDULER_PATIENCE = 1
+SCHEDULER_PATIENCE = 2
 
 print(f"Using DEVICE: {DEVICE}")
 load_dotenv()
@@ -37,41 +38,30 @@ torch.backends.cudnn.benchmark = True
 
 class TrainerSkills:
     _optimizer = None
+    _testrun: bool = False
 
-    def train(self, recipe: SimpleNamespace, from_scratch, epochs, save_anyway, unfreeze_all_layers=False, patience:int=3, speedmode=SPEEDMODES[1]):
+    def __init__(self, testrun:bool=False):
+        self._testrun=testrun
+
+    def train(self, recipe: SimpleNamespace, from_scratch, epochs, unfreeze_all_layers=False, patience:int=4, speedmode=SPEEDMODES[1]):
         rundate = date.today().strftime('%Y%m%d')
         start = time.time()
 
         try:
-            testrun = False
-            epochs = 5 if testrun else epochs
+            epochs = 5 if self._testrun else epochs
             modelname = recipe.model
             if modelname not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(modelname)
 
             self.__create_or_recreate_cropped_videos(speedmode=speedmode)
-
-            os.makedirs(os.path.join(ENVS.DIRS.WEIGHTS.SKILLS), exist_ok=True)
-            path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.state_dict.pt")
-            pathBest = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"best{'_testrun' if testrun else ''}.state_dict.pt")
-            checkpointPath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.checkpoint.pt")
-            modelstatsPath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.stats.json")
-            modelstatsPathCurrent = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{modelname}{'_testrun' if testrun else ''}.stats.current.json")
-            best_stats_path = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"best{'_testrun' if testrun else ''}.stats.json")
             
-            df_layers, df_composition, max_instances_per_role = REPO.get_recognition_config()
-            backbone_output_neurons = PYTORCH_MODELS_SKILLS[modelname].get_output_feature_dim(recipe)
-            prop_counts = REPO.get_skill_prop_counts()
-            head = OutputHeadRecognition(backbone_output_neurons, df_layers, df_composition, max_instances_per_role, prop_counts)
+            head = OutputHeadRecognition(recipe)
             
             DefaultGeneratorSkills = functools.partial(
                 DataGeneratorSkills, 
                 frameloader=FrameLoader(REPO),
                 head=head,
-                train_test_val="train",
-                dim=(recipe.dim,recipe.dim),
-                timesteps=recipe.timesteps,
-                testrun=testrun
+                testrun=self._testrun
             )
             train_generator = DefaultGeneratorSkills(train_test_val="train")
             val_generator = DefaultGeneratorSkills(train_test_val="val")
@@ -106,7 +96,7 @@ class TrainerSkills:
                     model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(DEVICE)
                     model.load_state_dict(torch.load(path, weights_only=True))
                     optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.2)
+                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.3)
                     print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
                     revalidation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
                     print(f"{Fore.MAGENTA}Target {modelname}: {revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
@@ -120,7 +110,7 @@ class TrainerSkills:
             # For new training rounds
             model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(DEVICE)
             optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.2)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.3)
 
             epoch_start = 0
             losses_over_time = []
@@ -178,7 +168,6 @@ class TrainerSkills:
                 val_loss = validation_results['val_loss']
                 
                 # Call the epoch end self, because it is not called by DataLoader, although it shuffles.
-                # train_generator.on_epoch_end()
 
                 losses_over_time.append(val_loss)
                 f1_avgs_over_time.append(validation_results['f1_total_avg'])
@@ -285,13 +274,8 @@ class TrainerSkills:
             head.reset_metrics()
 
         return {
+            **metrics,
             'val_loss' : val_loss / len(dataloader),
-            'f1_total_avg' : float(np.mean(list(metrics['f1'].values()))),
-            'accuracy_avg' : float(np.mean(list(metrics['acc'].values()))),
-            'precision_avg' : float(np.mean(list(metrics['precision'].values()))),
-            'recall_avg' : float(np.mean(list(metrics['recall'].values()))),
-            'metrics' : metrics,
-            'confusion_heads' : head.confusion_heads,
         }
 
     def __create_or_recreate_cropped_videos(self, speedmode: str):

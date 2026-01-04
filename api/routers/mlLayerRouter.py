@@ -78,18 +78,18 @@ class MLLayerCompositionRouter(Resource):
 
         compositionName = data.get('compositionName')
         stage = data.get('stage')
-        propertyId = data.get('propertyId')
+        layerId = data.get('layerId')
         name = data.get('name')
         
         ValueHelper.check_raise_string_only_abc123(compositionName)
-        ValueHelper.check_raise_id(propertyId)
+        ValueHelper.check_raise_id(layerId)
         if stage is not None:
             assert isinstance(stage, int), f"Stage must be an integer"
             assert stage >= -1, f"Stage must be an integer >= -1"
         if name is not None:
             ValueHelper.check_raise_string_only_abc123(name)
         
-        assert self.mlLayerService.has_layer(propertyId), f"LayerPropertyId {propertyId} does not exist"
+        assert self.mlLayerService.has_layer(layerId), f"LayerId {layerId} does not exist"
 
         return {
             compositionName: layerComposition.to_dict()
@@ -97,12 +97,12 @@ class MLLayerCompositionRouter(Resource):
             self.mlLayerService.add_layer_compostion_stage(
                 compositionName=compositionName,
                 stage=stage,
-                propertyId=propertyId,
+                layerId=layerId,
                 name=name
             ).items()
         }, 200 
     
-class MLLayerCompositionMovePropertyRouter(Resource):
+class MLLayerCompositionMoveLayerRouter(Resource):
     def __init__(self, **kwargs):
         self.mlLayerService = MLLayerService()
         super().__init__(**kwargs)
@@ -122,7 +122,7 @@ class MLLayerCompositionMovePropertyRouter(Resource):
             ValueHelper.check_raise_string_only_abc123space(dest_stage)
             ValueHelper.check_raise_string_only_abc123space(key)
         
-            self.mlLayerService.move_skill_property(
+            self.mlLayerService.move_skill_layer(
                 composition_name=compositionName,
                 source=source_stage,
                 dest=dest_stage,
@@ -142,7 +142,7 @@ class MLLayerTypesRouter(Resource):
     def get(self):
         return self.mlLayerService.get_types(), 200
 
-class MLLayerCompositionPropertyAttributeRouter(Resource):
+class MLLayerCompositionAttributeRouter(Resource):
     def __init__(self, **kwargs):
         self.mlLayerService = MLLayerService()
         super().__init__(**kwargs)
@@ -152,13 +152,13 @@ class MLLayerCompositionPropertyAttributeRouter(Resource):
 
         compositionName = data.get('compositionName')
         stage = data.get('stage')
-        propertyname = data.get('propertyname')
+        layername = data.get('layername')
         attribute = data.get('attribute')
         value = data.get('value')
 
         try:
             ValueHelper.check_raise_string_only_abc123space(compositionName)
-            ValueHelper.check_raise_string_only_abc123(propertyname)
+            ValueHelper.check_raise_string_only_abc123(layername)
             ValueHelper.check_raise_string_only_abc123(attribute)
             if stage is not None:
                 assert isinstance(stage, int), f"Invalid stage, {stage}"
@@ -167,11 +167,11 @@ class MLLayerCompositionPropertyAttributeRouter(Resource):
                 compositionName=compositionName,
                 stage=stage,
                 attribute=attribute,
-                name=propertyname,
+                name=layername,
                 value=value,
             )
         except Exception as e:
-            print('MLLayerCompositionPropertyAttributeRouter', e)
+            print('MLLayerCompositionAttributeRouter', e)
 
         return 'ok', 200 
 

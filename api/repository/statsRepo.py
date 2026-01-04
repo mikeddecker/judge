@@ -5,8 +5,9 @@ from config import RECIPES, ENVS
 from flask_sqlalchemy import SQLAlchemy
 from helpers.helpers import load_json_file
 from repository.models import Video as VideoInfoDB, FrameLabel, FrameLabelType
-from repository.models import Skill, LayerComposition, LayerProperty, LayerPropertyValue
+from repository.models import Skill, LayerComposition, Layer, LayerValue
 from sqlalchemy import func, case
+from sqlalchemy.orm import aliased
 from helpers.ConfigHelper import recognition_get_modelpaths
 
 def extract_key_number_pairs(obj):
@@ -183,38 +184,33 @@ class StatsRepository:
 
         return videos
 
-    def skills_prop_names(self, layercompositionname:str=None) -> list[str]:
-        prop_name = case(
-                (LayerComposition.name == None, LayerProperty.name),
-                else_=LayerComposition.name
-            ).label('prop_name')
-        
+    def skills_layerNames(self, layercompositionname:str=None) -> list[str]:
         qry = self.db.session.query(
             LayerComposition,
-            prop_name
+            Layer.name.label("layerName")
         ).join(
-            LayerComposition.property
+            LayerComposition
         )
 
         if layercompositionname:
             qry = qry.filter(LayerComposition.compositionName == layercompositionname)
 
         return sorted({
-            row.prop_name for row in qry.all()
+            row.layerName for row in qry.all()
         })
     
     def skill_prop_value_names_dataframe(self):
         query = self.db.session.query(
-            LayerProperty.id.label("property_id"),
-            LayerProperty.name.label("prop_name"),
-            LayerProperty.type,
-            LayerProperty.min,
-            LayerProperty.max,
-            LayerProperty.step,
-            LayerPropertyValue.id.label("value_id"),
-            LayerPropertyValue.name.label("value_name"),
+            Layer.id.label("layerId"),
+            Layer.name.label("layerName"),
+            Layer.type,
+            Layer.min,
+            Layer.max,
+            Layer.step,
+            LayerValue.id.label("value_id"),
+            LayerValue.name.label("value_name"),
         ).outerjoin(
-            LayerPropertyValue, LayerProperty.id == LayerPropertyValue.propertyId
+            LayerValue, Layer.id == LayerValue.layerId
         )
         return pd.read_sql(query.statement, self.db.engine)
 
@@ -227,7 +223,7 @@ class StatsRepository:
         return [lcn.compositionName for lcn in layercomposition_names]
     
     def skills_prop_counts(self, layercompositionname: str = None) -> dict:        
-        prop_names = self.skills_prop_names(layercompositionname)
+        layerNames = self.skills_layerNames(layercompositionname)
 
         query = self.db.session.query(
             *[
@@ -235,11 +231,11 @@ class StatsRepository:
                     func.round(
                         (
                             func.char_length(Skill.skillinfo) -
-                            func.char_length(func.replace(Skill.skillinfo, prop_name, ""))
-                        ) / func.char_length(prop_name)
+                            func.char_length(func.replace(Skill.skillinfo, layerName, ""))
+                        ) / func.char_length(layerName)
                     )
-                ).label(prop_name)
-                for prop_name in prop_names
+                ).label(layerName)
+                for layerName in layerNames
             ],
             self.split_train_test_skill
         ).group_by(
@@ -255,22 +251,22 @@ class StatsRepository:
 
         output = {}
         for row in results:
-            output[row.split]  = {prop_name: int(getattr(row, prop_name)) for prop_name in prop_names}
+            output[row.split]  = {layerName: int(getattr(row, layerName)) for layerName in layerNames}
 
         return output
 
     def skills_prop_value_frequencies(self) -> dict:
         """
-        Returns counts of each distinct value for a given property in skillinfo JSON.
+        Returns counts of each distinct value for a given layer in skillinfo JSON.
         Example: {'Backwards': {0: 12, 1: 59}, 'CrossRestriction': {71: 443, 72: 223, 73: 150...} }
         """
         df_prop_value_names = self.skill_prop_value_names_dataframe()
-        def map_prop_value(df: pd.DataFrame, prop_name: str, prop_value: str):
-            df_prop_name_filtered = df[df['prop_name'] == prop_name]
-            if df_prop_name_filtered.iloc[0]['type'] == 'categorical':
+        def map_prop_value(df: pd.DataFrame, layerName: str, prop_value: str):
+            df_layerName_filtered = df[df['layerName'] == layerName]
+            if df_layerName_filtered.iloc[0]['type'] == 'categorical':
                 if prop_value == 0:
                     return 0
-                return df_prop_name_filtered[df_prop_name_filtered['value_id'] == prop_value].iloc[0]['value_name']
+                return df_layerName_filtered[df_layerName_filtered['value_id'] == prop_value].iloc[0]['value_name']
             else:
                 return prop_value
 
@@ -283,21 +279,21 @@ class StatsRepository:
 
         layer_composition_names = self.layercomposition_names()
         layer_composition_names.append('total')
-        counts = { lcn: { prop_name: { s: Counter() for s in ['train', 'test'] } for prop_name in self.skills_prop_names(None if lcn == 'total' else lcn) } for lcn in layer_composition_names }
+        counts = { lcn: { layerName: { s: Counter() for s in ['train', 'test'] } for layerName in self.skills_layerNames(None if lcn == 'total' else lcn) } for lcn in layer_composition_names }
         for row in result:
             for lcn in layer_composition_names:
                 if lcn in row.skillinfo.keys() or lcn == 'total':
                     skill: dict = row.skillinfo if lcn == 'total' else row.skillinfo[lcn]
-                    for property_name, value in extract_key_number_pairs(skill):
-                        counts[lcn][property_name][row.split][value] += 1
+                    for layer, value in extract_key_number_pairs(skill):
+                        counts[lcn][layer][row.split][value] += 1
 
         return {
             lcn: { 
-                prop_name: {
+                layerName: {
                     split: {
-                        map_prop_value(df_prop_value_names, prop_name, value): count for value, count in value_counter.items() }
-                    for split, value_counter in prop_name_split_values.items() } 
-                for prop_name, prop_name_split_values in lcn_values.items() }
+                        map_prop_value(df_prop_value_names, layerName, value): count for value, count in value_counter.items() }
+                    for split, value_counter in layerName_split_values.items() } 
+                for layerName, layerName_split_values in lcn_values.items() }
             for lcn, lcn_values in counts.items()
         }
 

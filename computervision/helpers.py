@@ -439,3 +439,38 @@ def safe_rmtree(path, retries=10, delay=1.5):
                 raise
             time.sleep(delay)
 
+def get_confusion_average(confusion_dict):
+    """
+    confusion_dict: dict[str, list[list[int]]]
+    Returns: averaged confusion matrix as list[list[float]]
+    """
+    matrices = [np.array(cm, dtype=float) for cm in confusion_dict.values()]
+    if len(matrices) == 0:
+        return None
+    avg_cm = np.mean(matrices, axis=0)
+    return avg_cm.tolist()
+
+def confusion_accuracy(cm):
+    cm = np.array(cm, dtype=float)
+    return np.trace(cm) / (cm.sum() + 1e-8)
+
+def get_numeric_metric_average(metric_values):
+    """
+    metric_values: dict[str, float | list]
+    """
+    scalars = [
+        v for v in metric_values.values()
+        if isinstance(v, (int, float, np.number))
+    ]
+    return float(np.mean(scalars)) if len(scalars) > 0 else None
+
+def extract_key_number_pairs(obj):
+    if isinstance(obj, list):
+        for item in obj:
+            yield from extract_key_number_pairs(item)
+    else:
+        for k, v in obj.items():
+            if isinstance(v, (int, float)):
+                yield (k, v)
+            elif isinstance(v, (dict, list)):
+                yield from extract_key_number_pairs(v)

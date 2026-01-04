@@ -1,20 +1,20 @@
 <template>
     <div class="flex-auto border rounded-md m-2">
         <h5 class="m-3">{{ title }}</h5>
-        <LayerCompositionPropertyValueSelector
+        <LayerCompositionValueSelector
             v-for="(composition, compositionKey) in stageProperties"
-            :property="composition['property']"
+            :layer="composition['layer']"
             :name="compositionKey"
             :value="composition['defaultValue']"
             :focussed="composition['focussed']"
             @update:value="value => updateAttribute(composition, compositionKey, 'defaultValue', value)"
             @update:focussed="value => updateAttribute(composition, compositionKey, 'focussed', value)"
-        ></LayerCompositionPropertyValueSelector>
+        ></LayerCompositionValueSelector>
     </div>
 </template>
 
 <script setup>
-import LayerCompositionPropertyValueSelector from './LayerCompositionPropertyValueSelector.vue';
+import LayerCompositionValueSelector from './LayerCompositionValueSelector.vue';
 
 const props = defineProps({
     stageProperties: {

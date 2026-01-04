@@ -124,7 +124,7 @@ class StatsService:
             'selectedModel': selectedModel,
             'models' : self.StatsRepo.skills_metrics(),
             'modelcomparison' : {},
-            'prop_name_counts' : {
+            'layerName_counts' : {
                 'total': self.StatsRepo.skills_prop_counts(),
                 **{ lcn: self.StatsRepo.skills_prop_counts(lcn) for lcn in layercomposition_names }
             },

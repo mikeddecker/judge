@@ -15,7 +15,7 @@ class ValueHelper:
     @staticmethod    
     def check_raise_frameNr(frameNr: int):
         if not isinstance(frameNr, int):
-            raise ValueError(f"FrameNr must be of type {int}, got {frameNr}")
+            raise ValueError(f"FrameNr must be of type {int}, got {frameNr} ({type(frameNr)})")
         if frameNr < 0:
             raise ValueError(f"FrameNr must be positive integer, got {frameNr}")
         if frameNr > MAX_FRAMENR:

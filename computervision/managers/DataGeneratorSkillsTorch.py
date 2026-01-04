@@ -4,8 +4,11 @@ import torch
 from models.OutputHeadRecognition import OutputHeadRecognition
 from helpers import load_skill_batch_X_torch
 
-from managers.DataRepository import DataRepository
+from managers.RepoGeneral import DataRepository
 from managers.FrameLoader import FrameLoader
+from types import SimpleNamespace
+
+TESTRUN_INSTANCES=60
 
 # TODO : change to tf dataset, so prefetch is possible https://medium.com/analytics-vidhya/write-your-own-custom-data-generator-for-tensorflow-keras-1252b64e41c3
 class DataGeneratorSkills(torch.utils.data.Dataset):
@@ -13,32 +16,30 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
                  frameloader: FrameLoader,
                  head: OutputHeadRecognition,
                  train_test_val: str, # train, test, val
-                 dim: tuple, # e.g. (128,128)
-                 timesteps=16,
-                 batch_size=1,
+                 recipe: SimpleNamespace,
                  testrun: bool = False,
                  **kwargs):
         super().__init__(**kwargs)
-        assert isinstance(dim, tuple)
-        assert isinstance(dim[0], int)
-        assert isinstance(dim[1], int)
-        assert len(dim) == 2
-        assert isinstance(timesteps, int)
+        assert isinstance(recipe.dim, tuple)
+        assert len(recipe.dim) == 2
+        assert isinstance(recipe.dim[0], int)
+        assert isinstance(recipe.dim[1], int)
+        assert isinstance(recipe.timesteps, int)
+        assert isinstance(recipe.batch_size, int)
         assert isinstance(train_test_val, str)
         assert train_test_val in ['train', 'test', 'val']
-        self.dim = dim
-        self.train_test_val = train_test_val
         self.augment = train_test_val == 'train'
-        self.timesteps = timesteps
-        self.batch_size = batch_size
+        self.recipe:SimpleNamespace=recipe 
+        self.dim = recipe.dim
+        self.train_test_val = train_test_val
+        self.timesteps:int = recipe.timesteps
+        self.batch_size:int = recipe.batch_size
         self.isTestrun = testrun
         self.frameloader = frameloader
         self.repo = DataRepository()
         self.Skills = self.repo.get_skills(train_test_val)
         self.head = head
 
-        self.balancedType = 'jump_return_push_frog_other' # TODO : make dynamic, provide in init
-        self.balancedType = 'limit_5procent'
         self.BalancedSet = pd.DataFrame(columns=self.Skills.columns)
 
         self.info_columns = [
@@ -53,15 +54,14 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         print(f'DataGeneratorSkills {train_test_val} init done')
         self.on_epoch_end()
 
-    def __len__(self, balanced=True):
-        'Denotes the number of batches per epoch'
-        if not balanced:
-            return len(self.Skills)
+    def __len__(self):
+        'Denotes the number of samples'
         if self.isTestrun:
-            return min(180, len(self.BalancedSet))
-        return len(self.BalancedSet) // self.batch_size if self.train_test_val == 'train' else len(self.Skills) // self.batch_size
+            return min(TESTRUN_INSTANCES, len(self.BalancedSet if self.train_test_val == 'train' else self.Skills))
+        else:
+            return len(self.BalancedSet if self.train_test_val == 'train' else self.Skills)
 
-    def __getitem__(self, batch_nr, normalize=True):
+    def __getitem__(self, batch_nr:int, normalize:bool=True):
         "batch_nr starts from 0"
 
         skillinfo_row = self.BalancedSet.iloc[batch_nr] if self.train_test_val == 'train' else self.Skills.iloc[batch_nr]
@@ -76,7 +76,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             dim=self.dim,
             frameStart=frameStart,
             frameEnd=frameEnd,
-            augment=True if self.train_test_val == 'train' and normalize else False,
+            augment=True if self.augment and normalize else False,
             timesteps=self.timesteps,
             normalized=normalize,
         )

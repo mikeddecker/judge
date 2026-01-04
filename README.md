@@ -111,6 +111,8 @@ When everything is installed, you can start the projects with ease!
    NVIDIA_DRIVER_CAPABILITIES=compute,utility
    ```
 
+2. One time `make docker-pull` for downloading all the images to your pc, thus you can run it offline later.
+
 2. Run `make dev` to start everything up! 🐳
 
 3. To stop, run `make dev-down` 😴
