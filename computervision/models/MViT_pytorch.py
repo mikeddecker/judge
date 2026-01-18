@@ -39,7 +39,7 @@ class MViT(nn.Module):
             output = output.flatten(start_dim=1)
             return output.shape[1]
 
-def get_model(head: nn.Module, recipe: SimpleNamespace):
-    """Build an MViT model in PyTorch"""
-    return MViT(head=head, recipe=recipe)
+# def get_model(head: nn.Module, recipe: SimpleNamespace):
+#     """Build an MViT model in PyTorch"""
+#     return MViT(head=head, recipe=recipe)
 

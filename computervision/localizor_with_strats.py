@@ -8,7 +8,7 @@ import time
 
 from constants import ENVS, DIM
 from helpers import get_localize_strategy_list
-from managers.RepoGeneral import DataRepository
+from managers.RepoGeneral import REPO_GENERAL, RepoGeneral
 from moviepy import ImageSequenceClip
 from tqdm import tqdm
 from ultralytics import YOLO
@@ -167,7 +167,7 @@ def calculate_smoothed_values(strat:str, params: dict, previous_values:dict, i:i
             raise NotImplementedError(f"Unrecognized strat ({strat})")
     
 def localize_jumpers(
-        model: YOLO, repo: DataRepository,
+        model: YOLO,
         videoId: int, dim: int, strategies: list, stratparams: dict,
         save_as_mp4=False, 
         padding=False
@@ -176,7 +176,7 @@ def localize_jumpers(
 
     # TODO : make relative? => instead of calculating with 378, 326, 1080, 1920, make it 0 -> 1
     
-    videoPath = repo.get_video_path(videoId=videoId)
+    videoPath = REPO_GENERAL.get_video_path(videoId=videoId)
 
     cap = cv2.VideoCapture(videoPath)
 
@@ -325,13 +325,13 @@ def localize_jumpers(
 
     return smoothed_values 
 
-def validate_localize(modeldir: str, repo: DataRepository):
+def validate_localize(modeldir: str, repo: RepoGeneral):
     """Validates localize methods on a specific run"""
     print('Team box validation')
     strategies = get_localize_strategy_list()
     strategies = ['raw', 'smoothing', 'smoothing_skip_small_iou']
 
-    df_team_boxes = repo.get_team_boxes().sort_values(['videoId', 'frameNr'])
+    df_team_boxes = REPO_GENERAL.get_team_boxes().sort_values(['videoId', 'frameNr'])
     videoIds = df_team_boxes['videoId'].unique()
 
     print(modeldir)
@@ -359,7 +359,7 @@ def validate_localize(modeldir: str, repo: DataRepository):
             # and relative x y w h
             df_coordinates = localize_jumpers(
                 model=model,
-                repo=repo,
+                repo=REPO_GENERAL,
                 videoId=videoId,
                 dim=DIM,
                 strategies=strategies,
@@ -429,7 +429,7 @@ def validate_localize(modeldir: str, repo: DataRepository):
 
     return ious_all['raw'][train_or_val]['avg']
 
-def predict_and_save_locations(weights: str, repo: DataRepository, videoIds: int, recipename: str, saveAsVideo:bool):
+def predict_and_save_locations(weights: str, videoIds: int, recipename: str, saveAsVideo:bool):
     """Validates localize methods on a specific run"""
 
     strategies = ['smoothing']
@@ -445,7 +445,6 @@ def predict_and_save_locations(weights: str, repo: DataRepository, videoIds: int
             # and relative x y w h
             df_coordinates = localize_jumpers(
                 model=model,
-                repo=repo,
                 videoId=videoId,
                 dim=DIM,
                 strategies=strategies,

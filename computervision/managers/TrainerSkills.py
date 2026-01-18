@@ -8,28 +8,34 @@ import numpy as np
 import time
 import random
 
+from base_utils import load_json_file
 from collections import defaultdict
 from colorama import Fore, Style
+from datetime import date
 from constants import RECIPES, SPEEDMODES, ENVS, PYTORCH_MODELS_SKILLS
 from dotenv import load_dotenv
-from helpers import NumpyTypeEncoder
-from managers.RepoGeneral import REPO
+from helpers import localize_get_best_modelpath
+from localizor_with_strats import predict_and_save_locations
+from managers.RepoGeneral import REPO_GENERAL
+from managers.RepoModels import REPO_MODELS
 from managers.RepoStats import REPO_STATS
 from managers.DataGeneratorSkillsTorch import DataGeneratorSkills
 from managers.FrameLoader import FrameLoader
+from models.OutputHeadRecognition import OutputHeadRecognition
 from pprint import pprint
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from datetime import date
-from base_utils import load_json_file
-from models.OutputHeadRecognition import OutputHeadRecognition
 from types import SimpleNamespace
-from localizor_with_strats import predict_and_save_locations
-from helpers import localize_get_best_modelpath
 
 DEVICE_TYPE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEVICE = torch.device(DEVICE_TYPE)
+MAX_EPOCHS = 300
+MAX_EPOCHS_TESTRUN = 5
 SCHEDULER_PATIENCE = 2
+PATIENCE = 5
+
+DEFAULT_COMPARE_METHOD_IS_BEST_MODEL = 'quadratic_validation_length_weighted_f1'
+DEFAULT_COMPARE_METHOD_HAS_MODEL_IMPROVED = 'f1_avg'
 
 print(f"Using DEVICE: {DEVICE}")
 load_dotenv()
@@ -39,221 +45,129 @@ torch.backends.cudnn.benchmark = True
 class TrainerSkills:
     _optimizer = None
     _testrun: bool = False
+    _step = 'SKILL'
 
     def __init__(self, testrun:bool=False):
         self._testrun=testrun
+        self._max_epochs = MAX_EPOCHS_TESTRUN if self._testrun else MAX_EPOCHS
 
-    def train(self, recipe: SimpleNamespace, from_scratch, epochs, unfreeze_all_layers=False, patience:int=4, speedmode=SPEEDMODES[1]):
-        rundate = date.today().strftime('%Y%m%d')
+    def train(self, recipe: SimpleNamespace, job_arguments:dict={}, speedmode=SPEEDMODES[1]):
+        modelname = recipe.model
+        if modelname not in PYTORCH_MODELS_SKILLS.keys():
+            raise ValueError(modelname)
+        
+        rundate = date.today()
         start = time.time()
 
         try:
-            epochs = 5 if self._testrun else epochs
-            modelname = recipe.model
-            if modelname not in PYTORCH_MODELS_SKILLS.keys():
-                raise ValueError(modelname)
-
             self.__create_or_recreate_cropped_videos(speedmode=speedmode)
-            
             head = OutputHeadRecognition(recipe)
-            
             DefaultGeneratorSkills = functools.partial(
                 DataGeneratorSkills, 
-                frameloader=FrameLoader(REPO),
                 head=head,
-                testrun=self._testrun
+                testrun=self._testrun,
+                recipe=recipe,
             )
             train_generator = DefaultGeneratorSkills(train_test_val="train")
             val_generator = DefaultGeneratorSkills(train_test_val="val")
-        
-            dataloaderTrain = DataLoader(train_generator, recipe.batch_size, shuffle=True)
-            dataloaderVal = DataLoader(val_generator, recipe.batch_size, shuffle=True)
-
-            # Re-evaluate to know whether the current run is better than the previous runs
-            # Adapting the losses_over_time, as limiting to 10% can change occurences of faults, bodyrotations... a little
-            # TODO : load previous model instead of current :)
+            dataloader_train = DataLoader(train_generator, recipe.batch_size, shuffle=True)
+            dataloader_val = DataLoader(val_generator, recipe.batch_size, shuffle=True)
             
-            try:
-                best_model_revalidation_results = None
-                best_model_name = None
-                revalidation_results = None
-                if not from_scratch and os.path.exists(pathBest):
-                    best_model_stats = load_json_file(best_stats_path)
-                    best_model_name = best_model_stats['modelname']
-                    best_model_backbone_output_neurons = PYTORCH_MODELS_SKILLS[best_model_name].get_output_feature_dim(recipe)
-                    best_head = OutputHeadRecognition(best_model_backbone_output_neurons, df_layers, df_composition, max_instances_per_role, prop_counts)
-                    try:                        
-                        model: torch.nn.Module = PYTORCH_MODELS_SKILLS[best_model_name](head=best_head, recipe=RECIPES['SKILL'][best_model_stats['recipe']['name']]).to(DEVICE)
-                        model.load_state_dict(torch.load(pathBest, weights_only=True))
-                        optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                        print(f"Re-evaluate best of best model ({best_model_name}), to get the most optimal comparisons")
-                        best_model_revalidation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
-                        print(f"{Fore.YELLOW}Target best ({best_model_name}) - {best_model_revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
-                    except:
-                        print(f"{Fore.RED}Error loading (weigths of) best model.{Style.RESET_ALL} Highly likely because of new parameters, this run becomes default best")
+            revalidate_if_required = speedmode == SPEEDMODES[2]
+            if revalidate_if_required:
+                self.__revalidate_previous_runs(rundate)
 
-                if not from_scratch and os.path.exists(path):
-                    model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(DEVICE)
-                    model.load_state_dict(torch.load(path, weights_only=True))
-                    optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.3)
-                    print(f"Re-evaluate best of current model {modelname}, to get the most optimal comparisons")
-                    revalidation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
-                    print(f"{Fore.MAGENTA}Target {modelname}: {revalidation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
-            except RuntimeError as e:
-                if "size mismatch" not in str(e) and "Missing key(s) in state_dict" not in str(e):
-                    raise e
-            except Exception as e:
-                print("revalidation went wrong")
-                raise e
-            
-            # For new training rounds
             model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(DEVICE)
             optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.3)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.2)
 
-            epoch_start = 0
-            losses_over_time = []
-            metrics_over_time = {}
-            modelstats = {}
-            f1_avgs_over_time = []
-            f1_avg_over_losses_over_time = []
-            acc_avgs_over_time = []
-            if not from_scratch and os.path.exists(checkpointPath) and os.path.exists(modelstatsPathCurrent):
-                checkpoint = torch.load(checkpointPath, weights_only=False)
-                modelstats = load_json_file(modelstatsPathCurrent)
-                model.load_state_dict(checkpoint['model_state_dict'])
-                optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-                scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-                epoch_start = modelstats['epoch'] + 1
-                losses_over_time = modelstats['losses_over_time']
-                f1_avgs_over_time = modelstats['f1_total_avgs_over_time']
-                f1_avg_over_losses_over_time = [] if 'f1_avg_over_losses_over_time' not in modelstats.keys() else modelstats['f1_avg_over_losses_over_time']
-                acc_avgs_over_time = modelstats['acc_avgs_over_time']
-                metrics_over_time = {} if 'metrics_over_time' not in modelstats.keys() else modelstats['metrics_over_time']
-                classification_reports = {} if 'classification_reports' not in modelstats.keys() else modelstats['classification_reports']
-
-            if unfreeze_all_layers:
-                for param in model.parameters():
-                    param.requires_grad = True
-
+            current_epoch = 1
             # Training loop
-            for epoch in range(epoch_start, epochs + epoch_start):
-                print(f"============= EPOCH {epoch} =============")
+            total_results = []
+            for frozen_run_pre_trained_weights in [True, False]:
+                if not frozen_run_pre_trained_weights:
+                    for param in model.parameters():
+                        param.requires_grad = True
 
-                model.train()
-                total_loss = 0.0
-                i = 0
-                for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloaderTrain):
-                    with torch.amp.autocast(device_type=DEVICE_TYPE):
-                        optimizer.zero_grad()  # Clear gradients
-                        
-                        # Forward pass
-                        outputs = model(batch_X / 255)
-                        total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask, skillId=skill_id)
-                        if total_batch_loss.requires_grad:
-                            total_batch_loss.backward()
-                            optimizer.step()
-                        else:
-                            # Allow to continue training, but display a warning
-                            print(f"⚠️ Warning (Skill {skill_id}): loss tensor has no grad, skipping batch")
-                            pprint({ k: v for k, v in batch_y.items() if k.startswith("composition_") })
-                            pprint({ k: v for k, v in batch_mask.items() if k.startswith("composition_") })
-                            continue
+                for epoch in range(current_epoch, self._max_epochs):
+                    print(f"============= EPOCH {epoch} =============")
+                    self.__train_epoch(model, dataloader_train, optimizer, head)
+                    validation_results = self.__validate(model=model, dataloader=dataloader_val)
+                    validation_results = { **validation_results, 'length_train': len(dataloader_train) }
+                    total_results.append(validation_results)
+                    scheduler.step(validation_results['val_loss'])
                     
-                    total_loss += total_batch_loss.item()
-                    i+=1
-                
-                validation_results = self.__validate(model=model, dataloader=dataloaderVal, optimizer=optimizer)
-                val_loss = validation_results['val_loss']
-                
-                # Call the epoch end self, because it is not called by DataLoader, although it shuffles.
+                    REPO_STATS.save_epoch_results(recipe, rundate, epoch, validation_results, step=self._step)
+                    model_is_best_of = REPO_STATS.check_is_best_model(
+                        recipe, rundate, validation_results, step=self._step, 
+                        compare_result_method=job_arguments.get('is_best_model_method', DEFAULT_COMPARE_METHOD_IS_BEST_MODEL)
+                    )
 
-                losses_over_time.append(val_loss)
-                f1_avgs_over_time.append(validation_results['f1_total_avg'])
-                acc_avgs_over_time.append(validation_results['accuracy_avg'])
-                scheduler.step(val_loss)
-                metrics_over_time[str(epoch)] = validation_results['metrics']
-                
-                minIndexF1 = f1_avgs_over_time.index(max(f1_avgs_over_time))
-                minIndexLoss = losses_over_time.index(min(losses_over_time))
-                hasValF1Improved = len(losses_over_time) - minIndexF1 - 1 == 0
-                hasValLossImproved = len(losses_over_time) - minIndexLoss - 1 == 0
-                epochsNoImprovement = len(losses_over_time) - max(minIndexF1, minIndexLoss) - 1
+                    for modelcategory, is_best_of_modelcategory in model_is_best_of.items():
+                        if is_best_of_modelcategory:
+                            REPO_MODELS.save_model(
+                                modelcategory=modelcategory,
+                                recipe=recipe,
+                                model=model,
+                                validation_results=validation_results,
+                                optimizer=optimizer,
+                                scheduler=scheduler,
+                                testrun=self._testrun,
+                            )
 
-                # Testing f1_avg over loss improvement for early stopping
-                f1_avg_over_loss = validation_results['f1_total_avg'] / val_loss
-                f1_avg_over_losses_over_time.append(f1_avg_over_loss)
-                hasAccOverLossImproved = len(f1_avg_over_losses_over_time) - 1 == f1_avg_over_losses_over_time.index(max(f1_avg_over_losses_over_time))
-                f1_avg_over_loss_improvement = ((f1_avg_over_loss / f1_avg_over_losses_over_time[-2]) if len(f1_avg_over_losses_over_time) > 1 else 0) - 1
+                    epochsNoImprovement = REPO_STATS.get_epochs_no_improvement(
+                        recipe, rundate, validation_results=validation_results, step=self._step, 
+                        compare_result_method=job_arguments.get('has_epoch_improved_method', DEFAULT_COMPARE_METHOD_HAS_MODEL_IMPROVED)
+                    )
 
-                color_acc = Fore.GREEN if hasValF1Improved else Fore.RED
-                color_loss = Fore.GREEN if hasValLossImproved else Fore.RED
-                color_f1_avg_over_loss = Fore.GREEN if hasAccOverLossImproved else Fore.RED
-                print(f"Epoch {epoch}, Train Loss: {total_loss / len(dataloaderTrain):.4f}")
-                print(f"Epoch {epoch}, Validation Loss: {color_loss}{val_loss:.4f}{Style.RESET_ALL}")
-                print(f"Epoch {epoch}, Validation f1_avg: {color_acc}{validation_results['f1_total_avg']:.4f}{Style.RESET_ALL}")
-                print(f"Epoch {epoch}, Validation f1_avg / loss: {color_f1_avg_over_loss}{f1_avg_over_loss:.4f}{Style.RESET_ALL}")
-                if len(f1_avg_over_losses_over_time) > 1:
-                    print(f"Epoch {epoch}, f1_avg / loss improvement: {f1_avg_over_loss_improvement:.2%}%")
+                    if epochsNoImprovement > PATIENCE:
+                        print(f"Stopping - No improvement for {PATIENCE} epochs")
+                        break
 
-                if epochsNoImprovement > patience:
-                    print(f"No improvement for {epochsNoImprovement} epochs - stopping")
-                    break
-
-                # TODO : add .current.json & compare to previous run
-                if hasValF1Improved or hasValLossImproved:
-                    torch.save({
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'scheduler_state_dict': scheduler.state_dict(),
-                    }, checkpointPath)
-
-                    stats = {
-                        'epoch': epoch,
-                        'validation_results': validation_results,
-                        'f1_total_avgs_over_time' : f1_avgs_over_time,
-                        'f1_avg_over_losses_over_time' : f1_avg_over_losses_over_time,
-                        'acc_avgs_over_time' : acc_avgs_over_time,
-                        'metrics_over_time': metrics_over_time,
-                        'losses_over_time': losses_over_time,
-                        'classification_reports' : None,
-                        'confusion_matrix': None,
-                        'final_classification_reports' : None,
-                        'time' : time.time() - start,
-                        'length_train': len(train_generator.Skills),
-                        'length_val': len(val_generator.Skills),
-                        'rundate': rundate,
-                        'modelname': modelname,
-                        'recipe': recipe
-                    }
-                    
-                    with open(modelstatsPathCurrent, "w") as fp:
-                        json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
-
-                    if not from_scratch and (not revalidation_results or validation_results['f1_total_avg'] > revalidation_results['f1_total_avg']):
-                        if revalidation_results:
-                            print(f"Current model {modelname} improved from {revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
-                        with open(modelstatsPath, "w") as fp:
-                            json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
-                        
-                        torch.save(model.state_dict(), path)
-
-                    if not from_scratch and (not best_model_revalidation_results or validation_results['f1_total_avg'] > best_model_revalidation_results['f1_total_avg']):
-                        if best_model_revalidation_results:
-                            print(f"Model {modelname} improved the previous best model {best_model_name} from {best_model_revalidation_results['f1_total_avg']} to {validation_results['f1_total_avg']}")
-                        with open(best_stats_path, "w") as fp:
-                            json.dump(stats, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
-
-                        torch.save(model.state_dict(), pathBest)
-            
         except Exception as e:
             raise e
         finally:
             torch.cuda.empty_cache()
             gc.collect()
 
-    def __validate(self, model, dataloader, optimizer):
+    def __create_or_recreate_cropped_videos(self, speedmode: str):
+        unique_videoIds = REPO_GENERAL.get_videoIds_of_videos_with_skills()
+        existing_cropped_videoIds = []
+        existing_redo_subset = set()
+        new_videos = set()
+
+        for videoId in unique_videoIds:
+            vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}', f'{videoId}_cropped.mp4')
+            if not os.path.exists(vpath):
+                new_videos.add(videoId)
+            else:
+                existing_cropped_videoIds.append(videoId)
+
+        recipename, weightpath = localize_get_best_modelpath()
+        random.shuffle(existing_cropped_videoIds)
+        for i in range(int(np.sqrt(len(existing_cropped_videoIds))) if speedmode == SPEEDMODES[1] else 0):
+            existing_redo_subset.add(existing_cropped_videoIds[i])
+
+        print(f"Speedmode={speedmode}: Predict and create videocrops")
+        predict_and_save_locations(
+            recipename=recipename,
+            weights=weightpath,
+            videoIds=new_videos.union(existing_redo_subset),
+            saveAsVideo=True
+        )
+
+    def __validate(self, model, dataloader) -> dict:
+        """
+        Validates the current model and adds val_loss to the epoch metrics
+
+        Returns: {
+            "metric_per_prop": {'acc': {'prop1': list[float]|float, ...}, 'f1': {...}'},
+            "metric_avg_of_props": {'acc': float, 'f1': float, ...},
+            "confusion_heads": self.confusion_heads,
+            'val_loss': float,
+            'val_length': int,
+        }
+        """
         model.eval()
         val_loss = 0.0
 
@@ -276,32 +190,33 @@ class TrainerSkills:
         return {
             **metrics,
             'val_loss' : val_loss / len(dataloader),
+            'val_length': len(dataloader),
         }
 
-    def __create_or_recreate_cropped_videos(self, speedmode: str):
-        unique_videoIds = REPO.get_videoIds_of_videos_with_skills()
-        existing_cropped_videoIds = []
-        existing_redo_subset = set()
-        new_videos = set()
+    def __train_epoch(self, model, dataloader, optimizer, head):
+        model.train()
+        total_loss = 0.0
+        i = 0
+        for batch_X, batch_y, batch_mask, skill_id in tqdm(dataloader):
+            with torch.amp.autocast(device_type=DEVICE_TYPE):
+                optimizer.zero_grad()  # Clear gradients
+                
+                # Forward pass
+                outputs = model(batch_X / 255)
+                total_batch_loss = head.compute_loss(outputs, batch_y, batch_mask, skillId=skill_id)
+                if total_batch_loss.requires_grad:
+                    total_batch_loss.backward()
+                    optimizer.step()
+                else:
+                    # Allow to continue training, but display a warning
+                    print(f"⚠️ Warning (Skill {skill_id}): loss tensor has no grad, skipping batch")
+                    pprint({ k: v for k, v in batch_y.items() if k.startswith("composition_") })
+                    pprint({ k: v for k, v in batch_mask.items() if k.startswith("composition_") })
+                    continue
+            
+            total_loss += total_batch_loss.item()
+            i+=1
 
-        for videoId in unique_videoIds:
-            vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}', f'{videoId}_cropped.mp4')
-            if not os.path.exists(vpath):
-                new_videos.add(videoId)
-            else:
-                existing_cropped_videoIds.append(videoId)
-
-        recipename, weightpath = localize_get_best_modelpath()
-        random.shuffle(existing_cropped_videoIds)
-        for i in range(int(np.sqrt(len(existing_cropped_videoIds))) if speedmode == SPEEDMODES[1] else 0):
-            existing_redo_subset.add(existing_cropped_videoIds[i])
-
-        print(f"Speedmode={speedmode}: Predict and create videocrops")
-        predict_and_save_locations(
-            recipename=recipename,
-            weights=weightpath,
-            repo=REPO,
-            videoIds=new_videos.union(existing_redo_subset),
-            saveAsVideo=True
-        )
+    def __revalidate_previous_runs(self, rundate, dataloader_val):
+        raise NotImplementedError('__revalidate_previous_runs')
 

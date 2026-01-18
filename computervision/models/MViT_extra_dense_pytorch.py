@@ -41,8 +41,3 @@ class MViT_Dense(nn.Module):
             output = mvit(input)
             output = output.flatten(start_dim=1)
             return output.shape[1] * 3 // 4
-
-def get_model(head: nn.Module, recipe: SimpleNamespace):
-    """Build an MViT model in PyTorch"""
-    return MViT_Dense(head=head, recipe=recipe)
-

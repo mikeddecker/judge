@@ -2,25 +2,19 @@
 
 import time
 import json
-from managers.RepoGeneral import DataRepository
+from managers.RepoGeneral import REPO_GENERAL
 from Predictor import Predictor
 from Trainer import Trainer
 from sqlalchemy.orm import close_all_sessions
 from constants import RECIPES
 from pprint import pprint
 
-# Managers
-
-REPO = DataRepository()
-
 # JobReader
 
 no_shutdown_job = True
-predictor = Predictor()
-trainer = Trainer()
 
 while no_shutdown_job:
-    job = REPO.get_next_job()
+    job = REPO_GENERAL.get_next_job()
 
     if job is None:
         time.sleep(3)
@@ -32,10 +26,11 @@ while no_shutdown_job:
         print("Job arguments:")
         pprint(job_arguments)
 
-    job_arguments = json.loads(job["job_arguments"])
+    job_arguments : dict = json.loads(job["job_arguments"])
 
     if job["type"] == "PREDICT":
         print(f"Predict video {job_arguments["videoId"]}")
+        predictor = Predictor(job_arguments.get('testrun'))
         predictor.predict(
             type=job["step"],
             videoId=job_arguments["videoId"],
@@ -45,15 +40,15 @@ while no_shutdown_job:
             weights=job_arguments["weights"] if job_arguments["weights"] is not None else 'best',
             testrun=job_arguments['testrun']
         )
-        REPO.delete_job(job["id"])
+        REPO_GENERAL.delete_job(job["id"])
     elif job["type"] == "TRAIN":
+        trainer = Trainer(testrun=job_arguments.get('testrun'))
         trainer.train(
             step=job['step'],
             recipename=job_arguments['recipe'],
-            from_scratch=True,
-            testrun=job_arguments['testrun']
+            job_arguments=job_arguments
         )
-        REPO.delete_job(job["id"])
+        REPO_GENERAL.delete_job(job["id"])
     else:
         print('Unrecognized job?')
         print(job)

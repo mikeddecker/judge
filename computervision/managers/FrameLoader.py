@@ -7,11 +7,11 @@ import random
 
 from constants import ENVS
 
-FOLDER_VIDEORESULTS = os.getenv("FOLDER_VIDEORESULTS")
-
 class FrameLoader:
-    def __init__(self, datarepo):
-        self.VideoNames = datarepo.VideoNames
+    def __init__(self):
+        # Import here to avoid circular dependency
+        from managers.RepoGeneral import REPO_GENERAL
+        self.VideoNames = REPO_GENERAL.VideoNames
         self.VideoNames.index = self.VideoNames["id"]
 
     def __get_cropped_video_path(self, videoId):
@@ -22,7 +22,6 @@ class FrameLoader:
 
         return vpath
         
-
     def get_frame_original(self, videoId, frameNr, dim, original_x, original_y, original_width, original_height, printId=False):
         if printId:
             print(frameNr)
@@ -269,7 +268,6 @@ class FrameLoader:
                 print(f"Read a None frame", videoId, currentFrame)
                 print("@"*80)
 
-
         assert len(frames) == end-start, f"Something went wrong, frames doesn't have length of timesteps = {end-start}, got {len(frames)}"
         
         return np.array(frames) if channels_last else np.transpose(np.array(frames), (3, 0, 1, 2))
@@ -322,3 +320,4 @@ class FrameLoader:
         assert len(frames) == timesteps, f"Something went wrong, frames doesn't have length of timesteps = {timesteps}, got {len(frames)}"
         
         return np.transpose(np.array(frames), (3, 0, 1, 2))
+

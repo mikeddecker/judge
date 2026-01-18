@@ -4,7 +4,7 @@ import torch
 import torch.optim as optim
 
 from constants import ENVS, PYTORCH_MODELS_SKILLS
-from managers.RepoGeneral import DataRepository
+from managers.RepoGeneral import REPO_GENERAL
 from managers.DataGeneratorSegmentationTorch import DataGeneratorSegmentation
 from managers.FrameLoader import FrameLoader
 from torch.utils.data import DataLoader
@@ -64,14 +64,14 @@ class TrainerSegments:
                     param.requires_grad = True
 
             train_generator = DataGeneratorSegmentation(
-                frameloader=FrameLoader(repo),
+                frameloader=FrameLoader(),
                 train_test_val="train",
                 dim=(DIM,DIM),
                 timesteps=trainparams['timesteps'],
                 batch_size=trainparams['batch_size'],
             )
             val_generator = DataGeneratorSegmentation(
-                frameloader=FrameLoader(repo),
+                frameloader=FrameLoader(),
                 train_test_val="val",
                 dim=(DIM,DIM),
                 timesteps=trainparams['timesteps'],

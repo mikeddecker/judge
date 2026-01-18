@@ -11,7 +11,7 @@ from helpers import extract_key_number_pairs
 from typing import Iterable
 from sqlalchemy.engine import Connection, Engine
 
-class RepoGeneral:
+class DataRepository:
     VideoNames = {} # pandas dataframe
 
     def __init__(self):  
@@ -300,7 +300,7 @@ class RepoGeneral:
         with self._get_connection() as connection:
             return pd.read_sql(qry, con=connection)
             
-    def get_next_job(self) -> pd.Series:
+    def get_next_job(self):
         with self._get_connection() as connection:
             qry = sqlal.text(f"""SELECT * FROM Jobs""")
             df_jobs = pd.read_sql(qry, con=connection)
@@ -316,38 +316,5 @@ class RepoGeneral:
     def get_video_path(self, videoId):
         return os.path.join(ENVS.DIRS.VIDEOS, self.VideoNames.loc[videoId, "name"])
     
-    def get_frame_label_types(self, include_team=True):
-        with self._get_connection() as connection:
-            qry = sqlal.text(f"""SELECT info FROM FrameLabelTypes""")
-            flts = pd.read_sql(qry, con=connection)
-            flts = flts['info'].to_list()
-            if include_team:
-                flts.insert(0, 'team')
-            return flts
-
-    def get_skill_prop_counts(self):
-        with self._get_connection() as connection:
-            distinct_layerNames = """
-                SELECT
-                DISTINCT lp.name AS name
-                FROM LayerComposition lc
-                JOIN Layers lp ON lp.id = lc.layerId
-            """
-            distinct_layerNames = pd.read_sql(distinct_layerNames, con=connection)['name'].to_list()
-
-            connection.execution_options(stream_results=True)
-
-            # counts[layerName][value] = occurrence count
-            counts = defaultdict(lambda: defaultdict(int))
-            for chunk_dataframe in pd.read_sql("SELECT skillinfo FROM Skills", connection, chunksize=50000):
-                print(f"DataRepo - get_skill_prop_counts: processing {len(chunk_dataframe)} rows")
-
-                for row in chunk_dataframe.itertuples(index=False):
-                    s = json.loads(row.skillinfo)
-                    for k,v in extract_key_number_pairs(s):
-                        counts[k][v] += 1
-
-            return counts
-
-REPO_GENERAL = RepoGeneral()
+REPO = DataRepository()
 

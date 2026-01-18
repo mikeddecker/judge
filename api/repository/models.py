@@ -6,6 +6,9 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped
 from datetime import datetime
 
+# TINYINT : -128 > 128
+# SMALLINT : -32768 > 32767
+
 class Folder(db.Model):
     __tablename__ = 'Folders'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -131,35 +134,36 @@ class FrameLabel(db.Model):
             'width' : self.width,
             'jumperVisible' : self.jumperVisible
         }
-    
+
 class TrainResult(db.Model):
     __tablename__ = 'TrainResults'
-    modelname = db.Column(db.String(127), nullable=False)
-    train_date = db.Column(db.Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    step = db.Column(db.String(50), nullable=False)
+    recipeCode = db.Column(db.String(255), nullable=False)
+    recipe = db.Column(MutableDict.as_mutable(JSON), nullable=False)
+
+    bestEpoch = db.Column(SMALLINT(unsigned=True), nullable=False)
+    revalidationResults = db.Column(MutableDict.as_mutable(JSON), nullable=False, default={})
+    lastRevalidationTime = db.Column(db.DateTime, default=datetime.now)
+
+    isBestOfAll = db.Column(db.Boolean, nullable=False)
+    isBestOfRecipe = db.Column(db.Boolean, nullable=False)
+    isBestOfArchitecture = db.Column(db.Boolean, nullable=False)
+
+    trainStart = db.Column(db.DateTime, default=datetime.now)
+    creationDate = db.Column(db.DateTime, default=datetime.now)
+    lastUpdated = db.Column(db.DateTime, default=datetime.now)
+    isRunning = db.Column(db.Boolean, nullable=False)
+
+class TrainResultEpoch(db.Model):
+    __tablename__ = 'TrainResultsEpoch'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    trainResultId = db.Column(db.Integer, db.ForeignKey('TrainResults.id', ondelete='CASCADE'), nullable=False)
     epoch = db.Column(SMALLINT(unsigned=True), nullable=False)
-    iou = db.Column(db.Float, nullable=False)
-    loss = db.Column(db.Float, nullable=False)
-    val_iou = db.Column(db.Float, nullable=False)
-    val_loss = db.Column(db.Float, nullable=False)
+    validationResults = db.Column(MutableDict.as_mutable(JSON), nullable=False)
 
-    __table_args__ = (
-        db.PrimaryKeyConstraint('modelname', 'epoch', name='_modelname_epoch_pk_constraint'),
-    )
-
-class TrainResultSkill(db.Model):
-    __tablename__ = 'TrainResultsSkills'
-    modelname = db.Column(db.String(127), nullable=False)
-    train_date = db.Column(db.Integer, nullable=False)
-    epoch = db.Column(SMALLINT(unsigned=True), nullable=False)
-    loss = db.Column(db.Float, nullable=False)
-    accuracy = db.Column(db.Float, nullable=False)
-    val_loss = db.Column(db.Float, nullable=False)
-    val_accuracy = db.Column(db.Float, nullable=False)
-    losses_and_metrics = db.Column(MutableDict.as_mutable(JSON), nullable=False)
-
-    __table_args__ = (
-        db.PrimaryKeyConstraint('modelname', 'epoch', name='_modelname_epoch_pk_constraint'),
-    )
+    creationDate = db.Column(db.DateTime, default=datetime.now)
+    lastUpdated = db.Column(db.DateTime, default=datetime.now)
 
 class Skill(db.Model):
     __tablename__ = 'Skills'

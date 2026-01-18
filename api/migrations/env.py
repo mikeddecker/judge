@@ -95,6 +95,7 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=get_metadata(),
+            compare_indexes=False, # TODO : rename foreign key propertyId
             **conf_args
         )
 

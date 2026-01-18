@@ -4,7 +4,7 @@ import torch
 from models.OutputHeadRecognition import OutputHeadRecognition
 from helpers import load_skill_batch_X_torch
 
-from managers.RepoGeneral import DataRepository
+from managers.RepoGeneral import REPO_GENERAL
 from managers.FrameLoader import FrameLoader
 from types import SimpleNamespace
 
@@ -13,31 +13,26 @@ TESTRUN_INSTANCES=60
 # TODO : change to tf dataset, so prefetch is possible https://medium.com/analytics-vidhya/write-your-own-custom-data-generator-for-tensorflow-keras-1252b64e41c3
 class DataGeneratorSkills(torch.utils.data.Dataset):
     def __init__(self,
-                 frameloader: FrameLoader,
+                 recipe: SimpleNamespace,
                  head: OutputHeadRecognition,
                  train_test_val: str, # train, test, val
-                 recipe: SimpleNamespace,
                  testrun: bool = False,
                  **kwargs):
         super().__init__(**kwargs)
-        assert isinstance(recipe.dim, tuple)
-        assert len(recipe.dim) == 2
-        assert isinstance(recipe.dim[0], int)
-        assert isinstance(recipe.dim[1], int)
+        assert isinstance(recipe.dim, int), f"{type(recipe.dim)}"
         assert isinstance(recipe.timesteps, int)
         assert isinstance(recipe.batch_size, int)
         assert isinstance(train_test_val, str)
         assert train_test_val in ['train', 'test', 'val']
         self.augment = train_test_val == 'train'
-        self.recipe:SimpleNamespace=recipe 
+        self.recipe:SimpleNamespace = recipe 
         self.dim = recipe.dim
         self.train_test_val = train_test_val
         self.timesteps:int = recipe.timesteps
         self.batch_size:int = recipe.batch_size
         self.isTestrun = testrun
-        self.frameloader = frameloader
-        self.repo = DataRepository()
-        self.Skills = self.repo.get_skills(train_test_val)
+        self.frameloader = FrameLoader()
+        self.Skills = REPO_GENERAL.get_skills(train_test_val)
         self.head = head
 
         self.BalancedSet = pd.DataFrame(columns=self.Skills.columns)
@@ -73,7 +68,7 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         X, flip_turner = load_skill_batch_X_torch(
             frameloader=self.frameloader,
             videoId=videoId,
-            dim=self.dim,
+            dim=(self.dim,self.dim),
             frameStart=frameStart,
             frameEnd=frameEnd,
             augment=True if self.augment and normalize else False,

@@ -1,8 +1,8 @@
 import pandas as pd
 import random
 import torch
-from .RepoGeneral import DataRepository
-from .FrameLoader import FrameLoader
+from managers.RepoGeneral import REPO_GENERAL
+from managers.FrameLoader import FrameLoader
 from helpers import calculate_splitpoint_values, load_segment_batch_X_torch, load_segment_batch_y_torch
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -31,7 +31,7 @@ class DataGeneratorSegmentation(torch.utils.data.Dataset):
         self.timesteps = timesteps
         self.batch_size = batch_size
         self.frameloader = frameloader
-        self.repo = DataRepository()
+        self.repo = REPO_GENERAL
         self.Videos = self.repo.get_fully_segmented_videos(train_test_val)
         self.Skills = self.repo.get_skills_of_fully_segmented_videos(train_test_val)
         self._create_df_segment_samples()

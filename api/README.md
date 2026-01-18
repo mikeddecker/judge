@@ -8,6 +8,12 @@ The API will be available at `http://localhost:${API_LOCAL_PORT}`
 
 Database migrations and setup are handled automatically in the docker containers.
 
+Only use --build when:
+
+- Dockerfile changes
+- package.json, requirements.txt, etc. change
+- Base image changes
+
 ## Changing the databse (Flask - alembic)
 
 (this has not been tried in the dockerized environment yet!)

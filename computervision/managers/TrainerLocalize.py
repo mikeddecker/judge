@@ -12,7 +12,7 @@ from constants import ENVS
 from datetime import datetime
 from helpers import safe_rmtree
 from localizor_with_strats import validate_localize
-from managers.RepoGeneral import DataRepository
+from managers.Repository import DataRepository
 from ultralytics import YOLO
 
 IMAGES_FOLDER = "images"

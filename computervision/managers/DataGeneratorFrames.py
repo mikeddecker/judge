@@ -1,6 +1,6 @@
 import keras
 import numpy as np
-from managers.RepoGeneral import DataRepository
+from managers.RepoGeneral import REPO_GENERAL
 from managers.FrameLoader import FrameLoader
 
 # TODO : change to tf dataset, so prefetch is possible https://medium.com/analytics-vidhya/write-your-own-custom-data-generator-for-tensorflow-keras-1252b64e41c3

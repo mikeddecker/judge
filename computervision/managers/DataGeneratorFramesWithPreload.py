@@ -1,6 +1,6 @@
 import keras
 import numpy as np
-from managers.RepoGeneral import DataRepository
+from managers.RepoGeneral import REPO_GENERAL
 
 # Didn't improve loading time
 

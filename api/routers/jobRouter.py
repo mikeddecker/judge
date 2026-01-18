@@ -56,9 +56,11 @@ class JobLaunchRouter(Resource):
                 "weights": data.get('weights'),
                 "save_mp4": data.get('save_mp4'),
                 "model_kwargs" : data.get('model_kwargs'),
+                "testrun" : data.get('testrun'),
             },
         )
 
         self.jobService.launch_job(job)
 
         return "Job launched", 200
+

@@ -5,34 +5,36 @@ import torch.nn as nn
 import torchmetrics
 import metrics.NumericStepMetrics as nsm
 
+from pprint import pprint
+
+from constants import PYTORCH_MODELS_SKILLS
 from collections import defaultdict
 from helpers import map_stageNr, mapped_stage_is_not_stageProperties, weighted_mse_loss
-from helpers import get_confusion_average, get_numeric_metric_average
-from managers.RepoGeneral import REPO
+from helpers import confusion_accuracy, get_numeric_metric_average, get_confusion_average
+from managers.RepoGeneral import REPO_GENERAL
+from types import SimpleNamespace
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class OutputHeadRecognition(nn.Module):
-    """Template by ChatGPT 2025-08-07, altered to incorporate stages"""
-    def __init__(self, input_neurons: int, df_layers, df_composition, max_instances_per_composition: pd.Series, prop_counts: defaultdict[defaultdict[int|float]]):
+    """The output head for recognizing skills"""
+    def __init__(self, recipe: SimpleNamespace):
         super().__init__()
 
         self.confusion_heads : dict[list[str]] = {}
-        self.df_layers, self.df_composition, self.max_instances_per_composition = REPO.get_recognition_config()
-        self.df_layers : pd.DataFrame = df_layers
-        self.df_composition : pd.DataFrame = df_composition 
-        self.max_instances_per_composition : pd.Series = max_instances_per_composition
+        self.df_layers : pd.DataFrame = REPO_GENERAL.get_skill_layers()
+        self.df_composition : pd.DataFrame = REPO_GENERAL.get_skill_compositions() 
+        self.max_instances_per_composition : pd.Series = REPO_GENERAL.get_max_instances_per_role(self.df_composition)
         self.output_layers = nn.ModuleDict()
 
-        backbone_output_neurons = PYTORCH_MODELS_SKILLS[modelname].get_output_feature_dim(recipe)
-        prop_counts = REPO.get_skill_prop_counts()
-
+        backbone_output_neurons = PYTORCH_MODELS_SKILLS[recipe.name].get_output_feature_dim(recipe)
+        prop_counts = REPO_GENERAL.get_skill_prop_counts()
 
         print(f"max instances per role")
-        print(max_instances_per_composition)
+        print(self.max_instances_per_composition)
 
         self.init_categorical_mappings()
-        self.init_layers(input_neurons, prop_counts)
+        self.init_layers(backbone_output_neurons, prop_counts)
         self.init_metrics()
 
     def init_categorical_mappings(self):
@@ -363,8 +365,16 @@ class OutputHeadRecognition(nn.Module):
     
     def compute_metrics(self):
         """
-        Computes precision, recall, f1, and accuracy for each output_head in preds using torchmetrics.
+        Computes precision, recall, f1, confusion and accuracy for each output_head in preds using torchmetrics.
+
+        Returns: {
+            "metric_per_prop": {'acc': {'prop1': list[float]|float, ...}, 'f1': {...}'},
+            "metric_avg_of_props": {'acc': float, 'f1': float, ...},
+            "confusion_heads": self.confusion_heads,
+        }
+
         """
+        # Metric types: acc, f1, precision...
         prop_metrics = {
             metric_type: {
                 propname: (
@@ -375,17 +385,19 @@ class OutputHeadRecognition(nn.Module):
             } for metric_type, propname_metric in self.metrics.items()
         }
 
+        pprint('prop_metrics f1')
+        pprint(prop_metrics['f1'])
+
         avg_metrics = {}
+        total_average = defaultdict(lambda: [])
 
         for metric_type, values in prop_metrics.items():
-            if metric_type == "confusion":
-                avg_metrics[metric_type] = get_confusion_average(values)
-            else:
-                avg_metrics[metric_type] = get_numeric_metric_average(values)
-
+            avg = get_confusion_average(values) if metric_type == "confusion" else get_numeric_metric_average(values)
+            avg_metrics[metric_type] = avg
+        
         return {
-            "individual": prop_metrics,
-            "avg": avg_metrics,
-            "confusion_heads": self.confusion_heads,
+            'metric_per_prop': prop_metrics,
+            'metric_avg_of_props': avg_metrics,
+            'confusion_heads': self.confusion_heads,
         }
 
