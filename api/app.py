@@ -86,6 +86,11 @@ def restore_latest_mysql_backup(backup_dir: str = MYSQL_BACKUP):
         subprocess.run(restore_cmd, stdin=f, check=True, env=env)
     print(f"✅ {views_sql} applied successfully")
 
+def is_running_manual_migrations():
+    # Detect if the current process is running flask db migrate/upgrade
+    # This is yes when inside the container flask db upgrade is executed
+    return any(arg in sys.argv for arg in ("db", "migrate", "upgrade"))
+
 def create_app(config_object:str="config.Config"):
     app = Flask(__name__)
     CORS(app)
@@ -93,7 +98,7 @@ def create_app(config_object:str="config.Config"):
     # Load configuration from config file or environment variable
     app.config.from_object(config_object)
     
-    if not app.config.get('TESTING', False):
+    if not app.config.get('TESTING', False) and not is_running_manual_migrations():
         print("⏳ Restoring latest MySQL backup before starting the app...")
         restore_latest_mysql_backup()
     # Initialize extensions
