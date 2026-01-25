@@ -8,8 +8,17 @@ import sqlalchemy as sqlal
 from collections import defaultdict
 from constants import ENVS
 from helpers import extract_key_number_pairs
-from typing import Iterable
+from typing import Iterable, Any, TypedDict
 from sqlalchemy.engine import Connection, Engine
+from sqlalchemy.types import TypeEngine
+
+class ColumnInfo(TypedDict, total=False):
+    name: str
+    type: TypeEngine
+    nullable: bool
+    default: Any
+    autoincrement: bool
+    comment: str
 
 class DataRepository:
     VideoNames = {} # pandas dataframe
@@ -27,6 +36,12 @@ class DataRepository:
     def _get_connection(self) -> Connection:
         return self.engine.connect()
     
+    def get_table_columns(self, table_name: str) -> list[ColumnInfo]:
+        inspector = sqlal.inspect(self.engine)
+        # TODO : check if table exists first
+        columns = inspector.get_columns(table_name)
+        return columns
+
     def get_videoinfo(self, videoId):
         qry = sqlal.text(f"""SELECT * FROM Videos WHERE id = {videoId}""")
         with self._get_connection() as connection:

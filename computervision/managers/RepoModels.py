@@ -23,45 +23,54 @@ class RepoModels(DataRepository):
         """For revalidation"""
         raise NotImplementedError()
     
-    def save_model(
+    def save_model_checkpoint(
             self, 
-            modelcategory:str, 
             recipe: SimpleNamespace, 
             validation_results: dict, 
             model: torch.nn.Module,
-            optimizer=None, 
-            scheduler=None, 
-            testrun:bool=False
+            isBestOfRecipe: bool,
+            optimizer = None,
+            scheduler = None,
+            testrun : bool=False,
         ):
         """
         Save model and optimizer/scheduler state dicts.
         
         Parameters:
-            modelcategory (str): 'all', 'architecture' or 'recipe'
             recipe (SimpleNamespace): contains information about naming
             validation_results (dict): validation metrics
             model (torch.nn.Module): the model to save
+            isBestOfRecipe (bool): Also save as best weights
             optimizer: optimizer state (optional)
             scheduler: learning rate scheduler state (optional)
             testrun (bool): whether this is a test run
         """
-        modelpath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{recipe.model}{'_testrun' if testrun else ''}.{modelcategory}.state_dict.pt")
-        resultpath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{recipe.model}{'_testrun' if testrun else ''}.{modelcategory}.stats.json")
+        saveRounds = [True, False] if isBestOfRecipe else [True]
 
-        state_dict = {
-            'model_state_dict': model.state_dict(),
-        }
-        
-        if optimizer is not None:
-            state_dict['optimizer_state_dict'] = optimizer.state_dict()
-        
-        if scheduler is not None:
-            state_dict['scheduler_state_dict'] = scheduler.state_dict()
+        for isCheckpoint in saveRounds:
+            filename_parts = [recipe.model]
+            if isCheckpoint:
+                filename_parts.append('checkpoint')
+            if testrun:
+                filename_parts.append('testrun')
+            filename_partial_text = '.'.join(filename_parts)
+            modelpath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{filename_partial_text}.state_dict.pt")
+            resultpath = os.path.join(ENVS.DIRS.WEIGHTS.SKILLS, f"{filename_partial_text}.stats.json")
 
-        torch.save(state_dict, modelpath)
+            state_dict = {
+                'model_state_dict': model.state_dict(),
+            }
 
-        with open(resultpath, "w") as fp:
-            json.dump(validation_results, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
+            if optimizer is not None:
+                state_dict['optimizer_state_dict'] = optimizer.state_dict()
+
+            if scheduler is not None:
+                state_dict['scheduler_state_dict'] = scheduler.state_dict()
+
+            torch.save(state_dict, modelpath)
+
+            with open(resultpath, "w") as fp:
+                json.dump(validation_results, fp, indent=4, cls=NumpyTypeEncoder, sort_keys=True)
 
 REPO_MODELS = RepoModels()
 

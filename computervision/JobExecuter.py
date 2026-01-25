@@ -30,7 +30,7 @@ while no_shutdown_job:
 
     if job["type"] == "PREDICT":
         print(f"Predict video {job_arguments["videoId"]}")
-        predictor = Predictor(job_arguments.get('testrun'))
+        predictor = Predictor()
         predictor.predict(
             type=job["step"],
             videoId=job_arguments["videoId"],
@@ -38,7 +38,6 @@ while no_shutdown_job:
             modelparams=RECIPES[job["step"]][job_arguments["model"]],
             saveAsVideo=False if "save_mp4" not in job_arguments.keys() else bool(job_arguments["save_mp4"]),
             weights=job_arguments["weights"] if job_arguments["weights"] is not None else 'best',
-            testrun=job_arguments['testrun']
         )
         REPO_GENERAL.delete_job(job["id"])
     elif job["type"] == "TRAIN":

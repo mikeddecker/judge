@@ -385,16 +385,17 @@ class OutputHeadRecognition(nn.Module):
             } for metric_type, propname_metric in self.metrics.items()
         }
 
-        pprint('prop_metrics f1')
-        pprint(prop_metrics['f1'])
-
         avg_metrics = {}
         total_average = defaultdict(lambda: [])
 
         for metric_type, values in prop_metrics.items():
             avg = get_confusion_average(values) if metric_type == "confusion" else get_numeric_metric_average(values)
             avg_metrics[metric_type] = avg
-        
+
+        pprint('Average metrics')
+        # pprint(prop_metrics['f1'])
+        pprint(avg_metrics)
+
         return {
             'metric_per_prop': prop_metrics,
             'metric_avg_of_props': avg_metrics,

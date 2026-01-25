@@ -51,10 +51,11 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
 
     def __len__(self):
         'Denotes the number of samples'
+        normal_length = len(self.BalancedSet if self.train_test_val == 'train' else self.Skills)
         if self.isTestrun:
-            return min(TESTRUN_INSTANCES, len(self.BalancedSet if self.train_test_val == 'train' else self.Skills))
+            return min(TESTRUN_INSTANCES, normal_length)
         else:
-            return len(self.BalancedSet if self.train_test_val == 'train' else self.Skills)
+            return normal_length
 
     def __getitem__(self, batch_nr:int, normalize:bool=True):
         "batch_nr starts from 0"
@@ -65,6 +66,12 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
         frameEnd = skillinfo_row["frameEnd"]
         skillId = skillinfo_row["id"]
 
+        try:
+            target, mask = self.head.label_to_tensor(skillinfo_row['skillinfo'])
+        except:
+            print(f"❌ Error for skill (label_to_tensor): {skillinfo_row['id']}")
+            raise
+        
         X, flip_turner = load_skill_batch_X_torch(
             frameloader=self.frameloader,
             videoId=videoId,
@@ -75,11 +82,6 @@ class DataGeneratorSkills(torch.utils.data.Dataset):
             timesteps=self.timesteps,
             normalized=normalize,
         )
-        try:
-            target, mask = self.head.label_to_tensor(skillinfo_row['skillinfo'])
-        except:
-            print(f"Error for skill: {skillinfo_row['id']}")
-            raise
 
         return X, target, mask, skillId
 

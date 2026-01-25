@@ -11,7 +11,8 @@ import random
 from base_utils import load_json_file
 from collections import defaultdict
 from colorama import Fore, Style
-from datetime import date
+from datetime import datetime
+from domain.types import IsBestOfDict
 from constants import RECIPES, SPEEDMODES, ENVS, PYTORCH_MODELS_SKILLS
 from dotenv import load_dotenv
 from helpers import localize_get_best_modelpath
@@ -56,7 +57,7 @@ class TrainerSkills:
         if modelname not in PYTORCH_MODELS_SKILLS.keys():
             raise ValueError(modelname)
         
-        rundate = date.today()
+        rundate = datetime.now()
         start = time.time()
 
         try:
@@ -75,54 +76,87 @@ class TrainerSkills:
             
             revalidate_if_required = speedmode == SPEEDMODES[2]
             if revalidate_if_required:
-                self.__revalidate_previous_runs(rundate)
+                self.__revalidate_previous_runs(datetime.now(), dataloader_val)
 
             model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(DEVICE)
             optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.2)
 
-            current_epoch = 1
+            train_result_id = REPO_STATS.add_train_result(
+                recipe=recipe,
+                testrun=self._testrun
+            )
+
+            current_epoch = 0
+            validation_results_best_epoch = None
             # Training loop
-            total_results = []
+            print(f"{Fore.LIGHTMAGENTA_EX}STARTING TO TRAIN FROZEN + UNFROZEN:{Style.RESET_ALL}")
             for frozen_run_pre_trained_weights in [True, False]:
                 if not frozen_run_pre_trained_weights:
                     for param in model.parameters():
                         param.requires_grad = True
 
-                for epoch in range(current_epoch, self._max_epochs):
-                    print(f"============= EPOCH {epoch} =============")
+                for epoch in range(current_epoch + 1, self._max_epochs + 1):
+                    current_epoch = epoch
+                    print(f"============= EPOCH {current_epoch} =============")
                     self.__train_epoch(model, dataloader_train, optimizer, head)
                     validation_results = self.__validate(model=model, dataloader=dataloader_val)
                     validation_results = { **validation_results, 'length_train': len(dataloader_train) }
-                    total_results.append(validation_results)
                     scheduler.step(validation_results['val_loss'])
                     
-                    REPO_STATS.save_epoch_results(recipe, rundate, epoch, validation_results, step=self._step)
-                    model_is_best_of = REPO_STATS.check_is_best_model(
-                        recipe, rundate, validation_results, step=self._step, 
-                        compare_result_method=job_arguments.get('is_best_model_method', DEFAULT_COMPARE_METHOD_IS_BEST_MODEL)
-                    )
+                    REPO_STATS.save_epoch_results(train_result_id, epoch, validation_results)
 
-                    for modelcategory, is_best_of_modelcategory in model_is_best_of.items():
-                        if is_best_of_modelcategory:
-                            REPO_MODELS.save_model(
-                                modelcategory=modelcategory,
-                                recipe=recipe,
-                                model=model,
-                                validation_results=validation_results,
-                                optimizer=optimizer,
-                                scheduler=scheduler,
-                                testrun=self._testrun,
+                    if current_epoch == 1:
+                        epochsNoImprovement = 0
+                        validation_results_best_epoch = validation_results
+                    else:
+                        model_in_training_improved = REPO_STATS.compare_validation_results(
+                            current_results=validation_results,
+                            other_results=validation_results_best_epoch,
+                            method=job_arguments.get('has_epoch_improved_method', DEFAULT_COMPARE_METHOD_HAS_MODEL_IMPROVED)
+                        )
+                        if model_in_training_improved:
+                            validation_results_best_epoch = validation_results
+                            epochsNoImprovement = 0
+                            REPO_STATS.update_train_result(
+                                train_result_id=train_result_id,
+                                updated_params={ 'bestEpoch': epoch }
                             )
+                        else:
+                            epochsNoImprovement += 1
 
-                    epochsNoImprovement = REPO_STATS.get_epochs_no_improvement(
-                        recipe, rundate, validation_results=validation_results, step=self._step, 
-                        compare_result_method=job_arguments.get('has_epoch_improved_method', DEFAULT_COMPARE_METHOD_HAS_MODEL_IMPROVED)
+                    model_is_best_of : IsBestOfDict = REPO_STATS.check_is_best_model(
+                        train_result_id=train_result_id,
+                        recipe=recipe,
+                        validation_results=validation_results,
+                        step=self._step,
+                        compare_result_method=job_arguments.get('is_best_model_method', DEFAULT_COMPARE_METHOD_IS_BEST_MODEL),
+                        isTestrun=self._testrun,
                     )
 
+                    pprint(f'Using {job_arguments.get('is_best_model_method', DEFAULT_COMPARE_METHOD_IS_BEST_MODEL)}:  model is best of')
+                    pprint(model_is_best_of)
+
+                    REPO_MODELS.save_model_checkpoint(
+                        recipe=recipe,
+                        model=model,
+                        validation_results=validation_results,
+                        optimizer=optimizer,
+                        scheduler=scheduler,
+                        testrun=self._testrun,
+                        isBestOfRecipe=model_is_best_of['recipe']
+                    )
+
+                    print(f"🛈 Epochs no improvement: {epochsNoImprovement} (Patience: {PATIENCE})")
                     if epochsNoImprovement > PATIENCE:
-                        print(f"Stopping - No improvement for {PATIENCE} epochs")
+                        print(f"💬✋ Stopping - No improvement for {PATIENCE} epochs")
                         break
+
+            # End of train loop
+            REPO_STATS.update_train_result(
+                train_result_id=train_result_id,
+                updated_params={ 'trainEnd' : datetime.now() }
+            )
 
         except Exception as e:
             raise e
@@ -190,10 +224,10 @@ class TrainerSkills:
         return {
             **metrics,
             'val_loss' : val_loss / len(dataloader),
-            'val_length': len(dataloader),
+            'val_length': len(dataloader.dataset),
         }
 
-    def __train_epoch(self, model, dataloader, optimizer, head):
+    def __train_epoch(self, model, dataloader, optimizer, head: OutputHeadRecognition):
         model.train()
         total_loss = 0.0
         i = 0

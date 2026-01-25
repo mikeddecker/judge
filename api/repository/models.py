@@ -135,6 +135,25 @@ class FrameLabel(db.Model):
             'jumperVisible' : self.jumperVisible
         }
 
+class TrainResultEpoch(db.Model):
+    __tablename__ = 'TrainResultsEpoch'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    trainResultId = db.Column(db.Integer, db.ForeignKey('TrainResults.id', ondelete='CASCADE'), nullable=False)
+    epoch = db.Column(SMALLINT(unsigned=True), nullable=False)
+    validationResults = db.Column(MutableDict.as_mutable(JSON), nullable=False)
+    creationDate = db.Column(db.DateTime, default=datetime.now)
+    lastUpdated = db.Column(db.DateTime, default=datetime.now)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'trainResultId': self.trainResultId,
+            'epoch': self.epoch,
+            'validationResults': self.validationResults,
+            'creationDate': self.creationDate,
+            'lastUpdated': self.lastUpdated,
+        }
+
 class TrainResult(db.Model):
     __tablename__ = 'TrainResults'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -149,21 +168,43 @@ class TrainResult(db.Model):
     isBestOfAll = db.Column(db.Boolean, nullable=False)
     isBestOfRecipe = db.Column(db.Boolean, nullable=False)
     isBestOfArchitecture = db.Column(db.Boolean, nullable=False)
+    
+    isTestrun = db.Column(db.Boolean, nullable=False)
 
     trainStart = db.Column(db.DateTime, default=datetime.now)
+    trainEnd = db.Column(db.DateTime, nullable=True)
     creationDate = db.Column(db.DateTime, default=datetime.now)
     lastUpdated = db.Column(db.DateTime, default=datetime.now)
-    isRunning = db.Column(db.Boolean, nullable=False)
 
-class TrainResultEpoch(db.Model):
-    __tablename__ = 'TrainResultsEpoch'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    trainResultId = db.Column(db.Integer, db.ForeignKey('TrainResults.id', ondelete='CASCADE'), nullable=False)
-    epoch = db.Column(SMALLINT(unsigned=True), nullable=False)
-    validationResults = db.Column(MutableDict.as_mutable(JSON), nullable=False)
+    epochs = db.relationship(
+        TrainResultEpoch,
+        backref='train_result',
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
 
-    creationDate = db.Column(db.DateTime, default=datetime.now)
-    lastUpdated = db.Column(db.DateTime, default=datetime.now)
+    def to_dict(self):
+        return {
+            'id' : self.id,
+            'step' : self.step,
+            'recipeCode' : self.recipeCode,
+            'recipe' : self.recipe,
+            'bestEpoch' : self.bestEpoch,
+            'revalidationResults' : self.revalidationResults,
+            'lastRevalidationTime' : self.lastRevalidationTime,
+            'isBestOfAll' : self.isBestOfAll,
+            'isBestOfRecipe' : self.isBestOfRecipe,
+            'isBestOfArchitecture' : self.isBestOfArchitecture,
+            'isTestrun' : self.isTestrun,
+            'trainStart' : self.trainStart,
+            'trainEnd' : self.trainEnd,
+            'creationDate' : self.creationDate,
+            'lastUpdated' : self.lastUpdated,
+            'epochs': {
+                e.epoch: e.to_dict()
+                for e in self.epochs.order_by(TrainResultEpoch.epoch).all()
+            }
+        }
 
 class Skill(db.Model):
     __tablename__ = 'Skills'

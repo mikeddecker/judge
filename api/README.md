@@ -16,8 +16,6 @@ Only use --build when:
 
 ## Changing the databse (Flask - alembic)
 
-(this has not been tried in the dockerized environment yet!)
-
 ```bash
 make dev-bash # Enters the bash shell of the api
 flask db migrate -m "Initial migration"  # Generates the migration script for changes to the database
