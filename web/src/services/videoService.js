@@ -1,5 +1,19 @@
 import api from './api';
 
+const getApplicationJson = async (route, params) => {
+  try {
+    return await api.get(
+      route,
+      {
+        params: params,
+        headers: { 'Content-Type': 'application/json' }
+      }).then(response => response.data)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}
+
 export const getFolder = async (folderId) => {
   try {
     const response = await api.get(`/folders/${folderId}`);
@@ -164,18 +178,19 @@ export const updateVideoSkillsCompleted = async (videoId, completed) => {
   }
 }
 
-export const getStats = async (stat, videoIds) => {
-  try {
-    return await api.get(
-      `/stats`, {
-        params: { 'stat': stat, 'videoIds' : videoIds },
-        headers: { 'Content-Type': 'application/json' }
-      }).then(response => response.data)
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    throw error;
-  }
-};
+export const getStats = async (step) => {
+  return getApplicationJson(
+    '/stats',
+    { 'step': step }
+  )
+}
+
+export const getResults = async (step) => {
+  return getApplicationJson(
+    '/results',
+    { 'step': step }
+  )
+}
 
 export const getLocalizeStats = async (selectedHar) => {
   try {

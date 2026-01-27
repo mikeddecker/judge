@@ -1,6 +1,12 @@
 import { getColor } from "./utils"
 
 export const transformDailyCounts = (dailyData, types, cummulative) => {
+  /*
+  types: Object {
+    1: "foreground-person",
+    2: "background-person",
+  }
+  */
   let datapoints = Object.fromEntries(Object.keys(types).map(flt => [flt, []]))
   let indiviualOrCumulative = cummulative ? 'cumulative' : 'individual'
 

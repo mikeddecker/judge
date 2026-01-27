@@ -21,6 +21,7 @@ from routers.storageRouter import StorageRouter, OrphanDeleterRouter
 from routers.skillRouter import SkillRouter, SkillLevel, SkillLabelingCompletedRouter, DiffScoreComparison
 from routers.downloadRouter import DownloadRouter
 from routers.mlLayerRouter import MLLayerRouter, MLLayerTypesRouter, MLLayerCompositionRouter, MLLayerCompositionMoveLayerRouter, MLLayerCompositionAttributeRouter
+from routers.resultsRouter import ResultsRouter
 from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
 from services.videoService import VideoService
@@ -143,6 +144,7 @@ api.add_resource(JobLaunchRouter, '/job')
 api.add_resource(JobOptionsRouter, '/job/options/<step>')
 
 api.add_resource(StatsRouter, '/stats')
+api.add_resource(ResultsRouter, '/results')
 api.add_resource(HealthRouter, '/health')
 
 # Check if .env folders are filled in

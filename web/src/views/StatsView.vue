@@ -14,19 +14,22 @@
       </TabList>
       <TabPanels>
         <TabPanel value="general">
-          <StatsGeneral v-if="generalStats" :stats="generalStats"></StatsGeneral>
+          <StatsGeneralView/>
         </TabPanel>        
         <TabPanel value="localization">
-          <StatsLocalizationView v-if="localizeStats && frameLabelTypes && videosWithLabels" :results="localizeStats" :frame-label-types="frameLabelTypes" :videos-with-labels="videosWithLabels"></StatsLocalizationView>
+          <StatsLocalizationView/>
+          <ResultsLocalizationView/>
         </TabPanel>
         <TabPanel value="segmentation">
-          <ResultsSegmentationView v-if="segmentationStats" :results="segmentationStats"></ResultsSegmentationView>
+          <StatsSegmentationView/>
+          <ResultsSegmentationView/>
         </TabPanel>
         <TabPanel value="recognition">
-          <StatsSkillsView v-if="recognitionStats" :results="recognitionStats"></StatsSkillsView>
+          <StatsRecognitionView/>
+          <ResultsRecognitionView/>
         </TabPanel>
         <TabPanel value="diff-score-comparison">
-          <ResultsJudgeScores v-if="judgeStats" :results="judgeStats"></ResultsJudgeScores>
+          <ResultsJudgeView/>
         </TabPanel>
       </TabPanels>
     </Tabs>
@@ -35,32 +38,19 @@
 </template>
 
 <script setup>
-import { getFolder, getFrameLabelTypes, getStats } from '../services/videoService';
+import { getFolder, getFrameLabelTypes, getResults, getStats } from '../services/videoService';
 import { computed, onMounted, ref } from 'vue';
-import ResultsSegmentationView from './ResultsSegmentationView.vue';
-import StatsSkillsView from './StatsSkillsView.vue';
-import ResultsLocalizationView from '@/views/ResultsLocalizationView.vue';
-import ResultsJudgeScores from '@/views/ResultsJudgeScores.vue';
-import StatsGeneral from './StatsGeneral.vue';
+import StatsGeneralView from './StatsGeneralView.vue';
 import StatsLocalizationView from './StatsLocalizationView.vue';
+import StatsRecognitionView from './StatsRecognitionView.vue';
+import StatsSegmentationView from './StatsSegmentationView.vue';
+import ResultsLocalizationView from './ResultsLocalizationView.vue';
+import ResultsJudgeView from './ResultsJudgeView.vue';
+import ResultsRecognitionView from './ResultsRecognitionView.vue';
+import ResultsSegmentationView from './ResultsSegmentationView.vue';
 
-const data = ref(null)
 const loading = ref(true)
 const error = ref('')
-const videoId = ref(0)
-const frameNr = ref(0)
-const antwoord = ref('')
-const recognitionResults = computed(() => data.value ? data.value['recognition'] : {})
-const bkVideoIds = ref([])
-
-const generalStats = ref(null)
-const localizeStats = ref(null)
-const segmentationStats = ref(null)
-const recognitionStats = ref(null)
-const judgeStats = ref(null)
-const videosWithLabels = ref(null)
-
-const frameLabelTypes = ref(null)
 
 onMounted(async () => {
   loading.value = true;
@@ -74,14 +64,8 @@ onMounted(async () => {
   }
 })
 
+// Move fetch to the dedicated view.
 async function getStatistics() {
-  getStats('general').then(r => generalStats.value = r)
-  getStats('localize').then(r => localizeStats.value = r)
-  getStats('localize_video_labelinfo').then(r => videosWithLabels.value = r)
-  getStats('segmentation').then(r => segmentationStats.value = r)
-  getStats('recognition').then(r => recognitionStats.value = r)
-  getStats('judge').then(r => judgeStats.value = r)
-  getFrameLabelTypes().then(types => frameLabelTypes.value = types)
 }
 
 </script>

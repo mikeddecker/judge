@@ -13,7 +13,7 @@ import { ref, onMounted } from 'vue'
 const results = ref(undefined)
 
 onMounted(async () => {
-    getResults('segmentation').then(r => results.value = r)
+    getResults('recognition').then(r => results.value = r)
 })
 </script>
 

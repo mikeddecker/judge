@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from config import RECIPES
 from collections import Counter, defaultdict
 from config import RECIPES, ENVS
 from flask_sqlalchemy import SQLAlchemy
@@ -51,7 +52,7 @@ class StatsRepository:
             }
             for row in counts
         ]
-    
+
     def localize_frame_counts(self):
         # Step 1: Select distinct videoId + frameNr + split
         subq = self.db.session.query(
@@ -70,7 +71,7 @@ class StatsRepository:
         ).group_by(
             subq.c.split
         ).all()
-    
+
         return [
             {
                 "count": row.count,
@@ -78,10 +79,10 @@ class StatsRepository:
             }
             for row in counts
         ]
-    
+
     def localize_box_counts_daily(self) -> dict:
         labeltypes: dict[int, FrameLabelType] = {
-            flt.id: flt 
+            flt.id: flt
             for flt in self.db.session.query(FrameLabelType).all()
         }
         # TODO: future idea: videoIdsPassed = set() -> total videos, frames/video, boxes/video
@@ -92,25 +93,25 @@ class StatsRepository:
         ).group_by(
             FrameLabel.labeldate, FrameLabel.labeltype
         ).order_by(
-            FrameLabel.labeldate 
+            FrameLabel.labeldate
         ).all()
 
         # Zero counts
         def counts_per_type(labeltypes: dict[int, FrameLabelType]):
             return {id: 0 for id in labeltypes.keys()}
-        
+
         # Iterate and to make daily counts for every item (even if they are absent)
         current_date = None
         daily_data = {}
         for row in grouped_data:
             rowdate = row.labeldate.strftime("%Y-%m-%d")
             if rowdate != current_date:
-                daily_data[rowdate] = { 
-                    'individual': counts_per_type(labeltypes), 
+                daily_data[rowdate] = {
+                    'individual': counts_per_type(labeltypes),
                     'cumulative': counts_per_type(labeltypes) if current_date is None else daily_data[current_date]['cumulative'].copy()
                 }
                 current_date = rowdate
-            
+
             # Add count of current day, type to daily data
             daily_data[current_date]['individual'][row.labeltype] += row.count
             daily_data[current_date]['cumulative'][row.labeltype] += row.count
@@ -198,7 +199,7 @@ class StatsRepository:
         return sorted({
             row.layerName for row in qry.all()
         })
-    
+
     def skill_prop_value_names_dataframe(self):
         query = self.db.session.query(
             Layer.id.label("layerId"),
@@ -221,8 +222,8 @@ class StatsRepository:
             LayerComposition.compositionName
         ).all()
         return [lcn.compositionName for lcn in layercomposition_names]
-    
-    def skills_prop_counts(self, layercompositionname: str = None) -> dict:        
+
+    def layer_counts(self, layercompositionname: str = None) -> dict:
         layerNames = self.skills_layerNames(layercompositionname)
 
         query = self.db.session.query(
@@ -255,7 +256,7 @@ class StatsRepository:
 
         return output
 
-    def skills_prop_value_frequencies(self) -> dict:
+    def layer_value_counts(self) -> dict:
         """
         Returns counts of each distinct value for a given layer in skillinfo JSON.
         Example: {'Backwards': {0: 12, 1: 59}, 'CrossRestriction': {71: 443, 72: 223, 73: 150...} }
@@ -288,11 +289,11 @@ class StatsRepository:
                         counts[lcn][layer][row.split][value] += 1
 
         return {
-            lcn: { 
+            lcn: {
                 layerName: {
                     split: {
                         map_prop_value(df_prop_value_names, layerName, value): count for value, count in value_counter.items() }
-                    for split, value_counter in layerName_split_values.items() } 
+                    for split, value_counter in layerName_split_values.items() }
                 for layerName, layerName_split_values in lcn_values.items() }
             for lcn, lcn_values in counts.items()
         }
@@ -308,9 +309,10 @@ class StatsRepository:
         return { row.split: row.count for row in result }
 
     def skills_metrics(self) -> dict:
+        return RECIPES
         model_results = {}
         model_paths =  recognition_get_modelpaths()
-        
+
         for train_round_path in model_paths:
             if train_round_path.find('testrun') != -1:
                 continue
@@ -318,8 +320,8 @@ class StatsRepository:
             train_round_result = load_json_file(train_round_path)
 
             if not train_round_result:
-                continue                
-            
+                continue
+
             modelname = train_round_result['modelname'] if 'best' not in train_round_path else 'best'
             model_results[modelname] = train_round_result
 
@@ -339,26 +341,26 @@ class StatsRepository:
         # Zero counts
         def counts_per_split():
             return {'train': 0, 'test': 0}
-        
+
         # Iterate and to make daily counts for every item (even if they are absent)
         current_date = None
         daily_data = {}
         for row in grouped_data:
             rowdate = row.labeldate.strftime("%Y-%m-%d")
             if rowdate != current_date:
-                daily_data[rowdate] = { 
-                    'individual': counts_per_split(), 
+                daily_data[rowdate] = {
+                    'individual': counts_per_split(),
                     'cumulative': counts_per_split() if current_date is None else daily_data[current_date]['cumulative'].copy()
                 }
                 current_date = rowdate
-            
+
             # Add count of current day, type to daily data
             daily_data[current_date]['individual'][row.split] += row.count
             daily_data[current_date]['cumulative'][row.split] += row.count
 
         return daily_data
 
-    def skill_counts_composition(self) -> dict:
+    def layer_composition_counts(self) -> dict:
         layer_composition_names = self.layercomposition_names()
         query = self.db.session.query(
             *[func.json_length(func.json_extract(Skill.skillinfo, f'$.{lcn}')).label(lcn) for lcn in layer_composition_names],

@@ -2,26 +2,26 @@
   <h1>{{ results['models'][selectedModel]['modelname'] }} - {{ results['models'][selectedModel]['rundate'] }}</h1>
   <span>f1 average over time: {{ formatPercentage(f1_avg) }}</span>
   <div class="flex flex-wrap gap-6 mb-16">
-    <BarChartTrainTest :values="skillcounts" 
+    <BarChartTrainTest :values="skillcounts"
     direction="x" title="Skill counts" class="flex-1"
     ></BarChartTrainTest>
     
-    <BarChartTrainTest :values="skillCompositionCounts" 
+    <BarChartTrainTest :values="skillCompositionCounts"
     direction="x" title="composition counts" class="flex-2"
     ></BarChartTrainTest>
   </div>
-  
+
   <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getDailyChartOptions('Daily skill count', 'skills')" class="h-[25rem]" />
   <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getDailyChartOptions('Daily skill count (cumulative)', 'skills', [results['models'][selectedModel]['length_train'], results['models'][selectedModel]['length_val']])" class="h-[25rem]" />
-  
+
   <Chart type="line" :data="chartDataBestModel" :options="chartOptionsBestModel" />
-  
-  <ConfusionMatrix 
-    v-for="(matrix, prop) in results['models'][selectedModel]['validation_results']['metrics']['confusion']" 
+
+  <ConfusionMatrix
+    v-for="(matrix, prop) in results['models'][selectedModel]['validation_results']['metrics']['confusion']"
     :name="prop" :values="matrix"
     :headers="results['models'][selectedModel]['validation_results']['confusion_heads'][prop]"
   ></ConfusionMatrix>
-  
+
   <Tabs value="total" class="mt-8">
     <TabList>
       <Tab value="total">Total</Tab>
@@ -33,11 +33,11 @@
       {{ layercomposition }}
     </Tab>
   </TabList>
-  
+
   <TabPanels>
     <TabPanel value="total">
       <BarChartTrainTest
-      :values="transformCounts(results['layerName_counts']['total'])"
+      :values="transformCounts(results['layer_counts']['total'])"
       direction="y"
       title="Total layer counts"
       :squared="true"
@@ -60,7 +60,7 @@
         :value="layercomposition"
         >
         <BarChartTrainTest
-        :values="transformCounts(results['layerName_counts'][layercomposition])"
+        :values="transformCounts(results['layer_counts'][layercomposition])"
         direction="y"
         :squared="true"
         :title="`Layer counts ${layercomposition}`"
@@ -133,16 +133,16 @@ const transformCounts = (values) => {
     return transformed
 }
 
-const skillcounts = computed(() => { 
+const skillcounts = computed(() => {
   return {
     labels: ['count'],
     datasets: [
-      { 
+      {
         backgroundColor: getColor(1),
         data: [props.results['skills']['total']['train']],
         label: 'Train'
       },
-      { 
+      {
         backgroundColor: getColor(2),
         data: [props.results['skills']['total']['test']],
         label: 'Test'
@@ -155,12 +155,12 @@ const skillCompositionCounts = computed(() => {
   return {
     labels: Object.keys(props.results['layercomposition_counts']),
     datasets: [
-      { 
+      {
         backgroundColor: getColor(1),
         data: Object.values(props.results['layercomposition_counts']).map(train_test_values => train_test_values['train']),
         label: 'Train'
       },
-      { 
+      {
         backgroundColor: getColor(2),
         data: Object.values(props.results['layercomposition_counts']).map(train_test_values => train_test_values['test']),
         label: 'Test'
@@ -183,7 +183,7 @@ const chartDataBestModel = computed(() => {
     cubicInterpolationMode: 'monotone',
     tension: 0.4,
   }))
-  
+
   return {
     labels: epochs,
     datasets
