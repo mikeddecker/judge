@@ -25,11 +25,11 @@ class RepoStats(DataRepository):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+
     def get_validation_result(
         self,
-        recipe: SimpleNamespace, 
-        runtime: datetime, 
+        recipe: SimpleNamespace,
+        runtime: datetime,
         step: str='SKILL',
     ) -> dict:
         # TODO : check if trainStart works and fetches runs
@@ -72,7 +72,7 @@ class RepoStats(DataRepository):
             int: Number of consecutive epochs without improvement
         """
         qry = sqlal.text(
-            """SELECT tre.epoch, tre.validationResults 
+            """SELECT tre.epoch, tre.validationResults
                FROM TrainResults tr
                JOIN TrainResultsEpoch tre ON tr.id = tre.trainResultId
                WHERE tr.id = :train_result_id
@@ -86,22 +86,22 @@ class RepoStats(DataRepository):
             # Need at least 2 epochs to compare (current + previous)
             if len(df) < 2:
                 return 0
-            
+
             # Parse validationResults from JSON
             df['validationResults'] = df['validationResults'].apply(json.loads)
-            
+
             # Skip the first row (most recently saved epoch) and count epochs without improvement
             epochs_no_improvement = 0
             for idx, row in df.iloc[1:].iterrows():
                 other_validation_results = row['validationResults']
-                
+
                 is_improvement = self.compare_validation_results(validation_results, other_validation_results, compare_result_method)
-                
+
                 if not is_improvement:
                     epochs_no_improvement += 1
                 else:
                     break
-            
+
             return epochs_no_improvement
 
     def get_train_result_which_is_best_of(self, best_of: str, recipe: SimpleNamespace, isTestrun: bool, step: str) -> tuple[Any, str]:
@@ -191,7 +191,7 @@ class RepoStats(DataRepository):
         assert self.exists_train_result(train_result_id), f"❌ Train result with id: {train_result_id} does not exist"
 
         model_is_best_of = IsBestOfDict()
-        
+
         with self._get_connection() as connection:
             # Get best results for each comparison type
             for best_of_type in BEST_OF_TYPES:
@@ -201,7 +201,7 @@ class RepoStats(DataRepository):
                     isTestrun=isTestrun,
                     step=step
                 )
-                
+
                 if result is None:
                     f"⚠️ Previous model best of {best_of_type} of is None"
                     # No previous best, so this is the best
@@ -218,39 +218,39 @@ class RepoStats(DataRepository):
                     # TODO : use revalidation results later if added.
                     other_validation_results = json.loads(result['validationResults'])
                     other_train_result_id = result['id']
-                    
+
                     is_best = self.compare_validation_results(
-                        validation_results, 
-                        other_validation_results, 
+                        validation_results,
+                        other_validation_results,
                         compare_result_method
                     )
-                    
+
                     if is_best:
                         # Update current model as best
                         update_current = sqlal.text(f"""
-                            UPDATE TrainResults 
+                            UPDATE TrainResults
                             SET {col_name} = True
                             WHERE id = :train_result_id
                         """)
                         connection.execute(update_current, {'train_result_id': train_result_id})
-                        
+
                         # Set old best to False
                         update_old = sqlal.text(f"""
-                            UPDATE TrainResults 
+                            UPDATE TrainResults
                             SET {col_name} = False
                             WHERE id = :train_result_id
                         """)
                         connection.execute(update_old, {'train_result_id': other_train_result_id})
                         connection.commit()
-                    
+
                     model_is_best_of[best_of_type] = is_best
-        
+
         return model_is_best_of
 
     def add_train_result(self, recipe: SimpleNamespace, testrun: bool, step: str = 'SKILL') -> int:
         """
         Add a train result.
-        
+
         Parameters:
             recipe (SimpleNamespace): Recipe information with name, model, etc.
             testrun (bool): Indicates wheter this train round is for testing or not
@@ -263,11 +263,11 @@ class RepoStats(DataRepository):
             # Insert new TrainResult record
             insert_result_qry = sqlal.text("""
                 INSERT INTO TrainResults
-                (step, recipeCode, recipe, bestEpoch, revalidationResults, isBestOfAll, isBestOfRecipe, isBestOfArchitecture, trainStart, isTestrun)
+                (step, recipeCode, recipe, bestEpoch, revalidationResults, isBestOfAll, isBestOfRecipe, isBestOfArchitecture, trainStart, isTestrun, creationDate)
                 VALUES
-                (:step, :recipeCode, :recipe, :bestEpoch, :revalidationResults, :isBestOfAll, :isBestOfRecipe, :isBestOfArchitecture, :trainStart, :isTestrun)
+                (:step, :recipeCode, :recipe, :bestEpoch, :revalidationResults, :isBestOfAll, :isBestOfRecipe, :isBestOfArchitecture, :trainStart, :isTestrun, :creationDate)
             """)
-            
+
             insert_params = {
                 'step': step,
                 'recipeCode': recipe.name,
@@ -278,9 +278,10 @@ class RepoStats(DataRepository):
                 'isBestOfRecipe': False,
                 'isBestOfArchitecture': False,
                 'trainStart': datetime.now(),
+                'creationDate': datetime.now(),
                 'isTestrun': testrun,
             }
-            
+
             result = connection.execute(insert_result_qry, insert_params)
             train_result_id: int = result.lastrowid
             connection.commit()
@@ -305,7 +306,7 @@ class RepoStats(DataRepository):
     def update_train_result(self, train_result_id: int, updated_params: dict):
         """
         Update a train result.
-        
+
         Parameters:
             train_result_id (int): Id of the train_result.
             updated_params (dict): Parameters to update
@@ -320,12 +321,12 @@ class RepoStats(DataRepository):
             # Check if TrainResult exists for this ID
             if not self.exists_train_result(train_result_id):
                 raise ValueError(f"❌ train_result_id ({train_result_id}) does not exist")
-            
+
             # Check if all updated parameters are columns:
             for param in updated_params:
                 if param not in column_names:
                     raise ValueError(f"❌ '{param}' is not a column in {TRAIN_RESULTS_TABLE_NAME}")
-                
+
             # Insert new TrainResult record
             update_values = ', '.join(
                 f'{col_name} = :{col_name}' for col_name in updated_params.keys()
@@ -335,14 +336,14 @@ class RepoStats(DataRepository):
                 SET {update_values}
                 WHERE id = :id
             """)
-                
+
             connection.execute(update_result_qry, {**updated_params, 'id': train_result_id})
             connection.commit()
 
     def save_epoch_results(self, train_result_id: int, epoch: int, validation_results: dict):
         """
         Save epoch results to TrainResults and TrainResultsEpoch tables.
-        
+
         Parameters:
             train_result_id (int): Id of the train_result.
             epoch (int): Epoch number
@@ -351,28 +352,29 @@ class RepoStats(DataRepository):
         with self._get_connection() as connection:
             # Check if TrainResult exists for this run
             check_qry = sqlal.text("""
-                SELECT id FROM TrainResults 
+                SELECT id FROM TrainResults
                 WHERE id = :id
             """)
-            
+
             params = { 'id': train_result_id }
             result = connection.execute(check_qry, params).fetchone()
             assert result is not None, f"❌ Train result id does not exist ({train_result_id})"
-            
+
             # Insert epoch results into TrainResultsEpoch
             insert_epoch_qry = sqlal.text("""
-                INSERT INTO TrainResultsEpoch 
-                (trainResultId, epoch, validationResults)
-                VALUES 
-                (:trainResultId, :epoch, :validationResults)
+                INSERT INTO TrainResultsEpoch
+                (trainResultId, epoch, validationResults, creationDate)
+                VALUES
+                (:trainResultId, :epoch, :validationResults, :creationDate)
             """)
-            
+
             epoch_params = {
                 'trainResultId': train_result_id,
                 'epoch': epoch,
                 'validationResults': json.dumps(validation_results),
+                'creationDate': datetime.now()
             }
-            
+
             connection.execute(insert_epoch_qry, epoch_params)
             connection.commit()
 
@@ -406,7 +408,7 @@ class RepoStats(DataRepository):
     # Compare result methods
     ##########
     def quadratic_validation_length_weighted_f1(self, current_results: dict, other_results: dict) -> bool:
-        """ 
+        """
         c = current size
         o = other size
         f1_current = current f1 avg
@@ -415,13 +417,13 @@ class RepoStats(DataRepository):
         Returns: f1_current > f1_other * (o/c) ** 2
         """
         quadratic_weight = (other_results['val_length'] / current_results['val_length']) ** 2
-        current_f1_avg = current_results.get('metric_avg_of_props')['f1']
-        other_f1_avg = other_results.get('metric_avg_of_props')['f1']
+        current_f1_avg = current_results.get('metric_avg_of_layers')['f1']
+        other_f1_avg = other_results.get('metric_avg_of_layers')['f1']
         weighted_other_f1_avg = other_f1_avg * quadratic_weight
         return current_f1_avg > weighted_other_f1_avg
 
     def simple_f1(self, current_results: dict, other_results: dict) -> bool:
-        return current_results.get('metric_avg_of_props')['f1'] > other_results.get('metric_avg_of_props')['f1']
+        return current_results.get('metric_avg_of_layers')['f1'] > other_results.get('metric_avg_of_layers')['f1']
 
 REPO_STATS = RepoStats()
 

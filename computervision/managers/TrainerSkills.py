@@ -149,7 +149,7 @@ class TrainerSkills:
 
                     print(f"🛈 Epochs no improvement: {epochsNoImprovement} (Patience: {PATIENCE})")
                     if epochsNoImprovement > PATIENCE:
-                        print(f"💬✋ Stopping - No improvement for {PATIENCE} epochs")
+                        print(f"💬✋ Stopping - No improvement for {PATIENCE} epochs - (Frozen run = {frozen_run_pre_trained_weights})")
                         break
 
             # End of train loop
@@ -195,8 +195,8 @@ class TrainerSkills:
         Validates the current model and adds val_loss to the epoch metrics
 
         Returns: {
-            "metric_per_prop": {'acc': {'prop1': list[float]|float, ...}, 'f1': {...}'},
-            "metric_avg_of_props": {'acc': float, 'f1': float, ...},
+            "metric_per_layer": {'acc': {'prop1': list[float]|float, ...}, 'f1': {...}'},
+            "metric_avg_of_layers": {'acc': float, 'f1': float, ...},
             "confusion_heads": self.confusion_heads,
             'val_loss': float,
             'val_length': int,

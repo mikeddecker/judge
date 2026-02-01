@@ -23,7 +23,7 @@ class OutputHeadRecognition(nn.Module):
 
         self.confusion_heads : dict[list[str]] = {}
         self.df_layers : pd.DataFrame = REPO_GENERAL.get_skill_layers()
-        self.df_composition : pd.DataFrame = REPO_GENERAL.get_skill_compositions() 
+        self.df_composition : pd.DataFrame = REPO_GENERAL.get_skill_compositions()
         self.max_instances_per_composition : pd.Series = REPO_GENERAL.get_max_instances_per_role(self.df_composition)
         self.output_layers = nn.ModuleDict()
 
@@ -96,7 +96,7 @@ class OutputHeadRecognition(nn.Module):
                     self.layers[layerName] = layer
                     self.output_layers[output_head] = layer
 
-                    counts = torch.Tensor([prop_counts[layerName].get(self.categorical_idx_to_valueId[row['layerId']][k], 0) for k in range(num_classes+1)]).to(device)                    
+                    counts = torch.Tensor([prop_counts[layerName].get(self.categorical_idx_to_valueId[row['layerId']][k], 0) for k in range(num_classes+1)]).to(device)
                     max_count = counts.max()
                     counts = counts ** weight_alpha
                     counts[counts == 0] = max_count
@@ -135,7 +135,7 @@ class OutputHeadRecognition(nn.Module):
         for metric_type, layerName_metric in self.metrics.items():
             for layerName, metric in layerName_metric.items():
                 metric.reset()
-    
+
     def init_metrics(self, average='macro'):
         self.metrics: dict[str, dict[str, torchmetrics.Metric]] = {
             'precision': {}, # layerName: Metric
@@ -345,7 +345,7 @@ class OutputHeadRecognition(nn.Module):
 
             if len(output_head_splits) != 4 and len(output_head_splits) != 2:
                 raise ValueError(f"Something went wrong with output_head:", output_head)
-            
+
             composition_name = output_head_splits[0]
             layerName = output_head_splits[1] if "composition_" in output_head else output_head_splits[3]
 
@@ -362,14 +362,14 @@ class OutputHeadRecognition(nn.Module):
             self.metrics['f1'][layerName].update(pred_valid, target_valid)
             self.metrics['acc'][layerName].update(pred_valid, target_valid)
             self.metrics['confusion'][layerName].update(pred_valid, target_valid)
-    
+
     def compute_metrics(self):
         """
         Computes precision, recall, f1, confusion and accuracy for each output_head in preds using torchmetrics.
 
         Returns: {
-            "metric_per_prop": {'acc': {'prop1': list[float]|float, ...}, 'f1': {...}'},
-            "metric_avg_of_props": {'acc': float, 'f1': float, ...},
+            "metric_per_layer": {'acc': {'prop1': list[float]|float, ...}, 'f1': {...}'},
+            "metric_avg_of_layers": {'acc': float, 'f1': float, ...},
             "confusion_heads": self.confusion_heads,
         }
 
@@ -379,7 +379,7 @@ class OutputHeadRecognition(nn.Module):
             metric_type: {
                 propname: (
                     metric.compute().item()
-                    if metric.compute().ndim == 0 
+                    if metric.compute().ndim == 0
                     else metric.compute().tolist()
                 ) for propname, metric in propname_metric.items()
             } for metric_type, propname_metric in self.metrics.items()
@@ -397,8 +397,8 @@ class OutputHeadRecognition(nn.Module):
         pprint(avg_metrics)
 
         return {
-            'metric_per_prop': prop_metrics,
-            'metric_avg_of_props': avg_metrics,
+            'metric_per_layer': prop_metrics,
+            'metric_avg_of_layers': avg_metrics,
             'confusion_heads': self.confusion_heads,
         }
 

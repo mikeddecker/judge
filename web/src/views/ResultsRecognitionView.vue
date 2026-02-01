@@ -43,11 +43,8 @@ onMounted(async () => {
             )
         )
     ).then(
-        () => console.log('recognition results', results.value, )
-    ).then(
         () => {
             trainedRecipeCodes.value =  Object.entries(results.value).map(([listindex, trainresult]) => {
-                console.log('model results', trainresult)
                 if (trainresult.isBestOfAll) { selectedRecipe.value = trainresult.recipeCode }
                 return trainresult.recipeCode
             })
