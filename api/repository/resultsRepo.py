@@ -46,7 +46,6 @@ class ResultsRepository:
         return {}
 
     def recognition(self) -> dict:
-        # TODO : false testrun
         # TODO : filter skill only
         query = self.db.session.query(
             TrainResult,
