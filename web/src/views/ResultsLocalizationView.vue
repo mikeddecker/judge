@@ -1,6 +1,6 @@
 <template>
-  <h2>Results</h2>
-  <h3>Localization Recipes Performance</h3>
+  <h1>Results</h1>
+  <h2>Localization Recipes Performance</h2>
   <DataTable v-if="results" :value="Object.values(results)">
       <Column key="model" field="model" header="model" sortable></Column>
       <Column key="team_raw_avg" field="team_raw_avg" header="team_raw_avg" sortable><template #body="slotProps">{{ formatPercentage(slotProps.data['team_raw_avg']) }}</template></Column>

@@ -3,6 +3,8 @@ from config import RECIPES, ENVS
 from flask_sqlalchemy import SQLAlchemy
 from helpers.helpers import load_json_file
 from helpers.ConfigHelper import recognition_get_modelpaths
+from repository.models import TrainResult
+from sqlalchemy import or_
 
 def extract_key_number_pairs(obj):
     if isinstance(obj, list):
@@ -44,23 +46,23 @@ class ResultsRepository:
         return {}
 
     def recognition(self) -> dict:
-        return {}
-        model_results = {}
-        model_paths =  recognition_get_modelpaths()
+        # TODO : false testrun
+        # TODO : filter skill only
+        query = self.db.session.query(
+            TrainResult,
+        ).filter_by(
+            isTestrun = False
+        ).filter(
+            or_(
+                TrainResult.isBestOfAll == True,
+                TrainResult.isBestOfArchitecture == True,
+                TrainResult.isBestOfRecipe == True
+            )
+        )
 
-        for train_round_path in model_paths:
-            if train_round_path.find('testrun') != -1:
-                continue
+        result = query.all()
 
-            train_round_result = load_json_file(train_round_path)
-
-            if not train_round_result:
-                continue
-
-            modelname = train_round_result['modelname'] if 'best' not in train_round_path else 'best'
-            model_results[modelname] = train_round_result
-
-        return model_results
+        return [tr.to_dict() for tr in result]
 
     def judge(self) -> dict:
         return {}

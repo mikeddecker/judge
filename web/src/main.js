@@ -28,6 +28,7 @@ import InputNumber from 'primevue/inputnumber';
 import InputText from 'primevue/inputtext';
 import { IftaLabel } from 'primevue';
 import Listbox from 'primevue/listbox';
+import Message from 'primevue/message';
 import RadioButton from 'primevue/radiobutton';
 import Select from 'primevue/select';
 import Tabs from 'primevue/tabs';
@@ -78,6 +79,7 @@ app.component('InputNumber', InputNumber);
 app.component('InputText', InputText);
 app.component('IftaLabel', IftaLabel);
 app.component('Listbox', Listbox);
+app.component('Message', Message)
 app.component('RadioButton', RadioButton);
 app.component('Select', Select);
 app.component('Tabs', Tabs);

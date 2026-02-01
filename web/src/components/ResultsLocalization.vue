@@ -13,7 +13,6 @@
 </template>
 
 <script setup>
-import { formatPercentage } from '@/helpers/utils';
 import TableIous from './TableIous.vue';
 import { computed, onMounted, ref } from 'vue';
 import ButtonContainer from './ButtonContainer.vue';

@@ -2,7 +2,7 @@
     <h2>Recognition results</h2>
 </template>
 
-<script>
+<script setup>
 const props = defineProps({
     results: {
         type: Object,

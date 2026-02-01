@@ -146,7 +146,7 @@ class TrainResultEpoch(db.Model):
 
     def to_dict(self):
         return {
-            'id': self.id,
+            'trainResultEpochId': self.id,
             'trainResultId': self.trainResultId,
             'epoch': self.epoch,
             'validationResults': self.validationResults,

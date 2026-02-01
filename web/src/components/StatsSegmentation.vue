@@ -4,7 +4,7 @@
 
 </template>
 
-<script>
+<script setup>
 const props = defineProps({
     stats: {
         type: Object,

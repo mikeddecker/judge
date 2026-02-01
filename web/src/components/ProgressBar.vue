@@ -5,7 +5,8 @@
     </div>
   </div>
 </template>
-  
+
+<!-- TODO update to script setup -->
 <script>
 import { computed } from "vue";
 export default {

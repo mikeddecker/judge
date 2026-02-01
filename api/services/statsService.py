@@ -59,9 +59,9 @@ class StatsService:
             'layercomposition_counts': self.StatsRepo.layer_composition_counts(),
             'layer_counts' : {
                 'total': self.StatsRepo.layer_counts(),
-                **{ lcn: self.StatsRepo.layer_counts(lcn) for lcn in layercomposition_names }
+                'individual': { lcn: self.StatsRepo.layer_counts(lcn) for lcn in layercomposition_names }
             },
-            'skills_counts': {
+            'recognition_counts': {
                 'total' : self.StatsRepo.skill_counts(),
                 'daily' : self.StatsRepo.skill_counts_daily(),
             },

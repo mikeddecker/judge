@@ -5,8 +5,9 @@ import sys
 import subprocess
 
 from config import ENVS
-from datetime import datetime
-from flask import Flask
+from datetime import datetime, date
+from flask import Flask, jsonify
+from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from flask_restful import Api
 from flask_migrate import Migrate, upgrade
@@ -26,6 +27,12 @@ from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
 from services.videoService import VideoService
 from typing import cast
+
+class CustomJSONProvider(DefaultJSONProvider):
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        return super().default(obj)
 
 MYSQL_ROOT_PASSWORD : str = cast(str, os.getenv("MYSQL_ROOT_PASSWORD"))
 MYSQL_HOST : str = cast(str, os.getenv("MYSQL_HOST"))
@@ -111,8 +118,13 @@ def create_app(config_object:str="config.Config"):
     return app
 
 app = create_app()
+app.json = CustomJSONProvider(app)
 CORS(app)
 api : Api = Api(app)
+
+app.config['RESTFUL_JSON'] = {
+    'default': app.json.default
+}
 
 # use api.add_resource to add the paths
 api.add_resource(FolderRouter, '/folders', '/folders/<int:folderId>')
@@ -201,7 +213,10 @@ def shutdown_handler(*args):
         return
     _shutdown_called = True
     print("⚠️ Shutting down Flask app, creating backup...")
-    backup_mysql_db()
+    try:
+        backup_mysql_db()
+    except Exception as e:
+        print(e)
     sys.exit(0)
 
 signal.signal(signal.SIGINT, shutdown_handler) # Handle Ctrl+C and kill

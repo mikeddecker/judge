@@ -1,5 +1,5 @@
 <template>
-    <h2>Stats</h2>
+    <h1>Stats</h1>
     <!-- <pre>{{ stats }}</pre> -->
 
     <div class="flex justify-evenly" v-if="frameLabelTypes">
@@ -9,7 +9,7 @@
     <Chart v-if="dailyChartData" type="line" :data="dailyChartData" :options="getDailyChartOptions('Daily box count')" class="h-[25rem]" />
     <Chart v-if="dailyChartDataCumulative" type="line" :data="dailyChartDataCumulative" :options="getDailyChartOptions('Daily box count (cumulative)')" class="h-[25rem]" />
 
-    <h3>Videos with Labels</h3>
+    <h2>Videos with labels</h2>
     <TableDensity :videos-with-labels="stats['labelinfo_per_video']"></TableDensity>
 
 </template>
@@ -30,10 +30,8 @@ const props = defineProps({
 })
 
 const barChartBoxesPerTypeData = computed(() => {
-  console.log('props.stats', props.stats)
   return {
     'labels' : props.stats['boxcounts']['total'].map(item => {
-      console.log(frameLabelTypes.value, item.type)
       return `${item.split}-${frameLabelTypes.value[item.type]}`
     }),
     'datasets': [
