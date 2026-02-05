@@ -107,8 +107,11 @@ def create_app(config_object:str="config.Config"):
     app.config.from_object(config_object)
     
     if not app.config.get('TESTING', False) and not is_running_manual_migrations():
-        print("⏳ Restoring latest MySQL backup before starting the app...")
-        restore_latest_mysql_backup()
+        pass
+        # TODO : restore only if db empty or not at last db version
+        # print("⏳ Restoring latest MySQL backup before starting the app...")
+        # restore_latest_mysql_backup()
+
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
