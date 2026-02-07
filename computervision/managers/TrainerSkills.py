@@ -33,7 +33,8 @@ DEVICE = torch.device(DEVICE_TYPE)
 MAX_EPOCHS = 300
 MAX_EPOCHS_TESTRUN = 5
 SCHEDULER_PATIENCE = 2
-PATIENCE = 5
+FROZEN_PATIENCE = 3
+PATIENCE = 6
 
 DEFAULT_COMPARE_METHOD_IS_BEST_MODEL = 'quadratic_validation_length_weighted_f1'
 DEFAULT_COMPARE_METHOD_HAS_MODEL_IMPROVED = 'f1_avg'
@@ -91,8 +92,9 @@ class TrainerSkills:
             validation_results_best_epoch = None
             # Training loop
             print(f"{Fore.LIGHTMAGENTA_EX}STARTING TO TRAIN FROZEN + UNFROZEN:{Style.RESET_ALL}")
-            for frozen_run_pre_trained_weights in [True, False]:
-                if not frozen_run_pre_trained_weights:
+            for is_frozen_run_pre_trained_weights in [True, False]:
+                print(f"{Fore.CYAN}TRAINING {"FROZEN" if is_frozen_run_pre_trained_weights else "UNFROZEN"}{Style.RESET_ALL}")
+                if not is_frozen_run_pre_trained_weights:
                     for param in model.parameters():
                         param.requires_grad = True
 
@@ -147,9 +149,10 @@ class TrainerSkills:
                         isBestOfRecipe=model_is_best_of['recipe']
                     )
 
-                    print(f"🛈 Epochs no improvement: {epochsNoImprovement} (Patience: {PATIENCE})")
-                    if epochsNoImprovement > PATIENCE:
-                        print(f"💬✋ Stopping - No improvement for {PATIENCE} epochs - (Frozen run = {frozen_run_pre_trained_weights})")
+                    patience = FROZEN_PATIENCE if is_frozen_run_pre_trained_weights else PATIENCE
+                    print(f"🛈 Epochs no improvement: {epochsNoImprovement} (Patience: {patience})")
+                    if epochsNoImprovement > patience:
+                        print(f"💬✋ Stopping - No improvement for {patience} epochs - (Frozen run = {is_frozen_run_pre_trained_weights})")
                         break
 
             # End of train loop

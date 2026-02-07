@@ -418,6 +418,8 @@ class RepoStats(DataRepository):
         """
         quadratic_weight = (other_results['val_length'] / current_results['val_length']) ** 2
         current_f1_avg = current_results.get('metric_avg_of_layers')['f1']
+        if other_results is None or other_results.get('metric_avg_of_layers') is None:
+            return True
         other_f1_avg = other_results.get('metric_avg_of_layers')['f1']
         weighted_other_f1_avg = other_f1_avg * quadratic_weight
         return current_f1_avg > weighted_other_f1_avg
