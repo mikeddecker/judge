@@ -1,18 +1,4 @@
-import api from './api';
-
-const getApplicationJson = async (route, params) => {
-  try {
-    return await api.get(
-      route,
-      {
-        params: params,
-        headers: { 'Content-Type': 'application/json' }
-      }).then(response => response.data)
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    throw error;
-  }
-}
+import { api, getApplicationJson } from './api';
 
 export const getFolder = async (folderId) => {
   try {

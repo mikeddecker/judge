@@ -11,6 +11,8 @@ from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from flask_restful import Api
 from flask_migrate import Migrate, upgrade
+from flask_session import Session
+from flask_talisman import Talisman
 from helpers.ValueHelper import ValueHelper
 from repository.db import db
 from routers.folderRouter import FolderRouter
@@ -25,6 +27,7 @@ from routers.mlLayerRouter import MLLayerRouter, MLLayerTypesRouter, MLLayerComp
 from routers.resultsRouter import ResultsRouter
 from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
+from routers.userRouter import UserRegisterRouter, UserLoginRouter, UserMFAVerifyRouter, UserLogoutRouter, UserMeRouter, UserForgotPasswordRouter, UserResetPasswordRouter, UserEnableMFARouter
 from services.videoService import VideoService
 from typing import cast
 
@@ -106,6 +109,15 @@ def create_app(config_object:str="config.Config"):
     # Load configuration from config file or environment variable
     app.config.from_object(config_object)
     
+    # Set session secret key for secure session management
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production-min-32-chars')
+    app.config['SESSION_TYPE'] = 'filesystem'
+    Session(app)
+    
+    # Force HTTPS in production only
+    if os.getenv('FLASK_ENV') == 'production':
+        Talisman(app, force_https=True, strict_transport_security=True, strict_transport_security_max_age=63072000)
+    
     if not app.config.get('TESTING', False) and not is_running_manual_migrations():
         pass
         # TODO : restore only if db empty or not at last db version
@@ -161,6 +173,16 @@ api.add_resource(JobOptionsRouter, '/job/options/<step>')
 api.add_resource(StatsRouter, '/stats')
 api.add_resource(ResultsRouter, '/results')
 api.add_resource(HealthRouter, '/health')
+
+# User authentication routes
+api.add_resource(UserRegisterRouter, '/auth/register')
+api.add_resource(UserLoginRouter, '/auth/login')
+api.add_resource(UserMFAVerifyRouter, '/auth/mfa/verify')
+api.add_resource(UserLogoutRouter, '/auth/logout')
+api.add_resource(UserMeRouter, '/auth/me')
+api.add_resource(UserForgotPasswordRouter, '/auth/forgot-password')
+api.add_resource(UserResetPasswordRouter, '/auth/reset-password')
+api.add_resource(UserEnableMFARouter, '/auth/enable-mfa')
 
 # Check if .env folders are filled in
 ValueHelper.check_raise_string(ENVS.DIRS.VIDEOS)

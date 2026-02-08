@@ -25,6 +25,10 @@ api/machine_learning_recipes.json
 **/venv/*
 **/.venv/*
 
+# Ignore Flask session files
+api/flask_sessions/*
+api/flask_session/*
+
 node_modules
 
 *cookies.txt

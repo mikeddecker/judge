@@ -1,8 +1,13 @@
 # Additional parameter for prod:
 services:
   api:
+    environment:
+      - FLASK_ENV=production
+      - SESSION_COOKIE_SECURE=true
+      - FORCE_HTTPS=true
     depends_on:
       mysqldb:
         condition: service_healthy    
       api-test:
         condition: service_completed_successfully
+

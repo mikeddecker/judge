@@ -90,7 +90,6 @@ When everything is installed, you can start the projects with ease!
    # The directory where all the app's generated data will come.
    STORAGE_DIR_GENERATED_DATA = /media/miked/Elements/Judge/results
 
-
    # Connection strings for connecting with the database
    # They are based on the input data above, keep off.
    DATABASE_URL = mysql+pymysql://${MYSQL_USERNAME}:${MYSQL_ROOT_PASSWORD}@${MYSQL_HOST}:${MYSQL_DOCKER_PORT}/${MYSQL_DATABASE}
@@ -140,4 +139,26 @@ xargs pip uninstall -y < unused.txt
 pip install --upgrade -r requirements.txt
 rm unused.txt
 ```
+
+---
+
+### 🚨 Important Security Notes
+
+⚠️ **Never commit** `.env` with real credentials
+⚠️ **Always use HTTPS** in production
+⚠️ **Change SECRET_KEY** before deploying
+⚠️ **Use App Password** not regular password for Gmail
+⚠️ **Never store plaintext passwords** (already implemented)
+
+---
+
+### 🆘 Need Help?
+
+- API not working? → Check `AUTH_SETUP.md`
+- Can't register? → Check database migration ran
+- Emails not sending? → Verify SMTP credentials
+- Login not working? → Clear cookies, check SECRET_KEY
+- Route not protected? → Verify router guard in `index.js`
+
+---
 

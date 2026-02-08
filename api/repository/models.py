@@ -9,6 +9,33 @@ from datetime import datetime
 # TINYINT : -128 > 128
 # SMALLINT : -32768 > 32767
 
+class User(db.Model):
+    __tablename__ = 'Users'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    email = db.Column(db.String(255), nullable=False, unique=True)
+    firstName = db.Column(db.String(127), nullable=False)
+    lastName = db.Column(db.String(127), nullable=False)
+    passwordHash = db.Column(db.String(255), nullable=False)
+    salt = db.Column(db.String(255), nullable=False)
+    lastLogin = db.Column(db.DateTime, nullable=True)
+    createdAt = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    updatedAt = db.Column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
+    mfaEnabled = db.Column(db.Boolean, nullable=False, default=False)
+    mfaCode = db.Column(db.String(6), nullable=True)
+    mfaCodeExpires = db.Column(db.DateTime, nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'firstName': self.firstName,
+            'lastName': self.lastName,
+            'lastLogin': self.lastLogin.isoformat() if self.lastLogin else None,
+            'createdAt': self.createdAt.isoformat() if self.createdAt else None,
+            'updatedAt': self.updatedAt.isoformat() if self.updatedAt else None,
+            'mfaEnabled': self.mfaEnabled,
+        }
+
 class Folder(db.Model):
     __tablename__ = 'Folders'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -28,9 +55,9 @@ class Folder(db.Model):
             'name': self.name,
             'parentId' : self.parentId,
             'children': [child.id for child in self.children],
-            'videoIds': [video.id for video in self.videos] 
+            'videoIds': [video.id for video in self.videos]
         }
-    
+
 class Source(db.Model):
     __tablename__ = 'Sources'
     id = db.Column(db.Integer, primary_key=True)
@@ -41,7 +68,7 @@ class CompetitionInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     info = db.Column(db.String(255), nullable=False)
     year = db.Column(db.Integer, nullable=False)
-    
+
 class TagGroup(db.Model):
     __tablename__ = 'TagGroups'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -104,12 +131,12 @@ class Video(db.Model):
             'qualitative' : self.qualitative,
             'obstruction' : self.obstruction
         }
-    
+
 class FrameLabelType(db.Model):
     __tablename__ = 'FrameLabelTypes'
     id = db.Column(db.Integer, primary_key=True)
     info = db.Column(db.String(127))
-    
+
 class FrameLabel(db.Model):
     __tablename__ = 'FrameLabels'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -168,7 +195,7 @@ class TrainResult(db.Model):
     isBestOfAll = db.Column(db.Boolean, nullable=False)
     isBestOfRecipe = db.Column(db.Boolean, nullable=False)
     isBestOfArchitecture = db.Column(db.Boolean, nullable=False)
-    
+
     isTestrun = db.Column(db.Boolean, nullable=False)
 
     trainStart = db.Column(db.DateTime, default=datetime.now)

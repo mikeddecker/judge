@@ -3,6 +3,8 @@ services:
   api:
     environment:
       - FLASK_ENV=development
+      - SESSION_COOKIE_SECURE=false
+      - FORCE_HTTPS=false
       - PYTHONUNBUFFERED=1
     restart: no
     volumes:

@@ -18,12 +18,28 @@ class Config:
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    
+    # Session configuration
+    SESSION_COOKIE_SECURE = os.getenv('FLASK_ENV') == 'production'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    PERMANENT_SESSION_LIFETIME = 86400 * 7  # 7 days in seconds (604800)
+    SESSION_REFRESH_EACH_REQUEST = True
+    
     print(f"Using database URL: {SQLALCHEMY_DATABASE_URI}")
 
 class TestConfig:
     TESTING = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    
+    # Session configuration for testing
+    SESSION_COOKIE_SECURE = False  # Always False for testing (HTTP)
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    PERMANENT_SESSION_LIFETIME = 3600  # 1 hour for testing
+    SESSION_REFRESH_EACH_REQUEST = True
+    
     print(f"Using database URL: {SQLALCHEMY_DATABASE_URI}")
 
 ENVS = SimpleNamespace(
@@ -79,3 +95,4 @@ LEVEL_TO_SCORE_MAP = {
     7 : 11,
     8 : 11,
 }
+
