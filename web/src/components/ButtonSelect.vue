@@ -1,5 +1,5 @@
 <template>
-    <ButtonContainer v-if="items">
+    <FlexContainer v-if="items">
         <Button
             v-for="item in items"
             :class="selected == item ? 'p-button-highlight': ''" :aria-label="item" :label="item"
@@ -7,11 +7,11 @@
             :v-tooltip="tooltip"
             @click="$emit('update:selectedItem', item)"
         ></Button>
-    </ButtonContainer>
+    </FlexContainer>
 </template>
 
 <script setup>
-import ButtonContainer from './ButtonContainer.vue';
+import FlexContainer from './FlexContainer.vue';
 
 const emit = defineEmits(['update:selectedItem'])
 const props = defineProps({

@@ -4,6 +4,7 @@ import os
 from .folder import Folder
 from .frameinfo import FrameInfo
 from .skill import Skill
+from domain.tag import Tag
 from helpers.ValueHelper import ValueHelper
 
 class VideoInfo:
@@ -21,12 +22,24 @@ class VideoInfo:
         "Height",
         "JudgeDiffScore",
         "TeamBoxes",
+        "Tags",
     ]
     # Frame does not 
     Frames: List[FrameInfo] # Key = frameId, value is Frame
     Skills: Set[Skill] = set()
 
-    def __init__(self, id: int, name: str, folder: Folder, frameLength: int, fps: float, duration: float, width:int, height:int, completed_skill_labels: bool = False, judgeDiffScore: int = None):
+    def __init__(
+            self,
+            id: int,
+            name: str,
+            folder: Folder,
+            frameLength: int,
+            fps: float, duration: float,
+            width:int, height:int,
+            completed_skill_labels: bool = False,
+            judgeDiffScore: int = None,
+            tags : set[Tag] = set()
+        ):
         self.Frames = []  # Initialize frames as an empty list
         self.Skills = set()  # Initialize skills as an empty set
 
@@ -35,7 +48,9 @@ class VideoInfo:
         self.__setFolder(folder)
         self.__setFrameLength(frameLength)
         self.__setFPS(fps)
+        self.__setDuration(duration)
         self.__setCompletedSkillLabels(completed_skill_labels)
+        self.Tags = tags
         self.Width = width # TODO : checks and tests
         self.Height = height
         self.JudgeDiffScore = judgeDiffScore
@@ -234,6 +249,7 @@ class VideoInfo:
             "Completed_Skill_Labels" : self.Completed_Skill_Labels,
             "Width" : self.Width,
             "Height" : self.Height,
+            "Tags" : list(self.Tags), # Set is not JSON serializable
             "TeamBoxes": getattr(self, "TeamBoxes", []),
         }
 

@@ -6,6 +6,7 @@ import subprocess
 
 from config import ENVS
 from datetime import datetime, date
+from domain.tag import Tag
 from flask import Flask, jsonify
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
@@ -35,6 +36,10 @@ class CustomJSONProvider(DefaultJSONProvider):
     def default(self, obj):
         if isinstance(obj, (datetime, date)):
             return obj.isoformat()
+        if isinstance(obj, set):
+            return list(obj)
+        if isinstance(obj, Tag):
+            return obj.to_dict()
         return super().default(obj)
 
 MYSQL_ROOT_PASSWORD : str = cast(str, os.getenv("MYSQL_ROOT_PASSWORD"))

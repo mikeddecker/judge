@@ -8,6 +8,7 @@ import time
 import traceback
 import cv2
 import math
+import random
 import subprocess
 
 from pprint import pprint
@@ -82,7 +83,7 @@ class StorageService:
             print(traceback.format_exc())
             print(e)
 
-    def __discover_folder(self, currentFolder: str, parent: Folder, isRoot=False, deleteOrphans=False):
+    def __discover_folder(self, currentFolder: str, parent: Folder, isRoot=False, deleteOrphans=False, folderTags: set[Tag]= set()):
         if currentFolder is None or not isinstance(currentFolder, str):
             raise ValueError(f"Didn't get a string for folder, got", currentFolder)
         if not isRoot and (parent is None or not isinstance(parent, Folder)):
@@ -92,7 +93,7 @@ class StorageService:
         folder_content = os.listdir(currentFolderPath)
         videos_in_folder_according_to_database = {} if isRoot else self.VideoService.get_videos(parent.Id)
         videos_in_folder_according_to_database = { videoinfo.Name : videoinfo for videoinfo in videos_in_folder_according_to_database }
-        child_folders = []
+        child_folders : list[dict] = []
         new_videos = {}
         orphans = {}
 
@@ -119,9 +120,14 @@ class StorageService:
                 if isRoot:
                     print(f"{Fore.YELLOW}Skipping file in root:{Style.RESET_ALL} {content}")
                 elif content.split(".")[-1] in ENVS.SUPPORTED_VIDEO_FORMATS:
-
                     if self.VideoService.exists_in_database(name=content, folder=parent):
                         del videos_in_folder_according_to_database[content]
+                        videoId : int = self.VideoService.get_videoId(name=content, folder=parent)
+                        detected_tags : set[Tag] = self.__filename_to_tags(filename=content, tags=tags)
+                        for tag in detected_tags:
+                            self.VideoService.add_tag(videoId=videoId, tag=tag)
+                        for tag in folderTags:
+                            self.VideoService.add_tag(videoId=videoId, tag=tag)
                     else:
                         print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content} {Fore.GREEN}NEW{Style.RESET_ALL}")
                         info = self.__enrich_video_data(name=content, folder=parent, tags=tags)
@@ -141,10 +147,9 @@ class StorageService:
                             new_videos[parent.Id] = [content]
 
                         # Create video image
-                        frameNr_for_image = math.floor(info["frameLength"] * 0.2)
+                        frameNr_for_image = math.floor(info["frameLength"] * (0.2 + random.random() / 2))
                         self.__create_video_image(videoId=inserted_video.Id, name=content, folder=parent, frameNr=frameNr_for_image)
                         print(f"{Fore.LIGHTMAGENTA_EX}Created image:{Style.RESET_ALL} {content}")
-
                 elif content.split(".")[-1] in ENVS.SUPPORTED_IMAGE_FORMATS:
                     print(f"{Fore.LIGHTMAGENTA_EX}Detected image:{Style.RESET_ALL} {content} (currently skipped)")
                 else:
@@ -169,7 +174,9 @@ class StorageService:
                 folder = self.FolderService.add_in_database(name=child["name"], parent=child["parent"])
                 print(Fore.GREEN, "NEW", Style.RESET_ALL)
             
-            new_vids, orph = self.__discover_folder(currentFolder=child["name"], parent=folder, deleteOrphans=deleteOrphans)
+            subFolderTags = folderTags.union(self.__filename_to_tags(filename=child["name"], tags=tags))
+
+            new_vids, orph = self.__discover_folder(currentFolder=child["name"], parent=folder, deleteOrphans=deleteOrphans, folderTags=subFolderTags)
             for folderId, videonames in new_vids.items():
                 new_videos[folderId] = videonames
             for folderId, orphanlist in orph.items():
@@ -177,34 +184,37 @@ class StorageService:
 
         return new_videos, orphans
 
-    def __enrich_video_data(self, name: str, folder: Folder, tags: list[Tag]) -> dict:
+    def __enrich_video_data(self, name: str, folder: Folder, tags: list[Tag], tagOnly:bool=False) -> dict:
         info = {
             "name" : name,
             "folderId" : folder.Id,
+            "tags": self.__filename_to_tags(filename=name, tags=tags)
         }
-        videopath = os.path.join(ENVS.DIRS.VIDEOS, folder.get_relative_path(), name)
-        cap = cv2.VideoCapture(videopath)
-        if not cap.isOpened():
-            raise IOError("Cannot open camera")
-        
-        info["fps"] = cap.get(cv2.CAP_PROP_FPS)
-        info["frameLength"] = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        info["width"] = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        info["height"] = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        info["tags"] = []
+        if not tagOnly:
+            videopath = os.path.join(ENVS.DIRS.VIDEOS, folder.get_relative_path(), name)
+            cap = cv2.VideoCapture(videopath)
+            if not cap.isOpened():
+                raise IOError("Cannot open camera")
 
-        cap.release()
-        cv2.destroyAllWindows()
+            info["fps"] = cap.get(cv2.CAP_PROP_FPS)
+            info["frameLength"] = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            info["width"] = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            info["height"] = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        # Tags
-        parts = name.lower().split('.')[0].split("-")
+            cap.release()
+            cv2.destroyAllWindows()
+
+        return info
+
+    def __filename_to_tags(self, filename: str, tags: list[Tag]) -> set[Tag]:
+        detected_tags: set[Tag] = set()
+        parts = filename.lower().split('.')[0].split("-")
         for tag in tags:
             for video_name_part in parts:
                 if tag.contains_keyword(video_name_part):
-                    info["tags"].append(tag)
+                    detected_tags.add(tag)
+        return detected_tags
 
-        return info
-    
     def __create_video_image(self, videoId: int, name: str, folder: Folder, frameNr: int):
         # Make sure videofolder exists, for storing predictions, image...
         inserted_videofolder = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}")

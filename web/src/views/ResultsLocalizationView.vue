@@ -12,7 +12,7 @@
       <Column key="metrics/recall(B)" field="metrics/recall(B)" header="metrics/recall(B)" sortable><template #body="slotProps">{{ formatPercentage(slotProps.data['metrics/recall(B)']) }}</template></Column>
   </DataTable>
 
-  <ButtonContainer>
+  <FlexContainer>
     <Button v-if="recipes"
       :class="selectedRecipe == recipe ? 'p-button-highlight': ''" :aria-label="recipe" :label="recipe"
       severity="success" variant="text" raised
@@ -20,14 +20,14 @@
       @click="() => selectedRecipe = recipe"
       v-for="recipe in Object.keys(recipes)"
     ></Button>
-  </ButtonContainer>
+  </FlexContainer>
   <ResultsLocalization v-if="selectedValidationResults" :results="selectedValidationResults"></ResultsLocalization>
   <h3>Recipes localize</h3>
   <pre>{{ recipes }}</pre>
 </template>
 
 <script setup>
-import ButtonContainer from '@/components/ButtonContainer.vue';
+import FlexContainer from '@/components/FlexContainer.vue';
 import ResultsLocalization from '@/components/ResultsLocalization.vue';
 import { formatPercentage } from '@/helpers/utils';
 import { getJobOptions, getResults } from '@/services/videoService';

@@ -32,7 +32,8 @@ class MapToDomain:
             completed_skill_labels = videoDB.completed_skill_labels,
             width=videoDB.width,
             height=videoDB.height,
-            judgeDiffScore=videoDB.judgeDiffScore
+            judgeDiffScore=videoDB.judgeDiffScore,
+            tags = set([MapToDomain.map_tag(t) for t in videoDB.tags])
         )
         for f in videoDB.frameLabels:
             video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible, labeltype=f.labeltype))

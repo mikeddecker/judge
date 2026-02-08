@@ -3,6 +3,7 @@ import { getVideoImagePath } from '@/services/videoService';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import ProgressBar from './ProgressBar.vue';
+import FlexContainer from './FlexContainer.vue';
 
 const props = defineProps(['title', 'videoId', 'info'])
 const router = useRouter()
@@ -31,6 +32,9 @@ onMounted(async () => {
     <div class="info">
       <span>{{ title }}</span>
     </div>
+    <FlexContainer>
+      <Tag v-for="tag in info['Tags']" :value="tag.Name" severity="Info"/>
+    </FlexContainer>
     <div class="flex bottom-left">
       <span class="flex-end">video {{ videoId }}</span>
       <img v-if="info.Completed_Skill_Labels" class="percentageCompleted" src="@/assets/checked.png" alt="folder image" />

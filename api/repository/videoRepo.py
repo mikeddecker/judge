@@ -15,9 +15,10 @@ from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLab
 from sqlalchemy import desc, func, and_
 from typing import List
 
+
 class VideoRepository:
     def __init__(self, db : SQLAlchemy):
-        self.db = db
+        self.db : SQLAlchemy = db
 
     # TODO : make width, height ... requirements
     def add(
@@ -62,6 +63,14 @@ class VideoRepository:
         ValueHelper.check_raise_id(video.Id)
         frame_label_DB = MapToDB.map_frameInfo(video=video, frameInfo=frameInfo)
         self.db.session.add(frame_label_DB)
+        self.db.session.commit()
+
+    def add_tag(self, videoId: int, tag: Tag):
+        ValueHelper.check_raise_id(videoId)
+        videoDB : VideoInfoDB = VideoInfoDB.query.get(videoId)
+        tagDB : TagDB = TagDB.query.get(tag.Id)
+        if tagDB not in videoDB.tags:
+            videoDB.tags.append(tagDB)
         self.db.session.commit()
 
     def count(self) -> int:

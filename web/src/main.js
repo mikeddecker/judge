@@ -19,6 +19,7 @@ import Button from "primevue/button"
 import Card from 'primevue/card';
 import Chart from 'primevue/chart';
 import Checkbox from 'primevue/checkbox';
+import Chip from 'primevue/chip';
 import Column from 'primevue/column';
 import ConfirmPopup from 'primevue/confirmpopup';
 import DataTable from 'primevue/datatable';
@@ -37,6 +38,7 @@ import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
+import Tag from 'primevue/tag';
 import Toast from 'primevue/toast';
 import ToastService from 'primevue/toastservice';
 import Tooltip from 'primevue/tooltip'
@@ -72,6 +74,7 @@ app.component('Button', Button);
 app.component('Card', Card);
 app.component('Chart', Chart);
 app.component('Checkbox', Checkbox);
+app.component('Chip', Chip);
 app.component('Column', Column);
 app.component('ConfirmPopup', ConfirmPopup);
 app.component('DataTable', DataTable);
@@ -90,6 +93,7 @@ app.component('TabList', TabList);
 app.component('Tab', Tab);
 app.component('TabPanels', TabPanels);
 app.component('TabPanel', TabPanel);
+app.component('Tag', Tag);
 app.component('Toast', Toast)
 
 app.directive('tooltip', Tooltip)

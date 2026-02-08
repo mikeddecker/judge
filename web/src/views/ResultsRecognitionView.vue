@@ -4,7 +4,7 @@
         Train a model first to see results
     </Message>
     <!-- TODO : update to component which uses list, tooltip description & @clickevent-->
-    <ButtonContainer>
+    <FlexContainer>
         <Button v-if="trainedRecipeCodes"
             v-for="recipeCode in trainedRecipeCodes"
             :class="selectedRecipe == recipeCode ? 'p-button-highlight': ''" :aria-label="recipeCode" :label="recipeCode"
@@ -12,7 +12,7 @@
             v-tooltip="`Display results for recipe ${recipeCode}`"
             @click="() => selectedRecipe = recipeCode"
         ></Button>
-    </ButtonContainer>
+    </FlexContainer>
 
     <TrainResultRecognition v-if="validationResults" :trainresult="validationResults"></TrainResultRecognition>
     <!-- + Model comparison -->
@@ -20,7 +20,7 @@
 
 <script setup>
 
-import ButtonContainer from '@/components/ButtonContainer.vue';
+import FlexContainer from '@/components/FlexContainer.vue';
 import TrainResultRecognition from '@/components/TrainResultRecognition.vue';
 import { getResults } from '@/services/videoService';
 import { computed, ref, onMounted } from 'vue'

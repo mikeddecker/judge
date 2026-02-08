@@ -262,3 +262,7 @@ class VideoService:
         ValueHelper.check_raise_id(videoId)
         return os.path.exists(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json"))
 
+    def add_tag(self, videoId: int, tag: Tag):
+        """Adds the tag to the video if it does not already exist"""
+        ValueHelper.check_raise_id(videoId)
+        self.VideoRepo.add_tag(videoId=videoId, tag=tag)

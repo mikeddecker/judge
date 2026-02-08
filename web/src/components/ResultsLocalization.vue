@@ -1,12 +1,12 @@
 <template>
-    <ButtonContainer>
+    <FlexContainer>
         <Button
             v-for="smoothTechnique in smoothTechniques" :label="smoothTechnique" :aria-label="smoothTechnique"
             severity="success" variant="text" raised size="small"
             :class="selectedSmoothTechnique == smoothTechnique ? 'p-button-highlight' : ''"
             @click="smoothTechniqueChosenValue = smoothTechnique"
         ></Button>
-    </ButtonContainer>
+    </FlexContainer>
 
     <h3>Performance per video</h3>
     <TableIous :ious="tabledIous"></TableIous>
@@ -15,7 +15,7 @@
 <script setup>
 import TableIous from './TableIous.vue';
 import { computed, onMounted, ref } from 'vue';
-import ButtonContainer from './ButtonContainer.vue';
+import FlexContainer from './FlexContainer.vue';
 
 const props = defineProps({
     results: {

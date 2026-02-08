@@ -1,6 +1,11 @@
 <template>
   <div v-if="videoinfo">
-    <h1>{{ videoinfo.Name }}</h1>
+    <FlexContainer>
+      <h1 class="w-fit">{{ videoinfo.Name }}</h1>
+      <FlexContainer>
+        <Tag v-for="tag in videoinfo.Tags" :value="tag.Name" severity="Info"/>
+      </FlexContainer>
+    </FlexContainer>
     <div v-if="loading">Loading...</div>
     <span v-if="error" class="error">{{ error }}</span>
     <span v-if="croperror">{{ croperror }}</span>
@@ -127,6 +132,7 @@ import SkillBalk from '@/components/SkillBalk.vue';
 import SkillLabel from '@/components/SkillLabel.vue';
 import VideoPlayer from '@/components/VideoPlayer.vue';
 import { useToastUtils } from '@/helpers/toastUtils';
+import FlexContainer from '@/components/FlexContainer.vue';
 
 const { showToastSuccess } = useToastUtils();
 

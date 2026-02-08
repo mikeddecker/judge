@@ -1,5 +1,5 @@
 <script setup>
-import VideoInfo from './VideoInfo.vue';
+import VideoCard from './VideoCard.vue';
 
 defineProps(['title', 'videos', 'totalLabeledFrames'])
 
@@ -8,7 +8,7 @@ defineProps(['title', 'videos', 'totalLabeledFrames'])
 <template>
   <div class="container">
     <p>{{ totalLabeledFrames }}</p>
-    <VideoInfo v-for="video in videos" :key="video.Id" :video-id="video.Id" :title="video.Name" :info="video"/>
+    <VideoCard v-for="video in videos" :key="video.Id" :video-id="video.Id" :title="video.Name" :info="video"/>
   </div>
 </template>
 
