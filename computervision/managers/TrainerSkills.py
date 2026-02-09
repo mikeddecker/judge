@@ -11,7 +11,7 @@ import random
 from base_utils import load_json_file
 from collections import defaultdict
 from colorama import Fore, Style
-from datetime import datetime
+from datetime import datetime, timedelta
 from domain.types import IsBestOfDict
 from constants import RECIPES, SPEEDMODES, ENVS, PYTORCH_MODELS_SKILLS
 from dotenv import load_dotenv
@@ -54,12 +54,8 @@ class TrainerSkills:
         self._max_epochs = MAX_EPOCHS_TESTRUN if self._testrun else MAX_EPOCHS
 
     def train(self, recipe: SimpleNamespace, job_arguments:dict={}, speedmode=SPEEDMODES[1]):
-        modelname = recipe.model
-        if modelname not in PYTORCH_MODELS_SKILLS.keys():
-            raise ValueError(modelname)
-        
-        rundate = datetime.now()
-        start = time.time()
+        if recipe.model not in PYTORCH_MODELS_SKILLS.keys():
+            raise ValueError('Modelname not in constants PYTORCH_MODELS_SKILLS', recipe.model)
 
         try:
             self.__create_or_recreate_cropped_videos(speedmode=speedmode)
@@ -79,7 +75,7 @@ class TrainerSkills:
             if revalidate_if_required:
                 self.__revalidate_previous_runs(datetime.now(), dataloader_val)
 
-            model: torch.nn.Module = PYTORCH_MODELS_SKILLS[modelname](head=head, recipe=recipe).to(DEVICE)
+            model: torch.nn.Module = PYTORCH_MODELS_SKILLS[recipe.model](head=head, recipe=recipe).to(DEVICE)
             optimizer = optim.Adam(model.parameters(), lr=recipe.learning_rate)
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=SCHEDULER_PATIENCE, factor=0.2)
 
@@ -173,12 +169,21 @@ class TrainerSkills:
         existing_redo_subset = set()
         new_videos = set()
 
+        # two_weeks = timedelta(days=14)
+        one_month = timedelta(days=30)
+        freshness_limit = one_month  # change if needed
+        now = datetime.now()
+
         for videoId in unique_videoIds:
             vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}', f'{videoId}_cropped.mp4')
             if not os.path.exists(vpath):
                 new_videos.add(videoId)
             else:
-                existing_cropped_videoIds.append(videoId)
+                # only consider for redo if crop is older than timedelta threshold
+                file_mtime = datetime.fromtimestamp(os.path.getmtime(vpath))
+                age = now - file_mtime
+                if not (speedmode == SPEEDMODES[1] and age < freshness_limit):
+                    existing_cropped_videoIds.append(videoId)
 
         recipename, weightpath = localize_get_best_modelpath()
         random.shuffle(existing_cropped_videoIds)

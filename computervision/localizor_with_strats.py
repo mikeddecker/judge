@@ -168,7 +168,10 @@ def calculate_smoothed_values(strat:str, params: dict, previous_values:dict, i:i
     
 def localize_jumpers(
         model: YOLO,
-        videoId: int, dim: int, strategies: list, stratparams: dict,
+        videoId: int,
+        dim: int,
+        strategies: list,
+        stratparams: dict,
         save_as_mp4=False, 
         padding=False
     ):
@@ -330,6 +333,7 @@ def validate_localize(modeldir: str, repo: RepoGeneral):
     print('Team box validation')
     strategies = get_localize_strategy_list()
     strategies = ['raw', 'smoothing', 'smoothing_skip_small_iou']
+    # TODO : don't provide strategies.
 
     df_team_boxes = REPO_GENERAL.get_team_boxes().sort_values(['videoId', 'frameNr'])
     videoIds = df_team_boxes['videoId'].unique()
@@ -352,6 +356,8 @@ def validate_localize(modeldir: str, repo: RepoGeneral):
     completed_videoIds = []
     for videoId in tqdm(videoIds):
         train_or_val = 'val'
+        completed_videoIds.append(videoId)
+        print(f"Validating video {videoId} - {len(completed_videoIds)} / {len(videoIds)} ({(100 * len(completed_videoIds) / len(videoIds)):.2f}%)")
 
         try:
             # df_coordinates contains both:
@@ -359,7 +365,6 @@ def validate_localize(modeldir: str, repo: RepoGeneral):
             # and relative x y w h
             df_coordinates = localize_jumpers(
                 model=model,
-                repo=REPO_GENERAL,
                 videoId=videoId,
                 dim=DIM,
                 strategies=strategies,

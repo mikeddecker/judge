@@ -10,7 +10,7 @@ class Trainer:
     def __init__(self, testrun:bool=False):
         self._testrun = testrun
 
-    def train(self, step, recipename, speedmode=SPEEDMODES[0], job_arguments: dict = {}) -> None:
+    def train(self, step, recipename, speedmode=SPEEDMODES[1], job_arguments: dict = {}) -> None:
         match step:
             case 'LOCALIZE':
                 train_yolo_model(RECIPES[step][recipename].size, repo=REPO_GENERAL)
@@ -30,7 +30,7 @@ class Trainer:
                 )
             case 'SKILL':
                 # recipename was modelname, prior to refactor
-                if recipename in PYTORCH_MODELS_SKILLS.keys():
+                if RECIPES[step][recipename].model in PYTORCH_MODELS_SKILLS.keys():
                     skillTrainer = TrainerSkills(self._testrun)
                     skillTrainer.train(
                         recipe=RECIPES[step][recipename],
@@ -38,7 +38,7 @@ class Trainer:
                         job_arguments=job_arguments
                     )
                 else:
-                    raise NotImplementedError()
+                    raise NotImplementedError('Unknown model', RECIPES[step][recipename].model)
             case _:
                 raise ValueError(f"Trainer - Type {step} not recognized")
 

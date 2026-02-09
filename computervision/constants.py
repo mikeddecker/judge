@@ -1,12 +1,12 @@
 import os
 
-from dotenv import load_dotenv
 from base_utils import load_json_file
+from dotenv import load_dotenv
 from models.SA_Conv3D_pytorch_1 import get_model as SA_Conv3D_pytorch_1
-from models.MViT_pytorch import MViT
-from models.MViT_extra_dense_pytorch import MViT_Dense
+from models.JudgeVisionModel import JudgeVisionModel
+from models.MViT import MViT, MViT_Dense
 from models.Resnet import get_get_model as Resnet_get_model
-from models.SwinT_pytorch import get_get_model as get_SwinT
+from models.SwinTransformer import SwinTransformer
 from types import SimpleNamespace
 
 load_dotenv()
@@ -36,9 +36,10 @@ ENVS = SimpleNamespace(
 
 KERAS_MODELS = {}
 
-PYTORCH_MODELS_SKILLS = {
+PYTORCH_MODELS_SKILLS: dict[str, JudgeVisionModel] = {
     "MViT" : MViT,
-    "MViT_extra_dense" : MViT_Dense,
+    "MViT_Dense" : MViT_Dense,
+    "SwinTransformer" : SwinTransformer,
     # "SA_Conv3D" : SA_Conv3D_pytorch_1,
     # "Resnet_R3D" : Resnet_get_model('R3D'),
     # "Resnet_MC3" : Resnet_get_model('MC3'),

@@ -124,10 +124,9 @@ def create_app(config_object:str="config.Config"):
         Talisman(app, force_https=True, strict_transport_security=True, strict_transport_security_max_age=63072000)
     
     if not app.config.get('TESTING', False) and not is_running_manual_migrations():
-        pass
         # TODO : restore only if db empty or not at last db version
-        # print("⏳ Restoring latest MySQL backup before starting the app...")
-        # restore_latest_mysql_backup()
+        print("⏳ Restoring latest MySQL backup before starting the app...")
+        restore_latest_mysql_backup()
 
     # Initialize extensions
     db.init_app(app)

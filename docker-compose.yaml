@@ -83,6 +83,8 @@ services:
       - ${STORAGE_DIR_VIDEOS}:${STORAGE_DIR_VIDEOS}
       - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
       - torch_cache:/root/.cache/torch
+    # ipc: host # Good for now - use shm_size
+    shm_size: 6gb # About 30-50% max of CPU
 
   # Testing services
   api-test:

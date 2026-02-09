@@ -28,6 +28,9 @@ dev-detached: check-ssd ## Run development environment in detached mode
 dev-down: check-ssd ## Stop dev environment
 	$(COMPOSE_DEV) --profile dev down --remove-orphans
 
+dev-force-recreate: check-ssd
+	$(COMPOSE_DEV) --profile dev up --build --force-recreate
+
 dev-logs: ## Show logs
 	$(COMPOSE_DEV) --profile dev logs -f $(SERVICE)
 
@@ -39,6 +42,9 @@ dev-bash: ## Open shell inside API container
 # -----------------------------
 prod: check-ssd ## Run production environment
 	$(COMPOSE_PROD) --profile prod up --build
+
+prod-force-recreate: check-ssd
+	$(COMPOSE_PROD) --profile prod up --build --force-recreate
 
 prod-down: check-ssd ## Stop production
 	$(COMPOSE_PROD) --profile prod down
@@ -58,8 +64,11 @@ rebuild-dev: ## Rebuild dev without cache
 rebuild-prod: ## Rebuild prod without cache
 	$(COMPOSE_PROD) --profile prod build --no-cache
 
-restart-cv: ## Restart the computervision service
+restart-cv-dev: ## Restart the computervision service
 	$(COMPOSE_DEV) restart computervision
+
+restart-cv-prod: ## Restart the computervision service
+	$(COMPOSE_PROD) restart computervision
 
 prune: ## Clean all docker trash
 	docker system prune -f

@@ -27,7 +27,7 @@ class OutputHeadRecognition(nn.Module):
         self.max_instances_per_composition : pd.Series = REPO_GENERAL.get_max_instances_per_role(self.df_composition)
         self.output_layers = nn.ModuleDict()
 
-        backbone_output_neurons = PYTORCH_MODELS_SKILLS[recipe.name].get_output_feature_dim(recipe)
+        backbone_output_neurons = PYTORCH_MODELS_SKILLS[recipe.model].get_output_feature_dim(recipe)
         prop_counts = REPO_GENERAL.get_skill_prop_counts()
 
         print(f"max instances per role")

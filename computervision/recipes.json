@@ -31,7 +31,7 @@
       "localize": true
     },
     "MViT_extra_dense": {
-      "model": "MViT_extra_dense",
+      "model": "MViT_Dense",
       "architecture": "MViT",
       "weights": "DEFAULT",
       "dim": 224,     
@@ -42,6 +42,7 @@
     "SwinTransformer_s" : {
       "model": "SwinTransformer",
       "architecture": "Swin",
+      "variant" : "s",
       "weights": "DEFAULT",
       "dim": 224,     
       "timesteps": 16,
