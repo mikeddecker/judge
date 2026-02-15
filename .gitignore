@@ -39,3 +39,6 @@ segmentplot*
 *.stats.json
 *.stats.current.json
 
+# Ignore .obsidian (linked folder connection on dev pc)
+.obsidian/*
+
