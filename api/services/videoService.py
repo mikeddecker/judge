@@ -140,9 +140,6 @@ class VideoService:
         if not self.exists_in_database(id=id):
             raise LookupError(f"VideoId {id} does not exist")
         video = self.VideoRepo.get(id=id)
-        for skill in self.VideoRepo.get_skills(videoId=id):
-            video.add_skill(skill)
-        video.TeamBoxes = self.VideoRepo.get_team_boxes(video.Id)
         return video
     
     def get_videoId(self, name: str = None, folder: Folder = None) -> int:
@@ -266,3 +263,4 @@ class VideoService:
         """Adds the tag to the video if it does not already exist"""
         ValueHelper.check_raise_id(videoId)
         self.VideoRepo.add_tag(videoId=videoId, tag=tag)
+

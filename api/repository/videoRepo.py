@@ -15,7 +15,6 @@ from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLab
 from sqlalchemy import desc, func, and_
 from typing import List
 
-
 class VideoRepository:
     def __init__(self, db : SQLAlchemy):
         self.db : SQLAlchemy = db
@@ -106,8 +105,12 @@ class VideoRepository:
         self.db.session.commit()
 
     def get(self, id: int) -> VideoInfo:
-        return MapToDomain.map_video(self.db.session.get(VideoInfoDB, ident=id))
-    
+        video: VideoInfo = MapToDomain.map_video(self.db.session.get(VideoInfoDB, ident=id))
+        for skill in self.get_skills(videoId=id):
+            video.add_skill(skill)
+        video.TeamBoxes = self.get_team_boxes(video.Id)
+        return video
+
     def get_videoId(self, name: str, folder: Folder) -> int:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):

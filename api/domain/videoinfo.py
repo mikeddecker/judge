@@ -200,10 +200,6 @@ class VideoInfo:
     def remove_skill(self, skill):
         self.Skills.remove(skill)
 
-    ####################
-    # Section : Skills #
-    ####################
-
     #########
     # Other #
     #########    
