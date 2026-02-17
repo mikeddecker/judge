@@ -5,11 +5,13 @@ from domain.layerComposition import LayerComposition
 from domain.tag import Tag
 from domain.tagGroup import TagGroup
 from domain.skill import Skill
+from domain.user import User
 from domain.videoinfo import VideoInfo
 from repository.models import Folder as FolderDB, Video as VideoDB, Skill as SkillDB, Jobs as JobDB
 from repository.models import Tag as TagDB, TagGroup as TagGroupDB, LayerComposition as LayerCompositionDB
 
 class MapToDomain:
+    @staticmethod
     def map_folder(folderDB: FolderDB) -> Folder:
         folder= Folder(folderDB.id, folderDB.name, None)
         original = folder
@@ -20,7 +22,7 @@ class MapToDomain:
             folderDB = folderDB.parent
         return original
     
-    # TODO : update when height, width... are required & implemented
+    @staticmethod
     def map_video(videoDB: VideoDB) -> VideoInfo:
         video = VideoInfo(
             id = videoDB.id,
@@ -39,6 +41,7 @@ class MapToDomain:
             video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible, labeltype=f.labeltype))
         return video
     
+    @staticmethod
     def map_skill(s: SkillDB) -> Skill:
         return Skill(
             id=s.id,
@@ -46,7 +49,8 @@ class MapToDomain:
             start=s.frameStart,
             end=s.frameEnd
         )
-    
+
+    @staticmethod
     def map_job(jobDB: JobDB) -> Job:
         return Job(
             id = jobDB.id,
@@ -57,7 +61,8 @@ class MapToDomain:
             status = jobDB.status,
             status_details = jobDB.status_details,
         )
-    
+
+    @staticmethod
     def map_tag(tagDB: TagDB) -> Tag:
         return Tag(
             id = tagDB.id,
@@ -68,14 +73,16 @@ class MapToDomain:
                 name = tagDB.group.name, # Add tags if necessairy
             )
         )
-    
+
+    @staticmethod
     def map_tag_group(tagGroupDB: TagGroupDB) -> TagGroup:
         return TagGroup(
             id = tagGroupDB.id,
             name = tagGroupDB.name,
             tags = [Tag(id = t.id, name = t.name, keywords=t.keywords) for t in tagGroupDB.tags]
         )
-    
+
+    @staticmethod
     def map_layercomposition(compositionValuesDB: list[LayerCompositionDB]) -> LayerComposition:
         if len(compositionValuesDB) == 0:
             return None
@@ -106,5 +113,22 @@ class MapToDomain:
             startProperties=startProps,
             endProperties=endProps,
             stageProperties=stageProps
+        )
+
+    @staticmethod
+    def map_user(user: User) -> User:
+        """Map user database model to user domain model"""
+        return User(
+            id=user.id,
+            email=user.email,
+            firstName=user.firstName,
+            lastName=user.lastName,
+            passwordHash=user.passwordHash,
+            salt=user.salt,
+            lastLogin=user.lastLogin,
+            createdAt=user.createdAt,
+            updatedAt=user.updatedAt,
+            mfaEnabled=user.mfaEnabled,
+            mfaCode=user.mfaCode,
         )
 

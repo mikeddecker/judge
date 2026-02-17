@@ -38,7 +38,7 @@ class CustomJSONProvider(DefaultJSONProvider):
             return obj.isoformat()
         if isinstance(obj, set):
             return list(obj)
-        if isinstance(obj, Tag):
+        if hasattr(obj, "to_dict"):
             return obj.to_dict()
         return super().default(obj)
 

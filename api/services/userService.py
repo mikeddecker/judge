@@ -8,6 +8,10 @@ from repository.userRepo import UserRepo
 from domain.user import User
 import os
 
+PASSWORD_MIN_LENGTH = os.getenv('PASSWORD_MIN_LENGTH', 12)
+
+# The encode() method encodes the string, using the specified encoding. If no encoding is specified, UTF-8 will be used.
+
 class UserService:
     # Email configuration (using free SMTP services)
     SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp-mail.outlook.com')
@@ -41,7 +45,7 @@ class UserService:
         if UserRepo.user_exists(email):
             return {'success': False, 'message': 'User with this email already exists'}
 
-        if len(password) < 8:
+        if len(password) < PASSWORD_MIN_LENGTH:
             return {'success': False, 'message': 'Password must be at least 8 characters long'}
 
         # Hash password
@@ -52,7 +56,7 @@ class UserService:
         return {
             'success': True,
             'message': 'User registered successfully',
-            'user': user.to_dict()
+            'user': user
         }
 
     @staticmethod
@@ -96,7 +100,7 @@ class UserService:
         return {
             'success': True,
             'message': 'Login successful',
-            'user': user.to_dict(),
+            'user': user,
             'requires_mfa': False,
         }
 
@@ -116,7 +120,7 @@ class UserService:
         return {
             'success': True,
             'message': 'MFA verification successful',
-            'user': user.to_dict(),
+            'user': user,
         }
 
     @staticmethod
