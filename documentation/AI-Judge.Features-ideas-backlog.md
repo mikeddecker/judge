@@ -24,19 +24,19 @@
 - [ ] Use uuid to store
 
 # Folders
-- [ ] Store user uploaded video's into user -> videos
+- [ ] Store account uploaded video's into account -> videos
 - [ ] Show/Define tag order to browse
 # Videos
 - [x] Explore drive to list videos ✅ 2025-02-01
 - [ ] Tags: accept proposed tags
-- [ ] RBAC: Allow users to view videos
+- [ ] RBAC: Allow accounts to view videos
 # Tags
 - [ ] 🔽 Auto add tags to videos during drive explore
 - [ ] 🔽 Add/display tag to video 🆔 tagToVid
 - [ ] 🔽 Propose tags based
 - [ ] ⏬ Learn/propose tags based on video
 ## Stats/Results
-- [ ] 🔽 Stats/results based on tags, users 🆔 k8lipo ⛔ tagToVid
+- [ ] 🔽 Stats/results based on tags, accounts 🆔 k8lipo ⛔ tagToVid
 - [ ] 🔽 Stats/results based on output_heads ⛔ tagToVid
 - [ ] General stats page
 	- [ ] Videos
@@ -51,7 +51,7 @@
 - [ ] Train page
 	- [ ] Show available models
 		- [ ] Make Segmentation work
-		- [ ] Make 
+		- [ ] Make
 	- [ ] Show records having null properties (e.g. Feet: null)
 	- [ ] Show process of current training step, batch
 		- [ ] Localize
@@ -59,14 +59,14 @@
 		- [ ] Skills
 
 # Models
-- [ ] Train using labels of specified user
-- [ ] Train using labels of allowed users
+- [ ] Train using labels of specified account
+- [ ] Train using labels of allowed accounts
 - [ ] Localization
 	- [ ] Add available localization methods
 	- [ ] Train/Validate on different localization methods
 	- [ ] Train/Validate on more models than YOLO only
-	- [ ] Train using labels of specified user
-	- [ ] Train using labels of allowed users
+	- [ ] Train using labels of specified account
+	- [ ] Train using labels of allowed accounts
 	- [ ] Suggest high confident predicted labels
 	- [ ] ⏬ Edit label: foreground <-> background
 	- [ ] ⏬ Edit label: adjust borders
@@ -76,8 +76,8 @@
 	- [ ] Possibility to use localization
 		- [ ] Select localization method (include mix)
 		- [ ] Select model (best)
-	- [ ] Train using labels of specified user
-	- [ ] Train using labels of allowed users
+	- [ ] Train using labels of specified account
+	- [ ] Train using labels of allowed accounts
 	- [ ] Suggest high confident predicted labels
 	- [ ] Distinct colors for segments, num skill instances, partial skill labels, full skill labels
 	- [x] Segment without adding recognition info ✅ 2025-12-15
@@ -89,14 +89,14 @@
 
 - [ ] SegLo
 	- [ ] Model to combine these two steps?
-	- [ ] Train using labels of specified user
-	- [ ] Train using labels of allowed users
+	- [ ] Train using labels of specified account
+	- [ ] Train using labels of allowed accounts
 	- [ ] Suggest high confident predicted labels
 - [ ] Recognition
 	- [ ] Predict skills
-	- [ ] Train using labels of specified user
-	- [ ] Train using labels of allowed users
-	- [ ] ⏫ Check these TODO's 
+	- [ ] Train using labels of specified account
+	- [ ] Train using labels of allowed accounts
+	- [ ] ⏫ Check these TODO's
 		- [ ] Segmented skill = named property (order by inverse relative occurence)
 		- [ ] Show the current labeled videos, which are not not fully segmented with a skill property
 		- [ ] Show the current labeled videos, which are fully segmented, order by skill property density

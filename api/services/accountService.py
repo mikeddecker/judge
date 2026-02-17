@@ -4,15 +4,15 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
-from repository.userRepo import UserRepo
-from domain.user import User
+from repository.accountRepo import AccountRepo
+from domain.account import Account
 import os
 
 PASSWORD_MIN_LENGTH = os.getenv('PASSWORD_MIN_LENGTH', 12)
 
 # The encode() method encodes the string, using the specified encoding. If no encoding is specified, UTF-8 will be used.
 
-class UserService:
+class AccountService:
     # Email configuration (using free SMTP services)
     SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp-mail.outlook.com')
     SMTP_PORT = int(os.getenv('SMTP_PORT', '587'))
@@ -36,91 +36,91 @@ class UserService:
         return passwordHash_attempt.hex() == passwordHash
 
     @staticmethod
-    def register_user(email: str, firstName: str, lastName: str, password: str) -> dict:
-        """Register a new user"""
+    def register_account(email: str, firstName: str, lastName: str, password: str) -> dict:
+        """Register a new account"""
         # Validate input
         if not email or not firstName or not lastName or not password:
             return {'success': False, 'message': 'All fields are required'}
 
-        if UserRepo.user_exists(email):
-            return {'success': False, 'message': 'User with this email already exists'}
+        if AccountRepo.account_exists(email):
+            return {'success': False, 'message': 'Account with this email already exists'}
 
         if len(password) < PASSWORD_MIN_LENGTH:
             return {'success': False, 'message': 'Password must be at least 8 characters long'}
 
         # Hash password
-        passwordHash, salt = UserService.hash_password(password)
+        passwordHash, salt = AccountService.hash_password(password)
 
-        # Create user
-        user = UserRepo.create_user(email, firstName, lastName, passwordHash, salt)
+        # Create account
+        account = AccountRepo.create_account(email, firstName, lastName, passwordHash, salt)
         return {
             'success': True,
-            'message': 'User registered successfully',
-            'user': user
+            'message': 'Account registered successfully',
+            'account': account
         }
 
     @staticmethod
     def login(email: str, password: str) -> dict:
-        """Login user"""
-        user = UserRepo.get_user_by_email(email)
-        if not user:
+        """Login account"""
+        account = AccountRepo.get_account_by_email(email)
+        if not account:
             return {'success': False, 'message': 'Invalid email or password'}
 
-        if not UserService.verify_password(password, user.passwordHash, user.salt):
+        if not AccountService.verify_password(password, account.passwordHash, account.salt):
             return {'success': False, 'message': 'Invalid email or password'}
 
         # Update last login
-        UserRepo.update_lastLogin(user.id)
+        AccountRepo.update_lastLogin(account.id)
 
         # Check if MFA is enabled
-        if user.mfaEnabled:
+        if account.mfaEnabled:
             # Generate and send MFA code
-            mfaCode = UserService.generate_mfaCode()
+            mfaCode = AccountService.generate_mfaCode()
             expires_at = datetime.now() + timedelta(minutes=10)
-            UserRepo.set_mfaCode(user.id, mfaCode, expires_at)
+            AccountRepo.set_mfaCode(account.id, mfaCode, expires_at)
 
             # Try to send email
-            if UserService.SENDER_EMAIL and UserService.SENDER_PASSWORD:
-                UserService.send_mfa_email(email, mfaCode)
+            if AccountService.SENDER_EMAIL and AccountService.SENDER_PASSWORD:
+                AccountService.send_mfa_email(email, mfaCode)
                 return {
                     'success': True,
                     'message': 'MFA code sent to email',
                     'requires_mfa': True,
-                    'user_id': user.id,
+                    'account_id': account.id,
                 }
             else:
                 return {
                     'success': True,
                     'message': 'MFA enabled but email not configured',
                     'requires_mfa': True,
-                    'user_id': user.id,
+                    'account_id': account.id,
                     'mfaCode': mfaCode  # Return code for testing (remove in production)
                 }
 
         return {
             'success': True,
             'message': 'Login successful',
-            'user': user,
+            'account': account,
             'requires_mfa': False,
         }
 
     @staticmethod
-    def verify_mfa(user_id: int, mfaCode: str) -> dict:
+    def verify_mfa(account_id: int, mfaCode: str) -> dict:
         """Verify MFA code"""
-        if not UserRepo.verify_mfaCode(user_id, mfaCode):
+        if not AccountRepo.verify_mfaCode(account_id, mfaCode):
             return {'success': False, 'message': 'Invalid or expired MFA code'}
 
-        user = UserRepo.get_user_by_id(user_id)
-        if not user:
-            return {'success': False, 'message': 'User not found'}
+        account = AccountRepo.get_account_by_id(account_id)
+        if not account:
+            return {'success': False, 'message': 'Account not found'}
 
         # Clear MFA code
-        UserRepo.set_mfaCode(user_id, None, None)
+        AccountRepo.set_mfaCode(account_id, None, None)
 
         return {
             'success': True,
             'message': 'MFA verification successful',
-            'user': user,
+            'account': account,
         }
 
     @staticmethod
@@ -131,12 +131,12 @@ class UserService:
     @staticmethod
     def send_mfa_email(email: str, mfaCode: str) -> bool:
         """Send MFA code via email (DISABLED)"""
-        if not UserService.SENDER_EMAIL or not UserService.SENDER_PASSWORD:
+        if not AccountService.SENDER_EMAIL or not AccountService.SENDER_PASSWORD:
             return False
 
         try:
             message = MIMEMultipart()
-            message['From'] = UserService.SENDER_EMAIL
+            message['From'] = AccountService.SENDER_EMAIL
             message['To'] = email
             message['Subject'] = 'Your MFA Code'
 
@@ -150,9 +150,9 @@ class UserService:
 
             message.attach(MIMEText(body, 'plain'))
 
-            with smtplib.SMTP(UserService.SMTP_SERVER, UserService.SMTP_PORT) as server:
+            with smtplib.SMTP(AccountService.SMTP_SERVER, AccountService.SMTP_PORT) as server:
                 server.starttls()
-                server.login(UserService.SENDER_EMAIL, UserService.SENDER_PASSWORD)
+                server.login(AccountService.SENDER_EMAIL, AccountService.SENDER_PASSWORD)
                 server.send_message(message)
 
             return True
@@ -163,21 +163,21 @@ class UserService:
     @staticmethod
     def request_password_reset(email: str) -> dict:
         """Request password reset"""
-        user = UserRepo.get_user_by_email(email)
-        if not user:
+        account = AccountRepo.get_account_by_email(email)
+        if not account:
             # Don't reveal if email exists for security
             return {'success': True, 'message': 'If email exists, reset link has been sent'}
 
         # Generate reset code
-        reset_code = UserService.generate_mfaCode()
+        reset_code = AccountService.generate_mfaCode()
         expires_at = datetime.now() + timedelta(hours=1)
 
         # In a real app, you'd store this in a separate table
         # For now, we'll use MFA code field temporarily
-        UserRepo.set_mfaCode(user.id, reset_code, expires_at)
+        AccountRepo.set_mfaCode(account.id, reset_code, expires_at)
 
         # Send reset email
-        if UserService.send_password_reset_email(email, reset_code):
+        if AccountService.send_password_reset_email(email, reset_code):
             return {'success': True, 'message': 'Password reset link has been sent to email'}
         else:
             return {'success': True, 'message': 'Email service unavailable, but reset code generated', 'reset_code': reset_code}
@@ -188,38 +188,38 @@ class UserService:
         if len(new_password) < 8:
             return {'success': False, 'message': 'Password must be at least 8 characters long'}
 
-        # Find user with this reset code
+        # Find account with this reset code
         # In a real app, query the password reset table
-        # For now, we search through users
-        users = UserRepo.get_all_users()
-        user_found = None
+        # For now, we search through accounts
+        accounts = AccountRepo.get_all_accounts()
+        account_found = None
 
-        for user in users:
-            if user.mfaCode == reset_code:
-                user_found = user
+        for account in accounts:
+            if account.mfaCode == reset_code:
+                account_found = account
                 break
 
-        if not user_found:
+        if not account_found:
             return {'success': False, 'message': 'Invalid or expired reset code'}
 
         # Hash new password
-        passwordHash, salt = UserService.hash_password(new_password)
-        UserRepo.update_password(user_found.id, passwordHash, salt)
+        passwordHash, salt = AccountService.hash_password(new_password)
+        AccountRepo.update_password(account_found.id, passwordHash, salt)
 
         # Clear reset code
-        UserRepo.set_mfaCode(user_found.id, None, None)
+        AccountRepo.set_mfaCode(account_found.id, None, None)
 
         return {'success': True, 'message': 'Password reset successful'}
 
     @staticmethod
     def send_password_reset_email(email: str, reset_code: str) -> bool:
         """Send password reset email"""
-        if not UserService.SENDER_EMAIL or not UserService.SENDER_PASSWORD:
+        if not AccountService.SENDER_EMAIL or not AccountService.SENDER_PASSWORD:
             return False
 
         try:
             message = MIMEMultipart()
-            message['From'] = UserService.SENDER_EMAIL
+            message['From'] = AccountService.SENDER_EMAIL
             message['To'] = email
             message['Subject'] = 'Password Reset Request'
 
@@ -238,9 +238,9 @@ class UserService:
 
             # MFA TEMP DISABLED
             print(f'Password reset: {reset_code} - {email}')
-            # with smtplib.SMTP(UserService.SMTP_SERVER, UserService.SMTP_PORT) as server:
+            # with smtplib.SMTP(AccountService.SMTP_SERVER, AccountService.SMTP_PORT) as server:
             #     server.starttls()
-            #     server.login(UserService.SENDER_EMAIL, UserService.SENDER_PASSWORD)
+            #     server.login(AccountService.SENDER_EMAIL, AccountService.SENDER_PASSWORD)
             #     server.send_message(message)
 
             return True
@@ -249,12 +249,12 @@ class UserService:
             return False
 
     @staticmethod
-    def enable_mfa_for_user(user_id: int) -> dict:
-        """Enable MFA for user"""
-        user = UserRepo.get_user_by_id(user_id)
-        if not user:
-            return {'success': False, 'message': 'User not found'}
+    def enable_mfa_for_account(account_id: int) -> dict:
+        """Enable MFA for account"""
+        account = AccountRepo.get_account_by_id(account_id)
+        if not account:
+            return {'success': False, 'message': 'Account not found'}
 
-        UserRepo.enable_mfa(user_id)
+        AccountRepo.enable_mfa(account_id)
         return {'success': True, 'message': 'MFA enabled successfully'}
 

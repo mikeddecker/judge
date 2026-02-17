@@ -2,7 +2,7 @@
 - Authentication
 	- Web:
 		- Option: OpenID Connect/SSO? (underlying OAuth 2.0)
-		- Option: local user ✅ + MFA ⏸️
+		- Option: local account ✅ + MFA ⏸️
 	- Server:
 		- SSH
 	- Other server/apps:
@@ -19,12 +19,12 @@
 		- Sessions
 	- Integrity
 		- HTTPS using TLS
-		- Additional keys? -> hard for users
+		- Additional keys? -> hard for accounts
 	- Availability
 		- See below
 		- DDoS -> No prevention -> App not that critical
 			- [ ] ⏬  Foresee/test an 'enclosed' environment during competitions. Probably the router on competitions, is not being forwarded to the running app on competitions anyways.
- 
+
 - Shut down on suspicious behavior?
 	- Safeguard our private networks against further leaks/hacking?
 - CV container might need less security -> reads out database, no other outside connections.

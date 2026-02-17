@@ -2,13 +2,13 @@
 """
 End-to-End Test Script for AI Judge API
 
-This script tests the test API service (api-e2e-service) by simulating a complete user workflow
+This script tests the test API service (api-e2e-service) by simulating a complete account workflow
 and populating the test database via API endpoints. It ensures e2e tests cannot run
 against production by checking for test mode indicators.
 
 Tested workflow:
 1. Health check (verifies test environment)
-2. Scan for videos (user provides test videos in file system)
+2. Scan for videos (account provides test videos in file system)
 3. Test folder/video retrieval endpoints
 4. Add frame labels via API
 5. Test skill/labeling endpoints
@@ -241,7 +241,7 @@ def main():
         # Creating directories, videos...
         prepare_environment()
 
-        # Scan for user-provided test videos
+        # Scan for account-provided test videos
         discovered = scan_for_videos()
 
         # Test folder endpoints

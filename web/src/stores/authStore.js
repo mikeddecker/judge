@@ -3,29 +3,29 @@ import { ref, computed } from 'vue'
 import authService from '@/services/authService'
 
 export const useAuthStore = defineStore('auth', () => {
-    const user = ref(null)
-    const isAuthenticated = computed(() => user.value !== null)
+    const account = ref(null)
+    const isAuthenticated = computed(() => account.value !== null)
 
-    // Load user from session on startup
+    // Load account from session on startup
     const initializeAuth = async () => {
       try {
         const data = await authService.me()
-        if (data && data.success && data.user) {
-          user.value = data.user
+        if (data && data.success && data.account) {
+          account.value = data.account
         } else {
-          user.value = null
+          account.value = null
         }
         } catch (error) {
-            console.error('Failed to fetch user info:', error)
+            console.error('Failed to fetch account info:', error)
         }
     }
 
-    const setUser = (userData) => {
-      user.value = userData
+    const setAccount = (accountData) => {
+      account.value = accountData
     }
 
-    const clearUser = () => {
-      user.value = null
+    const clearAccount = () => {
+      account.value = null
     }
 
     const logout = async () => {
@@ -34,15 +34,15 @@ export const useAuthStore = defineStore('auth', () => {
       } catch (error) {
         console.error('Logout error:', error)
       } finally {
-        clearUser()
+        clearAccount()
       }
     }
 
     const enableMFA = async () => {
       try {
         const data = await authService.enableMFA()
-        if (data && data.success && user.value) {
-          user.value.mfaEnabled = true
+        if (data && data.success && account.value) {
+          account.value.mfaEnabled = true
         }
         return data
       } catch (error) {
@@ -52,11 +52,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     return {
-      user,
+      account,
       isAuthenticated,
       initializeAuth,
-      setUser,
-      clearUser,
+      setAccount,
+      clearAccount,
       logout,
       enableMFA,
     }

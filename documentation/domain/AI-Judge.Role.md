@@ -32,7 +32,13 @@ By default, roles are least privilege -> absent.
 		- By friends
 		- By organisation (representative)
 		- By organisation (member/...)
-- 📖/✍ ...- 
+- 📖/✍ Can define Layers
+	- Inherit?
+- 📖/✍ Can define Layers combinations
+	- Inherit?
+- 📖/✍ Can define Tags
+	- Inherit?
+- 📖/✍ ...
 
 Idea: Roles on specific folders
 -> Which is more specific

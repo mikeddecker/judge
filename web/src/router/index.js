@@ -19,7 +19,7 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: HomeView, meta: { requiresAuth: true } },
     { path: '/about', name: 'about', component: AboutView, meta: { requiresAuth: true } },
-    { path: '/browse', name: 'browse', component: BrowseView, meta: { requiresAuth: true } },    
+    { path: '/browse', name: 'browse', component: BrowseView, meta: { requiresAuth: true } },
     { path: '/config', name: 'config', component: ConfigView, meta: { requiresAuth: true } },
     { path: '/train', name: 'test', component: TrainView, meta: { requiresAuth: true } },
     { path: '/stats', name: 'stats', component: StatsView, meta: { requiresAuth: true } },
@@ -36,9 +36,9 @@ const router = createRouter({
 // Navigation guard for authentication
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // Initialize auth on first load
-  if (!authStore.user && authStore.isAuthenticated === false) {
+  if (!authStore.account && authStore.isAuthenticated === false) {
     await authStore.initializeAuth()
   }
 

@@ -27,12 +27,12 @@
 │                     API (Flask)    │                            │
 │                                    │                            │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │                  User Routers                            │  │
+│  │                  Account Routers                            │  │
 │  │  /auth/register  /auth/login  /auth/mfa/verify etc.    │  │
 │  └──────────────────┬─────────────────────────────────────┘  │
 │                     │                                         │
 │  ┌──────────────────▼─────────────────────────────────────┐  │
-│  │              UserService (Business Logic)              │  │
+│  │              AccountService (Business Logic)              │  │
 │  │  • Hash passwords (PBKDF2-SHA256)                      │  │
 │  │  • Generate/verify MFA codes                           │  │
 │  │  • Send emails                                         │  │
@@ -40,8 +40,8 @@
 │  └──────────────────┬─────────────────────────────────────┘  │
 │                     │                                         │
 │  ┌──────────────────▼─────────────────────────────────────┐  │
-│  │          UserRepository (Data Access)                  │  │
-│  │  • Create/read/update user                             │  │
+│  │          AccountRepository (Data Access)                  │  │
+│  │  • Create/read/update account                             │  │
 │  │  • Manage MFA codes                                    │  │
 │  │  • Query by email/ID                                   │  │
 │  └──────────────────┬─────────────────────────────────────┘  │
@@ -53,7 +53,7 @@
 │                  Database (MySQL)                             │
 │                                                                │
 │  ┌────────────────────────────────────────────────────────┐  │
-│  │  Users Table                                           │  │
+│  │  Accounts Table                                           │  │
 │  │  ├─ id (auto-increment)                               │  │
 │  │  ├─ email (unique)                                    │  │
 │  │  ├─ firstName, lastName                            │  │
@@ -101,7 +101,7 @@
 3. API VALIDATION & AUTH
    ┌─────────────────────────────────────────┐
    │ POST /auth/login                        │
-   │ • Find user by email                    │
+   │ • Find account by email                    │
    │ • Hash submitted password               │
    │ • Compare hashes                        │
    └────────┬────────────────────────────────┘
@@ -124,10 +124,10 @@
      ▼ YES                              ▼ NO
   6a. GENERATE MFA          6b. CREATE SESSION
   ┌──────────────────┐      ┌──────────────────┐
-  │ • Gen 6-digit    │      │ • Save user_id   │
+  │ • Gen 6-digit    │      │ • Save account_id   │
   │ • Set expires    │      │ • in session     │
-  │ • Send email     │      │ • Return user    │
-  │ • Return user_id │      │ object           │
+  │ • Send email     │      │ • Return account    │
+  │ • Return account_id │      │ object           │
   └─────────┬────────┘      └──────────┬───────┘
             │                          │
             ▼                          ▼
@@ -151,7 +151,7 @@
                 ▼
           8. VERIFY CODE
           ┌──────────────────────────┐
-          │ • Find user by user_id   │
+          │ • Find account by account_id   │
           │ • Check code matches     │
           │ • Check not expired      │
           └────────┬─────────────────┘
@@ -161,8 +161,8 @@
                    ▼
           9. CREATE SESSION
           ┌──────────────────┐
-          │ • Save user_id   │
-          │ • Return user    │
+          │ • Save account_id   │
+          │ • Return account    │
           └────────┬─────────┘
                    │
                    ▼
@@ -182,24 +182,24 @@
 1. REQUEST RESET
    ┌─────────────────────────────────────────┐
    │ POST /auth/forgot-password              │
-   │ Email: user@example.com                 │
+   │ Email: account@example.com                 │
    └────────┬────────────────────────────────┘
             │
             ▼
 2. FIND USER
    ┌─────────────────────────────────────────┐
-   │ Look up user by email                   │
+   │ Look up account by email                   │
    │ (Don't reveal if exists - security)     │
    └────────┬────────────────────────────────┘
             │
-            ├─── User not found? ──► Return generic success
+            ├─── Account not found? ──► Return generic success
             │
             ▼
 3. GENERATE RESET CODE
    ┌─────────────────────────────────────────┐
    │ • Generate random token                 │
    │ • Set expires = now + 1 hour            │
-   │ • Store in user record                  │
+   │ • Store in account record                  │
    └────────┬────────────────────────────────┘
             │
             ▼
@@ -234,7 +234,7 @@
             ▼
 8. VALIDATE
    ┌─────────────────────────────────────────┐
-   │ • Find user with matching code          │
+   │ • Find account with matching code          │
    │ • Check code not expired                │
    │ • Validate new password (8+ chars)      │
    └────────┬────────────────────────────────┘
@@ -283,9 +283,9 @@
 │                    │   authStore.js      │                  │
 │                    │   (Pinia Store)     │                  │
 │                    │                     │                  │
-│                    │ • user              │                  │
+│                    │ • account              │                  │
 │                    │ • isAuthenticated   │                  │
-│                    │ • setUser()         │                  │
+│                    │ • setAccount()         │                  │
 │                    │ • logout()          │                  │
 │                    │ • initializeAuth()  │                  │
 │                    └──────────┬──────────┘                  │
@@ -300,24 +300,24 @@
 │                    API LAYER                                 │
 │                                                              │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │            userRouter.py (Endpoints)                │   │
+│  │            accountRouter.py (Endpoints)                │   │
 │  │                                                     │   │
-│  │  • UserRegisterRouter()                            │   │
-│  │  • UserLoginRouter()                               │   │
-│  │  • UserMFAVerifyRouter()                           │   │
-│  │  • UserLogoutRouter()                              │   │
-│  │  • UserMeRouter()                                  │   │
-│  │  • UserForgotPasswordRouter()                      │   │
-│  │  • UserResetPasswordRouter()                       │   │
-│  │  • UserEnableMFARouter()                           │   │
+│  │  • AccountRegisterRouter()                            │   │
+│  │  • AccountLoginRouter()                               │   │
+│  │  • AccountMFAVerifyRouter()                           │   │
+│  │  • AccountLogoutRouter()                              │   │
+│  │  • AccountMeRouter()                                  │   │
+│  │  • AccountForgotPasswordRouter()                      │   │
+│  │  • AccountResetPasswordRouter()                       │   │
+│  │  • AccountEnableMFARouter()                           │   │
 │  └────────────────┬────────────────────────────────────┘   │
 │                   │                                         │
 │  ┌────────────────▼────────────────────────────────────┐   │
-│  │        userService.py (Business Logic)             │   │
+│  │        accountService.py (Business Logic)             │   │
 │  │                                                     │   │
 │  │  • hash_password()           ► PBKDF2-SHA256       │   │
 │  │  • verify_password()         ► Compare hashes      │   │
-│  │  • register_user()           ► Create + hash       │   │
+│  │  • register_account()           ► Create + hash       │   │
 │  │  • login()                   ► Auth + session      │   │
 │  │  • generate_mfaCode()       ► Random 6 digits     │   │
 │  │  • send_mfa_email()          ► SMTP               │   │
@@ -326,11 +326,11 @@
 │  └────────────────┬────────────────────────────────────┘   │
 │                   │                                         │
 │  ┌────────────────▼────────────────────────────────────┐   │
-│  │        userRepo.py (Data Access)                   │   │
+│  │        accountRepo.py (Data Access)                   │   │
 │  │                                                     │   │
-│  │  • create_user()             ► INSERT              │   │
-│  │  • get_user_by_email()       ► SELECT by email     │   │
-│  │  • get_user_by_id()          ► SELECT by id        │   │
+│  │  • create_account()             ► INSERT              │   │
+│  │  • get_account_by_email()       ► SELECT by email     │   │
+│  │  • get_account_by_id()          ► SELECT by id        │   │
 │  │  • update_lastLogin()       ► UPDATE timestamp    │   │
 │  │  • set_mfaCode()            ► UPDATE MFA fields   │   │
 │  │  • verify_mfaCode()         ► SELECT & compare    │   │
@@ -345,7 +345,7 @@
 │  │ MySQL        │  │ Filesystem   │  │ SMTP Service    │  │
 │  │ Database     │  │ Sessions     │  │ Email Provider  │  │
 │  │              │  │              │  │                 │  │
-│  │ • Users      │  │ /flask_      │  │ • Gmail         │  │
+│  │ • Accounts      │  │ /flask_      │  │ • Gmail         │  │
 │  │ • Timestamps │  │  sessions/   │  │ • Outlook       │  │
 │  │ • Hashes     │  │              │  │ • Custom SMTP   │  │
 │  │ • MFA data   │  │              │  │                 │  │
@@ -356,7 +356,7 @@
 ## Database Table Relationships
 
 ```
-Users Table
+Accounts Table
 ┌──────────────────────────────────────────────────┐
 │ PK │ id                    │ INT auto_increment   │
 ├────┼───────────────────────┼──────────────────────┤
@@ -381,8 +381,8 @@ Session Storage (Filesystem)
 
 Example session content:
 {
-  "user_id": 1,
-  "email": "user@example.com",
+  "account_id": 1,
+  "email": "account@example.com",
   "expires": 1707350400,
   "createdAt": 1707091200
 }
@@ -395,7 +395,7 @@ Example session content:
 │                   PASSWORD SECURITY                          │
 └──────────────────────────────────────────────────────────────┘
 
-User Password Input
+Account Password Input
     │
     ▼
 Client-side validation
@@ -430,7 +430,7 @@ Always stored: hash + salt (separate)
 Session Created
     │
     ▼
-Store user_id in server-side session
+Store account_id in server-side session
     │
     ▼
 Set session cookie
@@ -448,7 +448,7 @@ Each request includes cookie
 Server validates session
     │ ✓ Session exists
     │ ✓ Not expired
-    │ ✓ User still exists
+    │ ✓ Account still exists
     ▼
 Grant access to resource
 
@@ -473,16 +473,16 @@ Store in database (encrypted in prod)
 Send email with code
     │
     ▼
-Return user_id (not full user object)
+Return account_id (not full account object)
     │
     ▼
-User enters code within 10 minutes
+Account enters code within 10 minutes
     │
     ▼
 Server verifies:
     │ ✓ Code matches stored code
     │ ✓ Code not expired
-    │ ✓ User exists
+    │ ✓ Account exists
     ▼
 Clear code from database
     │

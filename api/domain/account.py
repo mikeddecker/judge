@@ -1,6 +1,6 @@
 from datetime import datetime
 
-class User:
+class Account:
     def __init__(
             self,
             email: str,
@@ -16,14 +16,14 @@ class User:
             mfaCode: str = None,
     ) -> None:
         """
-        User domain model
+        Account domain model
 
-        :param email: User email address (unique)
-        :param firstName: User first name
-        :param lastName: User last name
+        :param email: Account email address (unique)
+        :param firstName: Account first name
+        :param lastName: Account last name
         :param passwordHash: Hashed password
         :param salt: Salt used for password hashing
-        :param id: User database identifier
+        :param id: Account database identifier
         :param lastLogin: Last login timestamp
         :param createdAt: Account creation timestamp
         :param updatedAt: Last update timestamp

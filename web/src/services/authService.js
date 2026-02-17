@@ -12,9 +12,9 @@ const authService = {
     }
   },
 
-  verifyMFA: async (user_id, mfaCode) => {
+  verifyMFA: async (account_id, mfaCode) => {
     try {
-      const resp = await api.post('/auth/mfa/verify', { user_id, mfaCode });
+      const resp = await api.post('/auth/mfa/verify', { account_id, mfaCode });
       return resp.data;
     } catch (err) {
       console.error('verifyMFA error', err);

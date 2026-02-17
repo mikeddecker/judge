@@ -139,7 +139,7 @@ const form = ref({
 const loading = ref(false)
 const error = ref('')
 const showMFA = ref(false)
-const userId = ref(null)
+const accountId = ref(null)
 
 const handleLogin = async () => {
   try {
@@ -154,12 +154,12 @@ const handleLogin = async () => {
     }
 
     if (data.requires_mfa) {
-      userId.value = data.user_id
+      accountId.value = data.account_id
       showMFA.value = true
       form.value.mfaCode = ''
     } else {
-      // Store user info and redirect
-      authStore.setUser(data.user)
+      // Store account info and redirect
+      authStore.setAccount(data.account)
       await router.push('/')
     }
   } catch (err) {
@@ -174,14 +174,14 @@ const handleMFAVerify = async () => {
     loading.value = true
     error.value = ''
 
-    const data = await authService.verifyMFA(userId.value, form.value.mfaCode)
+    const data = await authService.verifyMFA(accountId.value, form.value.mfaCode)
 
     if (!data) {
       error.value = 'Verification failed'
       return
     }
 
-    authStore.setUser(data.user)
+    authStore.setAccount(data.account)
     await router.push('/')
   } catch (err) {
     error.value = err.message || 'An error occurred'

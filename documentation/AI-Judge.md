@@ -17,7 +17,7 @@ What does this mean? Most aspects are still in the development stage. Even thoug
 - Browse videos
 - Label frames (localization)
 - Segment videos
-- Recognize (skill) elements in te segment 
+- Recognize (skill) elements in te segment
 
 # 🔒 Security (by design?)
 
@@ -62,7 +62,7 @@ Computervision
     - Next idea, calculate acc/f1 based on tags/output_heads instead of full layers -> which gives more info about accuracy of crosses depending on the rotation.
     - Review how to label wraps/DD-transitions/snappers/skillsegments having multiple rope rotations, but which are not multiples.
     - While we're at it, review the current setup of the layercomposition. It might be able to be slightly more easier.
-- API -> for querying/posting/deleting videos, folders, users, labels.
+- API -> for querying/posting/deleting videos, folders, accounts, labels.
     - I assume you have an api now, maybe merging projects now is the way to go?
 - WEB app, Idk if you have one right now?
     - Can remain mostly as-is -> expand on it (dev ideas...)

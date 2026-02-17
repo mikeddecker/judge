@@ -5,7 +5,7 @@ from domain.layerComposition import LayerComposition
 from domain.tag import Tag
 from domain.tagGroup import TagGroup
 from domain.skill import Skill
-from domain.user import User
+from domain.account import Account
 from domain.videoinfo import VideoInfo
 from repository.models import Folder as FolderDB, Video as VideoDB, Skill as SkillDB, Jobs as JobDB
 from repository.models import Tag as TagDB, TagGroup as TagGroupDB, LayerComposition as LayerCompositionDB
@@ -21,7 +21,7 @@ class MapToDomain:
             folder = parent_folder
             folderDB = folderDB.parent
         return original
-    
+
     @staticmethod
     def map_video(videoDB: VideoDB) -> VideoInfo:
         video = VideoInfo(
@@ -40,7 +40,7 @@ class MapToDomain:
         for f in videoDB.frameLabels:
             video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible, labeltype=f.labeltype))
         return video
-    
+
     @staticmethod
     def map_skill(s: SkillDB) -> Skill:
         return Skill(
@@ -86,7 +86,7 @@ class MapToDomain:
     def map_layercomposition(compositionValuesDB: list[LayerCompositionDB]) -> LayerComposition:
         if len(compositionValuesDB) == 0:
             return None
-        
+
         genProps = dict()
         startProps = dict()
         endProps = dict()
@@ -116,19 +116,19 @@ class MapToDomain:
         )
 
     @staticmethod
-    def map_user(user: User) -> User:
-        """Map user database model to user domain model"""
-        return User(
-            id=user.id,
-            email=user.email,
-            firstName=user.firstName,
-            lastName=user.lastName,
-            passwordHash=user.passwordHash,
-            salt=user.salt,
-            lastLogin=user.lastLogin,
-            createdAt=user.createdAt,
-            updatedAt=user.updatedAt,
-            mfaEnabled=user.mfaEnabled,
-            mfaCode=user.mfaCode,
+    def map_account(account: Account) -> Account:
+        """Map account database model to account domain model"""
+        return Account(
+            id=account.id,
+            email=account.email,
+            firstName=account.firstName,
+            lastName=account.lastName,
+            passwordHash=account.passwordHash,
+            salt=account.salt,
+            lastLogin=account.lastLogin,
+            createdAt=account.createdAt,
+            updatedAt=account.updatedAt,
+            mfaEnabled=account.mfaEnabled,
+            mfaCode=account.mfaCode,
         )
 

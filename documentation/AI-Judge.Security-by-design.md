@@ -1,11 +1,11 @@
 # Content
 ```table-of-contents
-title: 
+title:
 style: nestedList # TOC style (nestedList|nestedOrderedList|inlineFirstLevel)
 minLevel: 0 # Include headings from the specified level
 maxLevel: 0 # Include headings up to the specified level
-include: 
-exclude: 
+include:
+exclude:
 includeLinks: true # Make headings clickable
 hideWhenEmpty: false # Hide TOC if no headings are found
 debugInConsole: false # Print debug info in Obsidian console
@@ -20,7 +20,7 @@ debugInConsole: false # Print debug info in Obsidian console
 
 # ☑ Password (requirements)
 
-(local user)
+(local account)
 Current requirements
 - Minimum 12 characters (defined by `.env`)
 - No capitol, special char etc check yet
@@ -45,8 +45,8 @@ Other forms of MFA
 
 # 🛸 External authentication
 
-## OpenID connect 
-For users #TODO
+## OpenID connect
+For accounts #TODO
 (https://openid.net/developers/how-connect-works/)
 
 ## OAuth 2.0

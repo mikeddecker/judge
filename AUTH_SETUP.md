@@ -2,44 +2,44 @@
 
 ## Overview
 
-A complete user authentication and session management system has been implemented with:
-- User registration and login
+A complete account authentication and session management system has been implemented with:
+- Account registration and login
 - Password hashing with salt
 - Multi-Factor Authentication (MFA) via email
 - Forgot password functionality
 - Secure session management
-- User profile management
+- Account profile management
 
 ## Features
 
-### 1. User Registration
+### 1. Account Registration
 - **Endpoint**: `POST /auth/register`
 - **Fields**: email, firstName, lastName, password
 - **Validation**: Password must be at least 8 characters
-- **Response**: User object with ID and creation timestamp
+- **Response**: Account object with ID and creation timestamp
 
 ```bash
 curl -X POST http://localhost:5555/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "user@example.com",
+    "email": "account@example.com",
     "firstName": "John",
     "lastName": "Doe",
     "password": "SecurePass123"
   }'
 ```
 
-### 2. User Login
+### 2. Account Login
 - **Endpoint**: `POST /auth/login`
 - **Fields**: email, password
-- **Returns**: User object, session token, or MFA requirement
-- **MFA Flow**: If enabled, returns `requires_mfa: true` with user_id
+- **Returns**: Account object, session token, or MFA requirement
+- **MFA Flow**: If enabled, returns `requires_mfa: true` with account_id
 
 ```bash
 curl -X POST http://localhost:5555/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "user@example.com",
+    "email": "account@example.com",
     "password": "SecurePass123"
   }'
 ```
@@ -51,7 +51,7 @@ curl -X POST http://localhost:5555/auth/login \
 
 #### MFA Verification
 - **Endpoint**: `POST /auth/mfa/verify`
-- **Fields**: user_id, mfaCode
+- **Fields**: account_id, mfaCode
 - **MFA Code**: 6-digit code sent via email
 - **Expiration**: 10 minutes
 
@@ -59,7 +59,7 @@ curl -X POST http://localhost:5555/auth/login \
 curl -X POST http://localhost:5555/auth/mfa/verify \
   -H "Content-Type: application/json" \
   -d '{
-    "user_id": 1,
+    "account_id": 1,
     "mfaCode": "123456"
   }'
 ```
@@ -68,15 +68,15 @@ curl -X POST http://localhost:5555/auth/mfa/verify \
 - **Endpoint**: `POST /auth/forgot-password`
 - **Fields**: email
 - **Process**:
-  1. User requests password reset with email
+  1. Account requests password reset with email
   2. System generates reset code (valid for 1 hour)
   3. Reset code sent via email (if email configured)
-  4. User receives code and new password endpoint
+  4. Account receives code and new password endpoint
 
 ```bash
 curl -X POST http://localhost:5555/auth/forgot-password \
   -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com"}'
+  -d '{"email": "account@example.com"}'
 ```
 
 ### 5. Reset Password
@@ -95,7 +95,7 @@ curl -X POST http://localhost:5555/auth/reset-password \
 
 ### 6. Session Management
 - **Endpoint**: `GET /auth/me`
-- **Purpose**: Get current authenticated user info
+- **Purpose**: Get current authenticated account info
 - **Requires**: Valid session
 
 ```bash
@@ -104,7 +104,7 @@ curl http://localhost:5555/auth/me
 
 ### 7. Logout
 - **Endpoint**: `POST /auth/logout`
-- **Purpose**: Clear session and logout user
+- **Purpose**: Clear session and logout account
 
 ```bash
 curl -X POST http://localhost:5555/auth/logout
@@ -169,16 +169,16 @@ Session and authentication settings are configured in the `Config` and `TestConf
 ### Authentication Store
 - **Path**: `src/stores/authStore.js`
 - **Methods**:
-  - `setUser(userData)` - Set authenticated user
-  - `clearUser()` - Clear user data
-  - `logout()` - Logout user
-  - `enableMFA()` - Enable MFA for user
-  - `initializeAuth()` - Load user from session on startup
+  - `setAccount(accountData)` - Set authenticated account
+  - `clearAccount()` - Clear account data
+  - `logout()` - Logout account
+  - `enableMFA()` - Enable MFA for account
+  - `initializeAuth()` - Load account from session on startup
 
 ## Security Features
 
 1. **Password Hashing**: Uses PBKDF2 with SHA256
-2. **Salting**: Random salt generated for each user
+2. **Salting**: Random salt generated for each account
 3. **Session Management**: Secure HTTP-only cookies
 4. **MFA**: 6-digit codes with 10-minute expiration
 5. **HTTPS**: Recommended for production
@@ -208,9 +208,9 @@ To use MFA and password reset with Outlook/Hotmail:
   "success": true,
   "message": "Login successful",
   "requires_mfa": false,
-  "user": {
+  "account": {
     "id": 1,
-    "email": "user@example.com",
+    "email": "account@example.com",
     "firstName": "John",
     "lastName": "Doe",
     "lastLogin": "2026-02-07T10:30:00",
@@ -227,7 +227,7 @@ To use MFA and password reset with Outlook/Hotmail:
   "success": true,
   "message": "MFA code sent to email",
   "requires_mfa": true,
-  "user_id": 1
+  "account_id": 1
 }
 ```
 
@@ -254,9 +254,9 @@ To use MFA and password reset with Outlook/Hotmail:
 4. For development, set `SESSION_COOKIE_SECURE=false`
 
 ### Password Reset Code Expired
-1. Default expiration is 1 hour - user must reset within this time
+1. Default expiration is 1 hour - account must reset within this time
 2. Can be changed in `config.py` `PASSWORD_RESET_EXPIRATION`
-3. User can request a new code by clicking "Forgot Password" again
+3. Account can request a new code by clicking "Forgot Password" again
 
 ## ✅ Deployment Checklist
 
@@ -285,7 +285,7 @@ To use MFA and password reset with Outlook/Hotmail:
 
 ### For Security Audits
 1. [ ] Review **AUTHENTICATION_COMPLETE.md** security section
-2. [ ] Check **api/services/userService.py** password hashing
+2. [ ] Check **api/services/accountService.py** password hashing
 3. [ ] Review **api/config.py** session configuration
 4. [ ] Check **web/src/router/index.js** route guards
 5. [ ] Review **COMPLETION_REPORT.md** security features & checklist

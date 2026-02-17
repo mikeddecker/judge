@@ -41,7 +41,7 @@ Welcome! Your complete authentication and login system is ready. Use this file t
 - Common troubleshooting
 - **Best for**: Getting started immediately
 
-### 2. **SETUP_STEPS.md** 
+### 2. **SETUP_STEPS.md**
 - Complete setup instructions
 - Step-by-step implementation
 - API endpoint table
@@ -67,7 +67,7 @@ Welcome! Your complete authentication and login system is ready. Use this file t
 - Database schema details
 - API endpoints summary
 - Configuration reference
-- User flow diagrams (text-based)
+- Account flow diagrams (text-based)
 - Component descriptions
 - Security considerations
 - Production checklist
@@ -135,7 +135,7 @@ Welcome! Your complete authentication and login system is ready. Use this file t
 1. Review **ARCHITECTURE.md** for flows (10 min)
 2. Check **FILE_STRUCTURE.md** for file locations (10 min)
 3. Review **IMPLEMENTATION_SUMMARY.md** for what changed (15 min)
-4. Study backend: `api/services/userService.py` → `api/routers/userRouter.py`
+4. Study backend: `api/services/accountService.py` → `api/routers/accountRouter.py`
 5. Study frontend: `web/src/stores/authStore.js` → `web/src/views/LoginView.vue`
 6. Reference **AUTH_SETUP.md** for API details
 
@@ -148,7 +148,7 @@ Welcome! Your complete authentication and login system is ready. Use this file t
 
 ### For Security Audits
 1. Review **AUTHENTICATION_COMPLETE.md** security section
-2. Check **api/services/userService.py** password hashing
+2. Check **api/services/accountService.py** password hashing
 3. Review **api/config.py** session configuration
 4. Check **web/src/router/index.js** route guards
 5. Review **COMPLETION_REPORT.md** security features & checklist
@@ -281,7 +281,7 @@ or [FILE_STRUCTURE.md - Database Section](FILE_STRUCTURE.md#-database)
 1. [COMPLETION_REPORT.md - Security Features](COMPLETION_REPORT.md#-security-features)
 2. [AUTHENTICATION_COMPLETE.md - Security Section](AUTHENTICATION_COMPLETE.md#-security-considerations)
 3. [ARCHITECTURE.md - Security Flows](ARCHITECTURE.md#security-flow-diagram)
-4. Review `api/services/userService.py` code
+4. Review `api/services/accountService.py` code
 
 ---
 
@@ -289,7 +289,7 @@ or [FILE_STRUCTURE.md - Database Section](FILE_STRUCTURE.md#-database)
 
 ### Password Hashing
 - Explained in: [AUTH_SETUP.md](AUTH_SETUP.md#security-features)
-- Implemented in: `api/services/userService.py` (lines 14-30)
+- Implemented in: `api/services/accountService.py` (lines 14-30)
 - Tested at: [SETUP_STEPS.md - Testing](SETUP_STEPS.md#5-test-the-system)
 
 ### Session Management
@@ -300,7 +300,7 @@ or [FILE_STRUCTURE.md - Database Section](FILE_STRUCTURE.md#-database)
 ### MFA Flow
 - Diagram in: [ARCHITECTURE.md](ARCHITECTURE.md)
 - API docs in: [AUTH_SETUP.md](AUTH_SETUP.md#3-multi-factor-authentication-mfa)
-- Implementation in: `api/services/userService.py` (MFA methods)
+- Implementation in: `api/services/accountService.py` (MFA methods)
 
 ### Route Protection
 - Configured in: `web/src/router/index.js`
@@ -401,8 +401,8 @@ Try these search strategies:
 
 ## ✨ Features Documented
 
-✅ User registration
-✅ User login
+✅ Account registration
+✅ Account login
 ✅ Password hashing
 ✅ MFA (Email verification)
 ✅ Password reset

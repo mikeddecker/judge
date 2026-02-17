@@ -9,8 +9,8 @@ from datetime import datetime
 # TINYINT : -128 > 128
 # SMALLINT : -32768 > 32767
 
-class User(db.Model):
-    __tablename__ = 'Users'
+class Account(db.Model):
+    __tablename__ = 'Accounts'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(255), nullable=False, unique=True)
     firstName = db.Column(db.String(127), nullable=False)

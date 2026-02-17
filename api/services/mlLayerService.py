@@ -16,9 +16,9 @@ class MLLayerService:
         self.JobRepo = JobRepository(db=db)
         self.TagRepo = TagRepository(db=db)
         self.MlLayerRepo = MLLayerRepository(db=db)
-        
+
     def get_layers(self) -> dict:
-        """Return user defined layers"""
+        """Return account defined layers"""
         return self.MlLayerRepo.get_all()
 
     def get_types(self) -> list:
@@ -27,7 +27,7 @@ class MLLayerService:
 
     def add_layer(self, name: str, type:str, min: float = None, max: float = None, step: float = None) -> dict:
         """Adding a layer: categorical, numeric or boolean"""
-        
+
         ValueHelper.check_raise_string_only_abc123(name)
         ValueHelper.check_raise_string_only_abc123(type)
         assert type in LAYER_TYPES, f"Unknown type {type}"
@@ -44,7 +44,7 @@ class MLLayerService:
             return self.MlLayerRepo.add_layer(name=name, type=type, min=min, max=max, step=step)
         else:
             return self.MlLayerRepo.add_layer(name=name, type=type)
-    
+
     def add_layer_value(self, layerId: int, name: str) -> dict:
         """Returns the full layer"""
         ValueHelper.check_raise_id(layerId)
@@ -56,7 +56,7 @@ class MLLayerService:
     def has_layer(self, id: int) -> bool:
         ValueHelper.check_raise_id(id)
         return self.MlLayerRepo.has_layer(id)
-    
+
     def update_layer(self, layerId: int, name: str, min: float = None, max: float = None, step: float = None) -> dict:
         """update a layer: can not update type, returns layer"""
         ValueHelper.check_raise_id(layerId)
@@ -77,7 +77,7 @@ class MLLayerService:
             return self.MlLayerRepo.update_layer(layerId=layerId, name=name, min=min, max=max, step=step)
         else:
             return self.MlLayerRepo.update_layer(layerId=layerId, name=name)
-    
+
     def update_value_name(self, layervalueId: int, new_name: str):
         ValueHelper.check_raise_id(layervalueId)
         ValueHelper.check_raise_string_only_abc123(new_name)
@@ -86,7 +86,7 @@ class MLLayerService:
 
     def get_layer_compositions(self) -> dict[str, LayerComposition]:
         return self.MlLayerRepo.get_layer_compositions()
-    
+
     def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int, name: str | None) -> dict[str, LayerComposition]:
         ValueHelper.check_raise_string_only_abc123(compositionName)
         ValueHelper.check_raise_id(layerId)
@@ -95,13 +95,13 @@ class MLLayerService:
             assert stage >= -1, f"Stage must be an integer >= -1"
         if name is not None:
             ValueHelper.check_raise_string_only_abc123(name)
-        
+
         assert self.MlLayerRepo.has_layer(layerId), f"LayerId {layerId} does not exist"
-        
+
         return self.MlLayerRepo.add_layer_compostion_stage(
-            compositionName=compositionName, 
-            stage=stage, 
-            layerId=layerId, 
+            compositionName=compositionName,
+            stage=stage,
+            layerId=layerId,
             name=name
         )
 
@@ -116,7 +116,7 @@ class MLLayerService:
         assert attribute in ['defaultValue', 'focussed']
 
         return self.MlLayerRepo.update_layer_compostion_attribute_value(
-            compositionName=compositionName, 
+            compositionName=compositionName,
             stage=stage,
             layername=name,
             attribute=attribute,

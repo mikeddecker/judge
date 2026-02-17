@@ -11,8 +11,8 @@ Below is the practical pattern used in production.
 
 For MySQL, best practice is:
 
-**BINARY(16)** (fast, compact, indexed well)  
-instead of  
+**BINARY(16)** (fast, compact, indexed well)
+instead of id
 CHAR(36) (human readable but slower & bigger)
 
 In SQLAlchemy:
@@ -98,13 +98,13 @@ op.create_primary_key("pk_videos", "Videos", ["uuid"])
 If foreign keys exist:
 
 1. Add UUID FK columns to child tables
-    
+
 2. Backfill them
-    
+
 3. Switch FK constraints
-    
+
 4. Then drop old int PK
-    
+
 
 ---
 
@@ -126,11 +126,11 @@ Short answer: **No special logic required if UUID is the PK.**
 Why:
 
 - UUID collisions are astronomically unlikely
-    
+
 - The database enforces uniqueness
-    
+
 - Normal insert semantics apply
-    
+
 
 Typical insert:
 
@@ -150,7 +150,7 @@ Only if you want **idempotent inserts** (same logical record shouldn’t be crea
 
 ### Option A — Natural unique constraint
 
-Example: `(user_id, external_source_id)` unique index
+Example: `(account_id, external_source_id)` unique index
 
 ### Option B — Upsert pattern
 
@@ -171,15 +171,15 @@ Use this if your app might retry requests.
 ## ⚠️ Gotchas people hit
 
 - MySQL requires dropping PK before creating new one
-    
+
 - All foreign keys must be migrated first
-    
+
 - Alembic autogenerate will NOT handle this automatically
-    
+
 - BINARY UUID must use `.bytes`, not string
-    
+
 - If using replication, do migration in phases
-    
+
 
 ---
 
@@ -187,8 +187,8 @@ Use this if your app might retry requests.
 
 If this is a live system:
 
-**Run in 2 deployments**  
-1️⃣ Add UUID + backfill + app writes both ids  
+**Run in 2 deployments**
+1️⃣ Add UUID + backfill + app writes both ids
 2️⃣ Switch PK + remove int id
 
 Zero downtime, zero drama.

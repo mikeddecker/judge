@@ -28,7 +28,7 @@ from routers.mlLayerRouter import MLLayerRouter, MLLayerTypesRouter, MLLayerComp
 from routers.resultsRouter import ResultsRouter
 from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
-from routers.userRouter import UserRegisterRouter, UserLoginRouter, UserMFAVerifyRouter, UserLogoutRouter, UserMeRouter, UserForgotPasswordRouter, UserResetPasswordRouter, UserEnableMFARouter
+from routers.accountRouter import AccountRegisterRouter, AccountLoginRouter, AccountMFAVerifyRouter, AccountLogoutRouter, AccountMeRouter, AccountForgotPasswordRouter, AccountResetPasswordRouter, AccountEnableMFARouter
 from services.videoService import VideoService
 from typing import cast
 
@@ -71,7 +71,7 @@ def restore_latest_mysql_backup(backup_dir: str = MYSQL_BACKUP):
     if not sql_files:
         print(f"⚠️ No database backup found to restore from")
         return
-    
+
     # Sort by modification time descending, pick the newest
     sql_files.sort(key=lambda f: os.path.getmtime(os.path.join(backup_dir, f)), reverse=True)
     latest_backup = os.path.join(backup_dir, sql_files[0])
@@ -96,7 +96,7 @@ def restore_latest_mysql_backup(backup_dir: str = MYSQL_BACKUP):
 
     print(f"✅ Database restored from: {latest_backup}")
 
-    views_sql = os.path.join(os.getcwd(), 'repository', 'views.sql')    
+    views_sql = os.path.join(os.getcwd(), 'repository', 'views.sql')
     print(f"⏳ Running {views_sql}")
     with open(views_sql, "r") as f:
         subprocess.run(restore_cmd, stdin=f, check=True, env=env)
@@ -110,19 +110,19 @@ def is_running_manual_migrations():
 def create_app(config_object:str="config.Config"):
     app = Flask(__name__)
     CORS(app)
-    
+
     # Load configuration from config file or environment variable
     app.config.from_object(config_object)
-    
+
     # Set session secret key for secure session management
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production-min-32-chars')
     app.config['SESSION_TYPE'] = 'filesystem'
     Session(app)
-    
+
     # Force HTTPS in production only
     if os.getenv('FLASK_ENV') == 'production':
         Talisman(app, force_https=True, strict_transport_security=True, strict_transport_security_max_age=63072000)
-    
+
     if not app.config.get('TESTING', False) and not is_running_manual_migrations():
         # TODO : restore only if db empty or not at last db version
         print("⏳ Restoring latest MySQL backup before starting the app...")
@@ -178,15 +178,15 @@ api.add_resource(StatsRouter, '/stats')
 api.add_resource(ResultsRouter, '/results')
 api.add_resource(HealthRouter, '/health')
 
-# User authentication routes
-api.add_resource(UserRegisterRouter, '/auth/register')
-api.add_resource(UserLoginRouter, '/auth/login')
-api.add_resource(UserMFAVerifyRouter, '/auth/mfa/verify')
-api.add_resource(UserLogoutRouter, '/auth/logout')
-api.add_resource(UserMeRouter, '/auth/me')
-api.add_resource(UserForgotPasswordRouter, '/auth/forgot-password')
-api.add_resource(UserResetPasswordRouter, '/auth/reset-password')
-api.add_resource(UserEnableMFARouter, '/auth/enable-mfa')
+# Account authentication routes
+api.add_resource(AccountRegisterRouter, '/auth/register')
+api.add_resource(AccountLoginRouter, '/auth/login')
+api.add_resource(AccountMFAVerifyRouter, '/auth/mfa/verify')
+api.add_resource(AccountLogoutRouter, '/auth/logout')
+api.add_resource(AccountMeRouter, '/auth/me')
+api.add_resource(AccountForgotPasswordRouter, '/auth/forgot-password')
+api.add_resource(AccountResetPasswordRouter, '/auth/reset-password')
+api.add_resource(AccountEnableMFARouter, '/auth/enable-mfa')
 
 # Check if .env folders are filled in
 ValueHelper.check_raise_string(ENVS.DIRS.VIDEOS)

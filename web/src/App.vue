@@ -40,14 +40,14 @@ const menuItems = ref([
   }
 ])
 
-const userMenu = ref()
+const accountMenu = ref()
 
 onMounted(async () => {
   await authStore.initializeAuth()
 })
 
-const toggleUserMenu = (event) => {
-  userMenu.value.toggle(event)
+const toggleAccountMenu = (event) => {
+  accountMenu.value.toggle(event)
 }
 </script>
 
@@ -65,16 +65,16 @@ const toggleUserMenu = (event) => {
         <HelloWorld msg="AI Judge" />
       </div>
 
-      <!-- User Menu -->
+      <!-- Account Menu -->
       <div v-if="authStore.isAuthenticated" class="flex items-center gap-3 ml-2">
-        <!-- <span class="text-sm text-gray-600">{{ authStore.user?.firstName }} {{ authStore.user?.lastName }}</span> -->
+        <!-- <span class="text-sm text-gray-600">{{ authStore.account?.firstName }} {{ authStore.account?.lastName }}</span> -->
         <Button
-          @click="toggleUserMenu"
+          @click="toggleAccountMenu"
           icon="pi pi-user"
           rounded
           severity="secondary"
         />
-        <Menu ref="userMenu" :model="menuItems" :popup="true" />
+        <Menu ref="accountMenu" :model="menuItems" :popup="true" />
       </div>
     </div>
 
