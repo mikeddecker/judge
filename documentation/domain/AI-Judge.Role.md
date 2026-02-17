@@ -23,6 +23,7 @@ By default, roles are least privilege -> absent.
 		- By friends
 		- By organisation (representative)
 		- By organisation (member/...)
+		- By jumper in the video 🔽
 	- Update (request)
 		- By friends
 		- By organisation (representative)
@@ -42,10 +43,10 @@ Idea: Roles on specific folders
 - RoleGiver (nullable)
 - RoleTaker
 - GivenRole
+- permissionGranted (default yes)
 - CreatedAt
 - UpdatedAt
 - AccountUuid (in case of specific friend/)
--
 
 ⚠  An admin can see everything (because of switchable to other accounts).
 

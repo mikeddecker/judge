@@ -1,46 +1,57 @@
-# Goal
+# 🏁 Goal
+Assisting judges in scoring jump routines
+- Requiring less judges a team/club has to offer on competitions
+- Decrease human error during competition judging
+- Increase transparency of judging
+- (Benefit: engage the public more, by explained scores)
 
-
-# Content
+# 📋 Content
 ```table-of-contents
 ```
-# Project stage: development
+# 💻 Project stage: development
 
 What does this mean? Most aspects are still in the development stage. Even though a lot is built, much more features are waiting in line to be developed.
 
-# High level overview
+# 🧭 High level overview
 
 - Browse videos
 - Label frames (localization)
 - Segment videos
 - Recognize (skill) elements in te segment 
 
-# 🔒Security (by design?)
+# 🔒 Security (by design?)
 
 ![[AI-Judge.excerpt.Security-summary]]
 
-
-
 More details in [[AI-Judge.Security-by-design]]
+# 🕶 Privacy by design
 
-- Privacy by design (if we want to comply with EU GDPR):
-    - Videos we can use (permission vs privacy notice - borderline to be decided/defined)
-        - Uploaded through the nextjump app or site? -> This builds us a big data.
-        - Videos provided by IJRU, AMJRU, GymFed?
-        - For GymFed it is still under the agreement of it being a school project -> but that has finished.
-    - Opt-out option
-    - [https://gdpr.eu/checklist/](https://gdpr.eu/checklist/)
-    - AI-Act -> limited risk AI -> nearing towards or is even a high risk AI (especially when it replaces judges and humans mainly watch)
-- Availability
-    - usa & belgium?
-    - down/incidents = down? -> best effort principle?
-    - sync between servers & videos
-- Back-up
-    - By hosting both in the usa & be?
-- Monitoring
-- Integration into nextjump (subdomain on nextjump.app?)
+![[AI-Judge.Privacy-by-design-summary]]
+
+# ✴ Availability
+
+![[AI-Judge.Availability]]
+
+# 🏬 Backup
+![[AI-Judge.Backup]]
+
+# 👁‍🗨 Monitoring
+None yet, really low prio.
+- (Email/SMS/...) notification if service down?
+- if service peaking on usage?
+- if model trained?
+
+# 🔗 Integration into NextJump.app
+Integration into nextjump (subdomain on nextjump.app?)
     - Do I register [nextjump.be](http://nextjump.be) as well? (about 10 euro/year)
-- Computervision
+    - For more simple load balancing in the eu
+# 👤 Business continuity?
+None yet
+# 🧯Disaster Plan Recovery
+None yet
+
+# 💬 Discussion points
+Computervision
     - Training possible on two sides
     - I think you can focus on this part a bit more?
     - I think there is a bug in the numeric label train/test labels
@@ -58,3 +69,9 @@ More details in [[AI-Judge.Security-by-design]]
     - 'Quick' setup: old pc -> only web + api
         - Then develop the database/file sync? (I have 2 external SSD's of 1TB of video's now)
         - When my pc is online -> sync video's/labels/database
+
+# 📑 Action points
+- [ ] ⏫ Walk through general page
+- [ ] ⏫ Discuss the discussion points
+- [ ] ⏫ Send Eva email about recording on competitions
+
