@@ -148,7 +148,7 @@ const handleRequestReset = async () => {
 
         setTimeout(() => { step.value = 2 }, 2000)
         } catch (err) {
-            error.value = err.message || 'An error occurred'
+            error.value = err.response.data.message || 'An error occurred'
         } finally {
             loading.value = false
         }
@@ -178,7 +178,7 @@ const handleResetPassword = async () => {
       router.push('/login')
     }, 2000)
   } catch (err) {
-    error.value = err.message || 'An error occurred'
+    error.value = err.response.data.message || 'An error occurred'
     console.error(err)
   } finally {
     loading.value = false

@@ -28,8 +28,8 @@ const props = defineProps({
 
 const visibleMetrics = ['acc', 'f1', 'precision', 'recall']
 
-const metricDictKey = computed(() => props.trainresult.trainStart < '2026-02-01T19:00:00' ? 'metric_per_prop' : 'metric_per_layer')
-const metricAvgDictKey = computed(() => props.trainresult.trainStart < '2026-02-01T19:00:00' ? 'metric_avg_of_props' : 'metric_avg_of_layers')
+const metricDictKey = computed(() => props.trainresult.createdAt < '2026-02-01T19:00:00' ? 'metric_per_prop' : 'metric_per_layer')
+const metricAvgDictKey = computed(() => props.trainresult.createdAt < '2026-02-01T19:00:00' ? 'metric_avg_of_props' : 'metric_avg_of_layers')
 const validationResults = computed(() => props.trainresult.epochs[props.trainresult.bestEpoch])
 const confusionMatrices = computed(() => validationResults.value.validationResults[metricDictKey.value].confusion)
 const confusionHeaders = computed(() => validationResults.value.validationResults.confusion_heads)

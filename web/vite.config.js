@@ -15,6 +15,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  define: {
+    'process.env.PASSWORD_MIN_LENGTH': JSON.stringify(process.env.PASSWORD_MIN_LENGTH || '8'),
+  },
   server: {
     host: "0.0.0.0",
     port: Number(process.env.WEB_DOCKER_PORT) || 5173,

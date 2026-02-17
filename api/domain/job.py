@@ -10,12 +10,12 @@ class Job:
             status: str = 'Created',
             id: int = None,
             job_arguments: dict = {},
-            request_time: datetime = None,
+            createdAt: datetime = None,
             status_details: str = None,
         ) -> None:
         f"""
         Docstring for __init__
-        
+
         :param self: The Job instance
         :param type: {JOB_TYPES}
         :type type: str
@@ -27,8 +27,8 @@ class Job:
         :type id: int
         :param job_arguments: JSON dict containing specific job arguments
         :type job_arguments: dict
-        :param request_time: Time the job was requested
-        :type request_time: datetime
+        :param createdAt: Time the job was requested
+        :type createdAt: datetime
         :param status_details: Additional info about the status
         :type status_details: str
         """
@@ -52,18 +52,17 @@ class Job:
         self.type: str = type
         self.step: str = step
         self.job_arguments = job_arguments
-        self.request_time: datetime = request_time if request_time else datetime.now()
+        self.createdAt: datetime = createdAt if createdAt else datetime.now()
         self.status: str = status
         self.status_details: str = status_details
-    
+
     def to_dict(self):
         return {
             'id' : self.id,
             'type' : self.type,
             'step' : self.step,
             'job_arguments' : self.job_arguments,
-            'request_time' : self.request_time,
+            'createdAt' : self.createdAt,
             'status' : self.status,
             'status_details' : self.status_details,
         }
-    

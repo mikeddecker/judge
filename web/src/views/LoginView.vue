@@ -41,7 +41,7 @@
           </div>
 
           <!-- Error Message -->
-          <Message v-if="error" severity="error" :text="error" class="w-full" />
+          <Message v-if="error" severity="error" class="w-full">{{ error }}</Message>
 
           <!-- Loading State -->
           <Button
@@ -96,7 +96,7 @@
           </div>
 
           <!-- Error Message -->
-          <Message v-if="error" severity="error" :text="error" class="w-full" />
+          <Message v-if="error" severity="error" class="w-full">{{ error }}</Message>
 
           <!-- Loading State -->
           <Button
@@ -163,7 +163,7 @@ const handleLogin = async () => {
       await router.push('/')
     }
   } catch (err) {
-    error.value = err.message || 'An error occurred'
+    error.value = err.response.data.message || 'An error occurred'
   } finally {
     loading.value = false
   }
@@ -184,7 +184,7 @@ const handleMFAVerify = async () => {
     authStore.setAccount(data.account)
     await router.push('/')
   } catch (err) {
-    error.value = err.message || 'An error occurred'
+    error.value = err.response.data.message || 'An error occurred'
   } finally {
     loading.value = false
   }

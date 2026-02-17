@@ -8,7 +8,7 @@ from repository.accountRepo import AccountRepo
 from domain.account import Account
 import os
 
-PASSWORD_MIN_LENGTH = os.getenv('PASSWORD_MIN_LENGTH', 12)
+PASSWORD_MIN_LENGTH : int = int(os.getenv('PASSWORD_MIN_LENGTH', 12))
 
 # The encode() method encodes the string, using the specified encoding. If no encoding is specified, UTF-8 will be used.
 
@@ -46,7 +46,7 @@ class AccountService:
             return {'success': False, 'message': 'Account with this email already exists'}
 
         if len(password) < PASSWORD_MIN_LENGTH:
-            return {'success': False, 'message': 'Password must be at least 8 characters long'}
+            return {'success': False, 'message': f'Password must be at least {PASSWORD_MIN_LENGTH} characters long'}
 
         # Hash password
         passwordHash, salt = AccountService.hash_password(password)

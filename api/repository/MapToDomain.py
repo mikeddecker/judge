@@ -57,7 +57,7 @@ class MapToDomain:
             type = jobDB.type,
             step = jobDB.step,
             job_arguments = jobDB.job_arguments,
-            request_time = jobDB.request_time,
+            createdAt = jobDB.createdAt,
             status = jobDB.status,
             status_details = jobDB.status_details,
         )

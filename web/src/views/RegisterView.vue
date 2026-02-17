@@ -63,10 +63,10 @@
               autocomplete="new-password"
               required
               class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Password (minimum 8 characters)"
+              :placeholder="`Password (minimum ${passwordMinLength} characters)`"
             />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Must be at least 8 characters long
+              Must be at least {{ passwordMinLength }} characters long
             </p>
           </div>
 
@@ -86,10 +86,10 @@
           </div>
 
           <!-- Error Message -->
-          <Message v-if="error" severity="error" :text="error" class="w-full" />
+          <Message v-if="error" severity="error" class="w-full">{{ error }}</Message>
 
           <!-- Success Message -->
-          <Message v-if="success" severity="success" :text="success" class="w-full" />
+          <Message v-if="success" severity="success" class="w-full">{{ success }}</Message>
 
           <!-- Loading State -->
           <Button
@@ -135,6 +135,9 @@ const loading = ref(false)
 const error = ref('')
 const success = ref('')
 
+const passwordMinLength = process.env.PASSWORD_MIN_LENGTH;
+
+
 const handleRegister = async () => {
   try {
     error.value = ''
@@ -146,8 +149,9 @@ const handleRegister = async () => {
       return
     }
 
-    if (form.value.password.length < 8) {
-      error.value = 'Password must be at least 8 characters'
+    console.log('huh', passwordMinLength, form.value.password.length < passwordMinLength)
+    if (form.value.password.length < process.env.PASSWORD_MIN_LENGTH) {
+      error.value = `Password must be at least ${passwordMinLength} characters`
       return
     }
 
@@ -170,7 +174,7 @@ const handleRegister = async () => {
       router.push('/login')
     }, 2000)
   } catch (err) {
-    error.value = err.message || 'An error occurred'
+    error.value = err.response.data.message || 'An error occurred'
   } finally {
     loading.value = false
   }

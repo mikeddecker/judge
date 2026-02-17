@@ -2,31 +2,63 @@
 from repository.db import db
 from sqlalchemy import CheckConstraint
 from sqlalchemy.dialects.mysql import SMALLINT, JSON
+from sqlalchemy.dialects.mysql import BINARY
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped
 from datetime import datetime
+import uuid
 
 # TINYINT : -128 > 128
 # SMALLINT : -32768 > 32767
 
-class Account(db.Model):
-    __tablename__ = 'Accounts'
+
+class DomainObject(db.Model):
+    # Abstract does not create a table
+    __abstract__ = True
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # id = db.Column(BINARY(16), primary_key=True, default=generate_uuid)
+
+    createdAt = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    updatedAt = db.Column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
+
+    def uuid_str(self):
+        return str(uuid.UUID(bytes=self.id)) if self.id else None
+
+    # ---- public API (do NOT override) ----
+    # First DomainObject.to_dict() is called
+    # Then Subclass.to_dict() is called
+    def to_dict(self):
+        data = self._to_dict() or {}
+
+        data.update({
+            # "id": self.uuid_str(),
+            'id': self.id,
+            'createdAt': self.createdAt.isoformat() if self.createdAt else None,
+            'updatedAt': self.updatedAt.isoformat() if self.updatedAt else None,
+        })
+        return data
+
+    # ---- subclass hook (must override) ----
+    def _to_dict(self):
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement _to_dict()"
+        )
+
+class Account(DomainObject):
+    __tablename__ = 'Accounts'
     email = db.Column(db.String(255), nullable=False, unique=True)
     firstName = db.Column(db.String(127), nullable=False)
     lastName = db.Column(db.String(127), nullable=False)
     passwordHash = db.Column(db.String(255), nullable=False)
     salt = db.Column(db.String(255), nullable=False)
     lastLogin = db.Column(db.DateTime, nullable=True)
-    createdAt = db.Column(db.DateTime, nullable=False, default=datetime.now)
-    updatedAt = db.Column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
     mfaEnabled = db.Column(db.Boolean, nullable=False, default=False)
     mfaCode = db.Column(db.String(6), nullable=True)
     mfaCodeExpires = db.Column(db.DateTime, nullable=True)
 
     def to_dict(self):
         return {
-            'id': self.id,
             'email': self.email,
             'firstName': self.firstName,
             'lastName': self.lastName,
@@ -36,12 +68,11 @@ class Account(db.Model):
             'mfaEnabled': self.mfaEnabled,
         }
 
-class Folder(db.Model):
+class Folder(DomainObject):
     __tablename__ = 'Folders'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(127), nullable=False)
     parentId = db.Column(db.Integer, db.ForeignKey('Folders.id', ondelete='CASCADE'), nullable=True)
-    parent = db.relationship('Folder', remote_side=[id], backref='children', lazy='joined')
+    parent = db.relationship('Folder', remote_side='Folder.id', backref='children', lazy='joined')
     videos = db.relationship('Video', backref='folder', lazy='dynamic') # Loaded lazily, so videoIDs are accecible, but full fetch only when explicitly asked
 
     # Define a composite unique constraint
@@ -51,39 +82,35 @@ class Folder(db.Model):
 
     def to_dict(self):
         return {
-            'id': self.id,
             'name': self.name,
             'parentId' : self.parentId,
             'children': [child.id for child in self.children],
             'videoIds': [video.id for video in self.videos]
         }
 
-class Source(db.Model):
+class Source(DomainObject):
     __tablename__ = 'Sources'
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(127), nullable=False)
 
-class CompetitionInfo(db.Model):
+class CompetitionInfo(DomainObject):
     __tablename__ = 'CompetitionInfo'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     info = db.Column(db.String(255), nullable=False)
     year = db.Column(db.Integer, nullable=False)
 
-class TagGroup(db.Model):
-    __tablename__ = 'TagGroups'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(127), nullable=False, unique=True)
-    parentId = db.Column(db.Integer, db.ForeignKey('TagGroups.id', ondelete='CASCADE'), nullable=True)
-    parent = db.relationship('TagGroup', remote_side=[id], backref='children', lazy='joined')
-    tags = db.relationship('Tag', backref='group', lazy=True)
 
-class Tag(db.Model):
+class Tag(DomainObject):
     __tablename__ = 'Tags'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(127), nullable=False)
     keywords = db.Column(db.String(511), nullable=True)
 
     tagGroupId = db.Column(db.Integer, db.ForeignKey('TagGroups.id'), nullable=True)
+
+class TagGroup(DomainObject):
+    __tablename__ = 'TagGroups'
+    name = db.Column(db.String(127), nullable=False, unique=True)
+    parentId = db.Column(db.Integer, db.ForeignKey('TagGroups.id', ondelete='CASCADE'), nullable=True)
+    parent = db.relationship('TagGroup', remote_side='TagGroup.id', backref='children', lazy='joined')
+    tags = db.relationship('Tag', backref='group', lazy=True)
 
 # Association table for Video <-> Tag (Many-to-Many)
 video_tag = db.Table('video_tag',
@@ -91,9 +118,8 @@ video_tag = db.Table('video_tag',
     db.Column('tagId', db.Integer, db.ForeignKey('Tags.id', ondelete='CASCADE'), primary_key=True)
 )
 
-class Video(db.Model):
+class Video(DomainObject):
     __tablename__ = 'Videos'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     folderId = db.Column(db.Integer, db.ForeignKey('Folders.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     frameLength = db.Column(db.Integer, nullable=False)
@@ -120,7 +146,6 @@ class Video(db.Model):
 
     def to_dict(self):
         return {
-            'id': self.id,
             'folderId' : self.folderId,
             'name' : self.name,
             'frameLength': self.frameLength,
@@ -132,14 +157,12 @@ class Video(db.Model):
             'obstruction' : self.obstruction
         }
 
-class FrameLabelType(db.Model):
+class FrameLabelType(DomainObject):
     __tablename__ = 'FrameLabelTypes'
-    id = db.Column(db.Integer, primary_key=True)
     info = db.Column(db.String(127))
 
-class FrameLabel(db.Model):
+class FrameLabel(DomainObject):
     __tablename__ = 'FrameLabels'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     videoId = db.Column(db.Integer, db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=False)
     frameNr = db.Column(SMALLINT(unsigned=True), nullable=False)
     x = db.Column(db.Float, nullable=False)
@@ -148,7 +171,6 @@ class FrameLabel(db.Model):
     height = db.Column(db.Float, nullable=False)
     jumperVisible = db.Column(db.Boolean, nullable=False, default=True)
     labeltype = db.Column(db.Integer, db.ForeignKey('FrameLabelTypes.id', ondelete='CASCADE'), nullable=False, default=1)
-    labeldatetime = db.Column(db.DateTime, default=datetime.now)
     labeldate = db.Column(db.Date, default=lambda: datetime.now().date())
     labeltime = db.Column(db.Time, default=lambda: datetime.now().time())
 
@@ -162,14 +184,11 @@ class FrameLabel(db.Model):
             'jumperVisible' : self.jumperVisible
         }
 
-class TrainResultEpoch(db.Model):
+class TrainResultEpoch(DomainObject):
     __tablename__ = 'TrainResultsEpoch'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     trainResultId = db.Column(db.Integer, db.ForeignKey('TrainResults.id', ondelete='CASCADE'), nullable=False)
     epoch = db.Column(SMALLINT(unsigned=True), nullable=False)
     validationResults = db.Column(MutableDict.as_mutable(JSON), nullable=False)
-    creationDate = db.Column(db.DateTime, default=datetime.now)
-    lastUpdated = db.Column(db.DateTime, default=datetime.now)
 
     def to_dict(self):
         return {
@@ -177,13 +196,10 @@ class TrainResultEpoch(db.Model):
             'trainResultId': self.trainResultId,
             'epoch': self.epoch,
             'validationResults': self.validationResults,
-            'creationDate': self.creationDate,
-            'lastUpdated': self.lastUpdated,
         }
 
-class TrainResult(db.Model):
+class TrainResult(DomainObject):
     __tablename__ = 'TrainResults'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     step = db.Column(db.String(50), nullable=False)
     recipeCode = db.Column(db.String(255), nullable=False)
     recipe = db.Column(MutableDict.as_mutable(JSON), nullable=False)
@@ -197,11 +213,7 @@ class TrainResult(db.Model):
     isBestOfArchitecture = db.Column(db.Boolean, nullable=False)
 
     isTestrun = db.Column(db.Boolean, nullable=False)
-
-    trainStart = db.Column(db.DateTime, default=datetime.now)
     trainEnd = db.Column(db.DateTime, nullable=True)
-    creationDate = db.Column(db.DateTime, default=datetime.now)
-    lastUpdated = db.Column(db.DateTime, default=datetime.now)
 
     epochs = db.relationship(
         TrainResultEpoch,
@@ -212,7 +224,6 @@ class TrainResult(db.Model):
 
     def to_dict(self):
         return {
-            'id' : self.id,
             'step' : self.step,
             'recipeCode' : self.recipeCode,
             'recipe' : self.recipe,
@@ -223,25 +234,19 @@ class TrainResult(db.Model):
             'isBestOfRecipe' : self.isBestOfRecipe,
             'isBestOfArchitecture' : self.isBestOfArchitecture,
             'isTestrun' : self.isTestrun,
-            'trainStart' : self.trainStart,
             'trainEnd' : self.trainEnd,
-            'creationDate' : self.creationDate,
-            'lastUpdated' : self.lastUpdated,
             'epochs': {
                 e.epoch: e.to_dict()
                 for e in self.epochs.order_by(TrainResultEpoch.epoch).all()
             }
         }
 
-class Skill(db.Model):
+class Skill(DomainObject):
     __tablename__ = 'Skills'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     videoId = db.Column(db.Integer, db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=False)
     frameStart = db.Column(db.Integer, nullable=False)
     frameEnd = db.Column(db.Integer, nullable=False)
     skillinfo = db.Column(MutableDict.as_mutable(JSON), nullable=False)
-    labeldate = db.Column(db.DateTime, default=datetime.now)
-    updated = db.Column(db.DateTime, default=datetime.now)
 
 # skillinfo_example = {
 #     "composition1": [
@@ -256,26 +261,21 @@ class Skill(db.Model):
 #     ]
 # }
 
-class Jobs(db.Model):
+class Jobs(DomainObject):
     __tablename__ = 'Jobs'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     type = db.Column(db.String(30), nullable=False)
     step = db.Column(db.String(127), nullable=False)
     job_arguments = db.Column(MutableDict.as_mutable(JSON), nullable=False)
-    request_time = db.Column(db.DateTime, default=datetime.now)
     status = db.Column(db.String(30), nullable=False)
     status_details = db.Column(db.String(127))
 
-class Layer(db.Model):
+class Layer(DomainObject):
     __tablename__ = 'Layers'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), nullable=False)
     type = db.Column(db.String(15), nullable=False)
     min = db.Column(db.Float, nullable=True)
     max = db.Column(db.Float, nullable=True)
     step = db.Column(db.Float, nullable=True)
-    creationDate = db.Column(db.DateTime, default=datetime.now)
-    lastUpdated = db.Column(db.DateTime, default=datetime.now)
 
     categories = db.relationship('LayerValue', backref='layer', lazy=True)
 
@@ -290,13 +290,10 @@ class Layer(db.Model):
             'categories': [c.to_dict() for c in sorted(self.categories, key=lambda c: c.name)]
         }
 
-class LayerValue(db.Model):
+class LayerValue(DomainObject):
     __tablename__ = 'LayerValues'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     layerId = db.Column(db.Integer, db.ForeignKey('Layers.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.String(50), nullable=False)
-    creationDate = db.Column(db.DateTime, default=datetime.now)
-    lastUpdated = db.Column(db.DateTime, default=datetime.now)
 
     def to_dict(self):
         return {
@@ -304,17 +301,14 @@ class LayerValue(db.Model):
             'name': self.name
         }
 
-class LayerComposition(db.Model):
+class LayerComposition(DomainObject):
     __tablename__ = 'LayerComposition'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     compositionName = db.Column(db.String(50), nullable=False)
     stage = db.Column(db.Integer, CheckConstraint('stage >= -1'), nullable=True)
     layerId = db.Column(db.Integer, db.ForeignKey('Layers.id', ondelete='CASCADE'), nullable=False)
-    layer : Mapped[Layer] = db.relationship('Layer', backref='compositions', lazy='joined')
+    layer : Mapped[Layer] = db.relationship('Layer', backref='compositions', remote_side=[Layer.id],  lazy='joined')
     defaultValue = db.Column(db.String(15), nullable=True)
     focussed = db.Column(db.Boolean, nullable=False, default=True)
-    creationDate = db.Column(db.DateTime, default=datetime.now)
-    lastUpdated = db.Column(db.DateTime, default=datetime.now)
 
     def defaultValueConvert(self, value: str, layer: Layer):
         if value is None:

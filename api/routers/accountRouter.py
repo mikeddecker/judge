@@ -36,7 +36,7 @@ class AccountLoginRouter(Resource):
         if result['success']:
             # Store account ID in session
             if 'account_id' in result or 'account' in result:
-                account_id = result.get('account_id') or result['account'].get('id')
+                account_id = result.get('account_id') or result['account'].id
                 session['account_id'] = account_id
                 session['email'] = data.get('email')
             status_code = 200
@@ -61,7 +61,7 @@ class AccountMFAVerifyRouter(Resource):
         if result['success']:
             # Store account ID in session
             session['account_id'] = data.get('account_id')
-            session['email'] = result['account'].get('email')
+            session['email'] = result['account'].email
             status_code = 200
         else:
             status_code = 401

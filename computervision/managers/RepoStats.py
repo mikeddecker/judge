@@ -32,13 +32,13 @@ class RepoStats(DataRepository):
         runtime: datetime,
         step: str='SKILL',
     ) -> dict:
-        # TODO : check if trainStart works and fetches runs
+        # TODO : check if createdAt works and fetches runs
         qry = sqlal.text(
             f"""SELECT * FROM TrainResuls tr
                 JOIN TrainResultsEpoch tre ON tr.bestEpoch = tre.epoch AND tre.trainResultId = tr.id
                 WHERE tr.step = :step
                 AND tr.recipeCode = :recipeCode
-                AND tr.trainStart = :runtime
+                AND tr.createdAt = :runtime
                 """)
 
         with self._get_connection() as connection:
@@ -59,7 +59,7 @@ class RepoStats(DataRepository):
     ) -> int:
         """
         Count how many epochs without improvement compared to current validation results.
-        
+
         ⚠️ Note: Make sure the epoch results are already saved to DB.
         This methods goes to DB to check and iterate
 
@@ -82,7 +82,7 @@ class RepoStats(DataRepository):
         with self._get_connection() as connection:
             params = { 'train_result_id': train_result_id }
             df = pd.read_sql(qry, con=connection, params=params)
-            
+
             # Need at least 2 epochs to compare (current + previous)
             if len(df) < 2:
                 return 0
@@ -154,7 +154,7 @@ class RepoStats(DataRepository):
             WHERE tr.step = :step
             AND {qry_filter}
             AND tr.isTestrun = :isTestrun
-            ORDER BY tr.trainStart DESC
+            ORDER BY tr.createdAt DESC
             LIMIT 1
         """)
         with self._get_connection() as connection:
@@ -263,9 +263,9 @@ class RepoStats(DataRepository):
             # Insert new TrainResult record
             insert_result_qry = sqlal.text("""
                 INSERT INTO TrainResults
-                (step, recipeCode, recipe, bestEpoch, revalidationResults, isBestOfAll, isBestOfRecipe, isBestOfArchitecture, trainStart, isTestrun, creationDate)
+                (step, recipeCode, recipe, bestEpoch, revalidationResults, isBestOfAll, isBestOfRecipe, isBestOfArchitecture, createdAt, isTestrun, createdAt)
                 VALUES
-                (:step, :recipeCode, :recipe, :bestEpoch, :revalidationResults, :isBestOfAll, :isBestOfRecipe, :isBestOfArchitecture, :trainStart, :isTestrun, :creationDate)
+                (:step, :recipeCode, :recipe, :bestEpoch, :revalidationResults, :isBestOfAll, :isBestOfRecipe, :isBestOfArchitecture, :createdAt, :isTestrun, :createdAt)
             """)
 
             insert_params = {
@@ -277,8 +277,8 @@ class RepoStats(DataRepository):
                 'isBestOfAll': False,
                 'isBestOfRecipe': False,
                 'isBestOfArchitecture': False,
-                'trainStart': datetime.now(),
-                'creationDate': datetime.now(),
+                'createdAt': datetime.now(),
+                'createdAt': datetime.now(),
                 'isTestrun': testrun,
             }
 
@@ -363,16 +363,16 @@ class RepoStats(DataRepository):
             # Insert epoch results into TrainResultsEpoch
             insert_epoch_qry = sqlal.text("""
                 INSERT INTO TrainResultsEpoch
-                (trainResultId, epoch, validationResults, creationDate)
+                (trainResultId, epoch, validationResults, createdAt)
                 VALUES
-                (:trainResultId, :epoch, :validationResults, :creationDate)
+                (:trainResultId, :epoch, :validationResults, :createdAt)
             """)
 
             epoch_params = {
                 'trainResultId': train_result_id,
                 'epoch': epoch,
                 'validationResults': json.dumps(validation_results),
-                'creationDate': datetime.now()
+                'createdAt': datetime.now()
             }
 
             connection.execute(insert_epoch_qry, epoch_params)
