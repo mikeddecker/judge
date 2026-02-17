@@ -40,6 +40,9 @@ None yet, really low prio.
 - (Email/SMS/...) notification if service down?
 - if service peaking on usage?
 - if model trained?
+Logs? very little to none -> GDPR?
+# 🎡 CI/CD
+...
 
 # 🔗 Integration into NextJump.app
 Integration into nextjump (subdomain on nextjump.app?)

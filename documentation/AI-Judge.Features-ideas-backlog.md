@@ -138,14 +138,14 @@
 # Code quality
 - [ ] Debugging
 	- [ ] CI/CD (Docker test)
-		- [ ] Create other docker services testing the application with a limited dataset
-			- [x] Launch web ✅ 2026-02-08
-			- [x] Launch API ✅ 2026-02-08
-			- [ ] Insert dummy values using API
-			- [ ] Insert dummy jobs
-			- [ ] Execute dummy jobs
-			- [ ] Add property null values, should be filtered
-			- [ ] ...
+	- [ ] Create other docker services testing the application with a limited dataset
+		- [x] Launch web ✅ 2026-02-08
+		- [x] Launch API ✅ 2026-02-08
+		- [ ] Insert dummy values using API
+		- [ ] Insert dummy jobs
+		- [ ] Execute dummy jobs
+		- [ ] Add property null values, should be filtered
+		- [ ] ...
 	- [ ] Create a run log showing example run values
 		- [ ] Example label to tensor
 		- [ ] Example max_composition_amounts
