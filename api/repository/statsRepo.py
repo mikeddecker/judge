@@ -329,13 +329,13 @@ class StatsRepository:
 
     def skill_counts_daily(self) -> dict:
         grouped_data = self.db.session.query(
-            Skill.labeldate,
+            Skill.createdAt,
             self.split_train_test_skill,
             func.count().label("count")
         ).group_by(
-            Skill.labeldate, self.split_train_test_skill
+            Skill.createdAt, self.split_train_test_skill
         ).order_by(
-            Skill.labeldate
+            Skill.createdAt
         ).all()
 
         # Zero counts
