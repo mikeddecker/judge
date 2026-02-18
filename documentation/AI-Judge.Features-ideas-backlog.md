@@ -100,6 +100,11 @@
 		- [ ] Segmented skill = named property (order by inverse relative occurence)
 		- [ ] Show the current labeled videos, which are not not fully segmented with a skill property
 		- [ ] Show the current labeled videos, which are fully segmented, order by skill property density
+	- [ ] Research sideswing multiples where jumpers pull their rope -> 'Higher FPS' -> e.g. like frames/time between/from feet/rope of the ground.
+		- [ ] Rope off ground
+		- [ ] Rope clock wise position
+		- [ ] Heels on ground
+		- [ ] Toes on the ground
 
 # Judging
 - [ ] Add rulesets
