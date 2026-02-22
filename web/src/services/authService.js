@@ -37,7 +37,7 @@ const authService = {
       const resp = await api.get('/auth/me');
       return resp.data;
     } catch (err) {
-      console.error('me error', err);
+      console.error(err['response'].data.message, err);
       throw err;
     }
   },

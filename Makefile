@@ -26,7 +26,7 @@ dev-detached: check-ssd ## Run development environment in detached mode
 	$(COMPOSE_DEV) --profile dev up -d
 
 dev-down: check-ssd ## Stop dev environment
-	$(COMPOSE_DEV) --profile dev down --remove-orphans
+	$(COMPOSE_DEV) --profile dev down --remove-orphans -v
 
 dev-force-recreate: check-ssd
 	$(COMPOSE_DEV) --profile dev up --build --force-recreate
@@ -47,7 +47,7 @@ prod-force-recreate: check-ssd
 	$(COMPOSE_PROD) --profile prod up --build --force-recreate
 
 prod-down: check-ssd ## Stop production
-	$(COMPOSE_PROD) --profile prod down
+	$(COMPOSE_PROD) --profile prod down -v
 
 prod-logs: check-ssd ## Production logs
 	$(COMPOSE_PROD) logs -f $(SERVICE)
@@ -67,11 +67,15 @@ rebuild-prod: ## Rebuild prod without cache
 restart-cv-dev: ## Restart the computervision service
 	$(COMPOSE_DEV) restart computervision
 
+restart-api-dev: ## Restart the API service
+	$(COMPOSE_DEV) restart api
+
 restart-cv-prod: ## Restart the computervision service
 	$(COMPOSE_PROD) restart computervision
 
 prune: ## Clean all docker trash
 	docker system prune -f
+	docker volume prune
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z0-9_-]+:.*?##' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

@@ -22,6 +22,12 @@ flask db migrate -m "Initial migration"  # Generates the migration script for ch
 flask db upgrade         # Applies the migration to the database
 ```
 
+# Open an api bash
+
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.dev.yaml run --rm api bash
+```
+
 ## Creating a backup
 
 ```bash

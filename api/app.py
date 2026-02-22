@@ -4,6 +4,7 @@ import signal
 import sys
 import subprocess
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from config import ENVS
 from datetime import datetime, date
 from domain.tag import Tag
@@ -45,7 +46,7 @@ class CustomJSONProvider(DefaultJSONProvider):
 MYSQL_ROOT_PASSWORD : str = cast(str, os.getenv("MYSQL_ROOT_PASSWORD"))
 MYSQL_HOST : str = cast(str, os.getenv("MYSQL_HOST"))
 MYSQL_DATABASE : str = cast(str, os.getenv("MYSQL_DATABASE"))
-MYSQL_DOCKER_PORT : str = cast(str, os.getenv("MYSQL_DOCKER_PORT"))
+MYSQL_DOCKER_PORT : int = cast(int, os.getenv("MYSQL_DOCKER_PORT"))
 MYSQL_BACKUP : str = cast(str, os.getenv("MYSQL_BACKUP"))
 assert MYSQL_ROOT_PASSWORD is not None, f"Fill in the MYSQL_ROOT_PASSWORD variable in the .env file, located in the api folder."
 assert MYSQL_HOST is not None, f"Fill in the MYSQL_HOST variable in the .env file, located in the api folder."
@@ -123,17 +124,20 @@ def create_app(config_object:str="config.Config"):
     if os.getenv('FLASK_ENV') == 'production':
         Talisman(app, force_https=True, strict_transport_security=True, strict_transport_security_max_age=63072000)
 
-    if not app.config.get('TESTING', False) and not is_running_manual_migrations():
-        # TODO : restore only if db empty or not at last db version
-        print("⏳ Restoring latest MySQL backup before starting the app...")
-        restore_latest_mysql_backup()
+    if not app.config.get('TESTING', False) and not is_running_manual_migrations() and os.path.exists('migrations'):
+        # TODO : restore only if db empty or not at last db version or after GUI/cmd
+        # print("⏳ Restoring latest MySQL backup before starting the app...")
+        # restore_latest_mysql_backup()
+        pass
 
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
 
-    with app.app_context():
-        upgrade()
+    if os.path.exists('migrations'):
+        with app.app_context():
+            upgrade()
+
     return app
 
 app = create_app()
@@ -243,7 +247,8 @@ def shutdown_handler(*args):
     _shutdown_called = True
     print("⚠️ Shutting down Flask app, creating backup...")
     try:
-        backup_mysql_db()
+        pass
+        # backup_mysql_db()
     except Exception as e:
         print(e)
     sys.exit(0)
@@ -251,6 +256,9 @@ def shutdown_handler(*args):
 signal.signal(signal.SIGINT, shutdown_handler) # Handle Ctrl+C and kill
 signal.signal(signal.SIGTERM, shutdown_handler) # Handle Ctrl+C and kill
 atexit.register(shutdown_handler) # Also run on interpreter exit
+scheduler = BackgroundScheduler()
+scheduler.add_job(backup_mysql_db, "interval", hours=1)
+scheduler.start()
 
 if __name__ == '__main__':
     with app.app_context():
