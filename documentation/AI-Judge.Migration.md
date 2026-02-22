@@ -33,7 +33,6 @@ If you want readable UUIDs in Python, convert when serializing.
 
 ❗First add uuid -> change FK's everywhere
 
-
 ---
 
 ## ✅ 2) Migration strategy (no downtime friendly)
@@ -105,7 +104,6 @@ If foreign keys exist:
 
 4. Then drop old int PK
 
-
 ---
 
 ### Step E — Drop old id column (optional)
@@ -130,7 +128,6 @@ Why:
 - The database enforces uniqueness
 
 - Normal insert semantics apply
-
 
 Typical insert:
 
@@ -180,7 +177,6 @@ Use this if your app might retry requests.
 
 - If using replication, do migration in phases
 
-
 ---
 
 ## 💡 Real-world recommendation
@@ -196,3 +192,4 @@ Zero downtime, zero drama.
 ---
 
 If you want, paste your full model + FK relationships and I’ll map the exact Alembic migrations for your schema.
+
