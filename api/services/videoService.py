@@ -29,7 +29,7 @@ class VideoService:
         self.VideoRepo = VideoRepository(db=db)
         self.FolderRepo = FolderRepository(db=db)
         self.jobService = JobService()
-        
+
     def __setattr__(self, name, value):
         if hasattr(self, name):
             # Prevent setting immutable attributes after it is set in __init__
@@ -41,7 +41,7 @@ class VideoService:
 
     def add(self, name: str, folder: Folder, frameLength: float, width: float, height: float, fps: float, ytid: str = None, tags: list[Tag] = []) -> VideoInfo:
         """Adds the given video to the database
-        
+
         TODO : After localization; add meta information loader
         TODO : nice to have, add warning if name is double
         TODO : enforce mp4, wav...
@@ -70,7 +70,7 @@ class VideoService:
             srcinfo=ytid, # TODO : make better
             tags=tags,
         )
-    
+
     def add_skill(self, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict) -> Skill:
         assert isinstance(skillinfo, dict), "Skillinfo is not a dict"
         assert len(skillinfo) > 0, "Skillinfo is empty"
@@ -121,13 +121,13 @@ class VideoService:
         """Check existence in database
         If id provided, ignore name and folder"""
         if id:
-            ValueHelper.check_raise_id(id)
+            ValueHelper.check_raise_uuid(id)
             return self.VideoRepo.exists(id=id)
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"When no id, but name is given, folder also needs to be given; got {folder}")
         return self.VideoRepo.exists_by_name(name=name, folder=folder)
-    
+
     def exists_on_drive(self, name: str, folder: Folder) -> bool:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
@@ -136,12 +136,12 @@ class VideoService:
 
     def get(self, id: int) -> VideoInfo:
         """Get video with the corresponding Id"""
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         if not self.exists_in_database(id=id):
             raise LookupError(f"VideoId {id} does not exist")
         video = self.VideoRepo.get(id=id)
         return video
-    
+
     def get_videoId(self, name: str = None, folder: Folder = None) -> int:
         """Get videoId based on name"""
         ValueHelper.check_raise_string_only_abc123_extentions(name)
@@ -155,7 +155,7 @@ class VideoService:
 
     def delete_from_database(self, id: int):
         # TODO : check skills & segments
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         if not self.exists_in_database(id=id):
             raise LookupError(f"VideoId {id} does not exist")
         if self.VideoRepo.has_frames(videoId=id):
@@ -166,21 +166,24 @@ class VideoService:
 
     def get_videos(self, folderId: int) -> List[VideoInfo]:
         """Returns videos in the given folder that are inserted in the database"""
-        ValueHelper.check_raise_id(folderId)
+        ValueHelper.check_raise_uuid(folderId)
         if not self.FolderRepo.exists(folderId):
             raise LookupError(f"FolderId {folderId} does not exist")
         return self.VideoRepo.get_videos(folderId=folderId)
-    
+
     def get_skills(self, videoId: int) -> List[Skill]:
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         if not self.VideoRepo.exists(videoId):
             raise LookupError(f"VideoId {videoId} does not exist")
         return self.VideoRepo.get_skills(videoId)
-    
+
+    def get_skill_count(self) -> int:
+        return self.VideoRepo.count_skills()
+
     # TODO : nice to have
     def rename(self, id: int, new_name):
         raise NotImplementedError("Nice to have, end of journey")
-    
+
     def remove_frameInfo(self, frameNr, video: VideoInfo, frameinfo: FrameInfo) -> VideoInfo:
         ValueHelper.check_raise_frameNr(frameNr)
         if video is None or not isinstance(video, VideoInfo):
@@ -222,7 +225,7 @@ class VideoService:
         raise NotImplementedError("Nice to have, end of journey")
 
     def video_has_predictions(self, videoId: int, model: str, date: str = None):
-        # TODO : make as 
+        # TODO : make as
         return os.path.exists(
             os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_skills_{model}.json")
         )
@@ -236,9 +239,9 @@ class VideoService:
 
     def load_predicted_boxes(self, videoId:int):
         return load_json_file(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json"))
-    
+
     def getVideoPredictions(self, videoId: int):
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         best_model = 'MViT'
 
         predictions_path = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_skills_{best_model}.json")
@@ -248,19 +251,19 @@ class VideoService:
         predictions['boxes'] = self.load_predicted_boxes(videoId=videoId)
 
         return predictions
-    
+
     def initiate(self):
         self.VideoRepo.initiate()
 
     def get_frame_label_types(self) -> list[str]:
         return self.VideoRepo.get_frame_label_types()
-    
+
     def has_predicted_boxes(self, videoId: int):
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         return os.path.exists(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json"))
 
     def add_tag(self, videoId: int, tag: Tag):
         """Adds the tag to the video if it does not already exist"""
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         self.VideoRepo.add_tag(videoId=videoId, tag=tag)
 

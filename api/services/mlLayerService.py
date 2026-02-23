@@ -47,19 +47,19 @@ class MLLayerService:
 
     def add_layer_value(self, layerId: int, name: str) -> dict:
         """Returns the full layer"""
-        ValueHelper.check_raise_id(layerId)
+        ValueHelper.check_raise_uuid(layerId)
         ValueHelper.check_raise_string_only_abc123space(name)
         if not self.MlLayerRepo.has_layer(layerId):
             raise ValueError(f"Layer with id {layerId} does not exist")
         return self.MlLayerRepo.add_value(layerId=layerId, valueName=name)
 
     def has_layer(self, id: int) -> bool:
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         return self.MlLayerRepo.has_layer(id)
 
     def update_layer(self, layerId: int, name: str, min: float = None, max: float = None, step: float = None) -> dict:
         """update a layer: can not update type, returns layer"""
-        ValueHelper.check_raise_id(layerId)
+        ValueHelper.check_raise_uuid(layerId)
         ValueHelper.check_raise_string_only_abc123space(name)
         assert self.MlLayerRepo.has_layer(layerId), f"Layer ({layerId}) does not exist"
 
@@ -79,7 +79,7 @@ class MLLayerService:
             return self.MlLayerRepo.update_layer(layerId=layerId, name=name)
 
     def update_value_name(self, layervalueId: int, new_name: str):
-        ValueHelper.check_raise_id(layervalueId)
+        ValueHelper.check_raise_uuid(layervalueId)
         ValueHelper.check_raise_string_only_abc123(new_name)
         assert self.MlLayerRepo.has_value(layervalueId), f"Layervalue with id {layervalueId} does not exist"
         return self.MlLayerRepo.update_value_name(layervalueId, new_name)
@@ -89,7 +89,7 @@ class MLLayerService:
 
     def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int, name: str | None) -> dict[str, LayerComposition]:
         ValueHelper.check_raise_string_only_abc123(compositionName)
-        ValueHelper.check_raise_id(layerId)
+        ValueHelper.check_raise_uuid(layerId)
         if stage is not None:
             assert isinstance(stage, int), f"Stage must be an integer"
             assert stage >= -1, f"Stage must be an integer >= -1"

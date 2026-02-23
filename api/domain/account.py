@@ -44,7 +44,7 @@ class Account:
 
     def to_dict(self):
         return {
-            'id': self.id,
+            'id': self.id.hex(),
             'email': self.email,
             'firstName': self.firstName,
             'lastName': self.lastName,
@@ -54,3 +54,8 @@ class Account:
             'mfaEnabled': self.mfaEnabled,
         }
 
+    def __str__(self):
+        return str(self.to_dict())
+
+    def __repr__(self):
+        return str(self.to_dict())

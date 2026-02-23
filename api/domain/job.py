@@ -38,7 +38,7 @@ class Job:
         if type == 'PREDICT':
             assert 'videoId' in job_arguments.keys(), f"VideoId must be specified for predict jobs"
             assert job_arguments['videoId'] is not None, f"VideoId may not be None for predict jobs"
-            ValueHelper.check_raise_id(job_arguments['videoId'])
+            ValueHelper.check_raise_uuid(job_arguments['videoId'])
             assert 'model' in job_arguments.keys(), f"Model must be specified for predict jobs"
             assert job_arguments['model'] is not None, f"Model may not be None for predict jobs"
             ValueHelper.check_raise_string(job_arguments['model'])
@@ -58,7 +58,7 @@ class Job:
 
     def to_dict(self):
         return {
-            'id' : self.id,
+            'id' : self.id.hex(),
             'type' : self.type,
             'step' : self.step,
             'job_arguments' : self.job_arguments,

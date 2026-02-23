@@ -8,16 +8,16 @@ class MLLayerRouter(Resource):
     def __init__(self, **kwargs):
         self.mlLayerService = MLLayerService()
         super().__init__(**kwargs)
-    
+
     def get(self):
         return self.mlLayerService.get_layers(), 200
-    
+
     def post(self):
         data = request.get_json()
         name = data.get('name')
         layerId = data.get('layerId')
         type = data.get('type')
-        
+
         ValueHelper.check_raise_string_only_abc123space(name)
         if layerId is None:
             # Layer
@@ -32,17 +32,17 @@ class MLLayerRouter(Resource):
             )
         else:
             # Value
-            ValueHelper.check_raise_id(layerId)
+            ValueHelper.check_raise_uuid(layerId)
             assert self.mlLayerService.has_layer(layerId), f"Layer does not exist"
             added = self.mlLayerService.add_layer_value(layerId=layerId, name=name)
         return added, 200
-    
+
     def put(self):
         data = request.get_json()
         id = data.get('id')
         name = data.get('name')
         layerId = data.get('layerId')
-        
+
         ValueHelper.check_raise_string_only_abc123(name)
         if id is not None:
             # Layer
@@ -55,24 +55,24 @@ class MLLayerRouter(Resource):
             ), 200
         elif layerId is not None:
             # Value
-            ValueHelper.check_raise_id(layerId)
+            ValueHelper.check_raise_uuid(layerId)
             assert self.mlLayerService.has_layer(layerId), f"Layer does not exist"
             return self.mlLayerService.update_value_name(layervalueId=layerId, new_name=name), 200
         else:
             return 'Invalid layer (value) update', 404
-    
+
 class MLLayerCompositionRouter(Resource):
     def __init__(self, **kwargs):
         self.mlLayerService = MLLayerService()
         super().__init__(**kwargs)
-    
+
     def get(self):
         return {
             compositionName: layerComposition.to_dict()
             for compositionName, layerComposition in
             self.mlLayerService.get_layer_compositions().items()
         }, 200
-    
+
     def post(self):
         data = request.get_json()
 
@@ -80,15 +80,15 @@ class MLLayerCompositionRouter(Resource):
         stage = data.get('stage')
         layerId = data.get('layerId')
         name = data.get('name')
-        
+
         ValueHelper.check_raise_string_only_abc123(compositionName)
-        ValueHelper.check_raise_id(layerId)
+        ValueHelper.check_raise_uuid(layerId)
         if stage is not None:
             assert isinstance(stage, int), f"Stage must be an integer"
             assert stage >= -1, f"Stage must be an integer >= -1"
         if name is not None:
             ValueHelper.check_raise_string_only_abc123(name)
-        
+
         assert self.mlLayerService.has_layer(layerId), f"LayerId {layerId} does not exist"
 
         return {
@@ -100,13 +100,13 @@ class MLLayerCompositionRouter(Resource):
                 layerId=layerId,
                 name=name
             ).items()
-        }, 200 
-    
+        }, 200
+
 class MLLayerCompositionMoveLayerRouter(Resource):
     def __init__(self, **kwargs):
         self.mlLayerService = MLLayerService()
         super().__init__(**kwargs)
-        
+
     def post(self):
         data = request.get_json()
 
@@ -115,13 +115,13 @@ class MLLayerCompositionMoveLayerRouter(Resource):
         dest_stage = data.get('destStage')
         stageNr = data.get('stageNr')
         key = data.get('key')
-            
+
         try:
             ValueHelper.check_raise_string_only_abc123space(compositionName)
             ValueHelper.check_raise_string_only_abc123space(source_stage)
             ValueHelper.check_raise_string_only_abc123space(dest_stage)
             ValueHelper.check_raise_string_only_abc123space(key)
-        
+
             self.mlLayerService.move_skill_layer(
                 composition_name=compositionName,
                 source=source_stage,
@@ -132,13 +132,13 @@ class MLLayerCompositionMoveLayerRouter(Resource):
         except Exception as e:
             print(e)
 
-        return 'ok', 200 
-    
+        return 'ok', 200
+
 class MLLayerTypesRouter(Resource):
     def __init__(self, **kwargs):
         self.mlLayerService = MLLayerService()
         super().__init__(**kwargs)
-    
+
     def get(self):
         return self.mlLayerService.get_types(), 200
 
@@ -173,5 +173,5 @@ class MLLayerCompositionAttributeRouter(Resource):
         except Exception as e:
             print('MLLayerCompositionAttributeRouter', e)
 
-        return 'ok', 200 
+        return 'ok', 200
 

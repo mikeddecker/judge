@@ -132,6 +132,10 @@ export const deleteSkill = async (videoId, start, end) => {
     });
 };
 
+export const getSkillCount = async () => {
+  return getApplicationJson('/skill/count')
+}
+
 export const getSkillLevel = async (skillinfo, prevSkillinfo, prevSkillname, frameStart, videoId) => {
   try {
     const response = await api.post(`/skilllevel`, { 

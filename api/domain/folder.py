@@ -27,11 +27,9 @@ class Folder:
         super().__setattr__(name, value)
 
     def __setId(self, id: int):
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         if hasattr(self, 'Id') and self.Id is not None:
             raise AttributeError(f"Cannot modify Id once it is set")
-        if id is None or id <= 0:
-            raise ValueError("Id must be strict positive")
 
         object.__setattr__(self, 'Id', id)
 
@@ -47,7 +45,7 @@ class Folder:
         ValueHelper.check_raise_string_only_abc123(name)
 
         object.__setattr__(self, 'Name', name)
-    
+
     def __setParent(self, parent: 'Folder'):
         if hasattr(self, 'Parent') and self.Parent is not None:
             raise AttributeError(f"Cannot modify Parent once it is set")
@@ -62,7 +60,7 @@ class Folder:
 
         # Set the Parent attribute, avoiding recursion by using object.__setattr__.
         object.__setattr__(self, 'Parent', parent)
-        
+
     def get_relative_path(self):
         if self.Parent:
             return os.path.join(self.Parent.get_relative_path(), self.Name)
@@ -70,14 +68,14 @@ class Folder:
     
     def to_dict(self):
         return {
-            "Id" : self.Id,
+            "Id" : self.Id.hex(),
             "Name" : self.Name,
             "Parent" : None if not self.Parent else self.Parent.to_dict()
         }
-    
+
     def __str__(self):
         return str(self.to_dict())
-    
+
     def __repr__(self):
         return str(self.to_dict())
 
@@ -91,12 +89,12 @@ class Folder:
         # Check if both Ids are set
         if hasattr(self, "Id") and hasattr(other, "Id"):
             return (
-                self.Name == other.Name and 
-                self.Parent == other.Parent and 
+                self.Name == other.Name and
+                self.Parent == other.Parent and
                 self.Id == other.Id
             )
         elif not hasattr(self, "Id") and not hasattr(other, "Id"):
             return (
-                self.Name == other.Name and 
+                self.Name == other.Name and
                 self.Parent == other.Parent
             )

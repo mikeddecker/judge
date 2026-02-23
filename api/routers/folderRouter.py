@@ -12,7 +12,7 @@ class FolderRouter(Resource):
     def get(self, folderId: int=None):
         if folderId:
             try:
-                ValueHelper.check_raise_id(folderId)
+                ValueHelper.check_raise_uuid(folderId)
                 if not self.folderService.exists_in_database(id=folderId):
                     return f"FolderId {folderId} does not exist", 404
             except ValueError as ve:

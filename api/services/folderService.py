@@ -22,7 +22,7 @@ class FolderService:
         if not os.path.exists(ENVS.DIRS.VIDEOS):
             raise NotADirectoryError(f"StorageFolder {ENVS.DIRS.VIDEOS} does not exist")
         self.StorageFolder = ENVS.DIRS.VIDEOS
-        
+
     def __setattr__(self, name, value):
         if hasattr(self, name):
             # Prevent setting immutable attributes after it is set in __init__
@@ -51,7 +51,7 @@ class FolderService:
         if not self.exists_path_on_drive(name=name, parent=parent):
             raise ValueError(f"folder {name} not found in {self.StorageFolder if not parent else os.path.join(self.StorageFolder, parent.get_relative_path())}")
         return self.FolderRepo.add(name=name, parent=parent)
-    
+
     def create(self, name, parent: Folder = None) -> Folder:
         """
         Effectively creates the folder on the drive & add in database
@@ -88,7 +88,7 @@ class FolderService:
             ValueError error when id or name are empty or smaller then 0
         """
         if id:
-            ValueHelper.check_raise_id(id)
+            ValueHelper.check_raise_uuid(id)
             return self.FolderRepo.exists(id)
         else:
             ValueHelper.check_raise_string_only_abc123(name)
@@ -106,7 +106,7 @@ class FolderService:
         Returns:
             folder with given id (int) along with its parents
         """
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         return self.FolderRepo.get(id)
     
     def get_by_name(self, name: str, parent: Folder) -> Folder:
@@ -126,9 +126,9 @@ class FolderService:
         Gets all children from the folder with the current id
         Return in list, as otherwise all folders will be fetched, because everything exists in main folder.
         """
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         return self.FolderRepo.get_children(id)
-    
+
     def get_root_folders(self) -> List[Folder]:
         """
         Gets the folders located in the root of the DIR_VIDEOS
@@ -136,14 +136,14 @@ class FolderService:
         return self.FolderRepo.get_root_folders()
 
     def rename(self, id: int, new_name: str):
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         ValueHelper.check_raise_string(new_name)
         if not self.exists_in_database(id=id):
             raise LookupError(f"Folder {id} not found in db")
         self.FolderRepo.rename(id=id, new_name=new_name)
 
     def delete(self, id: int):
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         if not self.exists_in_database(id=id):
             raise LookupError(f"Folder {id} not found in db")
         f = self.get(id=id)

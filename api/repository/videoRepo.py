@@ -27,7 +27,7 @@ class VideoRepository:
             srcinfo:str=None, tags: list[Tag] = []
         ) -> VideoInfo:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
-        ValueHelper.check_raise_id(frameLength)
+        ValueHelper.check_raise_uuid(frameLength)
         if width <= 0 or height <= 0 or fps <= 0:
             raise ValueError(f"Width, height, fps must be > 0", width, height, fps)
         if folder is None or not isinstance(folder, Folder):
@@ -56,16 +56,16 @@ class VideoRepository:
 
         self.db.session.commit()
         return MapToDomain.map_video(new_video)
-    
+
     def add_frameInfo(self, frameInfo: FrameInfo, video: VideoInfo):
         ValueHelper.check_raise_frameNr(frameInfo.FrameNr)
-        ValueHelper.check_raise_id(video.Id)
+        ValueHelper.check_raise_uuid(video.Id)
         frame_label_DB = MapToDB.map_frameInfo(video=video, frameInfo=frameInfo)
         self.db.session.add(frame_label_DB)
         self.db.session.commit()
 
     def add_tag(self, videoId: int, tag: Tag):
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         videoDB : VideoInfoDB = VideoInfoDB.query.get(videoId)
         tagDB : TagDB = TagDB.query.get(tag.Id)
         if tagDB not in videoDB.tags:
@@ -74,9 +74,12 @@ class VideoRepository:
 
     def count(self) -> int:
         return self.db.session.query(VideoInfoDB).count()
-    
+
+    def count_skills(self) -> int:
+        return self.db.session.query(SkillDB).count()
+
     def exists(self, id: int) -> bool:
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         return self.db.session.query(VideoInfoDB).filter_by(id=id).scalar() is not None
         
     def exists_by_name(self, name: str, folder: Folder) -> bool:
@@ -86,20 +89,20 @@ class VideoRepository:
         return self.db.session.query(VideoInfoDB).filter_by(name=name, folderId=folder.Id).scalar() is not None
     
     def exists_frameInfo(self, video: VideoInfo, frameInfo: FrameInfo):
-        ValueHelper.check_raise_id(video.Id)
+        ValueHelper.check_raise_uuid(video.Id)
         ValueHelper.check_raise_frameNr(frameInfo.FrameNr)
         return self.db.session.query(FrameLabel).filter_by(
-            videoId=video.Id, 
+            videoId=video.Id,
             frameNr=frameInfo.FrameNr,
             x=frameInfo.X,
             y=frameInfo.Y,
             width=frameInfo.Width,
             height=frameInfo.Height,
         ).first() is not None
-  
+
     def delete(self, id: int):
         # TODO : check if no frames or skills are connected
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         videoInfoDB = self.db.session.get(VideoInfoDB, ident=id)
         self.db.session.delete(videoInfoDB)
         self.db.session.commit()
@@ -116,13 +119,13 @@ class VideoRepository:
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"folder must be provided")
         return self.db.session.query(VideoInfoDB).filter_by(name=name, folderId=folder.Id).one().id
-    
+
     def get_videos(self, folderId: int) -> List[VideoInfo]:
         """Return videos in the given folder"""
-        ValueHelper.check_raise_id(folderId)
+        ValueHelper.check_raise_uuid(folderId)
         videosDB = self.db.session.query(VideoInfoDB).filter_by(folderId=folderId).all()
         return [MapToDomain.map_video(v) for v in videosDB]
-    
+
     def has_frames(self, videoId):
         return self.db.session.query(FrameLabel).filter_by(videoId=videoId).count() > 0
 
@@ -131,7 +134,7 @@ class VideoRepository:
 
     def remove_frameInfo(self, frameNr: int, videoId: int, frameinfo: FrameInfo):
         ValueHelper.check_raise_frameNr(frameNr)
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         frameLabelDBs = self.db.session.query(FrameLabel).filter_by(frameNr=frameNr, videoId=videoId).all()
         def calculate_distance(label1, label2):
             return math.sqrt((label1.x - label2.X) ** 2 + (label1.y - label2.Y) ** 2)
@@ -139,10 +142,10 @@ class VideoRepository:
         closest_label = min(frameLabelDBs, key=lambda label: calculate_distance(label, frameinfo))
         self.db.session.delete(closest_label)
         self.db.session.commit()
-    
+
     def update_frameInfo(self, frameInfo: FrameInfo, video: VideoInfo):
         ValueHelper.check_raise_frameNr(frameInfo.FrameNr)
-        ValueHelper.check_raise_id(video.Id)
+        ValueHelper.check_raise_uuid(video.Id)
         frame_label_DB = self.db.session.query(FrameLabel).filter_by(frameNr=frameInfo.FrameNr, videoId=video.Id)
         frame_label_DB.x = frameInfo.X
         frame_label_DB.y = frameInfo.Y
@@ -212,12 +215,12 @@ class VideoRepository:
     ##########
     def add_skill(self, videoId: int, skillinfo: dict, start: int, end: int) -> int:
         """Let the service be responsible for good values in the dicts"""
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         ValueHelper.check_raise_frameNr(start)
         ValueHelper.check_raise_frameNr(end)
 
         # Likewise checks can be done, to check whether values of layers exist
-        assert self.db.session.query(VideoInfoDB).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"        
+        assert self.db.session.query(VideoInfoDB).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"
 
         skill = SkillDB(
             videoId = videoId,
@@ -229,17 +232,17 @@ class VideoRepository:
         self.db.session.add(skill)
         self.db.session.commit()
         return skill.id
-    
+
     def update_skill(self, id: int, videoId: int, skillinfo: dict, start: int, end: int) -> int:
         """Let the service be responsible for good values in the dicts"""
-        ValueHelper.check_raise_id(id)
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(id)
+        ValueHelper.check_raise_uuid(videoId)
         ValueHelper.check_raise_frameNr(start)
         ValueHelper.check_raise_frameNr(end)
 
         skill : SkillDB = self.db.session.query(SkillDB).filter_by(id=id).first()
         assert skill is not None, f"Skill {id} does not exist"
-        assert self.db.session.query(VideoInfoDB).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"        
+        assert self.db.session.query(VideoInfoDB).filter_by(id=videoId).count() > 0, f"VideoId {videoId} does not exist"
 
         skill.frameStart = start
         skill.frameEnd = end
@@ -247,14 +250,14 @@ class VideoRepository:
         skill.updated = datetime.now()
 
         self.db.session.commit()
-    
+
     def get_skills(self, videoId: int) -> List[Skill]:
         skillsDB = self.db.session.query(SkillDB).filter_by(videoId=videoId).all()
         return [MapToDomain.map_skill(s) for s in skillsDB]
-    
+
     def get_previous_skill(self, videoId: int, frameEnd: int) -> tuple[dict, str, int]:
         """Returns prev_skillinfo, prev_skillname, base_level"""
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         ValueHelper.check_raise_frameNr(frameEnd)
         DDskillDB = self.db.session.query(SkillDB).filter(SkillDB.videoId==videoId).filter(SkillDB.frameEnd <= frameEnd).order_by(desc(SkillDB.frameEnd)).first()
         if DDskillDB is None:
@@ -263,7 +266,7 @@ class VideoRepository:
         return MapToDomain.map_skill(DDskillDB), skillDB.name, 0 if skillDB.level_dd == "/" else int(str.split(skillDB.level_dd, '-')[-1])
 
     def remove_skill(self, videoId, start: int, end: int):
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         ValueHelper.check_raise_frameNr(start)
         ValueHelper.check_raise_frameNr(end)
 
@@ -272,7 +275,7 @@ class VideoRepository:
         self.db.session.commit()
 
     def update_skills_completed(self, videoId: int, completed: bool):
-        ValueHelper.check_raise_id(videoId)
+        ValueHelper.check_raise_uuid(videoId)
         if not isinstance(completed, bool):
             raise ValueError(f"Completed must be a boolean {completed}")
         videoDB = self.db.session.query(VideoInfoDB).filter_by(id=videoId).first()

@@ -17,6 +17,8 @@ class AccountRegisterRouter(Resource):
             password=data.get('password')
         )
 
+        print(result)
+
         status_code = 201 if result['success'] else 400
         return result, status_code
 

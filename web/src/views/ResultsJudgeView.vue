@@ -1,5 +1,5 @@
 <template>
-  <h2>Judge scores</h2>
+  <h1>Judge scores</h1>
   <pre>{{ results }}</pre>
   <!-- <DataTable :value="resultsWithoutTotal">
     <Column sortable field="videoId" header="videoId"></Column>

@@ -9,11 +9,11 @@ from helpers.ValueHelper import ValueHelper
 
 class VideoInfo:
     PROPERTIES = [
-        "Id", 
-        "Name", 
+        "Id",
+        "Name",
         "Duration",
-        "Folder", 
-        "Frames", 
+        "Folder",
+        "Frames",
         "FPS",
         "FrameLength",
         "Skills",
@@ -24,7 +24,7 @@ class VideoInfo:
         "TeamBoxes",
         "Tags",
     ]
-    # Frame does not 
+    # Frame does not
     Frames: List[FrameInfo] # Key = frameId, value is Frame
     Skills: Set[Skill] = set()
 
@@ -77,11 +77,10 @@ class VideoInfo:
         super().__setattr__(name, value)
 
     def __setId(self, id: int):
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         if hasattr(self, 'Id') and self.Id is not None:
             raise AttributeError(f"Cannot modify Id once it is set")
-        if id is None or id <= 0:
-            raise ValueError("Id must be strict positive")
+        assert id is not None, "Id can not be None"
         object.__setattr__(self, 'Id', id)
 
     def __setName(self, name : str):
@@ -95,7 +94,7 @@ class VideoInfo:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
 
         object.__setattr__(self, 'Name', name)
-    
+
     def __setFolder(self, folder: Folder):
         if hasattr(self, 'Folder') and self.Folder is not None:
             raise AttributeError(f"Cannot modify Folder once it is set")
@@ -105,15 +104,15 @@ class VideoInfo:
             raise ValueError(f"folder is not a {Folder}, got instead {type(folder)}")
         # Set the Folder attribute, avoiding recursion by using object.__setattr__.
         object.__setattr__(self, 'Folder', folder)
-    
+
     def __setFrameLength(self, framelength: int):
-        ValueHelper.check_raise_id(framelength)
+        ValueHelper.check_raise_uuid(framelength)
         if hasattr(self, 'FrameLength') and self.FrameLength is not None:
             raise AttributeError(f"Cannot modify FrameLength once it is set")
         if framelength is None or framelength <= 0:
             raise ValueError("FrameLength must be strict positive")
         object.__setattr__(self, 'FrameLength', framelength)
-    
+
     def __setFPS(self, fps: int):
         if hasattr(self, 'FPS') and self.FPS is not None:
             raise AttributeError(f"Cannot modify FPS once it is set")
@@ -130,16 +129,16 @@ class VideoInfo:
 
     def __setCompletedSkillLabels(self, completed: bool):
         if not isinstance(completed, bool):
-            raise ValueError(f"Completed is not a bool, {completed}")        
+            raise ValueError(f"Completed is not a bool, {completed}")
         object.__setattr__(self, 'Completed_Skill_Labels', completed)
 
     def get_image_path(self):
         # TODO
         return "/home/miked/Pictures/Screenshots/dd3.png"
-    
+
     def get_relative_video_path(self):
         return os.path.join(self.Folder.get_relative_path(), self.Name)
-    
+
     def get_duration(self):
         return self.FrameLength / self.FPS
 
@@ -149,7 +148,7 @@ class VideoInfo:
     def has_frame_been_labeled(self, label: FrameInfo):
         # ValueHelper.check_raise_frameNr(frameNr)
         return label in self.Frames
-    
+
     def add_framelabel(self, label: FrameInfo):
         if label is None or not isinstance(label, FrameInfo):
             raise ValueError(f"Label is not a {FrameInfo} got {label}")
@@ -165,7 +164,7 @@ class VideoInfo:
         if not self.has_frame_been_labeled(label):
             raise ValueError(f"Can not remove a label that is not labeled, got frameNr = {frameNr}")
         self.Frames.remove(label)
-    
+
     def contains_frame_with_number(self, frameNr: int) -> bool:
         for f in self.Frames:
             if f.FrameNr == frameNr:
@@ -196,13 +195,13 @@ class VideoInfo:
             if not (start >= s.FrameEnd or end <= s.FrameStart) and s.Id != skillId:
                 return True
         return False
-    
+
     def remove_skill(self, skill):
         self.Skills.remove(skill)
 
     #########
     # Other #
-    #########    
+    #########
 
     # TODO : update when videoinfo metadata is extended
     def __eq__(self, value : object):
@@ -214,8 +213,8 @@ class VideoInfo:
         
         # Check if both Ids are set
         return (
-            self.Name == other.Name and 
-            self.Folder == other.Folder and 
+            self.Name == other.Name and
+            self.Folder == other.Folder and
             self.Id == other.Id and
             self.FrameLength == other.FrameLength and
             len(self.Frames) == len(other.Frames)
@@ -230,8 +229,8 @@ class VideoInfo:
 
     def to_dict(self, include_frames=True):
         return {
-            "Id" : self.Id,
-            "Name" : self.Name, 
+            "Id" : self.Id.hex(),
+            "Name" : self.Name,
             "Folder" : self.Folder.to_dict(),
             "FrameLength" : self.FrameLength,
             "Frames" : [f.to_dict() for f in self.Frames] if include_frames else [], # TODO : lazy load frames

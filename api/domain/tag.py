@@ -20,7 +20,7 @@ class Tag:
 
     def to_dict(self):
         return {
-            'Id' : self.Id,
+            'Id' : self.Id.hex(),
             'Name' : self.Name,
             'TagGroup': self.TagGroup.to_dict() if self.TagGroup else None,
             'Keywords': self.Keywords,

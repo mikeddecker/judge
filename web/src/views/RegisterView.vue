@@ -149,7 +149,6 @@ const handleRegister = async () => {
       return
     }
 
-    console.log('huh', passwordMinLength, form.value.password.length < passwordMinLength)
     if (form.value.password.length < process.env.PASSWORD_MIN_LENGTH) {
       error.value = `Password must be at least ${passwordMinLength} characters`
       return

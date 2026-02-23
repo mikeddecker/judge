@@ -22,11 +22,10 @@ class SkillType:
         super().__setattr__(name, value)
 
     def __setId(self, id: int):
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         if hasattr(self, 'Id') and self.Id is not None:
             raise AttributeError(f"Cannot modify Id once it is set")
-        if id is None or id <= 0:
-            raise ValueError("Id must be strict positive")
+        assert id is not None, "Id can not be None"
         self.Id = id
 
     def __setName(self, name:str):

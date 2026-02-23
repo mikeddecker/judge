@@ -13,7 +13,7 @@ class Skill:
             self,
             id: int,
             skillinfo: dict,
-            start: int, 
+            start: int,
             end: int
         ):
         """Either provide dotted name or parts (rotations, skilltype, onehanded, turners...)"""
@@ -21,7 +21,7 @@ class Skill:
         self.__setSkillinfo(skillinfo)
         self.__setFrameStart(start)
         self.__setFrameEnd(end)
-            
+
     def __setattr__(self, name, value):
         if hasattr(self, name):
             if name == 'Id':
@@ -34,11 +34,9 @@ class Skill:
         super().__setattr__(name, value)
 
     def __setId(self, id: int):
-        ValueHelper.check_raise_id(id)
+        ValueHelper.check_raise_uuid(id)
         if hasattr(self, 'Id') and self.Id is not None:
             raise AttributeError(f"Cannot modify Id once it is set")
-        if id is None or id <= 0:
-            raise ValueError("Id must be strict positive")
         object.__setattr__(self, 'Id', id)
 
     def __setSkillinfo(self, info: dict):
@@ -63,13 +61,13 @@ class Skill:
         if not end or not isinstance(end, int) or end < 0:
             raise ValueError("Starting frame must be an integer bigger than 0")
         self.FrameEnd = end
-    
+
     def __str__(self):
         return str(self.to_dict())
-    
+
     def to_dict(self):
         return {
-            'Id' : self.Id,
+            'Id' : self.Id.hex(),
             'Skillinfo' : self.SkillInfo,
             'FrameStart' : self.FrameStart,
             'FrameEnd' : self.FrameEnd,

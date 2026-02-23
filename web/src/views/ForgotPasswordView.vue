@@ -164,7 +164,7 @@ const handleResetPassword = async () => {
       return
     }
 
-    min_password_length = process.env.PASSWORD_MIN_LENGTH || 12
+    let min_password_length = process.env.PASSWORD_MIN_LENGTH || 12
     if (form.value.newPassword.length < min_password_length) {
       error.value = `Password must be at least ${min_password_length} characters`
       return

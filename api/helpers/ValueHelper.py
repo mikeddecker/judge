@@ -3,14 +3,13 @@ import re
 
 # TODO : find reason why I put this here
 MAX_FRAMENR = 65535
+UUID_LENGTH = 16
 
 class ValueHelper:
     @staticmethod
-    def check_raise_id(id: int):
-        if not isinstance(id, int):
-            raise ValueError(f"Id must be of type {int}, got {id}")
-        if id <= 0:
-            raise ValueError(f"Id must be strict positive integer, got {id}")
+    def check_raise_uuid(uuid: int):
+        assert isinstance(uuid, bytes), f"Id must be of type {bytes}, got {uuid}"
+        assert len(uuid) == UUID_LENGTH, f"Uuid must be of length {UUID_LENGTH}, got {len(uuid)}"
 
     @staticmethod    
     def check_raise_frameNr(frameNr: int):

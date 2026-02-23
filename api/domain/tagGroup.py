@@ -11,7 +11,7 @@ class TagGroup:
     
     def to_dict(self):
         return {
-            'Id' : self.Id,
+            'Id' : self.Id.hex(),
             'Name' : self.Name,
             'Tags': [t.to_dict() for t in self.Tags]
         }

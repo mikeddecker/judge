@@ -13,10 +13,10 @@ class VideoRouter(Resource):
         self.folderService = FolderService()
         self.videoService = VideoService()
         super().__init__(**kwargs)
-    
+
     def get(self, videoId: int):
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
             return ve, 404
 
@@ -30,13 +30,13 @@ class VideoRouterCropped(Resource):
         self.folderService = FolderService()
         self.videoService = VideoService()
         super().__init__(**kwargs)
-    
+
     def get(self, videoId: int):
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
             return ve, 404
-        
+
         video_path = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_cropped.mp4")
         if os.path.exists(video_path):
             with open(video_path, 'rb') as f:
@@ -50,51 +50,51 @@ class VideoInfoRouter(Resource):
         self.folderService = FolderService()
         self.videoService = VideoService()
         super().__init__(**kwargs)
-    
+
     def get(self, videoId: int):
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
             return ve, 404
 
         videoinfo = self.videoService.get(videoId)
         return videoinfo.to_dict(), 200
-    
+
 class VideoPredictionRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
         self.videoService = VideoService()
         super().__init__(**kwargs)
-    
+
     def get(self, videoId: int):
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
             return ve, 404
-        
+
         return self.videoService.getVideoPredictions(videoId), 200
 
 class VideoPredictionRouter_HasLocalizePredictions(Resource):
     def __init__(self, **kwargs):
         self.videoService = VideoService()
         super().__init__(**kwargs)
-    
+
     def get(self, videoId: int):
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
             return ve, 404
-        
+
         return self.videoService.has_predicted_boxes(videoId), 200
 
 class VideoPredictionRouter_GetLocalizePredictions(Resource):
     def __init__(self, **kwargs):
         self.videoService = VideoService()
         super().__init__(**kwargs)
-    
+
     def get(self, videoId: int):
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
             return ve, 404
         
@@ -129,7 +129,7 @@ class VideoImageRouter(Resource):
         cap = cv2.VideoCapture(videopath)
         if not cap.isOpened():
             return "Cannot open camera", 500
-        
+
         cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
         res, frame = cap.read()
         filename = 'TODO' # TODO

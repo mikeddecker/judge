@@ -23,7 +23,7 @@ class FrameRouter(Resource):
         jumperVisible = data.get('jumperVisible', True)  # Default to True if not provided
         labeltype = data.get('labeltype')
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
             ValueHelper.check_raise_frameNr(frameNr)
             ValueHelper.check_raise_float_between_0_and_1_inclusive(x)
             ValueHelper.check_raise_float_between_0_and_1_inclusive(y)
@@ -36,12 +36,12 @@ class FrameRouter(Resource):
         
         video = self.videoService.set_frameInfo(frameInfo=frameinfo, video=video)
         return video.to_dict(), 200
-    
+
     def delete(self, videoId: int, frameNr: int):
         data = request.get_json()
         frameinfo = data.get('frameinfo')
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
             ValueHelper.check_raise_frameNr(frameNr)
         except ValueError as ve:
             return str(ve), 404
@@ -59,4 +59,3 @@ class FrameLabelTypeRouter(Resource):
 
     def get(self):
         return self.videoService.get_frame_label_types(), 200
-    

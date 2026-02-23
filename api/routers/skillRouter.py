@@ -15,41 +15,41 @@ class SkillLabelingCompletedRouter(Resource):
         data = request.get_json()
         completed = data.get('completed')
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
             video = self.videoService.get(videoId)
             self.videoService.update_skills_completed(video=video, completed=completed)
-            return "done" , 200        
+            return "done" , 200
         except ValueError as ve:
             return str(ve), 404
-        
+
 class SkillRouter(Resource):
     def __init__(self, **kwargs):
         self.folderService = FolderService()
         self.videoService = VideoService()
         super().__init__(**kwargs)
-    
+
     def get(self, videoId: int):
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
             return str(ve), 404
         return [s.to_dict() for s in self.videoService.get_skills(videoId)]
-    
+
     def post(self, videoId: int):
         data = request.get_json()
-        
+
         # Extract the required fields from the body
         # frameNr = data.get('frameNr')
         skillinfo = data.get('Skillinfo')
         frameStart = data.get('FrameStart')
         frameEnd = data.get('FrameEnd')
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
             ValueHelper.check_raise_frameNr(frameStart)
             ValueHelper.check_raise_frameNr(frameEnd)
         except ValueError as ve:
             return str(ve), 404
-        
+
         video = self.videoService.get(videoId)
         skill = self.videoService.add_skill(
             videoinfo=video,
@@ -60,21 +60,21 @@ class SkillRouter(Resource):
         video.add_skill(skill)
 
         return video.to_dict(), 200
-    
+
     def put(self, videoId: int):
         data = request.get_json()
-        
+
         skillId = data.get("Id")
         skillinfo = data.get('Skillinfo')
         frameStart = data.get('FrameStart')
         frameEnd = data.get('FrameEnd')
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
             ValueHelper.check_raise_frameNr(frameStart)
             ValueHelper.check_raise_frameNr(frameEnd)
         except ValueError as ve:
             return str(ve), 404
-        
+
         video = self.videoService.get(videoId)
         return self.videoService.update_skill(
             id=skillId,
@@ -83,14 +83,14 @@ class SkillRouter(Resource):
             frameEnd=frameEnd,
             skillinfo=skillinfo
         ).to_dict(), 200
-    
+
     def delete(self, videoId: int):
         data = request.get_json()
         start = data.get('FrameStart')
         end = data.get('FrameEnd')
 
         try:
-            ValueHelper.check_raise_id(videoId)
+            ValueHelper.check_raise_uuid(videoId)
             ValueHelper.check_raise_frameNr(start)
             ValueHelper.check_raise_frameNr(end)
         except ValueError as ve:
@@ -101,6 +101,15 @@ class SkillRouter(Resource):
             frameStart=start,
             frameEnd=end,
         ).to_dict(), 200
+
+class SkillCount(Resource):
+    def __init__(self, **kwargs):
+        self.folderService = FolderService()
+        self.videoService = VideoService()
+        super().__init__(**kwargs)
+
+    def get(self) -> int:
+        return self.videoService.get_skill_count()
 
 class SkillLevel(Resource):
     def __init__(self, **kwargs):

@@ -101,7 +101,7 @@ class StorageService:
 
         for content in folder_content:
             contentPath = os.path.join(currentFolderPath, content)
-            
+
             # Rename files with spaces
             if content.__contains__(" ") or content.__contains__("_"):
                 old_name = contentPath
@@ -109,7 +109,7 @@ class StorageService:
                 content = content.replace(" ", "-").replace("_", "-")
                 os.rename(old_name, contentPath)
                 print(f"{Fore.MAGENTA}File or folder contains spaces and underscores, renamed with (-) dashes:{Style.RESET_ALL}", content)
-            
+
             # Temp save dirs, to provide better output
             # Otherwise videos, and folders interlap with each other
             if os.path.isdir(contentPath):
@@ -132,14 +132,14 @@ class StorageService:
                         print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content} {Fore.GREEN}NEW{Style.RESET_ALL}")
                         info = self.__enrich_video_data(name=content, folder=parent, tags=tags)
 
-                        inserted_video = self.VideoService.add(name=content, folder=parent, 
+                        inserted_video = self.VideoService.add(name=content, folder=parent,
                             frameLength=info["frameLength"],
                             width=info["width"],
                             height=info["height"],
                             fps=info["fps"],
                             tags=info["tags"]
                         )
-                        
+
                         # Bookkeeping
                         if parent.Id in new_videos.keys():
                             new_videos[parent.Id].append(content)
@@ -173,7 +173,7 @@ class StorageService:
             else:
                 folder = self.FolderService.add_in_database(name=child["name"], parent=child["parent"])
                 print(Fore.GREEN, "NEW", Style.RESET_ALL)
-            
+
             subFolderTags = folderTags.union(self.__filename_to_tags(filename=child["name"], tags=tags))
 
             new_vids, orph = self.__discover_folder(currentFolder=child["name"], parent=folder, deleteOrphans=deleteOrphans, folderTags=subFolderTags)
@@ -225,7 +225,7 @@ class StorageService:
         cap = cv2.VideoCapture(videopath)
         if not cap.isOpened():
             raise IOError("Cannot open camera")
-        
+
         # Create preview image
         cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
         _, frame = cap.read()
@@ -241,7 +241,7 @@ class StorageService:
 
     def download_video(self, name: str, ytid: str, folderId: int):
         ValueHelper.check_raise_string_only_abc123(name)
-        ValueHelper.check_raise_id(folderId)
+        ValueHelper.check_raise_uuid(folderId)
         folder = self.FolderService.get(folderId)
         if self.VideoService.is_already_downloaded(ytid):
             raise LookupError(f"Video already downloaded ({ytid})")
@@ -281,11 +281,11 @@ class StorageService:
             print(str(e))
             raise LookupError(f"Something went wrong with the download\n{e}")
         return 'mp4'
-       
+
     def __process_downloaded_video(self, name: str, folder: Folder, ytid:str):
         print(f"Processing downloaded:", name)
         info = self.__enrich_video_data(name, folder)
-        created_video_info = self.VideoService.add(name=name, folder=folder, 
+        created_video_info = self.VideoService.add(name=name, folder=folder,
                                               frameLength=info["frameLength"],
                                               width=info["width"],
                                               height=info["height"],

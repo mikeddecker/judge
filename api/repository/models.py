@@ -24,7 +24,7 @@ class DomainObject(db.Model):
     updatedAt = db.Column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
 
     def uuid_str(self):
-        return str(uuid.UUID(bytes=self.id)) if self.id else None
+        return uuid.UUID(bytes=self.id).hex if self.id else None
 
     # ---- public API (do NOT override) ----
     # First DomainObject.to_dict() is called
@@ -33,8 +33,7 @@ class DomainObject(db.Model):
         data = self._to_dict() or {}
 
         data.update({
-            # "id": self.uuid_str(),
-            'id': self.id,
+            'id': self.uuid_str(),
             'createdAt': self.createdAt.isoformat() if self.createdAt else None,
             'updatedAt': self.updatedAt.isoformat() if self.updatedAt else None,
         })
