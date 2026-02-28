@@ -3,8 +3,7 @@
     <Message v-if="!displayStats" severity="warn" variant="outlined" icon="pi pi-microchip-ai">
         Label a skill first to see skill statistics
     </Message>
-
-    <StatsRecognition v-if="stats & displayStats" :stats="stats"/>
+    <StatsRecognition v-if="stats && displayStats" :stats="stats"/>
 </template>
 
 <script setup>

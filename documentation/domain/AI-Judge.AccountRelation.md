@@ -3,6 +3,7 @@
 - Friend
 - Member of
 - Collaboration
+- Representative
 
 # Inheritable roles
 - Can access videos of

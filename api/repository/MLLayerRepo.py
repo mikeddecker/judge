@@ -91,13 +91,12 @@ class MLLayerRepository:
         
         return {compositionName: MapToDomain.map_layercomposition(compositionValues) for compositionName, compositionValues in compositions.items()}
 
-    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int, name: str | None) -> dict[str, LayerComposition]:
+    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int) -> dict[str, LayerComposition]:
         """Return all layer compositions"""
         newLayerCompositionDB = LayerCompositionDB(
             compositionName=compositionName,
             stage=stage,
             layerId=layerId,
-            name=name
         )
 
         self.db.session.add(newLayerCompositionDB)

@@ -3,6 +3,7 @@ from repository.db import db
 from sqlalchemy import CheckConstraint
 from sqlalchemy.dialects.mysql import SMALLINT, JSON
 from sqlalchemy.dialects.mysql import BINARY
+from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped
 from datetime import datetime
@@ -14,11 +15,27 @@ import uuid
 def generate_uuid():
     return uuid.uuid4().bytes  # 16-byte binary
 
+class UUIDType(TypeDecorator):
+    impl = BINARY(16)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if isinstance(value, uuid.UUID):
+            return value.bytes
+        if isinstance(value, str):
+            return uuid.UUID(value).bytes
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return uuid.UUID(bytes=value)
+        return value
+
 class DomainObject(db.Model):
     # Abstract does not create a table
     __abstract__ = True
 
-    id = db.Column(BINARY(16), primary_key=True, default=generate_uuid)
+    id = db.Column(UUIDType, primary_key=True, default=generate_uuid)
 
     createdAt = db.Column(db.DateTime, nullable=False, default=datetime.now)
     updatedAt = db.Column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
@@ -71,7 +88,7 @@ class Account(DomainObject):
 class Folder(DomainObject):
     __tablename__ = 'Folders'
     name = db.Column(db.String(127), nullable=False)
-    parentId = db.Column(BINARY(16), db.ForeignKey('Folders.id', ondelete='CASCADE'), nullable=True)
+    parentId = db.Column(UUIDType, db.ForeignKey('Folders.id', ondelete='CASCADE'), nullable=True)
     parent = db.relationship('Folder', remote_side='Folder.id', backref='children', lazy='joined')
     videos = db.relationship('Video', backref='folder', lazy='dynamic') # Loaded lazily, so videoIDs are accecible, but full fetch only when explicitly asked
 
@@ -102,24 +119,24 @@ class Tag(DomainObject):
     name = db.Column(db.String(127), nullable=False)
     keywords = db.Column(db.String(511), nullable=True)
 
-    tagGroupId = db.Column(BINARY(16), db.ForeignKey('TagGroups.id'), nullable=True)
+    tagGroupId = db.Column(UUIDType, db.ForeignKey('TagGroups.id'), nullable=True)
 
 class TagGroup(DomainObject):
     __tablename__ = 'TagGroups'
     name = db.Column(db.String(127), nullable=False, unique=True)
-    parentId = db.Column(BINARY(16), db.ForeignKey('TagGroups.id', ondelete='CASCADE'), nullable=True)
+    parentId = db.Column(UUIDType, db.ForeignKey('TagGroups.id', ondelete='CASCADE'), nullable=True)
     parent = db.relationship('TagGroup', remote_side='TagGroup.id', backref='children', lazy='joined')
     tags = db.relationship('Tag', backref='group', lazy=True)
 
 # Association table for Video <-> Tag (Many-to-Many)
 video_tag = db.Table('video_tag',
-    db.Column('videoId', BINARY(16), db.ForeignKey('Videos.id', ondelete='CASCADE'), primary_key=True),
-    db.Column('tagId', BINARY(16), db.ForeignKey('Tags.id', ondelete='CASCADE'), primary_key=True)
+    db.Column('videoId', UUIDType, db.ForeignKey('Videos.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('tagId', UUIDType, db.ForeignKey('Tags.id', ondelete='CASCADE'), primary_key=True)
 )
 
 class Video(DomainObject):
     __tablename__ = 'Videos'
-    folderId = db.Column(BINARY(16), db.ForeignKey('Folders.id', ondelete='CASCADE'), nullable=False)
+    folderId = db.Column(UUIDType, db.ForeignKey('Folders.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     frameLength = db.Column(db.Integer, nullable=False)
     duration = db.Column(db.Float, nullable=False)
@@ -133,7 +150,7 @@ class Video(DomainObject):
     source = db.Column(db.Integer, nullable=True)
     sourceInfo = db.Column(db.String(255), nullable=True)
     completed_skill_labels = db.Column(db.Boolean, nullable=False, default=False)
-    competition = db.Column(BINARY(16), db.ForeignKey('CompetitionInfo.id', ondelete='CASCADE'))
+    competition = db.Column(UUIDType, db.ForeignKey('CompetitionInfo.id', ondelete='CASCADE'))
     judgeDiffScore = db.Column(db.Float, nullable=True)
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
@@ -164,7 +181,7 @@ class FrameLabelType(db.Model):
 
 class FrameLabel(DomainObject):
     __tablename__ = 'FrameLabels'
-    videoId = db.Column(BINARY(16), db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=False)
+    videoId = db.Column(UUIDType, db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=False)
     frameNr = db.Column(SMALLINT(unsigned=True), nullable=False)
     x = db.Column(db.Float, nullable=False)
     y = db.Column(db.Float, nullable=False)
@@ -188,7 +205,7 @@ class FrameLabel(DomainObject):
 
 class TrainResultEpoch(DomainObject):
     __tablename__ = 'TrainResultsEpoch'
-    trainResultId = db.Column(BINARY(16), db.ForeignKey('TrainResults.id', ondelete='CASCADE'), nullable=False)
+    trainResultId = db.Column(UUIDType, db.ForeignKey('TrainResults.id', ondelete='CASCADE'), nullable=False)
     epoch = db.Column(SMALLINT(unsigned=True), nullable=False)
     validationResults = db.Column(MutableDict.as_mutable(JSON), nullable=False)
 
@@ -245,7 +262,7 @@ class TrainResult(DomainObject):
 
 class Skill(DomainObject):
     __tablename__ = 'Skills'
-    videoId = db.Column(BINARY(16), db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=False)
+    videoId = db.Column(UUIDType, db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=False)
     frameStart = db.Column(db.Integer, nullable=False)
     frameEnd = db.Column(db.Integer, nullable=False)
     skillinfo = db.Column(MutableDict.as_mutable(JSON), nullable=False)
@@ -294,7 +311,7 @@ class Layer(DomainObject):
 
 class LayerValue(DomainObject):
     __tablename__ = 'LayerValues'
-    layerId = db.Column(BINARY(16), db.ForeignKey('Layers.id', ondelete='CASCADE'), nullable=False)
+    layerId = db.Column(UUIDType, db.ForeignKey('Layers.id', ondelete='CASCADE'), nullable=False)
     name = db.Column(db.String(50), nullable=False)
 
     def to_dict(self):
@@ -307,7 +324,7 @@ class LayerComposition(DomainObject):
     __tablename__ = 'LayerComposition'
     compositionName = db.Column(db.String(50), nullable=False)
     stage = db.Column(db.Integer, CheckConstraint('stage >= -1'), nullable=True)
-    layerId = db.Column(BINARY(16), db.ForeignKey('Layers.id', ondelete='CASCADE'), nullable=False)
+    layerId = db.Column(UUIDType, db.ForeignKey('Layers.id', ondelete='CASCADE'), nullable=False)
     layer : Mapped[Layer] = db.relationship('Layer', backref='compositions', remote_side=[Layer.id],  lazy='joined')
     defaultValue = db.Column(db.String(15), nullable=True)
     focussed = db.Column(db.Boolean, nullable=False, default=True)

@@ -1,8 +1,10 @@
 from domain.folder import Folder
 from flask_sqlalchemy import SQLAlchemy
+from helpers.ValueHelper import ValueHelper
 from repository.models import Folder as FolderDB
 from repository.MapToDomain import MapToDomain
 from typing import List
+from uuid import UUID
 
 class FolderRepository:
     def __init__(self, db : SQLAlchemy):
@@ -17,10 +19,9 @@ class FolderRepository:
         self.db.session.commit()
         return MapToDomain.map_folder(new_folder)
     
-    def exists(self, id: int) -> bool:
-        if not isinstance(id, int) or id <= 0:
-            raise ValueError(f"Id must be a strictly positive integer, got {id}")
-        return self.db.session.query(FolderDB.id).filter_by(id=id).scalar() is not None
+    def exists(self, id: UUID) -> bool:
+        ValueHelper.check_raise_uuid(id)
+        return self.db.session.query(FolderDB.id).filter_by(id=id.bytes).scalar() is not None
     
     def exists_by_name(self, name: str, parent: Folder) -> bool:
         # Only when needed
@@ -31,7 +32,7 @@ class FolderRepository:
         else:
             return self.db.session.query(FolderDB).filter_by(name=name).scalar() is not None
         
-    def get(self, id: int) -> Folder:
+    def get(self, id: UUID) -> Folder:
         """
         Query the database and get the folder and all its parents (until its in the root folder, marked NULL in db)
 
@@ -51,13 +52,13 @@ class FolderRepository:
         """
         if not self.exists(id):
             raise LookupError(f"Folder {id} doesn't exist")
-        folder = self.db.session.get(FolderDB, ident=id)
+        folder = self.db.session.get(FolderDB, ident=id.bytes)
         return MapToDomain.map_folder(folder)
     
-    def get_children(self, id: int) -> List[Folder]:
+    def get_children(self, id: UUID) -> List[Folder]:
         if not self.exists(id):
             raise LookupError(f"Folder {id} doesn't exist")
-        childrenDB = self.db.session.query(FolderDB).filter_by(parentId=id).order_by(FolderDB.name).all()
+        childrenDB = self.db.session.query(FolderDB).filter_by(parentId=id.bytes).order_by(FolderDB.name).all()
         return [MapToDomain.map_folder(c) for c in childrenDB]
     
     def get_root_folders(self) -> List[Folder]:
@@ -76,16 +77,16 @@ class FolderRepository:
         """
         if not self.exists(id):
             raise LookupError(f"Folder {id} doesn't exist")
-        folderDB = self.db.session.get(FolderDB, ident=id)
+        folderDB = self.db.session.get(FolderDB, ident=id.bytes)
         self.db.session.delete(folderDB)
         self.db.session.commit()
         return True
 
-    def rename(self, id: int, new_name):
+    def rename(self, id: UUID, new_name):
         if not self.exists(id):
             raise LookupError(f"Folder {id} doesn't exist")
         
-        folder = FolderDB.query.get(id)
+        folder = FolderDB.query.get(id.bytes)
         folder.name = new_name
         self.db.session.commit()
         return MapToDomain.map_folder(folder)

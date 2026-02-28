@@ -1,8 +1,9 @@
+from config import LAYER_TYPES
 from flask import request
 from flask_restful import Resource
-from services.mlLayerService import MLLayerService
 from helpers.ValueHelper import ValueHelper
-from config import LAYER_TYPES
+from services.mlLayerService import MLLayerService
+from uuid import UUID
 
 class MLLayerRouter(Resource):
     def __init__(self, **kwargs):
@@ -16,6 +17,7 @@ class MLLayerRouter(Resource):
         data = request.get_json()
         name = data.get('name')
         layerId = data.get('layerId')
+        layerId = None if layerId is None else UUID(layerId)
         type = data.get('type')
 
         ValueHelper.check_raise_string_only_abc123space(name)
@@ -78,16 +80,13 @@ class MLLayerCompositionRouter(Resource):
 
         compositionName = data.get('compositionName')
         stage = data.get('stage')
-        layerId = data.get('layerId')
-        name = data.get('name')
+        layerId = UUID(data.get('layerId'))
 
         ValueHelper.check_raise_string_only_abc123(compositionName)
         ValueHelper.check_raise_uuid(layerId)
         if stage is not None:
             assert isinstance(stage, int), f"Stage must be an integer"
             assert stage >= -1, f"Stage must be an integer >= -1"
-        if name is not None:
-            ValueHelper.check_raise_string_only_abc123(name)
 
         assert self.mlLayerService.has_layer(layerId), f"LayerId {layerId} does not exist"
 
@@ -98,7 +97,6 @@ class MLLayerCompositionRouter(Resource):
                 compositionName=compositionName,
                 stage=stage,
                 layerId=layerId,
-                name=name
             ).items()
         }, 200
 

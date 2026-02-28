@@ -14,6 +14,7 @@ from repository.MapToDB import MapToDB
 from repository.models import Video as VideoInfoDB, Folder as FolderDB, FrameLabel, Skill as SkillDB, FrameLabelType, Tag as TagDB
 from sqlalchemy import desc, func, and_
 from typing import List
+from uuid import UUID
 
 class VideoRepository:
     def __init__(self, db : SQLAlchemy):
@@ -27,7 +28,7 @@ class VideoRepository:
             srcinfo:str=None, tags: list[Tag] = []
         ) -> VideoInfo:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
-        ValueHelper.check_raise_uuid(frameLength)
+        ValueHelper.check_raise_positive_integer(frameLength)
         if width <= 0 or height <= 0 or fps <= 0:
             raise ValueError(f"Width, height, fps must be > 0", width, height, fps)
         if folder is None or not isinstance(folder, Folder):
@@ -78,7 +79,7 @@ class VideoRepository:
     def count_skills(self) -> int:
         return self.db.session.query(SkillDB).count()
 
-    def exists(self, id: int) -> bool:
+    def exists(self, id: UUID) -> bool:
         ValueHelper.check_raise_uuid(id)
         return self.db.session.query(VideoInfoDB).filter_by(id=id).scalar() is not None
         
@@ -100,14 +101,14 @@ class VideoRepository:
             height=frameInfo.Height,
         ).first() is not None
 
-    def delete(self, id: int):
+    def delete(self, id: UUID):
         # TODO : check if no frames or skills are connected
         ValueHelper.check_raise_uuid(id)
         videoInfoDB = self.db.session.get(VideoInfoDB, ident=id)
         self.db.session.delete(videoInfoDB)
         self.db.session.commit()
 
-    def get(self, id: int) -> VideoInfo:
+    def get(self, id: UUID) -> VideoInfo:
         video: VideoInfo = MapToDomain.map_video(self.db.session.get(VideoInfoDB, ident=id))
         for skill in self.get_skills(videoId=id):
             video.add_skill(skill)
@@ -154,7 +155,7 @@ class VideoRepository:
         frame_label_DB.jumperVisible = frameInfo.JumperVisible
         self.db.session.commit()
 
-    def get_team_boxes(self, video_id: int = None):
+    def get_team_boxes(self, video_id: UUID = None):
         xmin = func.min(FrameLabel.x - FrameLabel.width / 2).label("xmin")
         xmax = func.max(FrameLabel.x + FrameLabel.width / 2).label("xmax")
         ymin = func.min(FrameLabel.y - FrameLabel.height / 2).label("ymin")
@@ -233,7 +234,7 @@ class VideoRepository:
         self.db.session.commit()
         return skill.id
 
-    def update_skill(self, id: int, videoId: int, skillinfo: dict, start: int, end: int) -> int:
+    def update_skill(self, id: UUID, videoId: int, skillinfo: dict, start: int, end: int) -> int:
         """Let the service be responsible for good values in the dicts"""
         ValueHelper.check_raise_uuid(id)
         ValueHelper.check_raise_uuid(videoId)

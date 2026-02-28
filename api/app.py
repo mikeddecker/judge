@@ -32,6 +32,8 @@ from routers.tagRouter import TagRouter, TagGroupRouter
 from routers.accountRouter import AccountRegisterRouter, AccountLoginRouter, AccountMFAVerifyRouter, AccountLogoutRouter, AccountMeRouter, AccountForgotPasswordRouter, AccountResetPasswordRouter, AccountEnableMFARouter
 from services.videoService import VideoService
 from typing import cast
+from werkzeug.routing import BaseConverter
+import uuid
 
 class CustomJSONProvider(DefaultJSONProvider):
     def default(self, obj):
@@ -41,7 +43,28 @@ class CustomJSONProvider(DefaultJSONProvider):
             return list(obj)
         if hasattr(obj, "to_dict"):
             return obj.to_dict()
+        if isinstance(obj, uuid.UUID):
+            return str(obj)
+
         return super().default(obj)
+
+    def encode(self, obj):
+        if isinstance(obj, dict):
+            obj = {str(k) if isinstance(k, uuid.UUID) else k: v for k, v in obj.items()}
+        return super().encode(obj)
+
+    def iterencode(self, obj, _one_shot=False):
+        if isinstance(obj, dict):
+            obj = {str(k) if isinstance(k, uuid.UUID) else k: v for k, v in obj.items()}
+        return super().iterencode(obj, _one_shot)
+
+class UUIDConverter(BaseConverter):
+    # To use <uuid:videoId> in the routes
+    def to_python(self, value):
+        return uuid.UUID(value)  # string -> UUID object on the way in
+
+    def to_url(self, value):
+        return str(value)  # UUID object -> string for url_for()
 
 MYSQL_ROOT_PASSWORD : str = cast(str, os.getenv("MYSQL_ROOT_PASSWORD"))
 MYSQL_HOST : str = cast(str, os.getenv("MYSQL_HOST"))
@@ -142,6 +165,7 @@ def create_app(config_object:str="config.Config"):
 
 app = create_app()
 app.json = CustomJSONProvider(app)
+app.url_map.converters['uuid'] = UUIDConverter
 CORS(app)
 api : Api = Api(app)
 
@@ -150,14 +174,14 @@ app.config['RESTFUL_JSON'] = {
 }
 
 # use api.add_resource to add the paths
-api.add_resource(FolderRouter, '/folders', '/folders/<int:folderId>')
-api.add_resource(VideoRouter, '/video/<int:videoId>')
-api.add_resource(VideoRouterCropped, '/video/<int:videoId>/cropped')
-api.add_resource(VideoInfoRouter, '/video/<int:videoId>/info')
-api.add_resource(VideoImageRouter, '/video/<int:videoId>/image')
-api.add_resource(VideoPredictionRouter, '/video/<int:videoId>/predictions')
-api.add_resource(VideoPredictionRouter_HasLocalizePredictions, '/video/<int:videoId>/predictions/hasLocalizePredictions')
-api.add_resource(VideoPredictionRouter_GetLocalizePredictions, '/video/<int:videoId>/predictions/getLocalizePredictions')
+api.add_resource(FolderRouter, '/folders', '/folders/<uuid:folderId>')
+api.add_resource(VideoRouter, '/video/<uuid:videoId>')
+api.add_resource(VideoRouterCropped, '/video/<uuid:videoId>/cropped')
+api.add_resource(VideoInfoRouter, '/video/<uuid:videoId>/info')
+api.add_resource(VideoImageRouter, '/video/<uuid:videoId>/image')
+api.add_resource(VideoPredictionRouter, '/video/<uuid:videoId>/predictions')
+api.add_resource(VideoPredictionRouter_HasLocalizePredictions, '/video/<uuid:videoId>/predictions/hasLocalizePredictions')
+api.add_resource(VideoPredictionRouter_GetLocalizePredictions, '/video/<uuid:videoId>/predictions/getLocalizePredictions')
 api.add_resource(TagRouter, '/tags')
 api.add_resource(TagGroupRouter, '/tagGroups')
 api.add_resource(MLLayerRouter, '/layers')
@@ -165,13 +189,13 @@ api.add_resource(MLLayerTypesRouter, '/layers/types')
 api.add_resource(MLLayerCompositionMoveLayerRouter, '/layers/move')
 api.add_resource(MLLayerCompositionRouter, '/layercompositions')
 api.add_resource(MLLayerCompositionAttributeRouter, '/layercompositions/attribute')
-api.add_resource(FrameRouter, '/video/<int:videoId>/frameNr/<int:frameNr>')
+api.add_resource(FrameRouter, '/video/<uuid:videoId>/frameNr/<int:frameNr>')
 api.add_resource(FrameLabelTypeRouter, '/frameLabelTypes')
-api.add_resource(SkillRouter, '/skill/<int:videoId>')
+api.add_resource(SkillRouter, '/skill/<uuid:videoId>')
 api.add_resource(SkillLevel, '/skilllevel')
 api.add_resource(SkillCount, '/skill/count')
 api.add_resource(DiffScoreComparison, '/diff-score-comparison')
-api.add_resource(SkillLabelingCompletedRouter, '/skillcompleted/<int:videoId>')
+api.add_resource(SkillLabelingCompletedRouter, '/skillcompleted/<uuid:videoId>')
 api.add_resource(StorageRouter, '/discover')
 api.add_resource(OrphanDeleterRouter, '/discover/deleteOrphans')
 api.add_resource(DownloadRouter, '/download')

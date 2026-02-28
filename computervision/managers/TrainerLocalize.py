@@ -80,7 +80,7 @@ def train_yolo_model(variant: str, repo: DataRepository):
             batch_size = 8
 
         for idx, row in frames.iterrows():
-            videoId = int(row["videoId"])
+            videoId = row["videoId"]
             frameNr = int(row["frameNr"])
             x = row["x"]
             y = row["y"]

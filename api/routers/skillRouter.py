@@ -4,6 +4,7 @@ from helpers.ConfigHelper import get_discipline_DoubleDutch_config
 from helpers.ValueHelper import ValueHelper
 from services.folderService import FolderService
 from services.videoService import VideoService
+from uuid import UUID
 
 class SkillLabelingCompletedRouter(Resource):
     def __init__(self, **kwargs):
@@ -11,7 +12,7 @@ class SkillLabelingCompletedRouter(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
 
-    def post(self, videoId: int):
+    def post(self, videoId: UUID):
         data = request.get_json()
         completed = data.get('completed')
         try:
@@ -28,14 +29,14 @@ class SkillRouter(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
 
-    def get(self, videoId: int):
+    def get(self, videoId: UUID):
         try:
             ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
             return str(ve), 404
         return [s.to_dict() for s in self.videoService.get_skills(videoId)]
 
-    def post(self, videoId: int):
+    def post(self, videoId: UUID):
         data = request.get_json()
 
         # Extract the required fields from the body
@@ -61,10 +62,10 @@ class SkillRouter(Resource):
 
         return video.to_dict(), 200
 
-    def put(self, videoId: int):
+    def put(self, videoId: UUID):
         data = request.get_json()
 
-        skillId = data.get("Id")
+        skillId = UUID(data.get("Id"))
         skillinfo = data.get('Skillinfo')
         frameStart = data.get('FrameStart')
         frameEnd = data.get('FrameEnd')
@@ -84,7 +85,7 @@ class SkillRouter(Resource):
             skillinfo=skillinfo
         ).to_dict(), 200
 
-    def delete(self, videoId: int):
+    def delete(self, videoId: UUID):
         data = request.get_json()
         start = data.get('FrameStart')
         end = data.get('FrameEnd')

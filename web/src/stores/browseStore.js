@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 export const useBrowseStore = defineStore("browse", {
   state: () => {
     return {
-      lastVisitedFolder: 0,
+      lastVisitedFolder: null,
     };
   },
   actions: {

@@ -1,9 +1,11 @@
 import re
-from .tagGroup import TagGroup
+from domain.tagGroup import TagGroup
+from uuid import UUID
+
 class Tag:
     def __init__(
             self,
-            id: int,
+            id: UUID,
             name: str,
             tagGroup: TagGroup = None,
             keywords: str = None,
@@ -20,19 +22,19 @@ class Tag:
 
     def to_dict(self):
         return {
-            'Id' : self.Id.hex(),
+            'Id' : self.Id,
             'Name' : self.Name,
             'TagGroup': self.TagGroup.to_dict() if self.TagGroup else None,
             'Keywords': self.Keywords,
         }
-    
+
     def contains_keyword(self, word):
         reg_8digits = re.compile(r"^\d{8}$")
         if reg_8digits.match(word):
             # Potentially year in it
             word = word[:4]
 
-        return word in self.Keywords 
+        return word in self.Keywords
 
     def __str__(self):
         return f"{self.__class__.__name__} - {self.Id} - {self.Name} - {self.Keywords}"

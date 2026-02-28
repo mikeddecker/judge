@@ -211,7 +211,7 @@ class RepoGeneral:
 
             df_videos = pd.read_sql(qry, con=connection)
             for idx, row in df_videos.iterrows():
-                folderId = int(row["folderId"])
+                folderId = row["folderId"]
                 name = row["name"]
                 childId = folderId
                 subfolders = []

@@ -1,11 +1,12 @@
 from helpers.ValueHelper import ValueHelper
+from uuid import UUID
 
 class Turner:
     PROPERTIES = [
         'Id', 'Name',
     ]
 
-    def __init__(self, id: int, name: str = None):
+    def __init__(self, id: UUID, name: str = None):
         """Plain & simple class, id & name (cross, crouger, EB, normal...)"""
         self.__setId(id)
         self.__setName(name)
@@ -21,7 +22,7 @@ class Turner:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
-    def __setId(self, id: int):
+    def __setId(self, id: UUID):
         ValueHelper.check_raise_uuid(id)
         if hasattr(self, 'Id') and self.Id is not None:
             raise AttributeError(f"Cannot modify Id once it is set")
@@ -40,6 +41,7 @@ class Turner:
     
     def to_dict(self):
         return {
-            'Id' : self.Id.hex(),
+            'Id' : self.Id,
             'Name' : self.Name,
         }
+

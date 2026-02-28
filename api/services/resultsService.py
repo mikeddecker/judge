@@ -1,5 +1,5 @@
-from .videoService import VideoService # TODO : move to repo
-from .jobService import JobService # TODO : move to repo
+from services.videoService import VideoService # TODO : move to repo
+from services.jobService import JobService # TODO : move to repo
 from config import LEVEL_TO_SCORE_MAP
 from helpers.ConfigHelper import get_discipline_DoubleDutch_config, PYTORCH_MODELS_SKILLS
 from repository.db import db
@@ -8,6 +8,7 @@ from repository.videoRepo import VideoRepository
 from repository.statsRepo import StatsRepository
 from repository.resultsRepo import ResultsRepository
 from typing import List
+from uuid import UUID
 
 class ResultsService:
     PROPERTIES = [

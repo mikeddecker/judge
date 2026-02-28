@@ -50,8 +50,14 @@ Integration into nextjump (subdomain on nextjump.app?)
     - For more simple load balancing in the eu
 # 👤 Business continuity?
 None yet
+Also no hard requirement, unless it is adopted into judging panels.
+Because ...
 # 🧯Disaster Plan Recovery
-None yet
+No real plan, for now just think about:
+- Backup
+- How to set-up/run the app again after server breakdown.
+	- code README.md
+	- ...
 
 # 💬 Discussion points
 Computervision

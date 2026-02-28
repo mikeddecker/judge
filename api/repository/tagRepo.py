@@ -5,6 +5,7 @@ from repository.models import Tag as TagDB
 from repository.models import TagGroup as TagGroupDB
 from repository.MapToDomain import MapToDomain
 from typing import List
+from uuid import UUID
 
 class TagRepository:
     def __init__(self, db : SQLAlchemy):
@@ -17,7 +18,7 @@ class TagRepository:
             new_tag = TagDB(name=name, keywords=keywords, group=groupDB)
         else:
             new_tag = TagDB(name = name)
-        
+
         self.db.session.add(new_tag)
         self.db.session.commit()
         return MapToDomain.map_tag(new_tag)
@@ -28,7 +29,7 @@ class TagRepository:
         self.db.session.commit()
         return MapToDomain.map_tag_group(new_tag_group)
     
-    def has_tag(self, id: int) -> bool:
+    def has_tag(self, id: UUID) -> bool:
         return self.db.session.query(TagDB).filter_by(id=id).first() is not None
         
     def has_tag_within_group(self, name: str, group: str) -> bool:
@@ -43,7 +44,7 @@ class TagRepository:
             query = query.filter_by(tagGroupId=None)
 
         return self.db.session.query(query.exists()).scalar()
-    
+
     def has_group(self, name: str) -> bool:
         return self.db.session.query(TagGroupDB).filter_by(name=name).first() is not None
 
@@ -69,7 +70,7 @@ class TagRepository:
         self.db.session.delete(tagdb)
         self.db.session.commit()
 
-    def update_tag_group(self, tag_id: int, group_name: str | None):
+    def update_tag_group(self, tag_id: UUID, group_name: str | None):
         tagdb : TagDB = self.db.session.get(TagDB, ident=tag_id)
         if group_name is None:
             tagdb.tagGroupId = None
@@ -78,12 +79,12 @@ class TagRepository:
             tagdb.tagGroupId = newTagGroup.id
         self.db.session.commit()
 
-    def update_tag_name(self, tag_id: int, name: str):
+    def update_tag_name(self, tag_id: UUID, name: str):
         tagdb : TagDB = self.db.session.get(TagDB, ident=tag_id)
         tagdb.name = name
         self.db.session.commit()
 
-    def update_tag_keywords(self, tag_id: int, keywords: str):
+    def update_tag_keywords(self, tag_id: UUID, keywords: str):
         tagdb : TagDB = self.db.session.get(TagDB, ident=tag_id)
         tagdb.keywords = keywords
         self.db.session.commit()

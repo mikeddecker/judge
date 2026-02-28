@@ -13,6 +13,7 @@ from datetime import date, datetime
 from domain.types import IsBestOfDict
 
 from managers.Repository import DataRepository
+from uuid import UUID
 
 BEST_OF_TYPES = [ 'all', 'recipe', 'architecture' ]
 VALIDATION_COMPARE_METHODS = [
@@ -53,7 +54,7 @@ class RepoStats(DataRepository):
 
     def get_epochs_no_improvement(
         self,
-        train_result_id: int,
+        train_result_id: UUID,
         validation_results: dict,
         compare_result_method:str,
     ) -> int:
@@ -164,7 +165,7 @@ class RepoStats(DataRepository):
 
     def check_is_best_model(
         self,
-        train_result_id: int,
+        train_result_id: UUID,
         recipe: SimpleNamespace,
         validation_results: dict,
         compare_result_method: str,
@@ -283,12 +284,12 @@ class RepoStats(DataRepository):
             }
 
             result = connection.execute(insert_result_qry, insert_params)
-            train_result_id: int = result.lastrowid
+            train_result_id: UUID = result.lastrowid
             connection.commit()
 
             return train_result_id
 
-    def exists_train_result(self, train_result_id: int) -> bool:
+    def exists_train_result(self, train_result_id: UUID) -> bool:
         with self._get_connection() as connection:
             check_qry = sqlal.text("""
                 SELECT id FROM TrainResults
@@ -303,7 +304,7 @@ class RepoStats(DataRepository):
 
         return result is not None
 
-    def update_train_result(self, train_result_id: int, updated_params: dict):
+    def update_train_result(self, train_result_id: UUID, updated_params: dict):
         """
         Update a train result.
 
@@ -340,7 +341,7 @@ class RepoStats(DataRepository):
             connection.execute(update_result_qry, {**updated_params, 'id': train_result_id})
             connection.commit()
 
-    def save_epoch_results(self, train_result_id: int, epoch: int, validation_results: dict):
+    def save_epoch_results(self, train_result_id: UUID, epoch: int, validation_results: dict):
         """
         Save epoch results to TrainResults and TrainResultsEpoch tables.
 

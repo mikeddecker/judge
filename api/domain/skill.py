@@ -1,4 +1,5 @@
 from helpers.ValueHelper import ValueHelper
+from uuid import UUID
 
 class Skill:
     PROPERTIES = [
@@ -11,7 +12,7 @@ class Skill:
 
     def __init__(
             self,
-            id: int,
+            id: UUID,
             skillinfo: dict,
             start: int,
             end: int
@@ -33,7 +34,7 @@ class Skill:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
-    def __setId(self, id: int):
+    def __setId(self, id: UUID):
         ValueHelper.check_raise_uuid(id)
         if hasattr(self, 'Id') and self.Id is not None:
             raise AttributeError(f"Cannot modify Id once it is set")
@@ -67,7 +68,7 @@ class Skill:
 
     def to_dict(self):
         return {
-            'Id' : self.Id.hex(),
+            'Id' : self.Id,
             'Skillinfo' : self.SkillInfo,
             'FrameStart' : self.FrameStart,
             'FrameEnd' : self.FrameEnd,

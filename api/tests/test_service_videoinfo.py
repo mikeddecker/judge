@@ -12,8 +12,9 @@ from services.folderService import FolderService
 from services.videoService import VideoService
 from tests.TestHelper import TestHelper
 from typing import List
+from uuid import UUID
 
-STORAGE_DIR_VIDEOS = os.getenv("STORAGE_DIR_VIDEOS") 
+STORAGE_DIR_VIDEOS = os.getenv("STORAGE_DIR_VIDEOS")
 if os.path.exists(STORAGE_DIR_VIDEOS):
     os.system(f"rm -rf {STORAGE_DIR_VIDEOS}/*")
 else:
@@ -40,12 +41,12 @@ class VideoServiceTest(TestCase):
         migrate.init_app(app, db)
         with app.app_context():
             db.create_all()
-        
+
         self.folderService = FolderService()
         self.videoService = VideoService()
         with app.app_context():
             self.videoService.initiate()
-        
+
         return app
     
     def setUp(self):
@@ -184,7 +185,7 @@ class VideoServiceTest(TestCase):
 
     ##################################
     # Test exists in database (name & folder)
-    # Params: id: int = None, name: str = None, folder: Folder = None
+    # Params: id: UUID = None, name: str = None, folder: Folder = None
     # Default, name is ignored when id is specified
     ##################################
     def test_exists_in_database_valid_name_does_exist(self):
@@ -217,7 +218,7 @@ class VideoServiceTest(TestCase):
 
     ##################################
     # Test exists in database (id)
-    # Params: id: int = None, name: str = None, folder: Folder = None
+    # Params: id: UUID = None, name: str = None, folder: Folder = None
     # Default, name is ignored when id is specified
     ##################################
     def test_exists_in_database_valid_id_does_exist(self):
@@ -384,7 +385,7 @@ class VideoServiceTest(TestCase):
     def test_immutable_property_video_repo(self):
         with self.assertRaises(AttributeError):
             self.videoService.VideoRepo = "another_repo"
-        
+
         # Even another object doesn't work
         with self.assertRaises(AttributeError):
             self.videoService.VideoRepo = Folder(1, "folderke")

@@ -1,7 +1,9 @@
+from uuid import UUID
+
 class TagGroup:
     def __init__(
             self,
-            id: int,
+            id: UUID,
             name: str,
             tags: list = [],
         ):
@@ -11,7 +13,8 @@ class TagGroup:
     
     def to_dict(self):
         return {
-            'Id' : self.Id.hex(),
+            'Id' : self.Id,
             'Name' : self.Name,
             'Tags': [t.to_dict() for t in self.Tags]
         }
+

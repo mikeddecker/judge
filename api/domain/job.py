@@ -1,6 +1,7 @@
+from config import JOB_STEPS, JOB_TYPES
 from datetime import datetime
 from helpers.ValueHelper import ValueHelper
-from config import JOB_STEPS, JOB_TYPES
+from uuid import UUID
 
 class Job:
     def __init__(
@@ -8,7 +9,7 @@ class Job:
             type: str,
             step: str,
             status: str = 'Created',
-            id: int = None,
+            id: UUID = None,
             job_arguments: dict = {},
             createdAt: datetime = None,
             status_details: str = None,
@@ -24,7 +25,7 @@ class Job:
         :param status: Status of the job (in progress, on hold)
         :type status: str
         :param id: Job database identifier
-        :type id: int
+        :type id: UUID
         :param job_arguments: JSON dict containing specific job arguments
         :type job_arguments: dict
         :param createdAt: Time the job was requested
@@ -48,7 +49,7 @@ class Job:
             assert job_arguments['recipe'] is not None, f"Recipe may not be None for predict jobs"
             ValueHelper.check_raise_string(job_arguments['recipe'])
 
-        self.id: int = id
+        self.id: UUID = id
         self.type: str = type
         self.step: str = step
         self.job_arguments = job_arguments
@@ -58,7 +59,7 @@ class Job:
 
     def to_dict(self):
         return {
-            'id' : self.id.hex(),
+            'id' : self.id,
             'type' : self.type,
             'step' : self.step,
             'job_arguments' : self.job_arguments,
@@ -66,3 +67,4 @@ class Job:
             'status' : self.status,
             'status_details' : self.status_details,
         }
+

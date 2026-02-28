@@ -33,6 +33,10 @@ RBAC: Possibility to switch to views of another account
 - mfaEnabled
 - mfaCode
 - mfaCodeExpires
+
+# Permissions (issued by Admin/subscription)
+![[AI-Judge.AccountPermissions]]
 - ⏬ canTrainModels (💲)
+- 
 
 #TODO define other premium functions?

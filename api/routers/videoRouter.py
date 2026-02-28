@@ -7,6 +7,7 @@ from flask_restful import Resource
 from helpers.ValueHelper import ValueHelper
 from services.folderService import FolderService
 from services.videoService import VideoService
+from uuid import UUID
 
 class VideoRouter(Resource):
     def __init__(self, **kwargs):
@@ -14,7 +15,7 @@ class VideoRouter(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
 
-    def get(self, videoId: int):
+    def get(self, videoId: UUID):
         try:
             ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
@@ -31,7 +32,7 @@ class VideoRouterCropped(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
 
-    def get(self, videoId: int):
+    def get(self, videoId: UUID):
         try:
             ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
@@ -51,7 +52,7 @@ class VideoInfoRouter(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
 
-    def get(self, videoId: int):
+    def get(self, videoId: UUID):
         try:
             ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
@@ -66,7 +67,7 @@ class VideoPredictionRouter(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
 
-    def get(self, videoId: int):
+    def get(self, videoId: UUID):
         try:
             ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
@@ -79,7 +80,7 @@ class VideoPredictionRouter_HasLocalizePredictions(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
 
-    def get(self, videoId: int):
+    def get(self, videoId: UUID):
         try:
             ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
@@ -92,7 +93,7 @@ class VideoPredictionRouter_GetLocalizePredictions(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
 
-    def get(self, videoId: int):
+    def get(self, videoId: UUID):
         try:
             ValueHelper.check_raise_uuid(videoId)
         except ValueError as ve:
@@ -106,14 +107,14 @@ class VideoImageRouter(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
     
-    def get(self, videoId: int):
+    def get(self, videoId: UUID):
         image_path = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}.jpg")
         if not os.path.exists(image_path):
             image_path = f"/home/miked/Videos/images/0.png"
         with open(image_path, 'rb') as f:
             return Response(f.read(), mimetype='image/jpg')
         
-    def post(self, videoId: int):
+    def post(self, videoId: UUID):
         if not self.videoService.exists_in_database(id=videoId):
             return f"VideoId {videoId} does not exist", 404
         
@@ -135,3 +136,4 @@ class VideoImageRouter(Resource):
         filename = 'TODO' # TODO
         cv2.imwrite(filename, frame)
         return 'ok', 200
+

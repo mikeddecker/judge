@@ -42,11 +42,11 @@ class OutputHeadRecognition(nn.Module):
         self.categorical_valueId_to_idx = {}
         self.categorical_idx_to_valueId = {}
         for prop_id, group_df in self.df_layers[self.df_layers['type'] == 'categorical'].groupby('layerId'):
-            self.categorical_valueId_to_idx[int(prop_id)] = {
+            self.categorical_valueId_to_idx[prop_id] = {
                 int(row['valueId']): idx + 1   # +1 so 0 is reserved for "absent"
                 for idx, row in group_df.reset_index().iterrows()
             }
-            self.categorical_idx_to_valueId[int(prop_id)] = {
+            self.categorical_idx_to_valueId[prop_id] = {
                 idx + 1: int(row['valueId'])   # +1 so 0 is reserved for "absent"
                 for idx, row in group_df.reset_index().iterrows()
             }

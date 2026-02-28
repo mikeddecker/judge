@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 class Account:
     def __init__(
@@ -8,7 +9,7 @@ class Account:
             lastName: str,
             passwordHash: str,
             salt: str,
-            id: int = None,
+            id: UUID = None,
             lastLogin: datetime = None,
             createdAt: datetime = None,
             updatedAt: datetime = None,
@@ -44,7 +45,7 @@ class Account:
 
     def to_dict(self):
         return {
-            'id': self.id.hex(),
+            'id': self.id,
             'email': self.email,
             'firstName': self.firstName,
             'lastName': self.lastName,
@@ -59,3 +60,4 @@ class Account:
 
     def __repr__(self):
         return str(self.to_dict())
+

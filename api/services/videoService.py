@@ -15,6 +15,7 @@ from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from services.jobService import JobService
 from typing import List
+from uuid import UUID
 
 # TODO : move ConfigHelper to database
 
@@ -88,7 +89,7 @@ class VideoService:
         skill = Skill(id=insertedId, skillinfo=skillinfo, start=frameStart, end=frameEnd)
         return skill
 
-    def update_skill(self, id: int, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict) -> VideoInfo:
+    def update_skill(self, id: UUID, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict) -> VideoInfo:
         assert isinstance(skillinfo, dict), "Skillinfo is not a dict"
         assert len(skillinfo) > 0, "Skillinfo is empty"
         config = get_discipline_DoubleDutch_config()
@@ -103,10 +104,7 @@ class VideoService:
         ValueHelper.check_raise_skillinfo_values(config, skillinfo, repo=self.VideoRepo)
 
         self.VideoRepo.update_skill(id=id, videoId=videoinfo.Id, skillinfo=skillinfo, start=frameStart, end=frameEnd)
-        video = self.VideoRepo.get(videoinfo.Id)
-        for s in self.VideoRepo.get_skills(video.Id):
-            video.add_skill(s)
-        return video
+        return self.VideoRepo.get(videoinfo.Id)
 
     def remove_skill(self, videoinfo: VideoInfo, frameStart: int, frameEnd: int) -> VideoInfo:
         skill = videoinfo.get_skill(frameStart, frameEnd)
@@ -117,7 +115,7 @@ class VideoService:
     def count(self) -> int:
         return self.VideoRepo.count()
     
-    def exists_in_database(self, id: int = None, name: str = None, folder: Folder = None) -> bool:
+    def exists_in_database(self, id: UUID = None, name: str = None, folder: Folder = None) -> bool:
         """Check existence in database
         If id provided, ignore name and folder"""
         if id:
@@ -134,7 +132,7 @@ class VideoService:
             raise ValueError(f"Folder must be provided, got {folder}")
         return os.path.exists(os.path.join(ENVS.DIRS.VIDEOS, folder.get_relative_path(), name))
 
-    def get(self, id: int) -> VideoInfo:
+    def get(self, id: UUID) -> VideoInfo:
         """Get video with the corresponding Id"""
         ValueHelper.check_raise_uuid(id)
         if not self.exists_in_database(id=id):
@@ -153,7 +151,7 @@ class VideoService:
         """Sourceinfo = yt_id"""
         return self.VideoRepo.is_already_downloaded(sourceinfo)
 
-    def delete_from_database(self, id: int):
+    def delete_from_database(self, id: UUID):
         # TODO : check skills & segments
         ValueHelper.check_raise_uuid(id)
         if not self.exists_in_database(id=id):
@@ -181,7 +179,7 @@ class VideoService:
         return self.VideoRepo.count_skills()
 
     # TODO : nice to have
-    def rename(self, id: int, new_name):
+    def rename(self, id: UUID, new_name):
         raise NotImplementedError("Nice to have, end of journey")
 
     def remove_frameInfo(self, frameNr, video: VideoInfo, frameinfo: FrameInfo) -> VideoInfo:

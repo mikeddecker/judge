@@ -1,23 +1,11 @@
-import { api, getApplicationJson } from './api';
+import { api, getApplicationJson, postApplicationJson } from './api';
 
 export const getFolder = async (folderId) => {
-  try {
-    const response = await api.get(`/folders/${folderId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    throw error;
-  }
+  return folderId ? getApplicationJson(`/folders/${folderId}`) : getApplicationJson(`/folders`)
 };
 
 export const getVideoInfo = async (videoId) => {
-  try {
-    const response = await api.get(`/video/${videoId}/info`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    throw error;
-  }
+  return getApplicationJson(`/video/${videoId}/info`)
 };
 
 export const getVideoImagePath = async (videoId) => {
@@ -70,13 +58,10 @@ export const getCroppedVideoPath = async (videoId) => {
 };
 
 export const postVideoFrame = async (videoId, frameNr, frameinfo) => {
-  return await api.post(`/video/${videoId}/frameNr/${frameNr}`, frameinfo, { headers: { 'Content-Type': 'application/json' }})
-    .then(function (response) {
-      return response.data;
-    })
-    .catch(function (error) {
-      console.error(error);
-    });
+  return postApplicationJson(
+    `/video/${videoId}/frameNr/${frameNr}`,
+    frameinfo
+  )
 };
 
 export const removeVideoFrame = async (videoId, frameNr, frameinfo) => {

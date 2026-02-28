@@ -7,6 +7,7 @@ from repository.tagRepo import TagRepository
 from repository.MLLayerRepo import MLLayerRepository
 from helpers.ValueHelper import ValueHelper
 from config import LAYER_TYPES
+from uuid import UUID
 
 class MLLayerService:
     """Provides the video information of videos"""
@@ -53,7 +54,7 @@ class MLLayerService:
             raise ValueError(f"Layer with id {layerId} does not exist")
         return self.MlLayerRepo.add_value(layerId=layerId, valueName=name)
 
-    def has_layer(self, id: int) -> bool:
+    def has_layer(self, id: UUID) -> bool:
         ValueHelper.check_raise_uuid(id)
         return self.MlLayerRepo.has_layer(id)
 
@@ -87,14 +88,12 @@ class MLLayerService:
     def get_layer_compositions(self) -> dict[str, LayerComposition]:
         return self.MlLayerRepo.get_layer_compositions()
 
-    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int, name: str | None) -> dict[str, LayerComposition]:
+    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int) -> dict[str, LayerComposition]:
         ValueHelper.check_raise_string_only_abc123(compositionName)
         ValueHelper.check_raise_uuid(layerId)
         if stage is not None:
             assert isinstance(stage, int), f"Stage must be an integer"
             assert stage >= -1, f"Stage must be an integer >= -1"
-        if name is not None:
-            ValueHelper.check_raise_string_only_abc123(name)
 
         assert self.MlLayerRepo.has_layer(layerId), f"LayerId {layerId} does not exist"
 
@@ -102,7 +101,6 @@ class MLLayerService:
             compositionName=compositionName,
             stage=stage,
             layerId=layerId,
-            name=name
         )
 
     def update_layer_composition_attribute_value(self, compositionName: str, stage: int | None, attribute:str, name: str, value) -> dict[str, LayerComposition]:

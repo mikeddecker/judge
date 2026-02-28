@@ -2,13 +2,14 @@ import os
 
 from helpers.ValueHelper import ValueHelper
 from typing import Optional, Self
+from uuid import UUID
 
 class Folder:
     Id:int
     Name:str
     Parent:'Folder'
     PROPERTIES = ["Id", "Name", "Parent"]
-    def __init__(self, id: int, name: str, parent: Optional['Folder'] = None):
+    def __init__(self, id: UUID, name: str, parent: Optional['Folder'] = None):
         self.__setId(id)
         self.__setName(name)
         self.__setParent(parent)
@@ -26,13 +27,12 @@ class Folder:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
-    def __setId(self, id: int):
+    def __setId(self, id: UUID):
         ValueHelper.check_raise_uuid(id)
         if hasattr(self, 'Id') and self.Id is not None:
             raise AttributeError(f"Cannot modify Id once it is set")
 
         object.__setattr__(self, 'Id', id)
-
 
     def __setName(self, name : str):
         if hasattr(self, 'Name') and self.Name is not None:
@@ -68,7 +68,7 @@ class Folder:
     
     def to_dict(self):
         return {
-            "Id" : self.Id.hex(),
+            "Id" : self.Id,
             "Name" : self.Name,
             "Parent" : None if not self.Parent else self.Parent.to_dict()
         }
@@ -85,7 +85,7 @@ class Folder:
         
         # Typehint
         other : Folder = value
-        
+
         # Check if both Ids are set
         if hasattr(self, "Id") and hasattr(other, "Id"):
             return (
@@ -98,3 +98,4 @@ class Folder:
                 self.Name == other.Name and
                 self.Parent == other.Parent
             )
+

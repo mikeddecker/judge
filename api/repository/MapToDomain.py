@@ -9,11 +9,12 @@ from domain.account import Account
 from domain.videoinfo import VideoInfo
 from repository.models import Folder as FolderDB, Video as VideoDB, Skill as SkillDB, Jobs as JobDB
 from repository.models import Tag as TagDB, TagGroup as TagGroupDB, LayerComposition as LayerCompositionDB
+from uuid import UUID
 
 class MapToDomain:
     @staticmethod
     def map_folder(folderDB: FolderDB) -> Folder:
-        folder= Folder(folderDB.id, folderDB.name, None)
+        folder = Folder(folderDB.id, folderDB.name, None)
         original = folder
         while folderDB.parent is not None:
             parent_folder = Folder(folderDB.parent.id, folderDB.parent.name, None)
@@ -44,10 +45,10 @@ class MapToDomain:
     @staticmethod
     def map_skill(s: SkillDB) -> Skill:
         return Skill(
-            id=s.id,
-            skillinfo=dict(s.skillinfo),
-            start=s.frameStart,
-            end=s.frameEnd
+            id = s.id,
+            skillinfo = dict(s.skillinfo),
+            start = s.frameStart,
+            end = s.frameEnd
         )
 
     @staticmethod
@@ -119,16 +120,16 @@ class MapToDomain:
     def map_account(account: Account) -> Account:
         """Map account database model to account domain model"""
         return Account(
-            id=account.id,
-            email=account.email,
-            firstName=account.firstName,
-            lastName=account.lastName,
-            passwordHash=account.passwordHash,
-            salt=account.salt,
-            lastLogin=account.lastLogin,
-            createdAt=account.createdAt,
-            updatedAt=account.updatedAt,
-            mfaEnabled=account.mfaEnabled,
-            mfaCode=account.mfaCode,
+            id = account.id,
+            email = account.email,
+            firstName = account.firstName,
+            lastName = account.lastName,
+            passwordHash = account.passwordHash,
+            salt = account.salt,
+            lastLogin = account.lastLogin,
+            createdAt = account.createdAt,
+            updatedAt = account.updatedAt,
+            mfaEnabled = account.mfaEnabled,
+            mfaCode = account.mfaCode,
         )
 

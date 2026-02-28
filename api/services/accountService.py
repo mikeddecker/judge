@@ -1,12 +1,14 @@
 import hashlib
+import os
 import secrets
 import smtplib
+
+from datetime import datetime, timedelta
+from domain.account import Account
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime, timedelta
 from repository.accountRepo import AccountRepo
-from domain.account import Account
-import os
+from uuid import UUID
 
 PASSWORD_MIN_LENGTH : int = int(os.getenv('PASSWORD_MIN_LENGTH', 12))
 
@@ -105,7 +107,7 @@ class AccountService:
         }
 
     @staticmethod
-    def verify_mfa(account_id: int, mfaCode: str) -> dict:
+    def verify_mfa(account_id: UUID, mfaCode: str) -> dict:
         """Verify MFA code"""
         if not AccountRepo.verify_mfaCode(account_id, mfaCode):
             return {'success': False, 'message': 'Invalid or expired MFA code'}
@@ -249,7 +251,7 @@ class AccountService:
             return False
 
     @staticmethod
-    def enable_mfa_for_account(account_id: int) -> dict:
+    def enable_mfa_for_account(account_id: UUID) -> dict:
         """Enable MFA for account"""
         account = AccountRepo.get_account_by_id(account_id)
         if not account:

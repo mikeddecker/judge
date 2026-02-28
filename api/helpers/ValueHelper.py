@@ -1,4 +1,6 @@
 import re
+import uuid
+from uuid import UUID
 # from repository.videoRepo import VideoRepository
 
 # TODO : find reason why I put this here
@@ -7,11 +9,18 @@ UUID_LENGTH = 16
 
 class ValueHelper:
     @staticmethod
-    def check_raise_uuid(uuid: int):
-        assert isinstance(uuid, bytes), f"Id must be of type {bytes}, got {uuid}"
-        assert len(uuid) == UUID_LENGTH, f"Uuid must be of length {UUID_LENGTH}, got {len(uuid)}"
+    def check_raise_uuid(id: UUID):
+        assert isinstance(id, UUID), f"Id must be of type {uuid}, got {id}"
+        # assert len(id) == UUID_LENGTH, f"Uuid must be of length {UUID_LENGTH}, got {len(id)}"
 
-    @staticmethod    
+    @staticmethod
+    def check_raise_positive_integer(value):
+        if not isinstance(value, int):
+            raise ValueError(f"Id must be of type {int}, got {value}")
+        if value <= 0:
+            raise ValueError(f"Id must be strict positive integer, got {value}")
+
+    @staticmethod
     def check_raise_frameNr(frameNr: int):
         if not isinstance(frameNr, int):
             raise ValueError(f"FrameNr must be of type {int}, got {frameNr} ({type(frameNr)})")
@@ -109,7 +118,7 @@ class ValueHelper:
         reg = re.compile(r'^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(?:-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|live\/|v\/)?)([\w\-]+)(\S+)?$')
         if not reg.match(val):
             raise ValueError(f"Not a valid yt url, got {val}")
-        
+
     @staticmethod
     def check_raise_skillinfo_values(config: dict, skillinfo: dict, repo):
         """Checks whether the giving skillinfo corresponds with the giving config info"""

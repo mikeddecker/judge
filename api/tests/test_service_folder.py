@@ -11,8 +11,9 @@ from services.folderService import FolderService
 from services.videoService import VideoService
 from tests.TestHelper import TestHelper
 from typing import List
+from uuid import UUID
 
-STORAGE_DIR_VIDEOS = os.getenv("STORAGE_DIR_VIDEOS") 
+STORAGE_DIR_VIDEOS = os.getenv("STORAGE_DIR_VIDEOS")
 if os.path.exists(STORAGE_DIR_VIDEOS):
     os.system(f"rm -rf {STORAGE_DIR_VIDEOS}/*")
 else:
@@ -34,7 +35,7 @@ class FolderServiceTest(TestCase):
         migrate.init_app(app, db)
         with app.app_context():
             db.create_all()
-        
+
         self.folderService = FolderService()
         self.videoService = VideoService()
         with app.app_context():
@@ -163,7 +164,7 @@ class FolderServiceTest(TestCase):
 
     def test_create_invalid_parent_folder_does_not_exist(self):
         testname = "test_create_invalid_parent_folder_does_not_exist"
-        inserted_folder = self.folderService.create(testname, None) # Should get 1, as db is 
+        inserted_folder = self.folderService.create(testname, None) # Should get 1, as db is
         folder = Folder(id=inserted_folder.Id, name="other_name")
 
         with self.assertRaises(NotADirectoryError):
@@ -269,9 +270,9 @@ class FolderServiceTest(TestCase):
         parent_folder = self.folderService.create(name=testname)
         children = [f"child_{i}" for i in range(10)]
         for c in children:
-            parent_folder = self.folderService.create(name=c, parent=parent_folder)   
+            parent_folder = self.folderService.create(name=c, parent=parent_folder)
         self.make_folder_in_storage_dir([testname, *children, "nested"])
-        
+
         assert self.folderService.exists_path_on_drive(name="nested", parent=parent_folder), f"Folder {testname} does not exist in {parent_folder.get_relative_path()}"
 
     def test_exists_path_on_drive_valid_does_not_exist_in_current_parent_but_has_sibling_which_does_exist(self):
@@ -288,7 +289,7 @@ class FolderServiceTest(TestCase):
 
     def test_exists_path_on_drive_invalid_does_not_exists_with_parent(self):
         parent = Folder(2, "something_random_qsdj")
-        
+
         assert not self.folderService.exists_path_on_drive(name="competition", parent=parent), f"Folder does not exist in {parent.get_relative_path()}"
 
     def test_exists_path_on_drive_invalid_does_not_exists_with_nested_parent(self):
@@ -296,12 +297,12 @@ class FolderServiceTest(TestCase):
         folder = None
         for i, f in enumerate(folders):
             folder = Folder(id=i+1, name=f, parent=folder)
-        
+
         assert not self.folderService.exists_path_on_drive(name="path_path", parent=folder), f"Folder does not exist in {folder.get_relative_path()}"
 
     ##################################
     # Test exists in database (name)
-    # Params: id: int = None, name: str = None, parent: Folder = None
+    # Params: id: UUID = None, name: str = None, parent: Folder = None
     # Default, name is ignored when id is specified
     ##################################
     def test_exists_in_database_valid_name_does_exist(self):
@@ -313,7 +314,7 @@ class FolderServiceTest(TestCase):
         testname = "test_exists_in_database_valid_name_does_exist_with_parent"
         parent_folder = self.folderService.create(name=testname, parent=None)
         self.folderService.create(name="child", parent=parent_folder)
-        
+
         assert self.folderService.exists_in_database(name="child", parent=parent_folder), f"Folder {testname} does not exist in database"
 
     def test_exists_in_database_valid_name_does_exist_with_nested_parent(self):
@@ -321,9 +322,9 @@ class FolderServiceTest(TestCase):
         parent_folder = self.folderService.create(name=testname, parent=None)
         children = [f"child_{i}" for i in range(10)]
         for c in children:
-            parent_folder = self.folderService.create(name=c, parent=parent_folder)   
+            parent_folder = self.folderService.create(name=c, parent=parent_folder)
         self.folderService.create(name="nested", parent=parent_folder)
-        
+
         assert self.folderService.exists_in_database(name="nested", parent=parent_folder), f"Folder {testname} does not exist in {parent_folder.get_relative_path()}"
 
     def test_exists_in_database_valid_does_not_exist_in_current_parent_but_has_sibling_which_does_exist(self):
@@ -340,7 +341,7 @@ class FolderServiceTest(TestCase):
 
     def test_exists_in_database_invalid_name_does_not_exists_with_parent(self):
         parent_folder = self.folderService.create(name="some_random_name")
-        
+
         assert not self.folderService.exists_in_database(name="some_random_name", parent=parent_folder), f"Folder does not exist in {parent_folder.get_relative_path()}"
 
     def test_exists_in_database_invalid_name_does_not_exists_with_nested_parent(self):
@@ -348,7 +349,7 @@ class FolderServiceTest(TestCase):
         folder = None
         for i, f in enumerate(folders):
             folder = self.folderService.create(name=f, parent=folder)
-        
+
         assert not self.folderService.exists_in_database(name="path_path", parent=folder), f"Folder does not exist in {folder.get_relative_path()}"
 
     @parameterized.expand(TestHelper.generate_empty_strings())
@@ -363,7 +364,7 @@ class FolderServiceTest(TestCase):
 
     ##################################
     # Test exists in database (id)
-    # Params: id: int = None, name: str = None, parent: Folder = None
+    # Params: id: UUID = None, name: str = None, parent: Folder = None
     # Default, name is ignored when id is specified
     ##################################
     def test_exists_in_database_valid_id_does_exist(self):
@@ -377,7 +378,7 @@ class FolderServiceTest(TestCase):
         testname = "test_exists_in_database_valid_id_does_exist_with_parent"
         parent_folder = self.folderService.create(name=testname, parent=None)
         child = self.folderService.create(name="child", parent=parent_folder)
-        
+
         assert self.folderService.exists_in_database(id=child.Id), f"Folder {testname} with id {child.Id} does not exist in database"
 
     def test_exists_in_database_valid_id_does_exist_with_nested_parent(self):
@@ -385,9 +386,9 @@ class FolderServiceTest(TestCase):
         parent_folder = self.folderService.create(name=testname, parent=None)
         children = [f"child_{i}" for i in range(10)]
         for c in children:
-            parent_folder = self.folderService.create(name=c, parent=parent_folder)   
+            parent_folder = self.folderService.create(name=c, parent=parent_folder)
         created_folder = self.folderService.create(name="nested", parent=parent_folder)
-        
+
         assert self.folderService.exists_in_database(id=created_folder.Id), f"FolderId {created_folder.Id} does not exist in database"
 
     def test_exists_in_database_invalid_id_does_not_exists(self):
@@ -528,7 +529,7 @@ class FolderServiceTest(TestCase):
     def test_immutable_property_folder_repo(self):
         with self.assertRaises(AttributeError):
             self.folderService.FolderRepo = "another_repo"
-        
+
         # Even another object doesn't work
         with self.assertRaises(AttributeError):
             self.folderService.FolderRepo = Folder(1, "folderke")

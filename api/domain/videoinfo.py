@@ -1,11 +1,12 @@
 from typing import Set, List
 import os
 
-from .folder import Folder
-from .frameinfo import FrameInfo
-from .skill import Skill
+from domain.folder import Folder
+from domain.frameinfo import FrameInfo
+from domain.skill import Skill
 from domain.tag import Tag
 from helpers.ValueHelper import ValueHelper
+from uuid import UUID
 
 class VideoInfo:
     PROPERTIES = [
@@ -30,7 +31,7 @@ class VideoInfo:
 
     def __init__(
             self,
-            id: int,
+            id: UUID,
             name: str,
             folder: Folder,
             frameLength: int,
@@ -76,7 +77,7 @@ class VideoInfo:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
 
-    def __setId(self, id: int):
+    def __setId(self, id: UUID):
         ValueHelper.check_raise_uuid(id)
         if hasattr(self, 'Id') and self.Id is not None:
             raise AttributeError(f"Cannot modify Id once it is set")
@@ -106,7 +107,7 @@ class VideoInfo:
         object.__setattr__(self, 'Folder', folder)
 
     def __setFrameLength(self, framelength: int):
-        ValueHelper.check_raise_uuid(framelength)
+        ValueHelper.check_raise_positive_integer(framelength)
         if hasattr(self, 'FrameLength') and self.FrameLength is not None:
             raise AttributeError(f"Cannot modify FrameLength once it is set")
         if framelength is None or framelength <= 0:
@@ -210,7 +211,7 @@ class VideoInfo:
         
         # Typehint
         other : Folder = value
-        
+
         # Check if both Ids are set
         return (
             self.Name == other.Name and
@@ -229,7 +230,7 @@ class VideoInfo:
 
     def to_dict(self, include_frames=True):
         return {
-            "Id" : self.Id.hex(),
+            "Id" : self.Id,
             "Name" : self.Name,
             "Folder" : self.Folder.to_dict(),
             "FrameLength" : self.FrameLength,

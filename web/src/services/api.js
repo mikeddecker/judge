@@ -1,3 +1,4 @@
+import { useErrorStore } from '@/stores/errorStore';
 import axios from 'axios';
 
 export const api = axios.create({
@@ -14,9 +15,20 @@ export const getApplicationJson = async (route, params) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching data:', error);
-    throw error;
+    const errorStore = useErrorStore()
+    errorStore.setError((error.response?.data || error.response?.data?.message) ?? 'Something went wrong');
   }
+};
+
+export const postApplicationJson = async (route, data) => {
+  return await api.post(route, data, { headers: { 'Content-Type': 'application/json' }})
+    .then(function (response) {
+      return response.data;
+    })
+    .catch(function (error) {
+      const errorStore = useErrorStore()
+      errorStore.setError((error.response?.data || error.response?.data?.message) ?? 'Something went wrong');
+    });
 };
 
 export default api;

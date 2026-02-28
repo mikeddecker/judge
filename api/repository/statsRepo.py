@@ -346,7 +346,7 @@ class StatsRepository:
         current_date = None
         daily_data = {}
         for row in grouped_data:
-            rowdate = row.labeldate.strftime("%Y-%m-%d")
+            rowdate = row.createdAt.strftime("%Y-%m-%d")
             if rowdate != current_date:
                 daily_data[rowdate] = {
                     'individual': counts_per_split(),

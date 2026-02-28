@@ -4,10 +4,12 @@ import HelloWorld from './components/HelloWorld.vue'
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { ref } from 'vue'
+import { useErrorStore } from './stores/errorStore'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const errorStore = useErrorStore()
 
 const displayLogo = computed(() => route.name ? ['browse', 'about', 'stats', 'home', 'profile'].includes(route.name) : true)
 
@@ -90,6 +92,7 @@ const toggleAccountMenu = (event) => {
     </nav>
   </header>
   <main class="mb-32">
+    <Message v-if="errorStore.error" severity="error">{{ errorStore.error }}</Message>
     <RouterView/>
   </main>
 </template>

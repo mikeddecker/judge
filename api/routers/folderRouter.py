@@ -2,6 +2,7 @@ from flask_restful import Resource
 from services.folderService import FolderService
 from services.videoService import VideoService
 from helpers.ValueHelper import ValueHelper
+from uuid import UUID
 
 class FolderRouter(Resource):
     def __init__(self, **kwargs):
@@ -9,14 +10,14 @@ class FolderRouter(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
     
-    def get(self, folderId: int=None):
+    def get(self, folderId: UUID = None):
         if folderId:
             try:
-                ValueHelper.check_raise_uuid(folderId)
                 if not self.folderService.exists_in_database(id=folderId):
                     return f"FolderId {folderId} does not exist", 404
             except ValueError as ve:
-                return ve, 404
+                print(ve)
+                return f'Something went wrong at the FolderRouter', 500
             f = self.folderService.get(folderId).to_dict()
             children = self.folderService.get_children(f["Id"])
             f["Children"] = []
@@ -24,7 +25,7 @@ class FolderRouter(Resource):
                 f["Children"].append(c.to_dict())
             f["Videos"] = {}
             for vidinfo in self.videoService.get_videos(folderId=f["Id"]):
-                f["Videos"][vidinfo.Id] = vidinfo.to_dict(include_frames=False)
+                f["Videos"][str(vidinfo.Id)] = vidinfo.to_dict(include_frames=False)
             f["VideoCount"] = len(f["Videos"].keys())
             return f, 200
         else:
@@ -37,3 +38,4 @@ class FolderRouter(Resource):
                 "Videos" : dict(),
                 "VideoCount" : 0,
             }, 200
+

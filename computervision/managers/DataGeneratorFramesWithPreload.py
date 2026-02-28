@@ -46,7 +46,7 @@ class DataGeneratorFramesWithPreload(keras.utils.Sequence):
         # Fill preloaded keys with frames to load
         for i in range(min_idx, max_idx):
             row = self.Frames.iloc[i]
-            videoId = int(row["videoId"])
+            videoId = row["videoId"]
             frameNr = int(row["frameNr"])
             x, y, w, h = self.Frames.iloc[i][["x", "y", "width", "height"]]
             

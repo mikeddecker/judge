@@ -8,6 +8,7 @@ from repository.jobRepo import JobRepository
 from repository.tagRepo import TagRepository
 from typing import List
 from helpers.ValueHelper import ValueHelper
+from uuid import UUID
 
 class TagService:
     """Provides the video information of videos"""
@@ -41,7 +42,7 @@ class TagService:
             raise ValueError(f"Groupname {name} already exists")
         return self.TagRepo.add_group(name)
 
-    def has_tag(self, id: int) -> bool:
+    def has_tag(self, id: UUID) -> bool:
         ValueHelper.check_raise_uuid(id)
         return self.TagRepo.has_tag(id)
 
@@ -51,25 +52,24 @@ class TagService:
         ValueHelper.check_raise_string_only_abc123(name)
         return self.TagRepo.has_group(name)
 
-    def update_tag_group(self, tag_id: int, group_name: str | None):
+    def update_tag_group(self, tag_id: UUID, group_name: str | None):
         ValueHelper.check_raise_uuid(tag_id)
         assert self.TagRepo.has_group(group_name), f"TagGroup {group_name} does not exist"
         return self.TagRepo.update_tag_group(tag_id, group_name)
 
-    def update_tag_name(self, tag_id: int, new_name: str):
+    def update_tag_name(self, tag_id: UUID, new_name: str):
         ValueHelper.check_raise_uuid(tag_id)
         ValueHelper.check_raise_string_only_abc123(new_name)
         assert self.TagRepo.has_tag(tag_id), f"Tag with id {tag_id} does not exist"
         return self.TagRepo.update_tag_name(tag_id, new_name)
 
-    def update_tag_keywords(self, tag_id: int, keywords: str):
+    def update_tag_keywords(self, tag_id: UUID, keywords: str):
         ValueHelper.check_raise_uuid(tag_id)
         ValueHelper.check_raise_string_keywords_comma_separated(keywords)
         assert self.TagRepo.has_tag(tag_id), f"Tag with id {tag_id} does not exist"
         return self.TagRepo.update_tag_keywords(tag_id, keywords)
 
-    def link_video_to_tag(self, tag_id: int, video_id: int):
+    def link_video_to_tag(self, tag_id: UUID, video_id: UUID):
         ValueHelper.check_raise_uuid(tag_id)
         ValueHelper.check_raise_uuid(video_id)
-        
 

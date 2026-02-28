@@ -17,6 +17,7 @@ from config import ENVS
 from colorama import Fore, Style
 from domain.folder import Folder
 from domain.tag import Tag
+from domain.videoinfo import VideoInfo
 from helpers.ValueHelper import ValueHelper
 from services.videoService import VideoService
 from services.folderService import FolderService
@@ -128,6 +129,12 @@ class StorageService:
                             self.VideoService.add_tag(videoId=videoId, tag=tag)
                         for tag in folderTags:
                             self.VideoService.add_tag(videoId=videoId, tag=tag)
+
+                        # Create video image if not exists
+                        videoinfo : VideoInfo = self.VideoService.get(videoId)
+                        frameNr_for_image = math.floor(videoinfo.FrameLength * (0.2 + random.random() / 2))
+                        self.__create_video_image(videoId=videoId, name=content, folder=parent, frameNr=frameNr_for_image)
+
                     else:
                         print(f"{Fore.LIGHTBLUE_EX}Detected video: {Style.RESET_ALL} {content} {Fore.GREEN}NEW{Style.RESET_ALL}")
                         info = self.__enrich_video_data(name=content, folder=parent, tags=tags)
@@ -149,7 +156,6 @@ class StorageService:
                         # Create video image
                         frameNr_for_image = math.floor(info["frameLength"] * (0.2 + random.random() / 2))
                         self.__create_video_image(videoId=inserted_video.Id, name=content, folder=parent, frameNr=frameNr_for_image)
-                        print(f"{Fore.LIGHTMAGENTA_EX}Created image:{Style.RESET_ALL} {content}")
                 elif content.split(".")[-1] in ENVS.SUPPORTED_IMAGE_FORMATS:
                     print(f"{Fore.LIGHTMAGENTA_EX}Detected image:{Style.RESET_ALL} {content} (currently skipped)")
                 else:
@@ -160,9 +166,9 @@ class StorageService:
             if deleteOrphans:
                 self.VideoService.delete_from_database(id=videoinfo.Id)
             if parent.Id in orphans.keys():
-                orphans[parent.Id][videoinfo.Id] = orpan_name
+                orphans[str(parent.Id)][str(videoinfo.Id)] = orpan_name
             else:
-                orphans[parent.Id] = { videoinfo.Id : orpan_name }
+                orphans[str(parent.Id)] = { videoinfo.Id : orpan_name }
 
         # Now loop al folders in current folder
         for child in child_folders:
@@ -220,17 +226,19 @@ class StorageService:
         inserted_videofolder = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}")
         os.makedirs(inserted_videofolder, exist_ok=True)
 
+        image_filename = os.path.join(inserted_videofolder, f"{videoId}.jpg")
         # Load video
         videopath = os.path.join(ENVS.DIRS.VIDEOS, folder.get_relative_path(), name)
-        cap = cv2.VideoCapture(videopath)
-        if not cap.isOpened():
-            raise IOError("Cannot open camera")
+        if not os.path.exists(image_filename):
+            cap = cv2.VideoCapture(videopath)
+            if not cap.isOpened():
+                raise IOError("Cannot open camera")
 
-        # Create preview image
-        cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
-        _, frame = cap.read()
-        filename = os.path.join(inserted_videofolder, f"{videoId}.jpg")
-        cv2.imwrite(filename, frame)
+            # Create preview image
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
+            _, frame = cap.read()
+            cv2.imwrite(image_filename, frame)
+        print(f"{Fore.LIGHTMAGENTA_EX}Created image:{Style.RESET_ALL} {name}")
 
     def __clear_data(session):
         meta = db.metadata

@@ -7,6 +7,7 @@ from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from helpers.ValueHelper import ValueHelper
 from typing import List
+from uuid import UUID
 
 class FolderService:
     PROPERTIES = [
@@ -78,7 +79,7 @@ class FolderService:
 
         return self.add_in_database(name=name, parent=parent)
 
-    def exists_in_database(self, id: int = None, name: str = None, parent: Folder = None) -> bool:
+    def exists_in_database(self, id: UUID = None, name: str = None, parent: Folder = None) -> bool:
         """
         Query db to know if a folder exists.
         If id specified, ignore name and parent
@@ -99,7 +100,7 @@ class FolderService:
             return os.path.exists(os.path.join(self.StorageFolder, parent.get_relative_path(), name))
         return os.path.exists(os.path.join(self.StorageFolder, name))
 
-    def get(self, id: int) -> Folder:
+    def get(self, id: UUID) -> Folder:
         """
         Gets the folder with the given id
 
@@ -121,7 +122,7 @@ class FolderService:
             raise ValueError(f"Parent is not a {Folder}, got {type(parent)}")
         return self.FolderRepo.get_by_name(name, parent)
 
-    def get_children(self, id: int) -> List[Folder]:
+    def get_children(self, id: UUID) -> List[Folder]:
         """
         Gets all children from the folder with the current id
         Return in list, as otherwise all folders will be fetched, because everything exists in main folder.
@@ -135,14 +136,14 @@ class FolderService:
         """
         return self.FolderRepo.get_root_folders()
 
-    def rename(self, id: int, new_name: str):
+    def rename(self, id: UUID, new_name: str):
         ValueHelper.check_raise_uuid(id)
         ValueHelper.check_raise_string(new_name)
         if not self.exists_in_database(id=id):
             raise LookupError(f"Folder {id} not found in db")
         self.FolderRepo.rename(id=id, new_name=new_name)
 
-    def delete(self, id: int):
+    def delete(self, id: UUID):
         ValueHelper.check_raise_uuid(id)
         if not self.exists_in_database(id=id):
             raise LookupError(f"Folder {id} not found in db")
@@ -161,3 +162,4 @@ class FolderService:
 
     def count(self) -> int:
         return self.FolderRepo.count()
+

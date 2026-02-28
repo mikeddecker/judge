@@ -6,6 +6,7 @@ from services.jobService import JobService
 from services.storageService import StorageService
 from services.tagService import TagService
 from helpers.ValueHelper import ValueHelper
+from uuid import UUID
 
 class TagRouter(Resource):
     def __init__(self, **kwargs):
@@ -27,7 +28,7 @@ class TagRouter(Resource):
 
     def put(self):
         data = request.get_json()
-        id = data.get('id')
+        id = UUID(data.get('id'))
         name = data.get('name')
         keywords = data.get('keywords')
         group = data.get('group')
@@ -68,8 +69,6 @@ class TagGroupRouter(Resource):
         ValueHelper.check_raise_string_only_abc123(name)
         return self.tagService.add_group(name).to_dict(), 200
 
-
-
 class TagDiscoveryRouter(Resource):
     def __init__(self, **kwargs):
         self.storageService = StorageService()
@@ -80,3 +79,4 @@ class TagDiscoveryRouter(Resource):
             return self.storageService.discover_tags(), 200
         except Exception as ve:
             return Response(str(ve), status=500)
+
