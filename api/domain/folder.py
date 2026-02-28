@@ -8,11 +8,13 @@ class Folder:
     Id:int
     Name:str
     Parent:'Folder'
-    PROPERTIES = ["Id", "Name", "Parent"]
-    def __init__(self, id: UUID, name: str, parent: Optional['Folder'] = None):
+    IsTrain:bool
+    PROPERTIES = ["Id", "Name", "Parent", "IsTrain"]
+    def __init__(self, id: UUID, name: str, parent: Optional['Folder'] = None, is_train:bool=True):
         self.__setId(id)
         self.__setName(name)
         self.__setParent(parent)
+        self.IsTrain = is_train
 
     def __setattr__(self, name, value):
         if hasattr(self, name):
@@ -70,7 +72,8 @@ class Folder:
         return {
             "Id" : self.Id,
             "Name" : self.Name,
-            "Parent" : None if not self.Parent else self.Parent.to_dict()
+            "Parent" : None if not self.Parent else self.Parent.to_dict(),
+            "IsTrain" : self.IsTrain
         }
 
     def __str__(self):

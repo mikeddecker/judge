@@ -17,7 +17,7 @@ class MapToDomain:
         folder = Folder(folderDB.id, folderDB.name, None)
         original = folder
         while folderDB.parent is not None:
-            parent_folder = Folder(folderDB.parent.id, folderDB.parent.name, None)
+            parent_folder = Folder(folderDB.parent.id, folderDB.parent.name, None, folderDB.is_train)
             folder.Parent = parent_folder
             folder = parent_folder
             folderDB = folderDB.parent
@@ -36,7 +36,8 @@ class MapToDomain:
             width=videoDB.width,
             height=videoDB.height,
             judgeDiffScore=videoDB.judgeDiffScore,
-            tags = set([MapToDomain.map_tag(t) for t in videoDB.tags])
+            tags = set([MapToDomain.map_tag(t) for t in videoDB.tags]),
+            is_train = videoDB.is_train
         )
         for f in videoDB.frameLabels:
             video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible, labeltype=f.labeltype))

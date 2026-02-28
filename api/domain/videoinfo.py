@@ -24,10 +24,12 @@ class VideoInfo:
         "JudgeDiffScore",
         "TeamBoxes",
         "Tags",
+        "IsTrain",
     ]
     # Frame does not
     Frames: List[FrameInfo] # Key = frameId, value is Frame
     Skills: Set[Skill] = set()
+    IsTrain: bool = True
 
     def __init__(
             self,
@@ -39,7 +41,8 @@ class VideoInfo:
             width:int, height:int,
             completed_skill_labels: bool = False,
             judgeDiffScore: int = None,
-            tags : set[Tag] = set()
+            tags : set[Tag] = set(),
+            is_train : bool = True,
         ):
         self.Frames = []  # Initialize frames as an empty list
         self.Skills = set()  # Initialize skills as an empty set
@@ -55,6 +58,7 @@ class VideoInfo:
         self.Width = width # TODO : checks and tests
         self.Height = height
         self.JudgeDiffScore = judgeDiffScore
+        self.IsTrain = is_train
 
     def __setattr__(self, name, value):
         if hasattr(self, name):

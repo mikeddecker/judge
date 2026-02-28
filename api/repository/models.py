@@ -92,6 +92,8 @@ class Folder(DomainObject):
     parent = db.relationship('Folder', remote_side='Folder.id', backref='children', lazy='joined')
     videos = db.relationship('Video', backref='folder', lazy='dynamic') # Loaded lazily, so videoIDs are accecible, but full fetch only when explicitly asked
 
+    is_train = db.Column(db.Boolean, nullable=False, default=True)
+
     # Define a composite unique constraint
     __table_args__ = (
         db.UniqueConstraint('name', 'parentId', name='_name_parent_unique_constraint'),
@@ -152,6 +154,7 @@ class Video(DomainObject):
     completed_skill_labels = db.Column(db.Boolean, nullable=False, default=False)
     competition = db.Column(UUIDType, db.ForeignKey('CompetitionInfo.id', ondelete='CASCADE'))
     judgeDiffScore = db.Column(db.Float, nullable=True)
+    is_train = db.Column(db.Boolean, nullable=False, default=True)
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
     tags = db.relationship('Tag', secondary=video_tag, backref='videos', lazy='joined')

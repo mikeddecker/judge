@@ -22,6 +22,13 @@ flask db migrate -m "Initial migration"  # Generates the migration script for ch
 flask db upgrade         # Applies the migration to the database
 ```
 
+Watch out with adding non-nullable columns: add server_default = ...
+
+```python
+with op.batch_alter_table('Videos', schema=None) as batch_op:
+    batch_op.add_column(sa.Column('is_train', sa.Boolean(), nullable=False, server_default=sa.true()))
+```
+
 # Open an api bash
 
 ```bash
