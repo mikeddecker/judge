@@ -251,6 +251,7 @@ class VideoInfo:
             "Height" : self.Height,
             "Tags" : list(self.Tags), # Set is not JSON serializable
             "TeamBoxes": getattr(self, "TeamBoxes", []),
+            "IsTrain" : self.IsTrain,
         }
 
     def __repr__(self):
