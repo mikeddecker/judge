@@ -238,7 +238,7 @@ class StorageService:
             cap.set(cv2.CAP_PROP_POS_FRAMES, frameNr)
             _, frame = cap.read()
             cv2.imwrite(image_filename, frame)
-        print(f"{Fore.LIGHTMAGENTA_EX}Created image:{Style.RESET_ALL} {name}")
+            print(f"{Fore.LIGHTMAGENTA_EX}Created image:{Style.RESET_ALL} {name}")
 
     def __clear_data(session):
         meta = db.metadata

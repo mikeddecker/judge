@@ -92,8 +92,10 @@ const toggleAccountMenu = (event) => {
     </nav>
   </header>
   <main class="mb-32">
-    <Message v-if="errorStore.error" severity="error">{{ errorStore.error }}</Message>
     <RouterView/>
+    <Message v-if="errorStore.error" severity="error" class="fixed top-2 right-2">
+      {{ errorStore.error }}
+    </Message>
   </main>
 </template>
 

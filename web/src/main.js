@@ -44,7 +44,6 @@ import ToastService from 'primevue/toastservice';
 import Tooltip from 'primevue/tooltip'
 import { useSkillStore } from './stores/skillStore';
 
-
 const app = createApp(App)
 
 app.use(router)

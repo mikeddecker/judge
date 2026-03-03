@@ -239,23 +239,11 @@ export const getTagGroups = async () => {
 };
 
 export const addTag = async (name, group) => {
-  return await api.post('/tags', { 'name': name, 'group': group }, { headers: { 'Content-Type': 'application/json' }})
-  .then(function (response) {
-    return response;
-  })
-  .catch(function (error) {
-    console.error(error);
-  });
+  return postApplicationJson('/tags', { 'name': name, 'group': group })
 };
 
 export const addTagGroup = async (name) => {
-  return await api.post('/tagGroups', { 'name': name }, { headers: { 'Content-Type': 'application/json' }})
-  .then(function (response) {
-    return response;
-  })
-  .catch(function (error) {
-    console.error(error);
-  });
+  return postApplicationJson('/tagGroups', { 'name': name })
 };
 
 export const updateTag = async (id, name, keywords) => {

@@ -23,8 +23,14 @@ class TagRouter(Resource):
         data = request.get_json()
         name = data.get('name')
         group = data.get('group')
-        ValueHelper.check_raise_string_only_abc123(name)
-        return self.tagService.add(name, group).to_dict(), 200
+
+        if not group:
+            return 'No group given', 400
+        try:
+            ValueHelper.check_raise_string_only_abc123(name)
+            return self.tagService.add(name, group).to_dict(), 200
+        except ValueError as err:
+            return str(err), 400
 
     def put(self):
         data = request.get_json()

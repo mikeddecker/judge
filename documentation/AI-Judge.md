@@ -48,6 +48,11 @@ Logs? very little to none -> GDPR?
 Integration into nextjump (subdomain on nextjump.app?)
     - Do I register [nextjump.be](http://nextjump.be) as well? (about 10 euro/year)
     - For more simple load balancing in the eu
+Public facing side
+vs
+Competition/IJRU/Gymfed... facing side (NGB's) - 'current' focus
+
+
 # 👤 Business continuity?
 None yet
 Also no hard requirement, unless it is adopted into judging panels.
@@ -61,7 +66,7 @@ No real plan, for now just think about:
 
 # 💬 Discussion points
 Computervision
-    - Training possible on two sides
+    - Training possible on two sides (results in DB)
     - I think you can focus on this part a bit more?
     - I think there is a bug in the numeric label train/test labels
     - Maybe review it together?
@@ -83,4 +88,7 @@ Computervision
 - [ ] ⏫ Walk through general page
 - [ ] ⏫ Discuss the discussion points
 - [ ] ⏫ Send Eva email about recording on competitions
+    - Yes, she wrote something about Gymfed(leden) -> gymfed videos
+
+I will propose -> training can still be on the same dataset.
 

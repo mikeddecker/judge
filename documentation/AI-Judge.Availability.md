@@ -17,3 +17,4 @@ fallback system within the EU
 - Manual DNS failover -> change A record to passive instance?
 - Auto switch to passive instance?
 
+Later: preferably in the cloud/in a datacenter.

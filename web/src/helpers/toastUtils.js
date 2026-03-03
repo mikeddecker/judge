@@ -7,6 +7,10 @@ export function useToastUtils() {
     toast.add({ severity: 'success', summary, detail, life: 3000 })
   }
 
-  return { showToastSuccess }
+  function showToastError(detail = null, summary = 'Error') {
+    toast.add({ severity: 'error', summary, detail, life: 4250 })
+  }
+
+  return { showToastSuccess, showToastError }
 }
 
