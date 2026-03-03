@@ -5,11 +5,10 @@ import { discoverDrive, getFolder } from '@/services/videoService';
 import { onMounted, ref } from 'vue';
 import { useBrowseStore } from '@/stores/browseStore';
 
-const count = ref(0)
+const videoCount = ref(0)
 const children = ref([])
-const folderId = ref(0)
 const folderName = ref("Storage drive")
-const parentId = ref(0)
+const parentId = ref(null)
 const videos = ref([])
 const totalLabels1 = ref(0)
 const totalFrames = ref(0)
@@ -25,8 +24,8 @@ const changeFolder = (newFolderId) => {
     children.value = response.Children;
     folderName.value = response.Name;
     videos.value = Object.values(response.Videos).sort((a, b) => b.Id - a.Id);
-    count.value = response.VideoCount;
-    parentId.value = response.Parent ? response.Parent.Id : 0;
+    videoCount.value = response.VideoCount;
+    parentId.value = response.Parent?.Id
     totalLabels1.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.LabeledFrameCount, 0)
     totalFrames.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + currentVideoInfo.FrameLength, 0)
     testLabels1.value = Object.values(response.Videos).reduce((prevValue, currentVideoInfo) => prevValue + (currentVideoInfo.Id % 10 == 5 ? currentVideoInfo.LabeledFrameCount : 0), 0)
@@ -46,8 +45,8 @@ onMounted(async () => {
 
 <template>
   <h1>Navigate {{ folderName }}</h1>
-  <p>Videos: {{ count }}</p>
-  <FolderContainer @changeFolder="changeFolder" v-bind:folders="children" v-bind:parent-id="parentId"/>
+  <p>Videos: {{ videoCount }}</p>
+  <FolderContainer @changeFolder="changeFolder" v-bind:folders="children" :parentId="parentId"/>
   <VideoInfoContainer v-bind:videos="videos"/>
   <Button class="my-2" icon="pi pi-server" @click="discoverDrive" label="Discover drive" aria-label="Discover drive"></Button>
   <div>
