@@ -217,6 +217,14 @@ api.add_resource(AccountForgotPasswordRouter, '/auth/forgot-password')
 api.add_resource(AccountResetPasswordRouter, '/auth/reset-password')
 api.add_resource(AccountEnableMFARouter, '/auth/enable-mfa')
 
+# Attach lightweight OpenAPI generator and docs
+try:
+    from openapi import attach_openapi_endpoints
+    attach_openapi_endpoints(app)
+except Exception:
+    # non-fatal: if openapi can't be attached, continue without docs
+    pass
+
 # Check if .env folders are filled in
 ValueHelper.check_raise_string(ENVS.DIRS.VIDEOS)
 ValueHelper.check_raise_string(ENVS.DIRS.GENERATED)

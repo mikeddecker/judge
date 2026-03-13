@@ -41,7 +41,8 @@ class DomainObject(db.Model):
     updatedAt = db.Column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
 
     def uuid_str(self):
-        return uuid.UUID(bytes=self.id).hex if self.id else None
+        # Return canonical UUID string (with hyphens) for readability and compatibility
+        return str(uuid.UUID(bytes=self.id)) if self.id else None
 
     # ---- public API (do NOT override) ----
     # First DomainObject.to_dict() is called
@@ -145,15 +146,15 @@ class Video(DomainObject):
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
     fps = db.Column(db.Float, nullable=False)
-    training = db.Column(db.Boolean, nullable=False)
     qualitative = db.Column(db.Boolean, nullable=False)
     obstruction = db.Column(db.Boolean, nullable=False)
-    private = db.Column(db.Boolean, nullable=False, default=False)
     source = db.Column(db.Integer, nullable=True)
     sourceInfo = db.Column(db.String(255), nullable=True)
     completed_skill_labels = db.Column(db.Boolean, nullable=False, default=False)
     competition = db.Column(UUIDType, db.ForeignKey('CompetitionInfo.id', ondelete='CASCADE'))
     judgeDiffScore = db.Column(db.Float, nullable=True)
+    private = db.Column(db.Boolean, nullable=False, default=True)
+    training = db.Column(db.Boolean, nullable=False)
     is_train = db.Column(db.Boolean, nullable=False, default=True)
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')

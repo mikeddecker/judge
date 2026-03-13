@@ -40,8 +40,6 @@ Ideally if target_type is group, then target_group_id must be filled in.
 # Extended/future permissions
 e.g. {"can_use_beta_features": true, "api_access": true}
 
-
-
 # Additional info about permissions
 
 ## can_edit_video
@@ -53,6 +51,27 @@ Wil probably not be given to individual users. Doesn't make any sense.
 
 ## can_manage_representatives
 Wil probably not be given to individual users. Doesn't make any sense.
+
+## Notes — implementation guidance
+
+- Prefer a single table `AccountCapability` (one row per account) to store the boolean capability flags
+	(e.g. `can_edit_video`, `can_train_model`) and limits (max uploads, max size, ...).
+- Videos are private by default. Access is granted explicitly by owner/representative via
+	an `AccessGrant` (or `AccessGrant`-like table) where grants may target a specific `video_id` or a `folder_id`.
+- Video-level grants prevail over folder-level grants. If a video has an explicit grant, it overrides
+	the folder's access rules for that video.
+- Block records (e.g. `AccountBlock`) always win over grants.
+
+## Minimal runtime authorization rules (current code)
+
+- Router layer: authenticates user identity and provides `account_id` via Flask `session` (see `/auth/login`).
+- Service layer: enforces authorization checks. The `VideoService` should verify:
+	- caller is authenticated
+	- requested fields are allowed to be updated (field-level mapping)
+	- sensitive flags such as `training` require elevated privileges (admins or subscription tier)
+
+If you want me to implement DB models for `AccountCapability`, `AccessGrant` and `AccountBlock`,
+I can scaffold SQLAlchemy models and example migration code.
 
 # Code examples
 Enum or str?

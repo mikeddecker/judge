@@ -2,7 +2,7 @@ import cv2
 import os
 
 from config import ENVS
-from flask import Response, request
+from flask import Response, request, session
 from flask_restful import Resource
 from helpers.ValueHelper import ValueHelper
 from services.folderService import FolderService
@@ -25,6 +25,33 @@ class VideoRouter(Resource):
         video_path = os.path.join(ENVS.DIRS.VIDEOS, videoinfo.get_relative_video_path())
         with open(video_path, 'rb') as f:
             return Response(f.read())
+
+    def post(self, videoId: UUID):
+        data = request.get_json()
+
+        print('videorouter post', data)
+
+        # RBAC : TODO
+        # Authentication: require logged in account via session
+        if 'account_id' not in session:
+            return {'success': False, 'message': 'Not authenticated'}, 401
+
+        current_user_id = session.get('account_id')
+        try:
+            # session may store a UUID string or a UUID object
+            if isinstance(current_user_id, str):
+                current_user_id = UUID(current_user_id)
+        except Exception as e:
+            return {'success': False, 'message': 'Invalid session account id'}, 400
+
+        updated_video = self.videoService.update_video(
+            userId = current_user_id,
+            videoId = videoId,
+            updatedData = data
+        )
+
+        # return serialized domain object
+        return updated_video.to_dict(), 200
 
 class VideoRouterCropped(Resource):
     def __init__(self, **kwargs):

@@ -25,6 +25,8 @@ class MapToDomain:
 
     @staticmethod
     def map_video(videoDB: VideoDB) -> VideoInfo:
+        # Use a list for tags (Tag objects are not hashable) and ensure safe tag mapping
+        mapped_tags = [MapToDomain.map_tag(t) for t in videoDB.tags]
         video = VideoInfo(
             id = videoDB.id,
             name = videoDB.name,
@@ -36,8 +38,8 @@ class MapToDomain:
             width=videoDB.width,
             height=videoDB.height,
             judgeDiffScore=videoDB.judgeDiffScore,
-            tags = set([MapToDomain.map_tag(t) for t in videoDB.tags]),
-            is_train = videoDB.is_train
+            tags = mapped_tags,
+            is_train = videoDB.training
         )
         for f in videoDB.frameLabels:
             video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible, labeltype=f.labeltype))
@@ -66,14 +68,16 @@ class MapToDomain:
 
     @staticmethod
     def map_tag(tagDB: TagDB) -> Tag:
+        # Ensure keywords is a string (Tag constructor splits it). Default to empty string if None.
+        keywords = tagDB.keywords if tagDB.keywords is not None else ''
         return Tag(
             id = tagDB.id,
             name = tagDB.name,
-            keywords= tagDB.keywords,
             tagGroup = None if not tagDB.tagGroupId else TagGroup(
                 id = tagDB.tagGroupId,
                 name = tagDB.group.name, # Add tags if necessairy
-            )
+            ),
+            keywords = keywords
         )
 
     @staticmethod

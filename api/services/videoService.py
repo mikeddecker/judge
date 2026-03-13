@@ -2,6 +2,7 @@ import json
 import os
 
 from config import ENVS
+from domain.account import Account
 from domain.folder import Folder
 from domain.frameinfo import FrameInfo
 from domain.skill import Skill
@@ -13,6 +14,8 @@ from helpers.helpers import load_json_file
 from repository.db import db
 from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
+from repository.accountRepo import AccountRepo
+from repository.videoRepo import ALLOWED_UPDATE_FIELDS
 from services.jobService import JobService
 from typing import List
 from uuid import UUID
@@ -39,6 +42,26 @@ class VideoService:
         elif name not in self.PROPERTIES:
             raise NameError(f"Property {name} does not exist")
         super().__setattr__(name, value)
+
+    def __authorize_update(self, account, user_data):
+        # Basic authorization for updating video metadata.
+        # - Request must be authenticated (account provided)
+        # - Only allow updates to known/allowed fields (repo enforces a mapping)
+        # - Disallow changing training flag from non-admins (admins/ops can be added later)
+        if account is None:
+            raise PermissionError("Not authenticated")
+
+        for key in user_data.keys():
+            if key not in ALLOWED_UPDATE_FIELDS.keys():
+                raise PermissionError(f"Field '{key}' is not allowed to be updated")
+
+        # Prevent ordinary users from toggling training flag. This requires an admin-capable
+        # permission check; for now, block any attempt and document how to enable it.
+        training_keys = {"training", "is_train", "IsTrain"}
+        if any(k in user_data for k in training_keys):
+            raise PermissionError("Only administrators may change the training flag")
+
+        return
 
     def add(self, name: str, folder: Folder, frameLength: float, width: float, height: float, fps: float, ytid: str = None, tags: list[Tag] = []) -> VideoInfo:
         """Adds the given video to the database
@@ -88,6 +111,17 @@ class VideoService:
         insertedId =self.VideoRepo.add_skill(videoId=videoinfo.Id, skillinfo=skillinfo, start=frameStart, end=frameEnd)
         skill = Skill(id=insertedId, skillinfo=skillinfo, start=frameStart, end=frameEnd)
         return skill
+
+    def update_video(self, userId: UUID, videoId: UUID, updatedData: dict = {}) -> VideoInfo:
+        assert isinstance(userId, UUID), f"VideoService - userId - {type(userId)}"
+        assert isinstance(userId, UUID), f"VideoService - videoId - {type(videoId)}"
+        assert isinstance(updatedData, dict), f"VideoService - UpdatedData - {type(updatedData)}"
+
+        account = AccountRepo.get_account_by_id(userId)
+        self.__authorize_update(account, updatedData)
+        self.VideoRepo.update_video(videoId, updatedData)
+
+        return self.VideoRepo.get(videoId)
 
     def update_skill(self, id: UUID, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict) -> VideoInfo:
         assert isinstance(skillinfo, dict), "Skillinfo is not a dict"
@@ -260,7 +294,7 @@ class VideoService:
         ValueHelper.check_raise_uuid(videoId)
         return os.path.exists(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json"))
 
-    def add_tag(self, videoId: int, tag: Tag):
+    def add_tag(self, videoId: UUID, tag: Tag):
         """Adds the tag to the video if it does not already exist"""
         ValueHelper.check_raise_uuid(videoId)
         self.VideoRepo.add_tag(videoId=videoId, tag=tag)

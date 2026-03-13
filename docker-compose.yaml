@@ -42,7 +42,7 @@ services:
       - ai-judge-network
     restart: on-failure
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${API_DOCKER_PORT}/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${API_DOCKER_PORT}/openapi.json || curl -f http://localhost:${API_DOCKER_PORT}/health || exit 1"]
       interval: 15s
       retries: 5
       start_period: 7s

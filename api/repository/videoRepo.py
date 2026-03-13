@@ -16,6 +16,19 @@ from sqlalchemy import desc, func, and_
 from typing import List
 from uuid import UUID
 
+ALLOWED_UPDATE_FIELDS = {
+    "name": "name",
+    "Name": "name",
+    "completed_skill_labels": "completed_skill_labels",
+    "Completed_Skill_Labels": "completed_skill_labels",
+    "JudgeDiffScore": "judgeDiffScore",
+    "judgeDiffScore": "judgeDiffScore",
+    "training": "training",
+    "is_train": "training",
+    "IsTrain": "training",
+    "private": "private",
+}
+
 class VideoRepository:
     def __init__(self, db : SQLAlchemy):
         self.db : SQLAlchemy = db
@@ -65,7 +78,7 @@ class VideoRepository:
         self.db.session.add(frame_label_DB)
         self.db.session.commit()
 
-    def add_tag(self, videoId: int, tag: Tag):
+    def add_tag(self, videoId: UUID, tag: Tag):
         ValueHelper.check_raise_uuid(videoId)
         videoDB : VideoInfoDB = VideoInfoDB.query.get(videoId)
         tagDB : TagDB = TagDB.query.get(tag.Id)
@@ -133,6 +146,19 @@ class VideoRepository:
     def is_already_downloaded(self, src_info: str) -> bool:
         return self.db.session.query(VideoInfoDB).filter_by(sourceInfo=src_info).count() > 0
 
+    def update_video(self, videoId: UUID, updates: dict) -> VideoInfo:
+        videoDB = VideoInfoDB.query.get(videoId)
+        if not videoDB:
+            raise ValueError(f"Video {videoId} not found")
+
+        for key, value in updates.items():
+            if key in ALLOWED_UPDATE_FIELDS.keys():
+                setattr(videoDB, ALLOWED_UPDATE_FIELDS[key], value)
+
+        self.db.session.commit()
+        return MapToDomain.map_video(videoDB)
+
+    # Frames
     def remove_frameInfo(self, frameNr: int, videoId: int, frameinfo: FrameInfo):
         ValueHelper.check_raise_frameNr(frameNr)
         ValueHelper.check_raise_uuid(videoId)

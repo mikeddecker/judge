@@ -1,11 +1,9 @@
-The account to which the account/ logs into.
-Account has a type, such as Company/Organisation/Club/Team... (Whatever accounts want their organisation to be called.) Mainly functionality differs only for accounts and external services.
 
-# Account = Account
+# Account Type = user
 (local account and/or SSO/OpenID connect)
 
-RBAC: Possibility to switch to organisation view
-# Account = Company/Organisation/Club/Team
+RBAC: Possibility to switch to organisation view (of which it is a representative)
+# Account Type = Company/Organisation/Club/Team
 e.g. Gymfed, NextJump, IJRU, AMJRF...
 e.g. Sipiro, KangarooKids, Siluskip...
 (local account and/or SSO/OpenID connect)
@@ -25,7 +23,7 @@ RBAC: Possibility to switch to views of another account
 - email
 - firstName
 - lastName
-- passwordHash
+- passwordHash (PBKDF2-hashed with a per-account salt in `AccountService.hash_password()`)
 - salt
 - lastLogin
 - createdAt
@@ -34,9 +32,22 @@ RBAC: Possibility to switch to views of another account
 - mfaCode
 - mfaCodeExpires
 
+Fields & behavior
+- MFA flow: `AccountService.login()` will require MFA if `mfaEnabled` is true; `AccountMFAVerifyRouter` completes the flow.
+- Sessions: successful login stores `session['account_id']` and `session['email']` (server-side Flask session).
+
+Repo helpers
+- `AccountRepo.get_account_by_email(email)` and `get_account_by_id(id)` return domain `Account` objects.
+- `AccountRepo.update_lastLogin(id)` updates `lastLogin` timestamp.
+
+⚠ Notes & recommendations
+- Do not expose `passwordHash` or `salt` in API responses. `MapToDomain.map_account()` returns a domain object that omits these fields for JSON responses.
+- Consider moving sensitive audit fields (password resets, MFA attempts) into a separate audit table for compliance.
+
 # Permissions (issued by Admin/subscription)
 ![[AI-Judge.AccountPermissions]]
 - ⏬ canTrainModels (💲)
 - 
 
 #TODO define other premium functions?
+

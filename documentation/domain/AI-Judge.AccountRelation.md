@@ -1,4 +1,4 @@
-#TODO
+Accounts relations can be:
 
 - Friend
 - Member of
@@ -6,7 +6,7 @@
 - Representative
 
 # Inheritable roles
-- Can access videos of
-- Can upload videos in name of
-- Can request videos to delete???
-- 
+- Permissions of an account based on [[AI-Judge.AccountRelation]]
+	- Public vs private videos
+	- Friends/member visible etc...
+

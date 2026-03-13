@@ -12,6 +12,7 @@ import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
 import ProfileView from '@/views/ProfileView.vue'
+import OpenApiView from '@/views/OpenApiView.vue'
 import { useAuthStore } from '@/stores/authStore'
 
 const router = createRouter({
@@ -30,6 +31,7 @@ const router = createRouter({
     { path: '/register', name: 'register', component: RegisterView, meta: { requiresAuth: false } },
     { path: '/forgot-password', name: 'forgot-password', component: ForgotPasswordView, meta: { requiresAuth: false } },
     { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true } },
+    { path: '/doc', name: 'doc', component: OpenApiView, meta: { requiresAuth: true } },
   ],
 })
 
