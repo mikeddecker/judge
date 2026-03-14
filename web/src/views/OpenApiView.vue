@@ -17,8 +17,8 @@ export default {
 		return {
 			loading: true,
 			error: null,
-			docsUrl: base ? `${base}/docs` : '/docs',
-			openapiUrl: base ? `${base}/openapi.json` : '/openapi.json',
+			docsUrl: base ? `${base}/docs` : '/api/docs',
+			openapiUrl: base ? `${base}/openapi.json` : '/api/openapi.json',
 			_abort: null,
 		}
 	},
