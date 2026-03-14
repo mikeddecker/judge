@@ -9,6 +9,20 @@ from sqlalchemy.orm import Mapped
 from datetime import datetime
 import uuid
 
+GRANTED_TO_VALUES = ('everyone', 'account', 'group')
+RELATIONSHIP_TYPE_VALUES = ('friend', 'member', 'representative', 'follower', 'individual')
+
+
+def _uuid_to_str(value) -> str:
+    """Safely convert a binary UUID (bytes or uuid.UUID) to a hyphenated string."""
+    if value is None:
+        return None
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    if isinstance(value, bytes):
+        return str(uuid.UUID(bytes=value))
+    return str(value)
+
 # TINYINT : -128 > 128
 # SMALLINT : -32768 > 32767
 
@@ -479,5 +493,192 @@ class LayerComposition(DomainObject):
             'layer' : self.layer.to_dict(),
             'defaultValue': self.defaultValueConvert(self.defaultValue, self.layer),
             'focussed': self.focussed,
+        }
+
+
+class AccountCapability(DomainObject):
+    """Account capabilities — one row per account, managed by admin/subscription."""
+    __tablename__ = 'AccountCapabilities'
+
+    account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False, unique=True)
+
+    can_upload_video = db.Column(db.Boolean, nullable=False, default=False)
+    can_edit_video = db.Column(db.Boolean, nullable=False, default=False)
+    can_label_video = db.Column(db.Boolean, nullable=False, default=False)
+    can_see_video_actions = db.Column(db.Boolean, nullable=False, default=False)
+    can_see_tags = db.Column(db.Boolean, nullable=False, default=False)
+    can_edit_tags = db.Column(db.Boolean, nullable=False, default=False)
+    can_see_video_tags = db.Column(db.Boolean, nullable=False, default=False)
+    can_see_video_labels = db.Column(db.Boolean, nullable=False, default=False)
+    can_train_model = db.Column(db.Boolean, nullable=False, default=False)
+    can_export_model = db.Column(db.Boolean, nullable=False, default=False)
+    can_manage_members = db.Column(db.Boolean, nullable=False, default=False)
+    can_manage_representatives = db.Column(db.Boolean, nullable=False, default=False)
+    can_invite_users = db.Column(db.Boolean, nullable=False, default=False)
+
+    max_video_uploads = db.Column(db.Integer, nullable=False, default=100)
+    max_video_size_mb = db.Column(db.Integer, nullable=False, default=2048)
+    max_video_duration_seconds = db.Column(db.Integer, nullable=False, default=120)
+    max_storage_gb = db.Column(db.Integer, nullable=False, default=20)
+
+    granted_by = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
+    granted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    granted_until = db.Column(db.DateTime, nullable=True)
+    granted_reason = db.Column(db.Text, nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.uuid_str(),
+            'account_id': _uuid_to_str(self.account_id),
+            'can_upload_video': self.can_upload_video,
+            'can_edit_video': self.can_edit_video,
+            'can_label_video': self.can_label_video,
+            'can_see_video_actions': self.can_see_video_actions,
+            'can_see_tags': self.can_see_tags,
+            'can_edit_tags': self.can_edit_tags,
+            'can_see_video_tags': self.can_see_video_tags,
+            'can_see_video_labels': self.can_see_video_labels,
+            'can_train_model': self.can_train_model,
+            'can_export_model': self.can_export_model,
+            'can_manage_members': self.can_manage_members,
+            'can_manage_representatives': self.can_manage_representatives,
+            'can_invite_users': self.can_invite_users,
+            'max_video_uploads': self.max_video_uploads,
+            'max_video_size_mb': self.max_video_size_mb,
+            'max_video_duration_seconds': self.max_video_duration_seconds,
+            'max_storage_gb': self.max_storage_gb,
+            'granted_by': _uuid_to_str(self.granted_by),
+            'granted_at': self.granted_at.isoformat() if self.granted_at else None,
+            'granted_until': self.granted_until.isoformat() if self.granted_until else None,
+            'granted_reason': self.granted_reason,
+        }
+
+
+class Group(DomainObject):
+    """Named set of accounts for shared access grants."""
+    __tablename__ = 'Groups'
+
+    owner_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+
+    memberships = db.relationship('GroupMembership', backref='group', lazy='dynamic', cascade='all, delete-orphan')
+
+    def to_dict(self):
+        return {
+            'id': self.uuid_str(),
+            'owner_id': _uuid_to_str(self.owner_id),
+            'name': self.name,
+            'description': self.description,
+            'createdAt': self.createdAt.isoformat() if self.createdAt else None,
+        }
+
+
+class GroupMembership(DomainObject):
+    """Many-to-many: accounts ↔ groups."""
+    __tablename__ = 'GroupMemberships'
+
+    group_id = db.Column(UUIDType, db.ForeignKey('Groups.id', ondelete='CASCADE'), nullable=False)
+    account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False)
+    added_by = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
+    added_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+
+    __table_args__ = (
+        db.UniqueConstraint('group_id', 'account_id', name='_group_account_unique'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.uuid_str(),
+            'group_id': _uuid_to_str(self.group_id),
+            'account_id': _uuid_to_str(self.account_id),
+            'added_by': _uuid_to_str(self.added_by),
+            'added_at': self.added_at.isoformat() if self.added_at else None,
+        }
+
+
+class AccessGrant(DomainObject):
+    """Controls who can see or interact with the owner's content."""
+    __tablename__ = 'AccessGrants'
+
+    owner_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False)
+
+    granted_to = db.Column(db.Enum(*GRANTED_TO_VALUES, name='granted_to_enum'), nullable=False)
+    target_account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
+    target_group_id = db.Column(UUIDType, db.ForeignKey('Groups.id'), nullable=True)
+
+    # NULL = applies to all owner content
+    video_id = db.Column(UUIDType, db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=True)
+    folder_id = db.Column(UUIDType, db.ForeignKey('Folders.id', ondelete='CASCADE'), nullable=True)
+
+    can_view = db.Column(db.Boolean, nullable=False, default=False)
+    can_comment = db.Column(db.Boolean, nullable=False, default=False)
+    can_label = db.Column(db.Boolean, nullable=False, default=False)
+    can_download = db.Column(db.Boolean, nullable=False, default=False)
+
+    relationship_type = db.Column(
+        db.Enum(*RELATIONSHIP_TYPE_VALUES, name='relationship_type_enum'), nullable=True
+    )
+
+    granted_by = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
+    granted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    granted_until = db.Column(db.DateTime, nullable=True)
+    granted_reason = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint(
+            "(granted_to = 'everyone' AND target_account_id IS NULL AND target_group_id IS NULL)"
+            " OR (granted_to = 'account' AND target_account_id IS NOT NULL AND target_group_id IS NULL)"
+            " OR (granted_to = 'group' AND target_group_id IS NOT NULL AND target_account_id IS NULL)",
+            name='ck_access_grant_target',
+        ),
+        CheckConstraint(
+            "NOT (video_id IS NOT NULL AND folder_id IS NOT NULL)",
+            name='ck_access_grant_scope',
+        ),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.uuid_str(),
+            'owner_id': _uuid_to_str(self.owner_id),
+            'granted_to': self.granted_to,
+            'target_account_id': _uuid_to_str(self.target_account_id),
+            'target_group_id': _uuid_to_str(self.target_group_id),
+            'video_id': _uuid_to_str(self.video_id),
+            'folder_id': _uuid_to_str(self.folder_id),
+            'can_view': self.can_view,
+            'can_comment': self.can_comment,
+            'can_label': self.can_label,
+            'can_download': self.can_download,
+            'relationship_type': self.relationship_type,
+            'granted_by': _uuid_to_str(self.granted_by),
+            'granted_at': self.granted_at.isoformat() if self.granted_at else None,
+            'granted_until': self.granted_until.isoformat() if self.granted_until else None,
+            'granted_reason': self.granted_reason,
+        }
+
+
+class AccountBlock(DomainObject):
+    """Block list — blocks always override access grants."""
+    __tablename__ = 'AccountBlocks'
+
+    blocker_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False)
+    blocked_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False)
+    blocked_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    reason = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('blocker_id', 'blocked_id', name='_blocker_blocked_unique'),
+        CheckConstraint('blocker_id != blocked_id', name='ck_block_no_self'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.uuid_str(),
+            'blocker_id': _uuid_to_str(self.blocker_id),
+            'blocked_id': _uuid_to_str(self.blocked_id),
+            'blocked_at': self.blocked_at.isoformat() if self.blocked_at else None,
+            'reason': self.reason,
         }
 
