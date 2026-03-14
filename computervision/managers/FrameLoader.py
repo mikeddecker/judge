@@ -6,6 +6,7 @@ import os
 import random
 
 from constants import ENVS
+from uuid import UUID
 
 class FrameLoader:
     def __init__(self):
@@ -197,7 +198,7 @@ class FrameLoader:
 
         return loaded_frames
     
-    def get_skill(self, videoId: int, dim: tuple[int, int],
+    def get_skill(self, videoId: UUID, dim: tuple[int, int],
                   start: int, end: int, timesteps: int, normalized: bool = True, augment=False, flip_image=False):
         vpath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f'{videoId}', f'{videoId}_cropped.mp4')
         cap = cv2.VideoCapture(vpath)
@@ -245,7 +246,7 @@ class FrameLoader:
         
         return np.array(frames), flip_image
     
-    def get_segment(self, videoId: int, dim: tuple[int, int],
+    def get_segment(self, videoId: UUID, dim: tuple[int, int],
                   start: int, end: int, normalized: bool = True, augment=False, channels_last=False):
         """Returns frames in interval [start, end["""
         vpath = self.__get_cropped_video_path(videoId=videoId)
@@ -272,7 +273,7 @@ class FrameLoader:
         
         return np.array(frames) if channels_last else np.transpose(np.array(frames), (3, 0, 1, 2))
 
-    def get_skill_torch(self, videoId: int, dim: tuple[int, int],
+    def get_skill_torch(self, videoId: UUID, dim: tuple[int, int],
                   start: int, end: int, timesteps: int, normalized: bool = True, augment=False):
         vpath = self.__get_cropped_video_path(videoId=videoId)
         

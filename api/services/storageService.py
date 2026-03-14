@@ -19,6 +19,7 @@ from domain.folder import Folder
 from domain.tag import Tag
 from domain.videoinfo import VideoInfo
 from helpers.ValueHelper import ValueHelper
+from uuid import UUID
 from services.videoService import VideoService
 from services.folderService import FolderService
 from services.tagService import TagService
@@ -123,7 +124,7 @@ class StorageService:
                 elif content.split(".")[-1] in ENVS.SUPPORTED_VIDEO_FORMATS:
                     if self.VideoService.exists_in_database(name=content, folder=parent):
                         del videos_in_folder_according_to_database[content]
-                        videoId : int = self.VideoService.get_videoId(name=content, folder=parent)
+                        videoId: UUID = self.VideoService.get_videoId(name=content, folder=parent)
                         detected_tags : set[Tag] = self.__filename_to_tags(filename=content, tags=tags)
                         for tag in detected_tags:
                             self.VideoService.add_tag(videoId=videoId, tag=tag)
@@ -221,7 +222,7 @@ class StorageService:
                     detected_tags.add(tag)
         return detected_tags
 
-    def __create_video_image(self, videoId: int, name: str, folder: Folder, frameNr: int):
+    def __create_video_image(self, videoId: UUID, name: str, folder: Folder, frameNr: int):
         # Make sure videofolder exists, for storing predictions, image...
         inserted_videofolder = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}")
         os.makedirs(inserted_videofolder, exist_ok=True)
@@ -247,7 +248,7 @@ class StorageService:
             session.execute(table.delete())
         session.commit()
 
-    def download_video(self, name: str, ytid: str, folderId: int):
+    def download_video(self, name: str, ytid: str, folderId: UUID):
         ValueHelper.check_raise_string_only_abc123(name)
         ValueHelper.check_raise_uuid(folderId)
         folder = self.FolderService.get(folderId)

@@ -1,5 +1,6 @@
 
 from datetime import datetime
+from uuid import UUID
 from domain.layerComposition import LayerComposition
 from flask_sqlalchemy import SQLAlchemy
 from repository.models import Layer, LayerValue, LayerComposition as LayerCompositionDB, Skill as SkillDB
@@ -25,7 +26,7 @@ class MLLayerRepository:
         self.db.session.commit()
         return newLayer.to_dict()
     
-    def add_value(self, layerId: int, valueName: str) -> dict:
+    def add_value(self, layerId: UUID, valueName: str) -> dict:
         """Returns the full layervalue"""
         layer = self.db.session.query(Layer).filter_by(id=layerId).first()
         if layer is None:
@@ -40,13 +41,13 @@ class MLLayerRepository:
         self.db.session.commit()
         return layerValue.to_dict()
     
-    def has_layer(self, layerId: int) -> bool:
+    def has_layer(self, layerId: UUID) -> bool:
         return self.db.session.query(Layer).filter_by(id=layerId).scalar() is not None
     
-    def has_value(self, layerValueId: int) -> bool:
+    def has_value(self, layerValueId: UUID) -> bool:
         return self.db.session.query(LayerValue).filter_by(id=layerValueId).scalar() is not None
     
-    def get(self, layerId: int) -> Layer:
+    def get(self, layerId: UUID) -> Layer:
         return self.db.session.get(Layer, ident=layerId)
 
     def get_all(self) -> dict:
@@ -55,7 +56,7 @@ class MLLayerRepository:
         """
         return [lp.to_dict() for lp in self.db.session.query(Layer).order_by(Layer.name).all()]
 
-    def update_layer(self, layerId: int, name: str, min: float = None, max: float = None, step: float = None) -> dict:
+    def update_layer(self, layerId: UUID, name: str, min: float = None, max: float = None, step: float = None) -> dict:
         layer = self.db.session.get(Layer, ident=layerId)
         layer.name = name
         layer.min = min
@@ -66,7 +67,7 @@ class MLLayerRepository:
         self.db.session.commit()
         return layer.to_dict()
 
-    def update_value_name(self, layerValueId: int, name: str):
+    def update_value_name(self, layerValueId: UUID, name: str):
         layervalue : LayerValue = self.db.session.get(LayerValue, ident=layerValueId)
         layervalue.name = name
         self.db.session.commit()
@@ -91,7 +92,7 @@ class MLLayerRepository:
         
         return {compositionName: MapToDomain.map_layercomposition(compositionValues) for compositionName, compositionValues in compositions.items()}
 
-    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int) -> dict[str, LayerComposition]:
+    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: UUID) -> dict[str, LayerComposition]:
         """Return all layer compositions"""
         newLayerCompositionDB = LayerCompositionDB(
             compositionName=compositionName,

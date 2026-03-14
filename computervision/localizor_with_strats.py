@@ -12,6 +12,7 @@ from managers.RepoGeneral import REPO_GENERAL, RepoGeneral
 from moviepy import ImageSequenceClip
 from tqdm import tqdm
 from ultralytics import YOLO
+from uuid import UUID
 
 strategyparams = {
     'raw' : {
@@ -168,7 +169,7 @@ def calculate_smoothed_values(strat:str, params: dict, previous_values:dict, i:i
     
 def localize_jumpers(
         model: YOLO,
-        videoId: int,
+        videoId: UUID,
         dim: int,
         strategies: list,
         stratparams: dict,

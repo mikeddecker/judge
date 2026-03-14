@@ -128,13 +128,13 @@ class VideoRepository:
         video.TeamBoxes = self.get_team_boxes(video.Id)
         return video
 
-    def get_videoId(self, name: str, folder: Folder) -> int:
+    def get_videoId(self, name: str, folder: Folder) -> UUID:
         ValueHelper.check_raise_string_only_abc123_extentions(name)
         if folder is None or not isinstance(folder, Folder):
             raise ValueError(f"folder must be provided")
         return self.db.session.query(VideoInfoDB).filter_by(name=name, folderId=folder.Id).one().id
 
-    def get_videos(self, folderId: int) -> List[VideoInfo]:
+    def get_videos(self, folderId: UUID) -> List[VideoInfo]:
         """Return videos in the given folder"""
         ValueHelper.check_raise_uuid(folderId)
         videosDB = self.db.session.query(VideoInfoDB).filter_by(folderId=folderId).all()
@@ -159,7 +159,7 @@ class VideoRepository:
         return MapToDomain.map_video(videoDB)
 
     # Frames
-    def remove_frameInfo(self, frameNr: int, videoId: int, frameinfo: FrameInfo):
+    def remove_frameInfo(self, frameNr: int, videoId: UUID, frameinfo: FrameInfo):
         ValueHelper.check_raise_frameNr(frameNr)
         ValueHelper.check_raise_uuid(videoId)
         frameLabelDBs = self.db.session.query(FrameLabel).filter_by(frameNr=frameNr, videoId=videoId).all()
@@ -240,7 +240,7 @@ class VideoRepository:
     ##########
     # Skills #
     ##########
-    def add_skill(self, videoId: int, skillinfo: dict, start: int, end: int) -> int:
+    def add_skill(self, videoId: UUID, skillinfo: dict, start: int, end: int) -> UUID:
         """Let the service be responsible for good values in the dicts"""
         ValueHelper.check_raise_uuid(videoId)
         ValueHelper.check_raise_frameNr(start)
@@ -260,7 +260,7 @@ class VideoRepository:
         self.db.session.commit()
         return skill.id
 
-    def update_skill(self, id: UUID, videoId: int, skillinfo: dict, start: int, end: int) -> int:
+    def update_skill(self, id: UUID, videoId: UUID, skillinfo: dict, start: int, end: int) -> int:
         """Let the service be responsible for good values in the dicts"""
         ValueHelper.check_raise_uuid(id)
         ValueHelper.check_raise_uuid(videoId)
@@ -278,11 +278,11 @@ class VideoRepository:
 
         self.db.session.commit()
 
-    def get_skills(self, videoId: int) -> List[Skill]:
+    def get_skills(self, videoId: UUID) -> List[Skill]:
         skillsDB = self.db.session.query(SkillDB).filter_by(videoId=videoId).all()
         return [MapToDomain.map_skill(s) for s in skillsDB]
 
-    def get_previous_skill(self, videoId: int, frameEnd: int) -> tuple[dict, str, int]:
+    def get_previous_skill(self, videoId: UUID, frameEnd: int) -> tuple[dict, str, int]:
         """Returns prev_skillinfo, prev_skillname, base_level"""
         ValueHelper.check_raise_uuid(videoId)
         ValueHelper.check_raise_frameNr(frameEnd)
@@ -301,7 +301,7 @@ class VideoRepository:
         self.db.session.delete(skillDB)
         self.db.session.commit()
 
-    def update_skills_completed(self, videoId: int, completed: bool):
+    def update_skills_completed(self, videoId: UUID, completed: bool):
         ValueHelper.check_raise_uuid(videoId)
         if not isinstance(completed, bool):
             raise ValueError(f"Completed must be a boolean {completed}")

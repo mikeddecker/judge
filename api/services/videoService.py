@@ -196,14 +196,14 @@ class VideoService:
                 self.VideoRepo.remove_frameInfo(videoId=id, frameNr=f_nr.FrameNr, frameinfo=f_nr)
         self.VideoRepo.delete(id=id)
 
-    def get_videos(self, folderId: int) -> List[VideoInfo]:
+    def get_videos(self, folderId: UUID) -> List[VideoInfo]:
         """Returns videos in the given folder that are inserted in the database"""
         ValueHelper.check_raise_uuid(folderId)
         if not self.FolderRepo.exists(folderId):
             raise LookupError(f"FolderId {folderId} does not exist")
         return self.VideoRepo.get_videos(folderId=folderId)
 
-    def get_skills(self, videoId: int) -> List[Skill]:
+    def get_skills(self, videoId: UUID) -> List[Skill]:
         ValueHelper.check_raise_uuid(videoId)
         if not self.VideoRepo.exists(videoId):
             raise LookupError(f"VideoId {videoId} does not exist")
@@ -256,23 +256,23 @@ class VideoService:
     def upload(self):
         raise NotImplementedError("Nice to have, end of journey")
 
-    def video_has_predictions(self, videoId: int, model: str, date: str = None):
+    def video_has_predictions(self, videoId: UUID, model: str, date: str = None):
         # TODO : make as
         return os.path.exists(
             os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_skills_{model}.json")
         )
 
-    def load_predicted_skills(self, videoId:int, model:str):
+    def load_predicted_skills(self, videoId: UUID, model: str):
         filepath = os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_skills_{model}.json")
         if os.path.exists(filepath):
             with open(filepath, 'r') as f:
                 return json.load(f)
         return []
 
-    def load_predicted_boxes(self, videoId:int):
+    def load_predicted_boxes(self, videoId: UUID):
         return load_json_file(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json"))
 
-    def getVideoPredictions(self, videoId: int):
+    def getVideoPredictions(self, videoId: UUID):
         ValueHelper.check_raise_uuid(videoId)
         best_model = 'MViT'
 
@@ -290,7 +290,7 @@ class VideoService:
     def get_frame_label_types(self) -> list[str]:
         return self.VideoRepo.get_frame_label_types()
 
-    def has_predicted_boxes(self, videoId: int):
+    def has_predicted_boxes(self, videoId: UUID):
         ValueHelper.check_raise_uuid(videoId)
         return os.path.exists(os.path.join(ENVS.DIRS.GENERATED_VIDEODATA, f"{videoId}", f"{videoId}_raw_boxes.json"))
 

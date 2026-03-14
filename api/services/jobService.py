@@ -4,6 +4,7 @@ from repository.folderRepo import FolderRepository
 from repository.videoRepo import VideoRepository
 from repository.jobRepo import JobRepository
 from typing import List
+from uuid import UUID
 
 VISION_MODELS = ['MViT'] # TODO : delete, rewrite this
 
@@ -46,12 +47,12 @@ class JobService:
         """Get video with the corresponding Id"""
         return self.JobRepo.get_all()
     
-    def video_has_pending_job(self, videoId: int, model: str, step: str = 'FULL'):
+    def video_has_pending_job(self, videoId: UUID, model: str, step: str = 'FULL'):
         return self.JobRepo.exists_by_job_content(
             Job(type='PREDICT', step=step, job_arguments={'model': model, 'videoId':videoId})
         )
     
-    def launch_job_predict_skills(self, step:str, model: str, videoId: int):
+    def launch_job_predict_skills(self, step: str, model: str, videoId: UUID):
         job = Job(
             type = 'PREDICT',
             step = step,
@@ -65,7 +66,6 @@ class JobService:
         if not self.JobRepo.exists_by_job_content(job):
             self.__add(job)
 
-
     def re_train_and_predict(self):
         trainjob = Job(
             type='TRAIN',
@@ -75,7 +75,6 @@ class JobService:
         )
         if not self.JobRepo.exists_by_job_content(trainjob):
             self.__add(trainjob)
-
 
         videoIds = [1285, 1315, 1178, 1408, 2283, 2285, 2289, 2288, 2296, 2309, 2568,2569,2570,2571,2572,2573,2574,2575,2576,2577,2578,2579,2580,2581,2582,2583,2584,2585,2586,2587,2588,2589]
         for videoId in videoIds:
@@ -87,3 +86,4 @@ class JobService:
             )
             if not self.JobRepo.exists_by_job_content(predictJob):
                 self.__add(predictJob)
+

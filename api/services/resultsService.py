@@ -48,7 +48,7 @@ class ResultsService:
     def recognition(self):
         return self.ResultsRepo.recognition()
 
-    def __calculate_diff_score(self, videoId: int, model: str):
+    def __calculate_diff_score(self, videoId: UUID, model: str):
         freq_table = {l: 0 for l in range(9)}
 
         predicted_skills = self.videoService.load_predicted_skills(videoId=videoId, model=model)
@@ -75,7 +75,7 @@ class ResultsService:
 
         return freq_table, score
 
-    def judge(self, videoIds: List[int]):
+    def judge(self, videoIds: List[UUID]):
         # TODO : refactor to repo? Or partially?
         allowed_models = PYTORCH_MODELS_SKILLS.keys()
         scores = {

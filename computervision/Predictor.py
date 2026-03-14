@@ -19,6 +19,7 @@ from models.OutputHeadRecognition import OutputHeadRecognition
 from moviepy import VideoFileClip, VideoClip
 from tqdm import tqdm
 from helpers import localize_get_best_modelpath
+from uuid import UUID
 
 torch.backends.cudnn.benchmark = True
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -182,7 +183,7 @@ class Predictor:
             gc.collect()
 
     #### Save video predictions #####################################################################################################
-    def __save_skill_predictions_as_video(self, videoId:int, predictions:dict[int, dict], balancedType:str, vpath:str, targetNames:dict):
+    def __save_skill_predictions_as_video(self, videoId:UUID, predictions:dict[int, dict], balancedType:str, vpath:str, targetNames:dict):
         lowerDimension = None # Manual setting for demo purposes (e.g. 720)
 
         cap = cv2.VideoCapture(vpath)

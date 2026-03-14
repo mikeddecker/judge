@@ -4,6 +4,7 @@ from domain.frameinfo import FrameInfo
 from services.folderService import FolderService
 from services.videoService import VideoService
 from helpers.ValueHelper import ValueHelper
+from uuid import UUID
 
 class FrameRouter(Resource):
     def __init__(self, **kwargs):
@@ -11,7 +12,7 @@ class FrameRouter(Resource):
         self.videoService = VideoService()
         super().__init__(**kwargs)
     
-    def post(self, videoId: int, frameNr: int):
+    def post(self, videoId: UUID, frameNr: int):
         data = request.get_json()
         
         # Extract the required fields from the body
@@ -37,7 +38,7 @@ class FrameRouter(Resource):
         video = self.videoService.set_frameInfo(frameInfo=frameinfo, video=video)
         return video.to_dict(), 200
 
-    def delete(self, videoId: int, frameNr: int):
+    def delete(self, videoId: UUID, frameNr: int):
         data = request.get_json()
         frameinfo = data.get('frameinfo')
         try:
@@ -59,3 +60,4 @@ class FrameLabelTypeRouter(Resource):
 
     def get(self):
         return self.videoService.get_frame_label_types(), 200
+

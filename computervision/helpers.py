@@ -18,6 +18,7 @@ from collections import defaultdict
 from constants import ENVS
 from managers.FrameLoader import FrameLoader
 from types import SimpleNamespace
+from uuid import UUID
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -174,7 +175,7 @@ def iou(y_true, y_pred):
 
     return iou
 
-def load_skill_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool):
+def load_skill_batch_X_torch(frameloader:FrameLoader, videoId:UUID, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool):
     try:
         loaded_frames = frameloader.get_skill_torch(videoId, dim=dim, 
                                                     start=frameStart, 
@@ -226,7 +227,7 @@ def load_segment_batch_y_torch(frameStart:int, frameEnd:int, df_splitpoint_value
     y = df_splitpoint_values[(df_splitpoint_values['frameNr'] >= frameStart) & (df_splitpoint_values['frameNr'] < frameEnd)]['splitpoint'].to_numpy()
     return torch.from_numpy(y).float().to(device)
 
-def load_segment_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool=False):
+def load_segment_batch_X_torch(frameloader:FrameLoader, videoId:UUID, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool=False):
     try:
         loaded_frames = frameloader.get_segment(videoId, dim=dim, 
                                                     start=frameStart, 
@@ -246,7 +247,7 @@ def load_segment_batch_X_torch(frameloader:FrameLoader, videoId:int, dim:tuple[i
         print(f"*"*80)
         raise err
 
-def calculate_splitpoint_values(videoId: int, frameLength:int, df_Skills:pd.DataFrame, fps:float, Nsec_frames_around=1/6):
+def calculate_splitpoint_values(videoId: UUID, frameLength:int, df_Skills:pd.DataFrame, fps:float, Nsec_frames_around=1/6):
     """Creates a dataframe: 'videoId', 'frameNr', 'splitpoint'
     Where splitpoint is the value 0 -> 1 whether the video needs to be split at that point or not"""
     splitpoint_values = {

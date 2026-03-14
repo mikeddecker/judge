@@ -5,6 +5,7 @@ from sqlalchemy import and_, func
 from repository.models import Jobs as JobDB
 from repository.MapToDomain import MapToDomain
 from typing import List
+from uuid import UUID
 
 class JobRepository:
     def __init__(self, db : SQLAlchemy):
@@ -23,7 +24,7 @@ class JobRepository:
         self.db.session.commit()
         return MapToDomain.map_job(new_job)
 
-    def exists(self, jobId: int) -> bool:
+    def exists(self, jobId: UUID) -> bool:
         return self.db.session.query(JobDB).filter_by(id=jobId).scalar() is not None
 
     def exists_by_job_content(self, job: Job) -> bool:

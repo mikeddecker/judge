@@ -46,7 +46,7 @@ class MLLayerService:
         else:
             return self.MlLayerRepo.add_layer(name=name, type=type)
 
-    def add_layer_value(self, layerId: int, name: str) -> dict:
+    def add_layer_value(self, layerId: UUID, name: str) -> dict:
         """Returns the full layer"""
         ValueHelper.check_raise_uuid(layerId)
         ValueHelper.check_raise_string_only_abc123space(name)
@@ -58,7 +58,7 @@ class MLLayerService:
         ValueHelper.check_raise_uuid(id)
         return self.MlLayerRepo.has_layer(id)
 
-    def update_layer(self, layerId: int, name: str, min: float = None, max: float = None, step: float = None) -> dict:
+    def update_layer(self, layerId: UUID, name: str, min: float = None, max: float = None, step: float = None) -> dict:
         """update a layer: can not update type, returns layer"""
         ValueHelper.check_raise_uuid(layerId)
         ValueHelper.check_raise_string_only_abc123space(name)
@@ -79,7 +79,7 @@ class MLLayerService:
         else:
             return self.MlLayerRepo.update_layer(layerId=layerId, name=name)
 
-    def update_value_name(self, layervalueId: int, new_name: str):
+    def update_value_name(self, layervalueId: UUID, new_name: str):
         ValueHelper.check_raise_uuid(layervalueId)
         ValueHelper.check_raise_string_only_abc123(new_name)
         assert self.MlLayerRepo.has_value(layervalueId), f"Layervalue with id {layervalueId} does not exist"
@@ -88,7 +88,7 @@ class MLLayerService:
     def get_layer_compositions(self) -> dict[str, LayerComposition]:
         return self.MlLayerRepo.get_layer_compositions()
 
-    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: int) -> dict[str, LayerComposition]:
+    def add_layer_compostion_stage(self, compositionName: str, stage: int | None, layerId: UUID) -> dict[str, LayerComposition]:
         ValueHelper.check_raise_string_only_abc123(compositionName)
         ValueHelper.check_raise_uuid(layerId)
         if stage is not None:

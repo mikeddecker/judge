@@ -9,6 +9,7 @@ from collections import defaultdict
 from constants import ENVS
 from helpers import extract_key_number_pairs
 from typing import Iterable, Any, TypedDict
+from uuid import UUID
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.types import TypeEngine
 
@@ -175,7 +176,7 @@ class DataRepository:
         with self._get_connection() as connection:
             return pd.read_sql(qry, con=connection)
 
-    def get_videoIds_of_videos_with_skills(self) -> list[int]:
+    def get_videoIds_of_videos_with_skills(self) -> list[UUID]:
         with self._get_connection() as connection:
             qry = sqlal.text(f"""SELECT DISTINCT videoId FROM Skills""")  
             return pd.read_sql(qry, con=connection)['videoId'].to_list()
@@ -192,7 +193,7 @@ class DataRepository:
         with self._get_connection() as connection:
             return pd.read_sql(qry, con=connection)
 
-    def get_skills(self, train_test_val, videoId:int=None):
+    def get_skills(self, train_test_val, videoId:UUID=None):
         """videoId is optional, then it returns only skills from that videoId"""
         # TODO : Make warning or error on train page displaying skills having null values
         if train_test_val == "train":
@@ -321,7 +322,7 @@ class DataRepository:
             df_jobs = pd.read_sql(qry, con=connection)
             return None if len(df_jobs) == 0 else df_jobs.iloc[0]
     
-    def delete_job(self, jobId:int):
+    def delete_job(self, jobId:UUID):
         print(f"Deleting job ({jobId})")
         with self._get_connection() as connection:
             qry = sqlal.text(f"""DELETE FROM Jobs WHERE id = :id""")
