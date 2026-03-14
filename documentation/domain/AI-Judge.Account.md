@@ -1,4 +1,3 @@
-
 # Account Type = user
 (local account and/or SSO/OpenID connect)
 
@@ -31,6 +30,7 @@ RBAC: Possibility to switch to views of another account
 - mfaEnabled
 - mfaCode
 - mfaCodeExpires
+- type (admin, user, organisation, team, club, group)
 
 Fields & behavior
 - MFA flow: `AccountService.login()` will require MFA if `mfaEnabled` is true; `AccountMFAVerifyRouter` completes the flow.
@@ -43,6 +43,12 @@ Repo helpers
 ⚠ Notes & recommendations
 - Do not expose `passwordHash` or `salt` in API responses. `MapToDomain.map_account()` returns a domain object that omits these fields for JSON responses.
 - Consider moving sensitive audit fields (password resets, MFA attempts) into a separate audit table for compliance.
+
+# AccountTypes
+admin, user (individual), group
+In essense: 
+- Groups can contain
+
 
 # Permissions (issued by Admin/subscription)
 ![[AI-Judge.AccountPermissions]]

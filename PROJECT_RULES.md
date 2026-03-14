@@ -51,10 +51,52 @@ docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up --build api 
 
 ## Releases and Deploy
 - Build and run releases using the Docker image and `docker-compose.prod.yaml` or CI/CD pipeline. Tag releases in git and attach migration notes.
+- Multi-region deployment: See `documentation/MULTI_REGION_INFRASTRUCTURE.md` for Belgium + USA setup.
+- Use `docker compose --profile region-be` and `docker compose --profile region-us` for region-specific deployments.
+- Database migrations must be applied to primary first; replicas sync automatically.
+- Always test failover procedure before releasing (manual or via runbook in `documentation/DISASTER_RECOVERY.md`)
 
 ## Small Notes
 - IDs are UUIDs throughout the repo; prefer UUID types where applicable. (Code might still contain int type hints even though it's already UUID. Check for that)
 - If you add or change API endpoints, ensure the OpenAPI generator and docs are correct.
+
+## Multi-Region Deployment
+- Belgium is the primary region (MySQL primary, main app instance).
+- USA is the secondary region (MySQL replica, auto-controlled backup).
+- All database migrations apply to primary first; replicas sync via binary logging.
+- Video storage can use S3 (recommended) for cross-region replication, or rsync (simpler, slower).
+- Load balancer routes to both regions; failing over is manual via DNS A record update (or automated via cloud LB).
+- See `documentation/MULTI_REGION_INFRASTRUCTURE.md` for architectural details and setup procedures.
+
+## CI/CD
+- All PRs must pass automated tests in GitHub Actions (`.github/workflows/`).
+- Tests run in Docker containers (mirror production profiles) to ensure environment parity.
+- Workflows:
+  - `ci-tests.yml`: Unit tests, linting, type checking, integration tests, database migrations
+  - `build-push.yml`: Build Docker images and publish to GHCR on release tags
+- Linting (flake8, eslint), type checking (pyright), and unit tests (pytest, vitest) are required.
+- Builds fail if tests fail—no merging without green CI.
+- Images are automatically built and pushed to registry on release tag.
+- Deployments to production require manual approval (or can be automated via GitOps).
+
+## Monitoring & Observability
+
+See [AI-Judge.Monitoring-Logging.md](documentation/AI-Judge.Monitoring-Logging.md) for comprehensive monitoring strategy.
+
+Key points:
+- API exports Prometheus metrics at `/metrics` endpoint (protected by IP whitelist)
+- Health endpoints for liveness and readiness checks
+- Structured logging (structlog) captures all key events with correlation IDs
+- Logs stored in `${STORAGE_DIR_GENERATED_DATA}/logs/` by service and region
+- 30-day log retention for GDPR compliance (auto-delete)
+- Grafana dashboards monitor API latency, error rates, database replication lag, disk usage
+- AlertManager sends critical alerts (API down, replica lag > 5s, disk > 80%) to Slack/email
+- Health endpoints:
+  - `GET /health` — basic connectivity check
+  - `GET /health/readiness` — can serve traffic?
+  - `GET /health/database-replica-lag` — replication status (production only)
+
+## Small Notes
 
 ## Makefile
 - The repository includes a `Makefile` to simplify common Docker and development tasks. Prefer `make` targets over running `docker compose` manually when available.
@@ -70,4 +112,10 @@ docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up --build api 
 ## Web
 - Refer to other components or views and use the same style
 - Use `<script setup>` for instance.
+
+# File naming convention
+- AI-Judge.*
+- AI-Judge.something
+- AI-Judge.something.something
+- In a subfolder where needed (e.g. domain, features, api...)
 

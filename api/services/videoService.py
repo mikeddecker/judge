@@ -145,10 +145,10 @@ class VideoService:
         self.VideoRepo.remove_skill(videoinfo.Id, skill.FrameStart, skill.FrameEnd)
         videoinfo.remove_skill(skill)
         return videoinfo
-        
+
     def count(self) -> int:
         return self.VideoRepo.count()
-    
+
     def exists_in_database(self, id: UUID = None, name: str = None, folder: Folder = None) -> bool:
         """Check existence in database
         If id provided, ignore name and folder"""

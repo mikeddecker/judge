@@ -37,19 +37,33 @@ const validationResults = computed(() => {
 
 onMounted(async () => {
     getResults('recognition').then(
-        r => results.value = Object.fromEntries(
-            Object.entries(r).map(
-                ([i, recipeResults]) => [recipeResults.recipeCode, recipeResults]
-            )
-        )
+        r => {
+            if (r && Object.keys(r).length > 0) {
+                results.value = Object.fromEntries(
+                    Object.entries(r).map(
+                        ([i, recipeResults]) => [recipeResults.recipeCode, recipeResults]
+                    )
+                )
+            } else {
+                results.value = {}
+            }
+        }
     ).then(
         () => {
-            trainedRecipeCodes.value =  Object.entries(results.value).map(([listindex, trainresult]) => {
-                if (trainresult.isBestOfAll) { selectedRecipe.value = trainresult.recipeCode }
-                return trainresult.recipeCode
-            })
+            if (results.value && Object.keys(results.value).length > 0) {
+                trainedRecipeCodes.value = Object.entries(results.value).map(([listindex, trainresult]) => {
+                    if (trainresult.isBestOfAll) { selectedRecipe.value = trainresult.recipeCode }
+                    return trainresult.recipeCode
+                })
+            } else {
+                trainedRecipeCodes.value = []
+            }
         }
-    )
+    ).catch(err => {
+        console.error('Error loading recognition results:', err)
+        results.value = {}
+        trainedRecipeCodes.value = []
+    })
 })
 </script>
 

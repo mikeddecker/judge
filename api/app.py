@@ -18,7 +18,7 @@ from flask_talisman import Talisman
 from helpers.ValueHelper import ValueHelper
 from repository.db import db
 from routers.folderRouter import FolderRouter
-from routers.healthRouter import HealthRouter
+from routers.healthRouter import HealthRouter, ReadinessRouter, ReplicationLagRouter, MetricsRouter
 from routers.videoRouter import VideoRouter, VideoRouterCropped, VideoImageRouter, VideoInfoRouter, VideoPredictionRouter, VideoPredictionRouter_GetLocalizePredictions, VideoPredictionRouter_HasLocalizePredictions
 from routers.frameRouter import FrameRouter, FrameLabelTypeRouter
 from routers.jobRouter import JobTrainRouter, JobLaunchRouter, JobOptionsRouter
@@ -30,6 +30,7 @@ from routers.resultsRouter import ResultsRouter
 from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
 from routers.accountRouter import AccountRegisterRouter, AccountLoginRouter, AccountMFAVerifyRouter, AccountLogoutRouter, AccountMeRouter, AccountForgotPasswordRouter, AccountResetPasswordRouter, AccountEnableMFARouter
+from routers.exportRouter import ExportDataRouter, ExportDownloadRouter, ExportStatusRouter
 from services.videoService import VideoService
 from typing import cast
 from werkzeug.routing import BaseConverter
@@ -206,6 +207,9 @@ api.add_resource(JobOptionsRouter, '/job/options/<step>')
 api.add_resource(StatsRouter, '/stats')
 api.add_resource(ResultsRouter, '/results')
 api.add_resource(HealthRouter, '/health')
+api.add_resource(ReadinessRouter, '/health/readiness')
+api.add_resource(ReplicationLagRouter, '/health/database-replica-lag')
+api.add_resource(MetricsRouter, '/metrics')
 
 # Account authentication routes
 api.add_resource(AccountRegisterRouter, '/auth/register')
@@ -216,6 +220,11 @@ api.add_resource(AccountMeRouter, '/auth/me')
 api.add_resource(AccountForgotPasswordRouter, '/auth/forgot-password')
 api.add_resource(AccountResetPasswordRouter, '/auth/reset-password')
 api.add_resource(AccountEnableMFARouter, '/auth/enable-mfa')
+
+# Data export routes (GDPR Article 20 compliance)
+api.add_resource(ExportDataRouter, '/account/export-data')
+api.add_resource(ExportDownloadRouter, '/export/download/<string:job_id>')
+api.add_resource(ExportStatusRouter, '/export/status/<string:job_id>')
 
 # Attach lightweight OpenAPI generator and docs
 try:
@@ -244,12 +253,12 @@ os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'train'), exist_ok=Tru
 os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'test'), exist_ok=True)
 os.makedirs(os.path.join(ENVS.DIRS.YOLO_LABELS, 'images', 'val'), exist_ok=True)
 
-def backup_mysql_db(backup_dir: str = MYSQL_BACKUP):
+def backup_mysql_db(backup_dir: str = MYSQL_BACKUP, label: str = "scheduled"):
     """Create a MySQL database backup using mysqldump"""
     os.makedirs(backup_dir, exist_ok=True)
 
-    timestamp = datetime.now().strftime("%Y%m%d")
-    backup_file = os.path.join(backup_dir, f"{MYSQL_DATABASE}_{timestamp}.sql")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_file = os.path.join(backup_dir, f"{MYSQL_DATABASE}_{label}_{timestamp}.sql")
 
     # Use env var to avoid "Using a password on the command line is insecure"
     env = os.environ.copy()
@@ -280,8 +289,7 @@ def shutdown_handler(*args):
     _shutdown_called = True
     print("⚠️ Shutting down Flask app, creating backup...")
     try:
-        pass
-        # backup_mysql_db()
+        backup_mysql_db(label="shutdown")
     except Exception as e:
         print(e)
     sys.exit(0)
@@ -290,7 +298,7 @@ signal.signal(signal.SIGINT, shutdown_handler) # Handle Ctrl+C and kill
 signal.signal(signal.SIGTERM, shutdown_handler) # Handle Ctrl+C and kill
 atexit.register(shutdown_handler) # Also run on interpreter exit
 scheduler = BackgroundScheduler()
-scheduler.add_job(backup_mysql_db, "interval", hours=1)
+scheduler.add_job(backup_mysql_db, "interval", hours=2, id="mysql_scheduled_backup", replace_existing=True)
 scheduler.start()
 
 if __name__ == '__main__':

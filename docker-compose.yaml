@@ -15,6 +15,17 @@ services:
       - $MYSQL_LOCAL_PORT:$MYSQL_DOCKER_PORT
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: >
+      --server-id=${MYSQL_SERVER_ID:-1}
+      --log-bin=mysql-bin
+      --binlog-format=ROW
+      --binlog-do-db=${MYSQL_DATABASE}
+      --replicate-do-db=${MYSQL_DATABASE}
+      --relay-log=relay-bin
+      --relay-log-recovery=ON
+      --default-storage-engine=InnoDB
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_0900_ai_ci
     healthcheck:
       test:
         [
@@ -85,6 +96,31 @@ services:
       - torch_cache:/root/.cache/torch
     # ipc: host # Good for now - use shm_size
     shm_size: 6gb # About 30-50% max of CPU
+
+  # Sync executor for bidirectional multi-region synchronization
+  sync-executor:
+    container_name: ai-judge-sync-executor
+    build: ./api
+    profiles:
+      - prod
+    env_file: .env
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - ai-judge-network
+    restart: on-failure
+    volumes:
+      - ${STORAGE_DIR_VIDEOS}:${STORAGE_DIR_VIDEOS}
+      - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
+    # Run sync jobs every 5 minutes
+    command: >
+      bash -c "while true; do
+        python /app/scripts/sync-job-manager.py --mode=jobs --execute;
+        sleep 300;
+      done"
 
   # Testing services
   api-test:

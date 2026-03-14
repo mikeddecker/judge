@@ -6,6 +6,7 @@
     <Tabs v-else value="general">
       <TabList>
         <Tab value="general">General</Tab>
+        <Tab value="monitoring">📊 Monitoring</Tab>
         <Tab value="recognition">Recognition</Tab>
         <Tab value="segmentation">Segmentation</Tab>
         <Tab value="localization">Localization</Tab>
@@ -14,7 +15,10 @@
       <TabPanels>
         <TabPanel value="general">
           <StatsGeneralView/>
-        </TabPanel>        
+        </TabPanel>
+        <TabPanel value="monitoring">
+          <StatsMonitoringView/>
+        </TabPanel>
         <TabPanel value="localization">
           <StatsLocalizationView/>
           <ResultsLocalizationView/>
@@ -40,6 +44,7 @@
 import { getFolder, getFrameLabelTypes, getResults, getStats } from '../services/videoService';
 import { computed, onMounted, ref } from 'vue';
 import StatsGeneralView from './StatsGeneralView.vue';
+import StatsMonitoringView from './StatsMonitoringView.vue';
 import StatsLocalizationView from './StatsLocalizationView.vue';
 import StatsRecognitionView from './StatsRecognitionView.vue';
 import StatsSegmentationView from './StatsSegmentationView.vue';

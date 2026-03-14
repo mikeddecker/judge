@@ -18,6 +18,21 @@ What does this mean? Most aspects are still in the development stage. Even thoug
 - Label frames (localization)
 - Segment videos
 - Recognize (skill) elements in te segment
+- Organisations (multi-tenancy)
+	- Org members
+	- Individual members, representatives
+	- Upload videos (set them public/private)
+		- On the folder or video
+		- Permission an video wins
+	- Give permissions to other users (friends?), groups...
+- Browse videos
+	- In folder mode (like browsing a directory)
+	- In tag mode (where 'folders' represent tags)
+	- (Forsee pages)
+- Label video frames
+- Label video (fragments)/segments
+- Configure layers & layercompositions
+- See statistics, train results
 
 This repository contains a working Flask REST API (`/api`) and a front-end (`/web`) plus a computer-vision training and prediction stack (`/computervision`). The API is the canonical interface for creating, reading, updating and deleting videos, folders, labels, accounts and model jobs. The web application is a lightweight client that uses session-based authentication and the API routes.
 
@@ -38,7 +53,15 @@ Key privacy rules implemented in code:
 
 # ✴ Availability
 
-![[AI-Judge.Availability]]
+See [[AI-Judge.Multi-Region]] for detailed multi-region deployment architecture across Belgium (EU) and USA.
+
+Current plan concepts:
+- Primary instance in Belgium (EU)
+- Passive/replica instance in USA
+- Manual DNS failover (or auto-failover via cloud LB in future)
+- Database replication (primary → replica)
+- Video storage sync (S3 or rsync)
+- Database backup automation (6-hourly encrypted backups)
 
 # 🏬 Backup
 ![[AI-Judge.Backup]]
@@ -65,11 +88,12 @@ None yet
 Also no hard requirement, unless it is adopted into judging panels.
 Because ...
 # 🧯Disaster Plan Recovery
-No real plan, for now just think about:
-- Backup
-- How to set-up/run the app again after server breakdown.
-	- code README.md
-	- ...
+See [[AI-Judge.Disaster-Recovery]] for detailed operational runbooks, incident response procedures, and recovery steps for all critical failure scenarios. Includes:
+- Recovery Time Objectives (RTO) and Recovery Point Objectives (RPO)
+- Failover procedures (database, API, video storage)
+- Data restoration from backups
+- Quarterly DR drills
+- On-call escalation paths
 
 # 💬 Discussion points
 Computervision
@@ -105,13 +129,15 @@ Computervision
         - Then develop the database/file sync? (I have 2 external SSD's of 1TB of video's now)
         - When my pc is online -> sync video's/labels/database
 
-# 📑 Action points
-- [ ] ⏫ Walk through general page
-- [ ] ⏫ Discuss the discussion points
-- [ ] ⏫ Send Eva email about recording on competitions
-    - Yes, she wrote something about Gymfed(leden) -> gymfed videos
+# � Roadmap
 
-I will propose -> training can still be on the same dataset.
+See [[AI-Judge.Roadmap]] for the comprehensive development roadmap with:
+- **Phase 1**: Foundation & Security (permissions, MFA, type hints, CI/CD)
+- **Phase 2**: Multi-Region Infrastructure (database replication, load balancing, secrets)
+- **Phase 3**: Observability (monitoring, logging, backups, disaster recovery)
+- **Phase 4**: Advanced Features (OpenID, OAuth, admin panel, geo-replication)
+
+Integrated with operational procedures in [[AI-Judge.Disaster-Recovery]] and infrastructure details in [[AI-Judge.Multi-Region]].
 
 ---
 

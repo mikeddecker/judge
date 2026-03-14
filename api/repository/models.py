@@ -284,6 +284,83 @@ class Skill(DomainObject):
 #     ]
 # }
 
+class ConflictLog(DomainObject):
+    """Tracks first-write-wins conflicts in dual-primary replication
+    
+    Conflicts can be:
+    1. Auto-resolved: Automatically kept winning version if non-critical field (logged but not notified)
+    2. User-resolved: Critical fields (frame labels, skill data) require user inspection and approval
+    """
+    __tablename__ = 'ConflictLogs'
+    
+    entity_type = db.Column(db.String(50), nullable=False)  # e.g., 'Video', 'FrameLabel', 'Skill'
+    entity_id = db.Column(UUIDType, nullable=False, index=True)  # ID of the conflicting entity
+    
+    # Winning update (kept)
+    winning_account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
+    winning_region = db.Column(db.String(50), nullable=False)
+    winning_timestamp = db.Column(db.DateTime, nullable=False)
+    winning_data = db.Column(MutableDict.as_mutable(JSON), nullable=False)  # Full winning entity state
+    
+    # Losing update (archived for audit)
+    losing_account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
+    losing_region = db.Column(db.String(50), nullable=False)
+    losing_timestamp = db.Column(db.DateTime, nullable=False)
+    losing_data = db.Column(MutableDict.as_mutable(JSON), nullable=False)  # Full losing entity state
+    
+    # Resolution tracking
+    conflict_description = db.Column(db.String(255), nullable=False)  # Human-readable description
+    auto_resolved = db.Column(db.Boolean, nullable=False, default=False)  # True if auto-resolved (no user action needed)
+    is_resolved = db.Column(db.Boolean, nullable=False, default=False)  # True if user manually resolved
+    resolved_by = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    resolution_note = db.Column(db.String(255), nullable=True)
+
+    def to_dict(self):
+        return {
+            'entity_type': self.entity_type,
+            'entity_id': str(self.entity_id) if self.entity_id else None,
+            'winning_account_id': str(self.winning_account_id) if self.winning_account_id else None,
+            'winning_region': self.winning_region,
+            'winning_data': self.winning_data,
+            'losing_account_id': str(self.losing_account_id) if self.losing_account_id else None,
+            'losing_region': self.losing_region,
+            'losing_data': self.losing_data,
+            'conflict_description': self.conflict_description,
+            'auto_resolved': self.auto_resolved,
+            'is_resolved': self.is_resolved,
+            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
+        }
+
+class DeletedVideo(DomainObject):
+    """Tracks soft-deleted videos for 30-day recovery window before hard delete"""
+    __tablename__ = 'DeletedVideos'
+    
+    video_id = db.Column(UUIDType, nullable=False, index=True, unique=True)  # Reference to original Video.id
+    video_name = db.Column(db.String(255), nullable=False)  # Store video name for recovery context
+    folder_id = db.Column(UUIDType, nullable=False)  # Store folder reference
+    deleted_by = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
+    deleted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    
+    recovery_deadline = db.Column(db.DateTime, nullable=False)  # calculated as deleted_at + 30 days
+    hard_delete_at = db.Column(db.DateTime, nullable=True)  # when hard delete executed
+    
+    region = db.Column(db.String(50), nullable=False)  # Region where deletion originated
+    original_video_data = db.Column(MutableDict.as_mutable(JSON), nullable=False)  # Archived video metadata for restore
+    storage_path = db.Column(db.String(511), nullable=False)  # Path to video files for restoration
+    
+    is_hard_deleted = db.Column(db.Boolean, nullable=False, default=False)
+    hard_deleted_by = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
+
+    def to_dict(self):
+        return {
+            'video_id': str(self.video_id) if self.video_id else None,
+            'video_name': self.video_name,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
+            'recovery_deadline': self.recovery_deadline.isoformat() if self.recovery_deadline else None,
+            'is_hard_deleted': self.is_hard_deleted,
+        }
+
 class Jobs(DomainObject):
     __tablename__ = 'Jobs'
     type = db.Column(db.String(30), nullable=False)
@@ -291,6 +368,56 @@ class Jobs(DomainObject):
     job_arguments = db.Column(MutableDict.as_mutable(JSON), nullable=False)
     status = db.Column(db.String(30), nullable=False)
     status_details = db.Column(db.String(127))
+    job_category = db.Column(db.String(20), nullable=False, default='AI')  # 'AI', 'SYNC', or 'BACKUP'
+
+class ExportJob(DomainObject):
+    """Tracks data export requests for GDPR Article 20 compliance (right to data portability)
+    
+    Path A: On-demand export of account data as readable ZIP file
+    Returns: 
+      - Instant ZIP download (< 5 GB)
+      - Async job with download link (>= 5 GB)
+    """
+    __tablename__ = 'ExportJobs'
+    
+    account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Export request parameters
+    include_metadata = db.Column(db.Boolean, nullable=False, default=True)  # Include metadata JSONs
+    include_training_results = db.Column(db.Boolean, nullable=False, default=True)  # Include weights/models
+    include_frames = db.Column(db.Boolean, nullable=False, default=False)  # Include frame-by-frame extracts (expensive)
+    
+    # Execution tracking
+    status = db.Column(db.String(30), nullable=False, default='Pending')  # Pending, Processing, Completed, Failed
+    estimated_size_gb = db.Column(db.Float, nullable=True)  # Estimated size at creation time
+    actual_size_gb = db.Column(db.Float, nullable=True)  # Actual size after completion
+    
+    # Result
+    download_url = db.Column(db.String(511), nullable=True)  # S3/local path to download ZIP
+    file_path = db.Column(db.String(511), nullable=True)  # Filesystem path to generated ZIP
+    
+    # Expiration
+    expires_at = db.Column(db.DateTime, nullable=True)  # When download link expires (default 7 days)
+    downloaded_at = db.Column(db.DateTime, nullable=True)  # When file was actually downloaded
+    
+    # Error tracking
+    error_message = db.Column(db.String(511), nullable=True)  # If status='Failed'
+    
+    # Audit
+    requested_by = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)  # Account who requested (for audit)
+    
+    def to_dict(self):
+        return {
+            'id': self.uuid_str(),
+            'account_id': str(self.account_id) if self.account_id else None,
+            'status': self.status,
+            'estimated_size_gb': self.estimated_size_gb,
+            'actual_size_gb': self.actual_size_gb,
+            'download_url': self.download_url,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
+            'error_message': self.error_message,
+            'createdAt': self.createdAt.isoformat() if self.createdAt else None,
+        }
 
 class Layer(DomainObject):
     __tablename__ = 'Layers'

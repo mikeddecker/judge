@@ -41,11 +41,19 @@ const selectedValidationResults = computed(() => results.value ? results.value[s
 onMounted(async () => {
   getJobOptions('LOCALIZE').then(r => recipes.value = r)
   getResults('localization').then(
-    r => results.value = r
+    r => results.value = r || {}
   ).then(
     // TODO : getLocalizeBoxMethods (smoothing types)
-    () => selectedRecipe.value = Object.keys(results.value)[0]
-  )
+    () => {
+      const keys = results.value ? Object.keys(results.value) : []
+      if (keys.length > 0) {
+        selectedRecipe.value = keys[0]
+      }
+    }
+  ).catch(err => {
+    console.error('Error loading localization results:', err)
+    results.value = {}
+  })
 })
 </script>
 
