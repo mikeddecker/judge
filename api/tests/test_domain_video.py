@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import os
 import unittest
+from uuid import UUID, uuid4
 from parameterized import parameterized
 from domain.folder import Folder
 from domain.frameinfo import FrameInfo
@@ -7,44 +9,55 @@ from domain.videoinfo import VideoInfo
 from domain.skill import Skill
 from tests.TestHelper import TestHelper
 
-FOLDER_INSTANCE_VALID = Folder(id=1, name='competition', parent=None)
+_FOLDER_UUID = UUID('00000000-0000-0000-0000-000000000001')
+_VIDEO_UUID = UUID('00000000-0000-0000-0000-000000000002')
+
+FOLDER_INSTANCE_VALID = Folder(id=_FOLDER_UUID, name='competition', parent=None)
 def get_video() -> VideoInfo:
-    return VideoInfo(id=1, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
+    return VideoInfo(id=_VIDEO_UUID, name="dd3-nationals.mp4", folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
 
 def get_frame() -> FrameInfo:
     return FrameInfo(frameNr=0, x=0.5, y=0.5, width=0.5, height=0.5)
 
-def test_get_relative_video_path(self):
-    video = get_video()
-    expected_path = os.path.join("competition", "dd3-nationals.mp4")
-    self.assertEqual(video.get_relative_video_path(), expected_path)
-
-def test_get_image_path(self):
-    video = get_video()
-    # TODO: Update when image_path is implemented
-    self.assertEqual(video.get_image_path(), "/home/miked/Pictures/Screenshots/dd3.png")
-
-def test_fps_property(self):
-    video = get_video()
-    self.assertEqual(video.FPS, 25.2)
-
-def test_get_duration(self):
-    video = get_video()
-    expected_duration = 500 / 25.2
-    self.assertAlmostEqual(video.get_duration(), expected_duration)
+# Fixed UUIDs for parameterized video tests
+_VID_UUIDS = [
+    UUID(f'00000000-0000-0000-0000-{i:012d}') for i in range(10, 20)
+]
 
 class DomainVideoTestSuite(unittest.TestCase):
     """Domain folder test cases."""
 
     ##################################
+    # Test properties
+    ##################################
+    def test_get_relative_video_path(self):
+        video = get_video()
+        expected_path = os.path.join("competition", "dd3-nationals.mp4")
+        self.assertEqual(video.get_relative_video_path(), expected_path)
+
+    def test_get_image_path(self):
+        video = get_video()
+        # TODO: Update when image_path is implemented
+        self.assertEqual(video.get_image_path(), "/home/miked/Pictures/Screenshots/dd3.png")
+
+    def test_fps_property(self):
+        video = get_video()
+        self.assertEqual(video.FPS, 25.2)
+
+    def test_get_duration(self):
+        video = get_video()
+        expected_duration = 500 / 25.2
+        self.assertAlmostEqual(video.get_duration(), expected_duration)
+
+    ##################################
     # Test constructor
     ##################################
     @parameterized.expand([
-        (1, "sr-nationals.mp4"),
-        (2, "sr-nationals.mp4"),
-        (987, "sr-nationals.mp4"),
-        (1, "dd3-potatoes.mp4"),
-        (1, "some-freestyles.mp4"),
+        (_VID_UUIDS[0], "sr-nationals.mp4"),
+        (_VID_UUIDS[1], "sr-nationals.mp4"),
+        (_VID_UUIDS[2], "sr-nationals.mp4"),
+        (_VID_UUIDS[3], "dd3-potatoes.mp4"),
+        (_VID_UUIDS[4], "some-freestyles.mp4"),
     ])
     def test_ctor_valid(self, id, name):
         video = VideoInfo(id=id, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
@@ -55,12 +68,12 @@ class DomainVideoTestSuite(unittest.TestCase):
     @parameterized.expand(TestHelper.generate_empty_strings())
     def test_ctor_invalid_name_empty(self, name):
         with self.assertRaises(ValueError):
-            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
+            VideoInfo(id=_VIDEO_UUID, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
 
     @parameterized.expand(TestHelper.generate_invalid_strings_only_word_digit_underscore_extensions())
     def test_ctor_invalid_name_word_digits_underscore(self, name):
         with self.assertRaises(ValueError):
-            VideoInfo(id=1, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
+            VideoInfo(id=_VIDEO_UUID, name=name, folder=FOLDER_INSTANCE_VALID, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
 
     @parameterized.expand(TestHelper.generate_invalid_ids())
     def test_ctor_invalid_id(self, id):
@@ -70,7 +83,7 @@ class DomainVideoTestSuite(unittest.TestCase):
     @parameterized.expand([7, "text", True, ValueError])
     def test_ctor_invalid_folder_not_a_folder(self, parent):
         with self.assertRaises(ValueError):
-            VideoInfo(id=1, name="dd3-nationals.mp4", folder=parent, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
+            VideoInfo(id=_VIDEO_UUID, name="dd3-nationals.mp4", folder=parent, frameLength=500, fps=25.2, duration=12.3, width=1920, height=1080)
     
     #############################################
     # Test immutable properties & private method
@@ -78,7 +91,7 @@ class DomainVideoTestSuite(unittest.TestCase):
     def test_change_id_immutable(self):
         with self.assertRaises(AttributeError):
             video = get_video()
-            video.Id = 7
+            video.Id = uuid4()
 
     def test_change_name_immutable(self):
         with self.assertRaises(AttributeError):
@@ -88,12 +101,12 @@ class DomainVideoTestSuite(unittest.TestCase):
     def test_change_folder_immutable(self):
         with self.assertRaises(AttributeError):
             video = get_video()
-            video.Folder = Folder(id=2, name="main", parent=FOLDER_INSTANCE_VALID)
+            video.Folder = Folder(id=uuid4(), name="main", parent=FOLDER_INSTANCE_VALID)
 
     def test_change_id_private_method(self):
         with self.assertRaises(AttributeError):
             video = get_video()
-            video.__setId(88)
+            video.__setId(uuid4())
 
     ##################################
     # Test frames: ADD
@@ -208,28 +221,28 @@ class DomainVideoTestSuite(unittest.TestCase):
     
     def test_add_skill_valid(self):
         video = get_video()
-        skill = Skill(5, {"name": "crouger"}, start=10, end=20)
+        skill = Skill(uuid4(), {"name": "crouger"}, start=10, end=20)
         video.add_skill(skill)
         self.assertIn(skill, video.Skills, f"Skill is not in property Skills")
 
     def test_add_skill_duplicate(self):
         video = get_video()
-        skill = Skill(5, {"name": "crouger"}, start=10, end=20)
+        skill = Skill(uuid4(), {"name": "crouger"}, start=10, end=20)
         video.add_skill(skill)
         with self.assertRaises(ValueError):
             video.add_skill(skill)
 
     def test_add_skill_overlap(self):
         video = get_video()
-        skill1 = Skill(5, {"name": "crouger"}, start=10, end=20)
-        skill2 = Skill(6, {"name": "another"}, start=15, end=25)
+        skill1 = Skill(uuid4(), {"name": "crouger"}, start=10, end=20)
+        skill2 = Skill(uuid4(), {"name": "another"}, start=15, end=25)
         video.add_skill(skill1)
         with self.assertRaises(ValueError):
             video.add_skill(skill2)
 
     def test_get_skill_existing(self):
         video = get_video()
-        skill = Skill(5, {"name": "crouger"}, start=10, end=20)
+        skill = Skill(uuid4(), {"name": "crouger"}, start=10, end=20)
         video.add_skill(skill)
         retrieved = video.get_skill(10, 20)
         self.assertEqual(retrieved, skill)
@@ -241,7 +254,7 @@ class DomainVideoTestSuite(unittest.TestCase):
 
     def test_remove_skill(self):
         video = get_video()
-        skill = Skill(5, {"name": "crouger"}, start=10, end=20)
+        skill = Skill(uuid4(), {"name": "crouger"}, start=10, end=20)
         video.add_skill(skill)
         video.remove_skill(skill)
         self.assertNotIn(skill, video.Skills)

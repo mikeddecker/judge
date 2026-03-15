@@ -10,8 +10,8 @@ UUID_LENGTH = 16
 class ValueHelper:
     @staticmethod
     def check_raise_uuid(id: UUID):
-        assert isinstance(id, UUID), f"Id must be of type {uuid}, got {id}"
-        # assert len(id) == UUID_LENGTH, f"Uuid must be of length {UUID_LENGTH}, got {len(id)}"
+        if not isinstance(id, UUID):
+            raise ValueError(f"Id must be of type UUID, got {type(id).__name__}: {id}")
 
     @staticmethod
     def check_raise_positive_integer(value):
