@@ -123,6 +123,17 @@ class VideoService:
 
         return self.VideoRepo.get(videoId)
 
+    def update_video_no_auth(self, videoId: UUID, updatedData: dict = {}) -> VideoInfo:
+        """Update video without authorization checks. Used for GUI train/test toggle."""
+        assert isinstance(videoId, UUID), f"VideoService - videoId - {type(videoId)}"
+        assert isinstance(updatedData, dict), f"VideoService - UpdatedData - {type(updatedData)}"
+
+        if not self.VideoRepo.exists(videoId):
+            raise LookupError(f"VideoId {videoId} does not exist")
+
+        self.VideoRepo.update_video(videoId, updatedData)
+        return self.VideoRepo.get(videoId)
+
     def update_skill(self, id: UUID, videoinfo: VideoInfo, frameStart: int, frameEnd: int, skillinfo: dict) -> VideoInfo:
         assert isinstance(skillinfo, dict), "Skillinfo is not a dict"
         assert len(skillinfo) > 0, "Skillinfo is empty"

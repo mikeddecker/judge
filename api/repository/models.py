@@ -154,8 +154,7 @@ class Video(DomainObject):
     competition = db.Column(UUIDType, db.ForeignKey('CompetitionInfo.id', ondelete='CASCADE'))
     judgeDiffScore = db.Column(db.Float, nullable=True)
     private = db.Column(db.Boolean, nullable=False, default=True)
-    training = db.Column(db.Boolean, nullable=False)
-    is_train = db.Column(db.Boolean, nullable=False, default=True)
+    is_train = db.Column(db.Boolean, nullable=True)
 
     frameLabels = db.relationship('FrameLabel', backref='video', lazy='joined')
     tags = db.relationship('Tag', secondary=video_tag, backref='videos', lazy='joined')
@@ -172,7 +171,7 @@ class Video(DomainObject):
             'width' : self.width,
             'height' : self.height,
             'fps' : self.fps,
-            'training' : self.training,
+            'training' : self.is_train,
             'qualitative' : self.qualitative,
             'obstruction' : self.obstruction
         }

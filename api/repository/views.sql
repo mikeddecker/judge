@@ -31,14 +31,14 @@ ORDER BY videoId, frameNr;
 
 CREATE OR REPLACE VIEW FrameLabelsAll AS
 SELECT
-	videoId, frameNr, labeltype, v.training,
+	videoId, frameNr, labeltype, v.is_train,
     xmin, xmax, ymin, ymax,
     x, y, flt.width, flt.height
 FROM FrameLabelsTeam flt
 JOIN Videos v ON flt.videoId = v.id
 UNION
 SELECT
-	videoId, frameNr, labeltype, v.training,
+	videoId, frameNr, labeltype, v.is_train,
     xmin, xmax, ymin, ymax,
     x, y, fle.width, fle.height
 FROM FrameLabelsExtended fle

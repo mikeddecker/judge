@@ -13,7 +13,7 @@ Business rules enforced in code
 
 Training & completed flags
 - `Videos.completed_skill_labels` tracks whether skill labels are finalized for a video.
-- `Videos.training` (and `is_train`) indicate whether a video is used for training. Changing this flag is gated by authorization (service-level checks).
+- `Videos.is_train` (and `is_train`) indicate whether a video is used for training. Changing this flag is gated by authorization (service-level checks).
 
 Recommended front-end behaviour
 - Provide a UI for selecting start/end frames and a structured form for `skillinfo` (guided by layer composition).

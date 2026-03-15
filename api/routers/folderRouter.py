@@ -1,4 +1,5 @@
 from flask_restful import Resource
+from flask import request
 from services.folderService import FolderService
 from services.videoService import VideoService
 from helpers.ValueHelper import ValueHelper
@@ -38,4 +39,25 @@ class FolderRouter(Resource):
                 "Videos" : dict(),
                 "VideoCount" : 0,
             }, 200
+
+    def post(self, folderId: UUID):
+        data = request.get_json()
+        
+        print('folderrouter post', data)
+        
+        # Validate UUID
+        try:
+            ValueHelper.check_raise_uuid(folderId)
+        except ValueError as ve:
+            return {'success': False, 'message': str(ve)}, 400
+        
+        # Allow updating training status without authentication
+        # This supports changing folder train/val assignment via GUI
+        updated_folder = self.folderService.update_folder_no_auth(
+            folderId=folderId,
+            updatedData=data
+        )
+        
+        # return serialized domain object
+        return updated_folder.to_dict(), 200
 

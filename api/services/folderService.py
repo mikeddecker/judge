@@ -163,3 +163,14 @@ class FolderService:
     def count(self) -> int:
         return self.FolderRepo.count()
 
+    def update_folder_no_auth(self, folderId: UUID, updatedData: dict = {}) -> Folder:
+        """Update folder without authorization checks. Used for GUI train/test toggle."""
+        assert isinstance(folderId, UUID), f"FolderService - folderId - {type(folderId)}"
+        assert isinstance(updatedData, dict), f"FolderService - UpdatedData - {type(updatedData)}"
+
+        if not self.exists_in_database(id=folderId):
+            raise LookupError(f"FolderId {folderId} does not exist")
+
+        self.FolderRepo.update_folder(folderId, updatedData)
+        return self.FolderRepo.get(folderId)
+

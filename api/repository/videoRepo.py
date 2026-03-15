@@ -23,9 +23,9 @@ ALLOWED_UPDATE_FIELDS = {
     "Completed_Skill_Labels": "completed_skill_labels",
     "JudgeDiffScore": "judgeDiffScore",
     "judgeDiffScore": "judgeDiffScore",
-    "training": "training",
-    "is_train": "training",
-    "IsTrain": "training",
+    "training": "is_train",
+    "is_train": "is_train",
+    "IsTrain": "is_train",
     "private": "private",
 }
 

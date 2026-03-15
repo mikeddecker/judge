@@ -38,12 +38,12 @@ Loser:    Belgium label rejected, stored in ConflictLog
 
 **Scenario B: Conflicting Video Metadata Updates**
 ```
-Belgium:  Admin marks video training=true at 14:45:00
-USA:      Admin marks video training=false at 14:44:55
+Belgium:  Admin marks video is_train=true at 14:45:00
+USA:      Admin marks video is_train=false at 14:44:55
           ↓
-Conflict: Video.training has divergent states
-Winner:   USA (earlier timestamp) sets training=false
-Loser:    Belgium's training=true recorded, user can inspect/resolve
+Conflict: Video.is_train has divergent states
+Winner:   USA (earlier timestamp) sets is_train=false
+Loser:    Belgium's is_train=true recorded, user can inspect/resolve
 ```
 
 **Scenario C: Skill/Prediction Overwrites**

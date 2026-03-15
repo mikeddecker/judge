@@ -6,6 +6,11 @@ from repository.MapToDomain import MapToDomain
 from typing import List
 from uuid import UUID
 
+ALLOWED_UPDATE_FIELDS = {
+    "is_train": "is_train",
+    "IsTrain": "is_train",
+}
+
 class FolderRepository:
     def __init__(self, db : SQLAlchemy):
         self.db = db
@@ -93,4 +98,16 @@ class FolderRepository:
     
     def count(self):
         return self.db.session.query(FolderDB).count()
+
+    def update_folder(self, folderId: UUID, updates: dict) -> Folder:
+        folderDB = FolderDB.query.get(folderId.bytes)
+        if not folderDB:
+            raise ValueError(f"Folder {folderId} not found")
+
+        for key, value in updates.items():
+            if key in ALLOWED_UPDATE_FIELDS.keys():
+                setattr(folderDB, ALLOWED_UPDATE_FIELDS[key], value)
+
+        self.db.session.commit()
+        return MapToDomain.map_folder(folderDB)
 

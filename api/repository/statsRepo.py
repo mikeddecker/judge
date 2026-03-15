@@ -5,9 +5,9 @@ from collections import Counter, defaultdict
 from config import RECIPES, ENVS
 from flask_sqlalchemy import SQLAlchemy
 from helpers.helpers import load_json_file
-from repository.models import Video as VideoInfoDB, FrameLabel, FrameLabelType
+from repository.models import Video as VideoInfoDB, FrameLabel, FrameLabelType, Folder as FolderDB
 from repository.models import Skill, LayerComposition, Layer, LayerValue
-from sqlalchemy import func, case
+from sqlalchemy import func, case, and_, or_
 from sqlalchemy.orm import aliased
 from helpers.ConfigHelper import recognition_get_modelpaths
 
@@ -25,12 +25,26 @@ def extract_key_number_pairs(obj):
 class StatsRepository:
     def __init__(self, db : SQLAlchemy):
         self.db = db
+        
+        # Build split logic: use Video.is_train if set, else use Folder.is_train, else default to train
+        # This handles: explicit video setting → folder setting → default
         self.split_train_test_framelabel = case(
-            (FrameLabel.videoId % 10 == 5, 'test'),
+            (VideoInfoDB.is_train == True, 'train'),
+            (VideoInfoDB.is_train == False, 'test'),
+            (VideoInfoDB.is_train == None, case(
+                (FolderDB.is_train == True, 'train'),
+                else_='test'
+            )),
             else_='train'
         ).label("split")
+        
         self.split_train_test_skill = case(
-            (Skill.videoId % 10 == 5, 'test'),
+            (VideoInfoDB.is_train == True, 'train'),
+            (VideoInfoDB.is_train == False, 'test'),
+            (VideoInfoDB.is_train == None, case(
+                (FolderDB.is_train == True, 'train'),
+                else_='test'
+            )),
             else_='train'
         ).label("split")
 
@@ -39,6 +53,10 @@ class StatsRepository:
             FrameLabel.labeltype,
             func.count().label("count"),
             self.split_train_test_framelabel
+        ).join(
+            VideoInfoDB, FrameLabel.videoId == VideoInfoDB.id
+        ).outerjoin(
+            FolderDB, VideoInfoDB.folderId == FolderDB.id
         ).group_by(
             FrameLabel.labeltype,
             self.split_train_test_framelabel
@@ -54,11 +72,15 @@ class StatsRepository:
         ]
 
     def localize_frame_counts(self):
-        # Step 1: Select distinct videoId + frameNr + split
+        # Step 1: Select distinct videoId + frameNr + split, joining with Video and Folder
         subq = self.db.session.query(
             FrameLabel.videoId,
             FrameLabel.frameNr,
             self.split_train_test_framelabel
+        ).join(
+            VideoInfoDB, FrameLabel.videoId == VideoInfoDB.id
+        ).outerjoin(
+            FolderDB, VideoInfoDB.folderId == FolderDB.id
         ).distinct(
             FrameLabel.videoId,
             FrameLabel.frameNr
@@ -146,10 +168,10 @@ class StatsRepository:
             VideoInfoDB.fps,
             VideoInfoDB.duration,
             VideoInfoDB.frameLength,
-            VideoInfoDB.training
+            VideoInfoDB.is_train
         ).join(VideoInfoDB, FrameLabel.videoId == VideoInfoDB.id).group_by(
             FrameLabel.videoId, FrameLabel.frameNr,
-            VideoInfoDB.name, VideoInfoDB.fps, VideoInfoDB.duration, VideoInfoDB.frameLength, VideoInfoDB.training
+            VideoInfoDB.name, VideoInfoDB.fps, VideoInfoDB.duration, VideoInfoDB.frameLength, VideoInfoDB.is_train
         ).order_by(FrameLabel.videoId, FrameLabel.frameNr)
 
         results = query.all()
@@ -162,7 +184,7 @@ class StatsRepository:
             video_dict[vid]['name'] = row.name
             video_dict[vid]['fps'] = row.fps
             video_dict[vid]['frameLength'] = row.frameLength
-            video_dict[vid]['training'] = row.training
+            video_dict[vid]['training'] = row.is_train
             video_dict[vid]['duration'] = row.duration
 
         videos = []
@@ -239,6 +261,10 @@ class StatsRepository:
                 for layerName in layerNames
             ],
             self.split_train_test_skill
+        ).select_from(Skill).join(
+            VideoInfoDB, Skill.videoId == VideoInfoDB.id
+        ).outerjoin(
+            FolderDB, VideoInfoDB.folderId == FolderDB.id
         ).group_by(
             self.split_train_test_skill
         )
@@ -274,6 +300,10 @@ class StatsRepository:
         query = self.db.session.query(
             Skill.skillinfo,
             self.split_train_test_skill
+        ).select_from(Skill).join(
+            VideoInfoDB, Skill.videoId == VideoInfoDB.id
+        ).outerjoin(
+            FolderDB, VideoInfoDB.folderId == FolderDB.id
         )
 
         result = query.all()
@@ -302,6 +332,10 @@ class StatsRepository:
         result = self.db.session.query(
             self.split_train_test_skill,
             func.count(self.split_train_test_skill).label('count')
+        ).select_from(Skill).join(
+            VideoInfoDB, Skill.videoId == VideoInfoDB.id
+        ).outerjoin(
+            FolderDB, VideoInfoDB.folderId == FolderDB.id
         ).group_by(
             self.split_train_test_skill
         ).all()
@@ -332,6 +366,10 @@ class StatsRepository:
             Skill.createdAt,
             self.split_train_test_skill,
             func.count().label("count")
+        ).select_from(Skill).join(
+            VideoInfoDB, Skill.videoId == VideoInfoDB.id
+        ).outerjoin(
+            FolderDB, VideoInfoDB.folderId == FolderDB.id
         ).group_by(
             Skill.createdAt, self.split_train_test_skill
         ).order_by(

@@ -15,7 +15,7 @@ from sqlalchemy.engine import Connection, Engine
 class RepoGeneral:
     VideoNames = {} # pandas dataframe
 
-    def __init__(self):  
+    def __init__(self):
         HOST = ENVS.DATABASE.MYSQL_HOST
         PORT = ENVS.DATABASE.MYSQL_DOCKER_PORT
         DATABASE = ENVS.DATABASE.MYSQL_DATABASE
@@ -27,49 +27,86 @@ class RepoGeneral:
 
     def _get_connection(self) -> Connection:
         return self.engine.connect()
-    
+
     def get_videoinfo(self, videoId):
-        qry = sqlal.text(f"""SELECT * FROM Videos WHERE id = {videoId}""")
+        """
+        Get video metadata by UUID.
+
+        Args:
+            videoId: UUID object of the video
+        """
+        qry = sqlal.text("""SELECT * FROM Videos WHERE id = :videoId""")
         with self._get_connection() as connection:
-            return pd.read_sql(qry, con=connection)
-            
+            return pd.read_sql(qry, con=connection, params={'videoId': videoId})
+
     def get_framelabels(self, train_test_val):
-        # TODO : update with validation & 'random' sampling
+        """
+        Get frame labels for training or validation.
+        Uses the is_train field (Videos, with Folder fallback) for train/val split.
+        If Video.is_train is NULL, uses Folder.is_train (never NULL).
+        """
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM FrameLabelsAll WHERE MOD(videoId, 10) <> 5 ORDER BY videoId, frameNr""")
+            qry = sqlal.text("""SELECT fl.* FROM FrameLabelsAll fl
+                                 JOIN Videos v ON fl.videoId = v.id
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE COALESCE(v.is_train, f.is_train) = 1
+                                 ORDER BY videoId, frameNr""")
+        elif train_test_val == "val":
+            qry = sqlal.text("""SELECT fl.* FROM FrameLabelsAll fl
+                                 JOIN Videos v ON fl.videoId = v.id
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE COALESCE(v.is_train, f.is_train) = 0
+                                 ORDER BY videoId, frameNr""")
+        else:
+            raise ValueError(f"train_test_val must be 'train' or 'val', got {train_test_val}")
 
-        if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM FrameLabelsAll WHERE MOD(videoId, 10) = 5 ORDER BY videoId, frameNr""")
-
-        if train_test_val == "test":
-            raise ValueError(f"Changed test to val !!")
         with self._get_connection() as connection:
             return pd.read_sql(qry, con=connection)
-            
+
     def get_unique_videoId_frameNr(self, train_test_val):
+        """
+        Get unique videoId/frameNr combinations for training or validation.
+        If Video.is_train is NULL, uses Folder.is_train as fallback.
+        """
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT videoId, frameNr FROM FrameLabels WHERE MOD(videoId, 10) <> 5 GROUP BY videoId, frameNr ORDER BY videoId, frameNr""")
+            qry = sqlal.text("""SELECT fl.videoId, fl.frameNr FROM FrameLabels fl
+                                 JOIN Videos v ON fl.videoId = v.id
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE COALESCE(v.is_train, f.is_train) = 1
+                                 GROUP BY fl.videoId, fl.frameNr
+                                 ORDER BY fl.videoId, fl.frameNr""")
+        elif train_test_val == "val":
+            qry = sqlal.text("""SELECT fl.videoId, fl.frameNr FROM FrameLabels fl
+                                 JOIN Videos v ON fl.videoId = v.id
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE COALESCE(v.is_train, f.is_train) = 0
+                                 GROUP BY fl.videoId, fl.frameNr
+                                 ORDER BY fl.videoId, fl.frameNr""")
+        else:
+            raise ValueError(f"train_test_val must be 'train' or 'val', got {train_test_val}")
 
-        if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT videoId, frameNr FROM FrameLabels WHERE MOD(videoId, 10) = 5 GROUP BY videoId, frameNr ORDER BY videoId, frameNr""")
-
-        if train_test_val == "test":
-            raise ValueError(f"Changed test to val !!")
         with self._get_connection() as connection:
             return pd.read_sql(qry, con=connection)
-        
+
     def get_fully_segmented_videos(self, train_test_val, type='DD'):
+        """
+        Get videos with completed skill labels, for training or validation.
+        If Video.is_train is NULL, uses Folder.is_train as fallback.
+        """
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Videos WHERE MOD(id, 10) <> 5 AND completed_skill_labels = 1""")  
+            qry = sqlal.text("""SELECT v.* FROM Videos v
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE COALESCE(v.is_train, f.is_train) = 1 AND v.completed_skill_labels = 1""")
+        elif train_test_val == "val":
+            qry = sqlal.text("""SELECT v.* FROM Videos v
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE COALESCE(v.is_train, f.is_train) = 0 AND v.completed_skill_labels = 1""")
+        else:
+            raise ValueError(f"train_test_val must be 'train' or 'val', got {train_test_val}")
 
-        if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Videos WHERE MOD(id, 10) = 5 AND completed_skill_labels = 1""")
-
-        if train_test_val == "test":
-            raise ValueError(f"Changed test to val !!")
         with self._get_connection() as connection:
             return pd.read_sql(qry, con=connection)
-        
+
     def get_skill_layers(self) -> pd.DataFrame:
         """
         Returns df_layers
@@ -122,7 +159,7 @@ class RepoGeneral:
         """
         with self._get_connection() as connection:
             df_layers = pd.read_sql(qry_layers, con=connection)
-            
+
             qry_compositions = f"""
                 SELECT lc.compositionName, lc.stage, lc.layerId,
                 lp.name AS name
@@ -139,92 +176,152 @@ class RepoGeneral:
             df_max_lengths = pd.read_sql(f"""SELECT {json_qry} FROM Skills;""", con=connection).iloc[0]
 
         return df_max_lengths
-            
+
     def get_team_boxes(self) -> pd.DataFrame:
+        """
+        Get team bounding boxes from frame labels.
+        Uses COALESCE(v.is_train, f.is_train) for train/val determination.
+        Retrieves validation set (is_train = 0) boxes.
+        """
         qry = sqlal.text("""
             SELECT
-                videoId,
-                frameNr,
-                MIN(x - width / 2) AS xmin,
-                MAX(x + width / 2) AS xmax,
-                MIN(y - height / 2) AS ymin,
-                MAX(y + height / 2) AS ymax,
-                MAX(x + width / 2) - MIN(x - width / 2) AS width,
-                (MAX(x + width / 2) + MIN(x - width / 2)) / 2 AS x,
-                MAX(y + height / 2) - MIN(y - height / 2) AS height,
-                (MAX(y + height / 2) + MIN(y - height / 2)) / 2 AS y    
-            FROM FrameLabels
-            WHERE MOD(videoId, 10) = 5 AND labeltype = 1
-            GROUP BY videoId, frameNr
-            ORDER BY videoId, frameNr
+                fl.videoId,
+                fl.frameNr,
+                MIN(fl.x - fl.width / 2) AS xmin,
+                MAX(fl.x + fl.width / 2) AS xmax,
+                MIN(fl.y - fl.height / 2) AS ymin,
+                MAX(fl.y + fl.height / 2) AS ymax,
+                MAX(fl.x + fl.width / 2) - MIN(fl.x - fl.width / 2) AS width,
+                (MAX(fl.x + fl.width / 2) + MIN(fl.x - fl.width / 2)) / 2 AS x,
+                MAX(fl.y + fl.height / 2) - MIN(fl.y - fl.height / 2) AS height,
+                (MAX(fl.y + fl.height / 2) + MIN(fl.y - fl.height / 2)) / 2 AS y
+            FROM FrameLabels fl
+            JOIN Videos v ON fl.videoId = v.id
+            JOIN Folders f ON v.folderId = f.id
+            WHERE COALESCE(v.is_train, f.is_train) = 0 AND fl.labeltype = 1
+            GROUP BY fl.videoId, fl.frameNr
+            ORDER BY fl.videoId, fl.frameNr
         """)
         with self._get_connection() as connection:
             return pd.read_sql(qry, con=connection)
 
     def get_videoIds_of_videos_with_skills(self) -> list[UUID]:
         with self._get_connection() as connection:
-            qry = sqlal.text(f"""SELECT DISTINCT videoId FROM Skills""")  
+            qry = sqlal.text(f"""SELECT DISTINCT videoId FROM Skills""")
             return pd.read_sql(qry, con=connection)['videoId'].to_list()
 
     def get_skills_of_fully_segmented_videos(self, train_test_val):
+        """
+        Get skills of videos with completed skill labels, for training or validation.
+        If Video.is_train is NULL, uses Folder.is_train as fallback.
+        """
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) <> 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")  
+            qry = sqlal.text("""SELECT s.* FROM Skills s
+                                 JOIN Videos v ON s.videoId = v.id
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE s.skillinfo NOT LIKE '%null%' AND COALESCE(v.is_train, f.is_train) = 1 AND v.completed_skill_labels = 1""")
+        elif train_test_val == "val":
+            qry = sqlal.text("""SELECT s.* FROM Skills s
+                                 JOIN Videos v ON s.videoId = v.id
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE s.skillinfo NOT LIKE '%null%' AND COALESCE(v.is_train, f.is_train) = 0 AND v.completed_skill_labels = 1""")
+        else:
+            raise ValueError(f"train_test_val must be 'train' or 'val', got {train_test_val}")
 
-        if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) = 5 AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)""")
-
-        if train_test_val == "test":
-            raise ValueError(f"Changed test to val !!")
         with self._get_connection() as connection:
             return pd.read_sql(qry, con=connection)
 
     def get_skills(self, train_test_val, videoId:UUID=None):
-        """videoId is optional, then it returns only skills from that videoId"""
+        """
+        Get skills for training or validation.
+
+        Args:
+            train_test_val: 'train' or 'val'
+            videoId: Optional UUID to filter by specific video
+
+        If Video.is_train is NULL, uses Folder.is_train as fallback.
+        """
         # TODO : Make warning or error on train page displaying skills having null values
         if train_test_val == "train":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) <> 5""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+            qry = sqlal.text("""SELECT s.* FROM Skills s
+                                 JOIN Videos v ON s.videoId = v.id
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE s.skillinfo NOT LIKE '%null%' AND COALESCE(v.is_train, f.is_train) = 1""")
+        elif train_test_val == "val":
+            qry = sqlal.text("""SELECT s.* FROM Skills s
+                                 JOIN Videos v ON s.videoId = v.id
+                                 JOIN Folders f ON v.folderId = f.id
+                                 WHERE s.skillinfo NOT LIKE '%null%' AND COALESCE(v.is_train, f.is_train) = 0""")
+        else:
+            raise ValueError(f"train_test_val must be 'train' or 'val', got {train_test_val}")
 
-        and_where_videoId = f"AND videoId = {videoId}" if videoId else ""
-        if train_test_val == "val":
-            qry = sqlal.text(f"""SELECT * FROM Skills WHERE skillinfo NOT LIKE '%null%' AND MOD(videoId, 10) = 5 {and_where_videoId}""") # TODO segmentation:  AND videoId in (SELECT id FROM Videos WHERE completed_skill_labels = 1)
+        # Add optional videoId filter
+        if videoId is not None:
+            qry = sqlal.text(qry.text + " AND s.videoId = :videoId")
 
-        if train_test_val == "test":
-            raise ValueError(f"Changed test to val !!")
-        
         with self._get_connection() as connection:
-            df = pd.read_sql(qry, con=connection)
+            params = {'videoId': videoId} if videoId else {}
+            df = pd.read_sql(qry, con=connection, params=params)
             # Convert 'skillinfo' column from JSON string to Python dict
             if 'skillinfo' in df.columns:
                 df['skillinfo_string'] = df['skillinfo']
                 df['skillinfo'] = df['skillinfo'].apply(json.loads)
             return df
-        
+
     def update_skill(self, skillId, skillinfo):
         with self._get_connection() as connection:
             qry = sqlal.text(f"UPDATE Skills SET skillinfo = :skillinfo WHERE id = :id")
             connection.execute(qry, {'id': skillId, 'skillinfo': skillinfo})
             connection.commit()
-                
+
     def __load_relativePaths_of_videos_with_framelabels(self):
+        """
+        Load video relative paths and build a lookup table indexed by UUID.
+        Called during __init__.
+        """
         with self._get_connection() as connection:
             relative_paths = {}
-            qry = sqlal.text(f"""SELECT DISTINCT folderId, id, name FROM Videos;""")
+            qry = sqlal.text("""SELECT DISTINCT folderId, id, name FROM Videos""")
 
             df_videos = pd.read_sql(qry, con=connection)
             for idx, row in df_videos.iterrows():
-                folderId = row["folderId"]
+                # Ensure folderId is UUID object
+                folder_binary = row["folderId"]
+                folderId = UUID(bytes=folder_binary) if isinstance(folder_binary, bytes) else folder_binary
+
                 name = row["name"]
                 childId = folderId
                 subfolders = []
+
                 while childId is not None:
-                    qry = sqlal.text(f"""SELECT parentId, name FROM Folders WHERE id = {childId}""")
-                    df_child = pd.read_sql(qry, connection).iloc[0]
+                    qry = sqlal.text("""SELECT parentId, name FROM Folders WHERE id = :childId""")
+                    df_child = pd.read_sql(qry, connection, params={'childId': childId})
+
+                    if df_child.empty:
+                        break
+
+                    df_child = df_child.iloc[0]
                     subfolders.insert(0, df_child["name"])
-                    childId = df_child["parentId"]
-            
-                relative_paths[folderId] = os.path.join(*subfolders)
-                df_videos.loc[idx,"name"] = os.path.join(*subfolders, name)
-            
+
+                    parentId_val = df_child["parentId"]
+                    # Convert parentId from binary to UUID if needed
+                    if parentId_val is None:
+                        childId = None
+                    elif isinstance(parentId_val, bytes):
+                        childId = UUID(bytes=parentId_val)
+                    else:
+                        childId = parentId_val
+
+                # Build folder path, handling empty subfolders case
+                folder_path = os.path.join(*subfolders) if subfolders else ""
+                relative_paths[folderId] = folder_path
+
+                # Build full video path
+                if subfolders:
+                    df_videos.loc[idx, "name"] = os.path.join(*subfolders, name)
+                else:
+                    df_videos.loc[idx, "name"] = name
+
             df_videos.index = df_videos.id
             self.VideoNames = df_videos
             self.VideoNames.index = df_videos["id"]
@@ -233,7 +330,7 @@ class RepoGeneral:
         with self._get_connection() as connection:
             if skills:
                 return self.__save_train_results_skills(df_history, from_scratch)
-            
+
             if from_scratch:
                 delete_old = sqlal.text(f"""
                     DELETE FROM TrainResults WHERE modelname = \'{df_history.loc[0,'modelname']}\'
@@ -294,29 +391,44 @@ class RepoGeneral:
             epoch = df.loc[0, 'last_epoch']
             epoch = 0 if epoch is None else epoch
             return epoch
-    
+
     def get_last_epoch_values(self, modelname, epoch, type=None):
         tablename = 'TrainResultsSkills' if type == 'DD' else 'TrainResults'
         qry = sqlal.text(f"""SELECT * FROM {tablename} WHERE modelname = \'{modelname}\' AND epoch = {epoch}""")
         with self._get_connection() as connection:
             return pd.read_sql(qry, con=connection)
-            
+
     def get_next_job(self) -> pd.Series:
         with self._get_connection() as connection:
             qry = sqlal.text(f"""SELECT * FROM Jobs""")
             df_jobs = pd.read_sql(qry, con=connection)
             return None if len(df_jobs) == 0 else df_jobs.iloc[0]
-    
+
     def delete_job(self, jobId:UUID):
+        """
+        Delete a job by UUID.
+
+        Args:
+            jobId: UUID object of the job to delete
+        """
         print(f"Deleting job ({jobId})")
         with self._get_connection() as connection:
-            qry = sqlal.text(f"""DELETE FROM Jobs WHERE id = :id""")
+            qry = sqlal.text("""DELETE FROM Jobs WHERE id = :id""")
             connection.execute(qry, {'id': jobId})
             connection.commit()
 
-    def get_video_path(self, videoId):
+    def get_video_path(self, videoId:UUID):
+        """
+        Get the video file path by UUID.
+
+        Args:
+            videoId: UUID object of the video
+
+        Returns:
+            Full path to the video file
+        """
         return os.path.join(ENVS.DIRS.VIDEOS, self.VideoNames.loc[videoId, "name"])
-    
+
     def get_frame_label_types(self, include_team=True):
         with self._get_connection() as connection:
             qry = sqlal.text(f"""SELECT info FROM FrameLabelTypes""")

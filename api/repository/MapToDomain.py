@@ -14,10 +14,10 @@ from uuid import UUID
 class MapToDomain:
     @staticmethod
     def map_folder(folderDB: FolderDB) -> Folder:
-        folder = Folder(folderDB.id, folderDB.name, None)
+        folder = Folder(folderDB.id, folderDB.name, None, folderDB.is_train)
         original = folder
         while folderDB.parent is not None:
-            parent_folder = Folder(folderDB.parent.id, folderDB.parent.name, None, folderDB.is_train)
+            parent_folder = Folder(folderDB.parent.id, folderDB.parent.name, None, folderDB.parent.is_train)
             folder.Parent = parent_folder
             folder = parent_folder
             folderDB = folderDB.parent
@@ -39,7 +39,7 @@ class MapToDomain:
             height=videoDB.height,
             judgeDiffScore=videoDB.judgeDiffScore,
             tags = mapped_tags,
-            is_train = videoDB.training
+            is_train = videoDB.is_train
         )
         for f in videoDB.frameLabels:
             video.add_framelabel(FrameInfo(frameNr=f.frameNr, x=f.x, y=f.y, width=f.width, height=f.height, jumperVisible=f.jumperVisible, labeltype=f.labeltype))

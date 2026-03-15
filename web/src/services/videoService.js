@@ -4,8 +4,38 @@ export const getFolder = async (folderId) => {
   return folderId ? getApplicationJson(`/folders/${folderId}`) : getApplicationJson(`/folders`)
 };
 
+export const updateFolderTrainingStatus = async (folderId, isTraining) => {
+  // Handle three states: null (inherit from parent or default), 1 (train), 0 (test)
+  let is_train_value = null;
+  if (isTraining !== null && isTraining !== undefined) {
+    is_train_value = isTraining === true || isTraining === 1 ? 1 : 0;
+  }
+  
+  return await api.post(`/folders/${folderId}`, { is_train: is_train_value }, { headers: { 'Content-Type': 'application/json' }})
+    .then(response => response.data)
+    .catch(error => {
+      console.error('Error updating folder training status:', error);
+      throw error;
+    });
+};
+
 export const getVideoInfo = async (videoId) => {
   return getApplicationJson(`/video/${videoId}/info`)
+};
+
+export const updateVideoTrainingStatus = async (videoId, isTraining) => {
+  // Handle three states: null (inherit), 1 (train), 0 (test)
+  let is_train_value = null;
+  if (isTraining !== null && isTraining !== undefined) {
+    is_train_value = isTraining === true || isTraining === 1 ? 1 : 0;
+  }
+  
+  return await api.post(`/video/${videoId}`, { is_train: is_train_value }, { headers: { 'Content-Type': 'application/json' }})
+    .then(response => response.data)
+    .catch(error => {
+      console.error('Error updating video training status:', error);
+      throw error;
+    });
 };
 
 export const getVideoImagePath = async (videoId) => {

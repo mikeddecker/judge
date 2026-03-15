@@ -26,7 +26,19 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 scaler = torch.GradScaler()
 
 class Predictor:
-    def predict(self, type, videoId, recipename, modelparams: dict = None, saveAsVideo:bool=False, date:str = None, weights:str='best'):
+    def predict(self, type, videoId: UUID, recipename, modelparams: dict = None, saveAsVideo:bool=False, date:str = None, weights:str='best'):
+        """
+        Predict on a video.
+        
+        Args:
+            type: 'LOCALIZE', 'SEGMENT', 'SKILL', 'FULL', or 'SEGMENT_SKILL'
+            videoId: UUID object of the video to predict on
+            recipename: Name of the recipe/model to use
+            modelparams: Model parameters dict  
+            saveAsVideo: Whether to save predictions as video file
+            date: Date string for tracking
+            weights: Which weights to use ('best' or path)
+        """
         start = time.time()
         match type:
             case 'LOCALIZE':
@@ -77,7 +89,7 @@ class Predictor:
         seconds = time.time() - start
         print(f"Done, took {seconds:.1f} seconds")
 
-    def __predict_skills_pytorch(self, videoId, recipename, use_segment_predictions, modelparams: dict = None, saveAsVideo:bool=False, segment_predictions:list = [], date:str = None):
+    def __predict_skills_pytorch(self, videoId: UUID, recipename, use_segment_predictions, modelparams: dict = None, saveAsVideo:bool=False, segment_predictions:list = [], date:str = None):
         try:
             if recipename not in PYTORCH_MODELS_SKILLS.keys() and recipename != 'best':
                 raise ValueError(recipename)
@@ -183,7 +195,7 @@ class Predictor:
             gc.collect()
 
     #### Save video predictions #####################################################################################################
-    def __save_skill_predictions_as_video(self, videoId:UUID, predictions:dict[int, dict], balancedType:str, vpath:str, targetNames:dict):
+    def __save_skill_predictions_as_video(self, videoId: UUID, predictions:dict[int, dict], balancedType:str, vpath:str, targetNames:dict):
         lowerDimension = None # Manual setting for demo purposes (e.g. 720)
 
         cap = cv2.VideoCapture(vpath)
@@ -294,7 +306,7 @@ class Predictor:
         clip.write_videofile(videoOutputPath, codec='libx264', fps=fps)
         cap.release()
 
-    def __predict_segments_pytorch(self, videoId, recipename, modelparams: dict = None):
+    def __predict_segments_pytorch(self, videoId: UUID, recipename, modelparams: dict = None):
         try:
             if recipename not in PYTORCH_MODELS_SKILLS.keys():
                 raise ValueError(recipename)
@@ -407,7 +419,7 @@ class Predictor:
             torch.cuda.empty_cache()
             gc.collect()
     
-    def __predict_location(self, videoId, recipename:str, weights:str='best', saveAsVideo:bool=False):
+    def __predict_location(self, videoId: UUID, recipename:str, weights:str='best', saveAsVideo:bool=False):
         recipename, weightpath = localize_get_best_modelpath()
 
         if weights != 'best':

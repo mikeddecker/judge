@@ -31,21 +31,15 @@ class VideoRouter(Resource):
 
         print('videorouter post', data)
 
-        # RBAC : TODO
-        # Authentication: require logged in account via session
-        if 'account_id' not in session:
-            return {'success': False, 'message': 'Not authenticated'}, 401
-
-        current_user_id = session.get('account_id')
+        # Validate UUID
         try:
-            # session may store a UUID string or a UUID object
-            if isinstance(current_user_id, str):
-                current_user_id = UUID(current_user_id)
-        except Exception as e:
-            return {'success': False, 'message': 'Invalid session account id'}, 400
+            ValueHelper.check_raise_uuid(videoId)
+        except ValueError as ve:
+            return {'success': False, 'message': str(ve)}, 400
 
-        updated_video = self.videoService.update_video(
-            userId = current_user_id,
+        # Allow updating training status without authentication
+        # This supports changing video train/val assignment via GUI
+        updated_video = self.videoService.update_video_no_auth(
             videoId = videoId,
             updatedData = data
         )

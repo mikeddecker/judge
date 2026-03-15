@@ -223,22 +223,46 @@ class DataRepository:
     def __load_relativePaths_of_videos_with_framelabels(self):
         with self._get_connection() as connection:
             relative_paths = {}
-            qry = sqlal.text(f"""SELECT DISTINCT folderId, id, name FROM Videos;""")
+            qry = sqlal.text("""SELECT DISTINCT folderId, id, name FROM Videos""")
 
             df_videos = pd.read_sql(qry, con=connection)
             for idx, row in df_videos.iterrows():
-                folderId = int(row["folderId"])
+                # Convert binary folderId to UUID
+                folder_binary = row["folderId"]
+                folderId = UUID(bytes=folder_binary) if isinstance(folder_binary, bytes) else folder_binary
+                
                 name = row["name"]
                 childId = folderId
                 subfolders = []
+                
                 while childId is not None:
-                    qry = sqlal.text(f"""SELECT parentId, name FROM Folders WHERE id = {childId}""")
-                    df_child = pd.read_sql(qry, connection).iloc[0]
+                    qry = sqlal.text("""SELECT parentId, name FROM Folders WHERE id = :childId""")
+                    df_child = pd.read_sql(qry, connection, params={'childId': childId})
+                    
+                    if df_child.empty:
+                        break
+                        
+                    df_child = df_child.iloc[0]
                     subfolders.insert(0, df_child["name"])
-                    childId = df_child["parentId"]
+                    
+                    parentId_val = df_child["parentId"]
+                    # Convert parentId from binary to UUID if needed
+                    if parentId_val is None:
+                        childId = None
+                    elif isinstance(parentId_val, bytes):
+                        childId = UUID(bytes=parentId_val)
+                    else:
+                        childId = parentId_val
             
-                relative_paths[folderId] = os.path.join(*subfolders)
-                df_videos.loc[idx,"name"] = os.path.join(*subfolders, name)
+                # Build folder path, handling empty subfolders case
+                folder_path = os.path.join(*subfolders) if subfolders else ""
+                relative_paths[folderId] = folder_path
+                
+                # Build full video path
+                if subfolders:
+                    df_videos.loc[idx, "name"] = os.path.join(*subfolders, name)
+                else:
+                    df_videos.loc[idx, "name"] = name
             
             df_videos.index = df_videos.id
             self.VideoNames = df_videos
