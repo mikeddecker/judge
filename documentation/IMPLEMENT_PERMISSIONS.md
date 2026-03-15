@@ -6,12 +6,27 @@ The permissions system has been implemented. See `documentation/features/AI-Judg
 
 ## What was added
 
-- **`api/repository/models.py`** — five new ORM models: `AccountCapability`, `Group`, `GroupMembership`, `AccessGrant`, `AccountBlock`.
-- **`api/migrations/versions/c4d5e6f7a8b9_add_permissions.py`** — Alembic migration for all five tables.
-- **`api/repository/permissionRepo.py`** — data-access layer (CRUD + 7-step access-check helper).
-- **`api/services/permissionService.py`** — business-logic layer (access resolution, group management, grants, blocks).
+- **`api/repository/models.py`** — Four new ORM models: `AccountCapability`, `GroupMembership`, `AccessGrant`, `AccountBlock`. The `Account` model gains two new fields: `accountType` and `owner_id`. Groups are `Account` rows with `accountType='group'` — no separate table needed.
+- **`api/repository/permissionRepo.py`** — Data-access layer (CRUD + 7-step access-check helper).
+- **`api/services/permissionService.py`** — Business-logic layer (access resolution, group/grant/block management).
 - **`api/routers/permissionRouter.py`** — REST endpoints (see below).
-- **`api/tests/test_permissions.py`** — unit tests for the service layer.
+- **`api/tests/test_permissions.py`** — Unit tests for the service layer.
+- **`web/src/services/permissionService.js`** — Frontend API service.
+- **`web/src/views/PermissionsView.vue`** — Vue3 permissions management page (groups, grants, blocks).
+
+## Account types
+
+`Account.accountType` can be:
+
+| Value | Description |
+|---|---|
+| `user` | Regular user (default) |
+| `group` | Named group — members managed via `GroupMembership` |
+| `team` | Sports team / club |
+| `organisation` | Organisation/federation |
+| `admin` | Administrator |
+
+Group accounts use `Account.owner_id` to record who created them. They cannot log in directly (synthetic email + unusable password hash).
 
 ## API endpoints
 
@@ -19,9 +34,9 @@ The permissions system has been implemented. See `documentation/features/AI-Judg
 |--------|------|-------------|
 | GET | `/capabilities/<account_id>` | Get capability row for an account |
 | PUT | `/capabilities/<account_id>` | Upsert capabilities (admin operation) |
-| GET | `/groups` | List groups owned by caller |
-| POST | `/groups` | Create a group |
-| DELETE | `/groups/<group_id>` | Delete a group |
+| GET | `/groups` | List group accounts owned by caller |
+| POST | `/groups` | Create a group account |
+| DELETE | `/groups/<group_id>` | Delete a group account |
 | POST | `/groups/<group_id>/members` | Add member to group |
 | DELETE | `/groups/<group_id>/members` | Remove member from group |
 | GET | `/access-grants` | List caller's access grants |
@@ -41,12 +56,14 @@ The permissions system has been implemented. See `documentation/features/AI-Judg
 
 ## Running migrations
 
+Auto-generate and apply:
+
 ```bash
-make migrate   # or: docker compose exec api flask db upgrade
+flask db migrate -m "add permissions and account type"
+flask db upgrade
 ```
 
 ## Security notes
 
 - Capability rows should only be created/updated by admins. The `PUT /capabilities/<account_id>` endpoint sets `granted_by` to the calling session account — restrict this endpoint at the infrastructure level (IP whitelist or admin role) until an admin concept is added to the Account model.
 - Blocks are always enforced before grants.
-

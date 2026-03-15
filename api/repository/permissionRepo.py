@@ -1,9 +1,11 @@
 from datetime import datetime
-from uuid import UUID
+from uuid import UUID, uuid4
+import secrets
+import hashlib
 
 from repository.db import db
 from repository.models import (
-    AccessGrant, AccountBlock, AccountCapability, Group, GroupMembership
+    AccessGrant, AccountBlock, AccountCapability, Account as AccountDB, GroupMembership
 )
 
 
@@ -36,36 +38,56 @@ class PermissionRepo:
         db.session.commit()
         return cap
 
-    # ── Group ────────────────────────────────────────────────────────────────
+    # ── Group accounts (accountType='group') ─────────────────────────────────
 
     @staticmethod
-    def create_group(owner_id: UUID, name: str, description: str = None) -> Group:
-        """Create a new group owned by *owner_id*."""
-        group = Group(
+    def create_group(owner_id: UUID, name: str, description: str = None) -> AccountDB:
+        """Create a group account owned by *owner_id*.
+
+        Groups are Account rows with accountType='group'. The group name is
+        stored in firstName. A synthetic unique email is generated so the
+        NOT NULL constraint is satisfied; group accounts cannot log in directly.
+        """
+        synthetic_email = f"group_{uuid4().hex}@internal"
+        # Groups do not log in; store an unusable password hash.
+        salt = secrets.token_hex(16)
+        password_hash = hashlib.pbkdf2_hmac('sha256', b'', salt.encode(), 1).hex()
+        now = datetime.now()
+        group = AccountDB(
+            email=synthetic_email,
+            firstName=name,
+            lastName=description or '',
+            passwordHash=password_hash,
+            salt=salt,
+            accountType='group',
             owner_id=owner_id.bytes,
-            name=name,
-            description=description,
-            createdAt=datetime.now(),
-            updatedAt=datetime.now(),
+            createdAt=now,
+            updatedAt=now,
         )
         db.session.add(group)
         db.session.commit()
         return group
 
     @staticmethod
-    def get_group(group_id: UUID) -> Group:
-        """Return group by ID or None."""
-        return Group.query.get(group_id.bytes)
+    def get_group(group_id: UUID) -> AccountDB:
+        """Return group account by ID or None (must be accountType='group')."""
+        return AccountDB.query.filter_by(
+            id=group_id.bytes, accountType='group'
+        ).first()
 
     @staticmethod
     def list_groups_by_owner(owner_id: UUID) -> list:
-        """Return all groups owned by *owner_id*."""
-        return Group.query.filter_by(owner_id=owner_id.bytes).all()
+        """Return all group accounts owned by *owner_id*."""
+        return AccountDB.query.filter_by(
+            owner_id=owner_id.bytes, accountType='group'
+        ).all()
 
     @staticmethod
     def delete_group(group_id: UUID) -> bool:
-        """Delete a group. Returns True if deleted, False if not found."""
-        group = Group.query.get(group_id.bytes)
+        """Delete a group account. Returns True if deleted, False if not found."""
+        group = AccountDB.query.filter_by(
+            id=group_id.bytes, accountType='group'
+        ).first()
         if not group:
             return False
         db.session.delete(group)

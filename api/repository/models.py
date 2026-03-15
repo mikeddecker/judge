@@ -88,9 +88,14 @@ class Account(DomainObject):
     mfaEnabled = db.Column(db.Boolean, nullable=False, default=False)
     mfaCode = db.Column(db.String(6), nullable=True)
     mfaCodeExpires = db.Column(db.DateTime, nullable=True)
+    # Account type: user (default), group, team, organisation, admin
+    accountType = db.Column(db.String(20), nullable=False, default='user')
+    # For group/team/org accounts: the account that created/owns this account
+    owner_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
 
     def to_dict(self):
         return {
+            'id': self.uuid_str(),
             'email': self.email,
             'firstName': self.firstName,
             'lastName': self.lastName,
@@ -98,6 +103,7 @@ class Account(DomainObject):
             'createdAt': self.createdAt.isoformat() if self.createdAt else None,
             'updatedAt': self.updatedAt.isoformat() if self.updatedAt else None,
             'mfaEnabled': self.mfaEnabled,
+            'accountType': self.accountType,
         }
 
 class Folder(DomainObject):
@@ -554,31 +560,11 @@ class AccountCapability(DomainObject):
         }
 
 
-class Group(DomainObject):
-    """Named set of accounts for shared access grants."""
-    __tablename__ = 'Groups'
-
-    owner_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False)
-    name = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-
-    memberships = db.relationship('GroupMembership', backref='group', lazy='dynamic', cascade='all, delete-orphan')
-
-    def to_dict(self):
-        return {
-            'id': self.uuid_str(),
-            'owner_id': _uuid_to_str(self.owner_id),
-            'name': self.name,
-            'description': self.description,
-            'createdAt': self.createdAt.isoformat() if self.createdAt else None,
-        }
-
-
 class GroupMembership(DomainObject):
-    """Many-to-many: accounts ↔ groups."""
+    """Many-to-many: accounts ↔ group accounts (accountType='group')."""
     __tablename__ = 'GroupMemberships'
 
-    group_id = db.Column(UUIDType, db.ForeignKey('Groups.id', ondelete='CASCADE'), nullable=False)
+    group_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False)
     account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False)
     added_by = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
     added_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
@@ -605,7 +591,8 @@ class AccessGrant(DomainObject):
 
     granted_to = db.Column(db.Enum(*GRANTED_TO_VALUES, name='granted_to_enum'), nullable=False)
     target_account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
-    target_group_id = db.Column(UUIDType, db.ForeignKey('Groups.id'), nullable=True)
+    # target_group_id references a group account (accountType='group')
+    target_group_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
 
     # NULL = applies to all owner content
     video_id = db.Column(UUIDType, db.ForeignKey('Videos.id', ondelete='CASCADE'), nullable=True)

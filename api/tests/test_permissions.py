@@ -146,7 +146,11 @@ class TestGroupService(unittest.TestCase):
     def test_create_group_success(self, repo):
         owner = _uuid()
         mock_group = MagicMock()
-        mock_group.to_dict.return_value = {'id': str(_uuid()), 'name': 'Test'}
+        mock_group.uuid_str.return_value = str(_uuid())
+        mock_group.firstName = 'Test'
+        mock_group.lastName = ''
+        mock_group.owner_id = owner.bytes
+        mock_group.createdAt = None
         repo.create_group.return_value = mock_group
         result = self.svc.create_group(owner, name='Test')
         self.assertTrue(result['success'])

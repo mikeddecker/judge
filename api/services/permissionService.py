@@ -83,20 +83,20 @@ class PermissionService:
 
     @staticmethod
     def create_group(owner_id: UUID, name: str, description: str = None) -> dict:
-        """Create a group. Returns group dict."""
+        """Create a group account (accountType='group'). Returns group dict."""
         if not name or not name.strip():
             return {'success': False, 'message': 'Group name is required'}
         group = PermissionRepo.create_group(owner_id, name.strip(), description)
-        return {'success': True, 'group': group.to_dict()}
+        return {'success': True, 'group': _group_dict(group)}
 
     @staticmethod
     def list_groups(owner_id: UUID) -> list:
         """Return list of group dicts owned by *owner_id*."""
-        return [g.to_dict() for g in PermissionRepo.list_groups_by_owner(owner_id)]
+        return [_group_dict(g) for g in PermissionRepo.list_groups_by_owner(owner_id)]
 
     @staticmethod
     def delete_group(owner_id: UUID, group_id: UUID) -> dict:
-        """Delete a group if *owner_id* owns it."""
+        """Delete a group account if *owner_id* owns it."""
         group = PermissionRepo.get_group(group_id)
         if not group:
             return {'success': False, 'message': 'Group not found'}
@@ -230,3 +230,21 @@ def _parse_uuid(value) -> UUID:
         return UUID(str(value))
     except (ValueError, AttributeError):
         return None
+
+
+def _group_dict(group) -> dict:
+    """Serialize a group Account (accountType='group') to a plain dict."""
+    from uuid import UUID as _UUID
+    owner_id_str = None
+    if group.owner_id is not None:
+        if isinstance(group.owner_id, bytes):
+            owner_id_str = str(_UUID(bytes=group.owner_id))
+        else:
+            owner_id_str = str(group.owner_id)
+    return {
+        'id': group.uuid_str(),
+        'name': group.firstName,
+        'description': group.lastName or None,
+        'owner_id': owner_id_str,
+        'createdAt': group.createdAt.isoformat() if group.createdAt else None,
+    }
