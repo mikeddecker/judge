@@ -245,7 +245,7 @@ class FolderServiceTest(TestCase):
         self.make_folder_in_storage_dir([testname])
         self.make_folder_in_storage_dir([testname, "jammer"])
 
-        parent_folder = Folder(155, testname, None)
+        parent_folder = Folder(_NONEXISTENT_UUID, testname, None)
         with self.assertRaises(LookupError):
             self.folderService.add_in_database(name="jammer", parent=parent_folder)
 
@@ -535,5 +535,5 @@ class FolderServiceTest(TestCase):
 
         # Even another object doesn't work
         with self.assertRaises(AttributeError):
-            self.folderService.FolderRepo = Folder(1, "folderke")
+            self.folderService.FolderRepo = Folder(uuid4(), "folderke")
 

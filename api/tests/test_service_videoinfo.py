@@ -310,7 +310,7 @@ class VideoServiceTest(TestCase):
 
     def test_get_videos_invalid_id_does_not_exist(self):
         with self.assertRaises(LookupError):
-            self.videoService.get_videos(folderId=155)
+            self.videoService.get_videos(folderId=_NONEXISTENT_UUID)
 
     ##################################
     # Test frameInfo (by frameNr)
