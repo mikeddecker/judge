@@ -65,12 +65,16 @@ ENVS = SimpleNamespace(
     SUPPORTED_IMAGE_FORMATS = os.getenv("SUPPORTED_IMAGE_FORMATS"),
 )
 
+_RECIPES_PATH = os.getenv('ML_RECIPES_PATH', '/machine_learning_recipes.json')
+_RECIPES_FALLBACK = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'machine_learning_recipes.json')
+_raw_recipes = load_json_file(_RECIPES_PATH) or load_json_file(_RECIPES_FALLBACK) or {}
+
 RECIPES = {
     step: {
         recipename: SimpleNamespace(**kwargs, name=recipename) 
         for recipename, kwargs in step_recipes.items()
     }
-    for step, step_recipes in load_json_file('/machine_learning_recipes.json').items()
+    for step, step_recipes in _raw_recipes.items()
 }
 
 JOB_TYPES = ['TRAIN', 'PREDICT']

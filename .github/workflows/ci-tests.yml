@@ -215,7 +215,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./api
         run: |
-          pip install -q alembic sqlalchemy pymysql flask flask-migrate
+          pip install -q alembic sqlalchemy pymysql flask flask-migrate cryptography
 
       - name: Run migrations
         working-directory: ./api
