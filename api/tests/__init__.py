@@ -14,5 +14,5 @@ for dir_path in [STORAGE_DIR_VIDEOS, STORAGE_DIR_BACKUPS, STORAGE_DIR_GENERATED_
         print(f"❌ Environment variable for storage directory not set properly.")
         sys.exit(1)
     
-    os.system(f"rm -rf {dir_path}/*") if os.path.exists(dir_path) else os.makedirs(STORAGE_DIR_VIDEOS, exist_ok=True)
+    os.system(f"rm -rf {dir_path}/*") if os.path.exists(dir_path) else os.makedirs(dir_path, exist_ok=True)
 

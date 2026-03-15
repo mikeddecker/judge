@@ -62,10 +62,16 @@ jobs:
         env:
           MYSQL_HOST: 127.0.0.1
           MYSQL_PORT: 3306
+          MYSQL_DOCKER_PORT: 3306
           MYSQL_USERNAME: root
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: judge_db
           FLASK_ENV: test
+          STORAGE_DIR_VIDEOS: /tmp/judge_test/videos
+          STORAGE_DIR_GENERATED_DATA: /tmp/judge_test/generated
+          MYSQL_BACKUP: /tmp/judge_test/backups
+          SUPPORTED_VIDEO_FORMATS: .mp4,.avi,.mov
+          SUPPORTED_IMAGE_FORMATS: .jpg,.jpeg,.png
         run: |
           python -m pytest tests/ -v --cov=. --cov-report=xml
 
