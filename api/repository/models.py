@@ -9,8 +9,7 @@ from sqlalchemy.orm import Mapped
 from datetime import datetime
 import uuid
 
-GRANTED_TO_VALUES = ('everyone', 'account', 'group')
-RELATIONSHIP_TYPE_VALUES = ('friend', 'member', 'representative', 'follower', 'individual')
+from domain.enums import AccountType, GrantedTo, RelationshipType
 
 
 def _uuid_to_str(value) -> str:
@@ -89,7 +88,7 @@ class Account(DomainObject):
     mfaCode = db.Column(db.String(6), nullable=True)
     mfaCodeExpires = db.Column(db.DateTime, nullable=True)
     # Account type: user (default), group, team, organisation, admin
-    accountType = db.Column(db.String(20), nullable=False, default='user')
+    accountType = db.Column(db.Enum(AccountType), nullable=False, default=AccountType.USER)
     # For group/team/org accounts: the account that created/owns this account
     owner_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
 
@@ -589,7 +588,7 @@ class AccessGrant(DomainObject):
 
     owner_id = db.Column(UUIDType, db.ForeignKey('Accounts.id', ondelete='CASCADE'), nullable=False)
 
-    granted_to = db.Column(db.Enum(*GRANTED_TO_VALUES, name='granted_to_enum'), nullable=False)
+    granted_to = db.Column(db.Enum(GrantedTo), nullable=False)
     target_account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
     # target_group_id references a group account (accountType='group')
     target_group_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
@@ -603,9 +602,7 @@ class AccessGrant(DomainObject):
     can_label = db.Column(db.Boolean, nullable=False, default=False)
     can_download = db.Column(db.Boolean, nullable=False, default=False)
 
-    relationship_type = db.Column(
-        db.Enum(*RELATIONSHIP_TYPE_VALUES, name='relationship_type_enum'), nullable=True
-    )
+    relationship_type = db.Column(db.Enum(RelationshipType), nullable=True)
 
     granted_by = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
     granted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)

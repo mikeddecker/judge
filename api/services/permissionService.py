@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from repository.permissionRepo import PermissionRepo
+from domain.enums import GrantedTo, RelationshipType
 
 CAPABILITY_BOOL_FIELDS = (
     'can_upload_video', 'can_edit_video', 'can_label_video',
@@ -14,9 +15,6 @@ CAPABILITY_INT_FIELDS = (
     'max_video_uploads', 'max_video_size_mb',
     'max_video_duration_seconds', 'max_storage_gb',
 )
-
-VALID_GRANTED_TO = ('everyone', 'account', 'group')
-VALID_RELATIONSHIP_TYPES = ('friend', 'member', 'representative', 'follower', 'individual')
 
 
 class PermissionService:
@@ -137,17 +135,23 @@ class PermissionService:
     @staticmethod
     def create_grant(owner_id: UUID, data: dict) -> dict:
         """Create an access grant. *owner_id* is the content owner."""
-        granted_to = data.get('granted_to')
-        if granted_to not in VALID_GRANTED_TO:
-            return {'success': False, 'message': f'granted_to must be one of {VALID_GRANTED_TO}'}
+        granted_to_raw = data.get('granted_to')
+        try:
+            granted_to = GrantedTo(granted_to_raw)
+        except ValueError:
+            return {'success': False, 'message': f'granted_to must be one of {[e.value for e in GrantedTo]}'}
 
         target_account_id = _parse_uuid(data.get('target_account_id'))
         target_group_id = _parse_uuid(data.get('target_group_id'))
         video_id = _parse_uuid(data.get('video_id'))
         folder_id = _parse_uuid(data.get('folder_id'))
-        relationship_type = data.get('relationship_type')
-        if relationship_type and relationship_type not in VALID_RELATIONSHIP_TYPES:
-            return {'success': False, 'message': f'relationship_type must be one of {VALID_RELATIONSHIP_TYPES}'}
+        relationship_type_raw = data.get('relationship_type')
+        relationship_type = None
+        if relationship_type_raw:
+            try:
+                relationship_type = RelationshipType(relationship_type_raw)
+            except ValueError:
+                return {'success': False, 'message': f'relationship_type must be one of {[e.value for e in RelationshipType]}'}
 
         granted_until_raw = data.get('granted_until')
         granted_until = None

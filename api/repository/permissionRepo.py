@@ -7,6 +7,7 @@ from repository.db import db
 from repository.models import (
     AccessGrant, AccountBlock, AccountCapability, Account as AccountDB, GroupMembership
 )
+from domain.enums import AccountType, GrantedTo
 
 
 class PermissionRepo:
@@ -38,13 +39,13 @@ class PermissionRepo:
         db.session.commit()
         return cap
 
-    # ── Group accounts (accountType='group') ─────────────────────────────────
+    # ── Group accounts (accountType=AccountType.GROUP) ─────────────────────────────────
 
     @staticmethod
     def create_group(owner_id: UUID, name: str, description: str = None) -> AccountDB:
         """Create a group account owned by *owner_id*.
 
-        Groups are Account rows with accountType='group'. The group name is
+        Groups are Account rows with accountType=AccountType.GROUP. The group name is
         stored in firstName. A synthetic unique email is generated so the
         NOT NULL constraint is satisfied; group accounts cannot log in directly.
         """
@@ -59,7 +60,7 @@ class PermissionRepo:
             lastName=description or '',
             passwordHash=password_hash,
             salt=salt,
-            accountType='group',
+            accountType=AccountType.GROUP,
             owner_id=owner_id.bytes,
             createdAt=now,
             updatedAt=now,
@@ -70,23 +71,23 @@ class PermissionRepo:
 
     @staticmethod
     def get_group(group_id: UUID) -> AccountDB:
-        """Return group account by ID or None (must be accountType='group')."""
+        """Return group account by ID or None (must be accountType=AccountType.GROUP)."""
         return AccountDB.query.filter_by(
-            id=group_id.bytes, accountType='group'
+            id=group_id.bytes, accountType=AccountType.GROUP
         ).first()
 
     @staticmethod
     def list_groups_by_owner(owner_id: UUID) -> list:
         """Return all group accounts owned by *owner_id*."""
         return AccountDB.query.filter_by(
-            owner_id=owner_id.bytes, accountType='group'
+            owner_id=owner_id.bytes, accountType=AccountType.GROUP
         ).all()
 
     @staticmethod
     def delete_group(group_id: UUID) -> bool:
         """Delete a group account. Returns True if deleted, False if not found."""
         group = AccountDB.query.filter_by(
-            id=group_id.bytes, accountType='group'
+            id=group_id.bytes, accountType=AccountType.GROUP
         ).first()
         if not group:
             return False
@@ -203,14 +204,14 @@ class PermissionRepo:
         """Return True if a valid can_view grant exists for requester on owner's content."""
         now = datetime.now()
         target_filter = db.or_(
-            AccessGrant.granted_to == 'everyone',
+            AccessGrant.granted_to == GrantedTo.EVERYONE,
             db.and_(
-                AccessGrant.granted_to == 'account',
+                AccessGrant.granted_to == GrantedTo.ACCOUNT,
                 AccessGrant.target_account_id == requester_id_bytes,
             ),
             *(
                 [db.and_(
-                    AccessGrant.granted_to == 'group',
+                    AccessGrant.granted_to == GrantedTo.GROUP,
                     AccessGrant.target_group_id.in_(group_id_bytes_list),
                 )]
                 if group_id_bytes_list else []

@@ -31,5 +31,25 @@ export const postApplicationJson = async (route, data) => {
     });
 };
 
+export const putApplicationJson = async (route, data) => {
+  try {
+    const response = await api.put(route, data, { headers: { 'Content-Type': 'application/json' } });
+    return response.data;
+  } catch (error) {
+    const errorStore = useErrorStore()
+    errorStore.setError((error.response?.data?.message || error.response?.data) ?? 'Something went wrong');
+  }
+};
+
+export const deleteApplicationJson = async (route, data) => {
+  try {
+    const response = await api.delete(route, { data, headers: { 'Content-Type': 'application/json' } });
+    return response.data;
+  } catch (error) {
+    const errorStore = useErrorStore()
+    errorStore.setError((error.response?.data?.message || error.response?.data) ?? 'Something went wrong');
+  }
+};
+
 export default api;
 

@@ -1,73 +1,60 @@
-import { api } from './api'
+import { getApplicationJson, postApplicationJson, putApplicationJson, deleteApplicationJson } from './api'
 
 const permissionService = {
   // ── Capabilities ──────────────────────────────────────────────────────────
-  getCapability: async (accountId) => {
-    const resp = await api.get(`/capabilities/${accountId}`)
-    return resp.data
+  getCapability: (accountId) => {
+    return getApplicationJson(`/capabilities/${accountId}`)
   },
 
-  setCapability: async (accountId, fields) => {
-    const resp = await api.put(`/capabilities/${accountId}`, fields)
-    return resp.data
+  setCapability: (accountId, fields) => {
+    return putApplicationJson(`/capabilities/${accountId}`, fields)
   },
 
   // ── Groups ────────────────────────────────────────────────────────────────
-  listGroups: async () => {
-    const resp = await api.get('/groups')
-    return resp.data
+  listGroups: () => {
+    return getApplicationJson('/groups')
   },
 
-  createGroup: async (name, description) => {
-    const resp = await api.post('/groups', { name, description })
-    return resp.data
+  createGroup: (name, description) => {
+    return postApplicationJson('/groups', { name, description })
   },
 
-  deleteGroup: async (groupId) => {
-    const resp = await api.delete(`/groups/${groupId}`)
-    return resp.data
+  deleteGroup: (groupId) => {
+    return deleteApplicationJson(`/groups/${groupId}`)
   },
 
-  addMember: async (groupId, accountId) => {
-    const resp = await api.post(`/groups/${groupId}/members`, { account_id: accountId })
-    return resp.data
+  addMember: (groupId, accountId) => {
+    return postApplicationJson(`/groups/${groupId}/members`, { account_id: accountId })
   },
 
-  removeMember: async (groupId, accountId) => {
-    const resp = await api.delete(`/groups/${groupId}/members`, { data: { account_id: accountId } })
-    return resp.data
+  removeMember: (groupId, accountId) => {
+    return deleteApplicationJson(`/groups/${groupId}/members`, { account_id: accountId })
   },
 
   // ── Access Grants ─────────────────────────────────────────────────────────
-  listGrants: async () => {
-    const resp = await api.get('/access-grants')
-    return resp.data
+  listGrants: () => {
+    return getApplicationJson('/access-grants')
   },
 
-  createGrant: async (payload) => {
-    const resp = await api.post('/access-grants', payload)
-    return resp.data
+  createGrant: (payload) => {
+    return postApplicationJson('/access-grants', payload)
   },
 
-  revokeGrant: async (grantId) => {
-    const resp = await api.delete(`/access-grants/${grantId}`)
-    return resp.data
+  revokeGrant: (grantId) => {
+    return deleteApplicationJson(`/access-grants/${grantId}`)
   },
 
   // ── Blocks ────────────────────────────────────────────────────────────────
-  listBlocks: async () => {
-    const resp = await api.get('/blocks')
-    return resp.data
+  listBlocks: () => {
+    return getApplicationJson('/blocks')
   },
 
-  blockAccount: async (accountId, reason) => {
-    const resp = await api.post('/blocks', { account_id: accountId, reason })
-    return resp.data
+  blockAccount: (accountId, reason) => {
+    return postApplicationJson('/blocks', { account_id: accountId, reason })
   },
 
-  unblockAccount: async (accountId) => {
-    const resp = await api.delete(`/blocks/${accountId}`)
-    return resp.data
+  unblockAccount: (accountId) => {
+    return deleteApplicationJson(`/blocks/${accountId}`)
   },
 }
 
