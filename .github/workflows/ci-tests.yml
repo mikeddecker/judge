@@ -20,6 +20,8 @@ jobs:
         run: |
           set -a && source .env.test && set +a
           make ci-dev-test
+        env:
+          COMPOSE_ENV_FILES: .env.test
 
       - name: Clean up
         if: always()
