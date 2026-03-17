@@ -39,7 +39,12 @@ services:
       - ai-judge-network
   api:
     container_name: ai-judge-api
-    build: ./api
+    build:
+      context: ./api
+      cache_from:
+        - type=gha
+      cache_to:
+        - type=gha,mode=max
     profiles:
       - dev
       - prod
@@ -79,7 +84,13 @@ services:
     restart: on-failure
   computervision:
     container_name: ai-judge-computer-vision
-    build: ./computervision
+    build:
+      context: ./computervision
+      cache_from:
+        - type=gha
+      cache_to:
+        - type=gha,mode=max
+
     profiles:
       - prod
       - dev
@@ -100,7 +111,13 @@ services:
   # Sync executor for bidirectional multi-region synchronization
   sync-executor:
     container_name: ai-judge-sync-executor
-    build: ./api
+    build:
+      context: ./api
+      cache_from:
+        - type=gha
+      cache_to:
+        - type=gha,mode=max
+
     profiles:
       - prod
     env_file: .env
@@ -125,7 +142,13 @@ services:
   # Testing services
   api-test:
     container_name: ai-judge-api-test
-    build: ./api
+    build:
+      context: ./api
+      cache_from:
+        - type=gha
+      cache_to:
+        - type=gha,mode=max
+
     profiles:
       - test
       - prod
