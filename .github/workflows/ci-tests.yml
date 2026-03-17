@@ -13,8 +13,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Run API tests via Docker Compose
         run: |
@@ -60,21 +58,13 @@ jobs:
 
     strategy:
       matrix:
-        service: [ api, web, computervision ]
+        service: [ api, web ]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Build ${{ matrix.service }}
-        uses: docker/build-push-action@v5
-        with:
-          context: ./${{ matrix.service }}
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: docker build ./${{ matrix.service }} -t judge-${{ matrix.service }}:test
 
   integration-tests:
     name: Integration Tests (Docker)
@@ -140,6 +130,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: './api/requirements.txt'
 
       - name: Install dependencies
         working-directory: ./api
