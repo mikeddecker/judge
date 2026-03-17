@@ -86,7 +86,7 @@ ci-dev-test:
 ci-dev-test-down:
 	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test down
 ci-dev: ## Start dev environment for integration testing
-	$(COMPOSE_DEV) --env-file .env.test --profile dev up -d
+	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile dev up -d
 ci-dev-down:
 	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile dev down
 
