@@ -23,7 +23,7 @@ jobs:
 
       - name: Clean up
         if: always()
-        run: docker compose --profile dev down -v
+        run: docker compose --profile test down -v
 
   web-tests:
     name: Web Tests (JavaScript)
