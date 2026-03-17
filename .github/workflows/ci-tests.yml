@@ -18,7 +18,6 @@ jobs:
 
       - name: Run API tests via Docker Compose
         run: |
-          set -a && source .env.test && set +a
           make ci-dev-test
         env:
           COMPOSE_ENV_FILES: .env.test
