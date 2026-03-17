@@ -11,7 +11,10 @@ from services.folderService import FolderService
 from services.videoService import VideoService
 from tests.TestHelper import TestHelper
 from typing import List
-from uuid import UUID
+from uuid import UUID, uuid4
+
+# A UUID that will never be present in the test database
+_NONEXISTENT_UUID = UUID('ffffffff-ffff-ffff-ffff-ffffffffffff')
 
 STORAGE_DIR_VIDEOS = os.getenv("STORAGE_DIR_VIDEOS")
 if os.path.exists(STORAGE_DIR_VIDEOS):
@@ -160,7 +163,7 @@ class FolderServiceTest(TestCase):
         testname = "test_create_invalid_parent_does_not_exist"
         # self.folderService.create(testname, None)
         with self.assertRaises(NotADirectoryError):
-            self.folderService.create("child", Folder(2, testname, None))
+            self.folderService.create("child", Folder(uuid4(), testname, None))
 
     def test_create_invalid_parent_folder_does_not_exist(self):
         testname = "test_create_invalid_parent_folder_does_not_exist"
@@ -242,7 +245,7 @@ class FolderServiceTest(TestCase):
         self.make_folder_in_storage_dir([testname])
         self.make_folder_in_storage_dir([testname, "jammer"])
 
-        parent_folder = Folder(155, testname, None)
+        parent_folder = Folder(_NONEXISTENT_UUID, testname, None)
         with self.assertRaises(LookupError):
             self.folderService.add_in_database(name="jammer", parent=parent_folder)
 
@@ -288,15 +291,15 @@ class FolderServiceTest(TestCase):
         assert not self.folderService.exists_path_on_drive(name=testname, parent=None), f"Folder {testname} does not exist in {STORAGE_DIR_VIDEOS}"
 
     def test_exists_path_on_drive_invalid_does_not_exists_with_parent(self):
-        parent = Folder(2, "something_random_qsdj")
+        parent = Folder(uuid4(), "something_random_qsdj")
 
         assert not self.folderService.exists_path_on_drive(name="competition", parent=parent), f"Folder does not exist in {parent.get_relative_path()}"
 
     def test_exists_path_on_drive_invalid_does_not_exists_with_nested_parent(self):
         folders = ["this", "is", "a", "non", "existing", "path"]
         folder = None
-        for i, f in enumerate(folders):
-            folder = Folder(id=i+1, name=f, parent=folder)
+        for f in folders:
+            folder = Folder(id=uuid4(), name=f, parent=folder)
 
         assert not self.folderService.exists_path_on_drive(name="path_path", parent=folder), f"Folder does not exist in {folder.get_relative_path()}"
 
@@ -369,7 +372,7 @@ class FolderServiceTest(TestCase):
     ##################################
     def test_exists_in_database_valid_id_does_exist(self):
         testname = "test_exists_in_database_valid_id_does_exist"
-        assert not self.folderService.exists_in_database(id=1), f"Database not initialized correctly"
+        assert not self.folderService.exists_in_database(id=_NONEXISTENT_UUID), f"Database not initialized correctly"
         created_folder = self.folderService.create(name=testname, parent=None)
 
         assert self.folderService.exists_in_database(id=created_folder.Id), f"FolderId {created_folder.Id} does not exist in database"
@@ -392,7 +395,7 @@ class FolderServiceTest(TestCase):
         assert self.folderService.exists_in_database(id=created_folder.Id), f"FolderId {created_folder.Id} does not exist in database"
 
     def test_exists_in_database_invalid_id_does_not_exists(self):
-        assert not self.folderService.exists_in_database(id=555), f"FolderId 555 somehow exists in database"
+        assert not self.folderService.exists_in_database(id=_NONEXISTENT_UUID), f"FolderId {_NONEXISTENT_UUID} somehow exists in database"
 
     ##################################
     # Test get (by id)
@@ -415,7 +418,7 @@ class FolderServiceTest(TestCase):
 
     def test_get_invalid_id_does_not_exist(self):
         with self.assertRaises(LookupError):
-            self.folderService.get(id=155)
+            self.folderService.get(id=_NONEXISTENT_UUID)
 
     ##################################
     # Test get children (by id)
@@ -451,7 +454,7 @@ class FolderServiceTest(TestCase):
 
     def test_get_children_invalid_id_does_not_exist(self):
         with self.assertRaises(LookupError):
-            self.folderService.get_children(id=155)
+            self.folderService.get_children(id=_NONEXISTENT_UUID)
 
     ##################################
     # Test delete (by id)
@@ -477,7 +480,7 @@ class FolderServiceTest(TestCase):
 
     def test_delete_invalid_id_does_not_exist(self):
         with self.assertRaises(LookupError):
-            self.folderService.delete(id=155)
+            self.folderService.delete(id=_NONEXISTENT_UUID)
 
     def test_delete_invalid_has_children(self):
         testname = "test_delete_invalid_has_children"
@@ -532,5 +535,5 @@ class FolderServiceTest(TestCase):
 
         # Even another object doesn't work
         with self.assertRaises(AttributeError):
-            self.folderService.FolderRepo = Folder(1, "folderke")
+            self.folderService.FolderRepo = Folder(uuid4(), "folderke")
 

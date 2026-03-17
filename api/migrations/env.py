@@ -1,7 +1,6 @@
+import os
 import logging
 from logging.config import fileConfig
-
-from flask import current_app
 
 from alembic import context
 
@@ -14,38 +13,52 @@ config = context.config
 fileConfig(config.config_file_name)
 logger = logging.getLogger('alembic.env')
 
-def get_engine():
+def _get_flask_migrate():
+    """Return Flask-Migrate instance if a Flask app context is active, else None."""
     try:
-        return current_app.extensions['migrate'].db.engine
-        # this works with Flask-SQLAlchemy<3 and Alchemical
-        return current_app.extensions['migrate'].db.get_engine()
-    except (TypeError, AttributeError):
-        # this works with Flask-SQLAlchemy>=3
-        return current_app.extensions['migrate'].db.engine
+        from flask import current_app
+        return current_app.extensions['migrate']
+    except RuntimeError:
+        return None
+
+def _get_standalone_url():
+    """Build a SQLAlchemy URL from environment variables (used outside Flask context)."""
+    host = os.environ.get('MYSQL_HOST', 'localhost')
+    _docker_port = os.environ.get('MYSQL_DOCKER_PORT')
+    port = _docker_port if _docker_port is not None else os.environ.get('MYSQL_PORT', '3306')
+    user = os.environ.get('MYSQL_USERNAME', 'root')
+    password = os.environ.get('MYSQL_ROOT_PASSWORD', '')
+    database = os.environ.get('MYSQL_DATABASE', '')
+    return f"mysql+pymysql://{user}:{password}@{host}:{port}/{database}"
 
 def get_engine_url():
-    try:
-        return get_engine().url.render_as_string(hide_password=False).replace(
-            '%', '%%')
-    except AttributeError:
-        return str(get_engine().url).replace('%', '%%')
+    migrate = _get_flask_migrate()
+    if migrate is not None:
+        try:
+            return migrate.db.engine.url.render_as_string(hide_password=False).replace('%', '%%')
+        except AttributeError:
+            return str(migrate.db.engine.url).replace('%', '%%')
+    return _get_standalone_url()
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 config.set_main_option('sqlalchemy.url', get_engine_url())
-target_db = current_app.extensions['migrate'].db
+
+def get_metadata():
+    migrate = _get_flask_migrate()
+    if migrate is None:
+        return None
+    target_db = migrate.db
+    if hasattr(target_db, 'metadatas'):
+        return target_db.metadatas[None]
+    return target_db.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
-def get_metadata():
-    if hasattr(target_db, 'metadatas'):
-        return target_db.metadatas[None]
-    return target_db.metadata
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
@@ -85,11 +98,20 @@ def run_migrations_online():
                 directives[:] = []
                 logger.info('No changes in schema detected.')
 
-    conf_args = current_app.extensions['migrate'].configure_args
-    if conf_args.get("process_revision_directives") is None:
-        conf_args["process_revision_directives"] = process_revision_directives
-
-    connectable = get_engine()
+    migrate = _get_flask_migrate()
+    if migrate is not None:
+        conf_args = migrate.configure_args
+        if conf_args.get("process_revision_directives") is None:
+            conf_args["process_revision_directives"] = process_revision_directives
+        connectable = migrate.db.engine
+    else:
+        from sqlalchemy import engine_from_config, pool
+        conf_args = {"process_revision_directives": process_revision_directives}
+        connectable = engine_from_config(
+            config.get_section(config.config_ini_section),
+            prefix='sqlalchemy.',
+            poolclass=pool.NullPool,
+        )
 
     with connectable.connect() as connection:
         context.configure(
