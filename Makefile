@@ -22,6 +22,9 @@ docker-pull:
 dev: check-ssd ## Run development environment (with volume hot reload)
 	$(COMPOSE_DEV) --profile dev up
 
+ci-dev-test: check-ssd ## Run the tests
+	$(COMPOSE_DEV) --profile test up --abort-on-container-exit --exit-code-from api-test
+
 dev-detached: check-ssd ## Run development environment in detached mode
 	$(COMPOSE_DEV) --profile dev up -d
 
