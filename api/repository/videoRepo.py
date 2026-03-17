@@ -55,7 +55,7 @@ class VideoRepository:
             height = height,
             duration = duration,
             fps = fps,
-            training = training,
+            is_train = training,
             qualitative = qualitative,
             obstruction = obstruction,
             private = private,
