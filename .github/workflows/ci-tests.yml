@@ -19,12 +19,10 @@ jobs:
       - name: Run API tests via Docker Compose
         run: |
           make ci-dev-test
-        env:
-          COMPOSE_ENV_FILES: .env.test
 
       - name: Clean up
         if: always()
-        run: docker compose --profile test down -v
+        run: make ci-dev-test-down
 
   web-tests:
     name: Web Tests (JavaScript)

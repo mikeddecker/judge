@@ -66,7 +66,7 @@ services:
       - ${STORAGE_DIR_VIDEOS}:${STORAGE_DIR_VIDEOS}
       - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
       - ${MYSQL_BACKUP}:${MYSQL_BACKUP}
-      - ./computervision/recipes.json:/machine_learning_recipes.json:ro
+      - ./recipes.json:/machine_learning_recipes.json:ro
   web:
     container_name: ai-judge-web
     build: ./web
@@ -105,6 +105,7 @@ services:
       - ${STORAGE_DIR_VIDEOS}:${STORAGE_DIR_VIDEOS}
       - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
       - torch_cache:/root/.cache/torch
+      - ./recipes.json:/app/recipes.json:ro
     # ipc: host # Good for now - use shm_size
     shm_size: 6gb # About 30-50% max of CPU
 
@@ -163,7 +164,7 @@ services:
       - api_test:${STORAGE_DIR_VIDEOS}
       - api_test:${STORAGE_DIR_GENERATED_DATA}
       - api_test:${MYSQL_BACKUP}
-      - ./computervision/recipes.json:/machine_learning_recipes.json:ro
+      - ./recipes.json:/machine_learning_recipes.json:ro
 
 networks:
   ai-judge-network:
