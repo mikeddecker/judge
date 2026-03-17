@@ -7,6 +7,7 @@ services:
       - dev
       - prod
       - test
+      - ci
     env_file: ${ENV_FILE:-.env}
     environment:
       - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
@@ -42,12 +43,13 @@ services:
     build:
       context: ./api
       cache_from:
-        - type=gha
+        - type=gha,scope=api
       cache_to:
-        - type=gha,mode=max
+        - type=gha,mode=max,scope=api
     profiles:
       - dev
       - prod
+      - ci
     env_file: ${ENV_FILE:-.env}
     ports:
       - $API_LOCAL_PORT:$API_DOCKER_PORT
@@ -69,10 +71,16 @@ services:
       - ./recipes.json:/machine_learning_recipes.json:ro
   web:
     container_name: ai-judge-web
-    build: ./web
+    build:
+      context: ./web
+      cache_from:
+        - type=gha,scope=web
+      cache_to:
+        - type=gha,mode=max,scope=web
     profiles:
       - dev
       - prod
+      - ci
     env_file: ${ENV_FILE:-.env}
     ports:
       - $WEB_LOCAL_PORT:$WEB_DOCKER_PORT
@@ -87,13 +95,15 @@ services:
     build:
       context: ./computervision
       cache_from:
-        - type=gha
+        - type=gha,scope=computervision
       cache_to:
-        - type=gha,mode=max
+        - type=gha,mode=max,scope=computervision
 
     profiles:
       - prod
       - dev
+    # GPU pass-through: requires NVIDIA Container Toolkit on the host.
+    # Intentionally NOT in the 'ci' profile — GitHub Actions runners have no GPU.
     gpus: all
     env_file: ${ENV_FILE:-.env}
     depends_on:
@@ -109,15 +119,37 @@ services:
     # ipc: host # Good for now - use shm_size
     shm_size: 6gb # About 30-50% max of CPU
 
+  # CI-only computervision smoke test service (CPU, no NVIDIA runtime required)
+  computervision-ci:
+    build:
+      context: ./computervision
+      args:
+        BASE_IMAGE: pytorch/pytorch:2.6.0-cpu
+      cache_from:
+        - type=gha,scope=computervision-cpu
+      cache_to:
+        - type=gha,mode=max,scope=computervision-cpu
+    profiles:
+      - ci
+    env_file: ${ENV_FILE:-.env.test}
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - ai-judge-network
+    command: ["python", "scripts/ci_smoke_test.py"]
+
   # Sync executor for bidirectional multi-region synchronization
   sync-executor:
     container_name: ai-judge-sync-executor
     build:
       context: ./api
       cache_from:
-        - type=gha
+        - type=gha,scope=api
       cache_to:
-        - type=gha,mode=max
+        - type=gha,mode=max,scope=api
 
     profiles:
       - prod
@@ -146,9 +178,9 @@ services:
     build:
       context: ./api
       cache_from:
-        - type=gha
+        - type=gha,scope=api
       cache_to:
-        - type=gha,mode=max
+        - type=gha,mode=max,scope=api
 
     profiles:
       - test

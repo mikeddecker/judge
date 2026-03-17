@@ -85,8 +85,12 @@ ci-dev-test:
 	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test up --abort-on-container-exit --exit-code-from api-test
 ci-dev-test-down:
 	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test down
-ci-dev: ## Start dev environment for integration testing
-	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile dev up -d
+ci-dev: ## Start CI integration test environment (no computervision - GPU not available on runners)
+	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile ci up -d
 ci-dev-down:
-	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile dev down
+	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile ci down
+ci-cv-test: ## Run computervision smoke test (CPU) with real API + DB dependencies
+	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile ci up --abort-on-container-exit --exit-code-from computervision-ci computervision-ci
+ci-cv-test-down:
+	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile ci down --remove-orphans
 
