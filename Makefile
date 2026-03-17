@@ -85,8 +85,8 @@ ci-dev-test:
 	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test up --abort-on-container-exit --exit-code-from api-test
 ci-dev-test-down:
 	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test down
-ci-dev:
-	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile dev up --abort-on-container-exit --exit-code-from api-test
+ci-dev: ## Start dev environment for integration testing
+	$(COMPOSE_DEV) --env-file .env.test --profile dev up -d
 ci-dev-down:
 	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile dev down
 
