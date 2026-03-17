@@ -22,12 +22,6 @@ docker-pull:
 dev: check-ssd ## Run development environment (with volume hot reload)
 	$(COMPOSE_DEV) --profile dev up
 
-ci-dev-test: ## Run the tests
-	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test up --abort-on-container-exit --exit-code-from api-test
-
-ci-dev-test-down: ## Run the tests
-	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test down
-
 dev-detached: check-ssd ## Run development environment in detached mode
 	$(COMPOSE_DEV) --profile dev up -d
 
@@ -85,4 +79,14 @@ prune: ## Clean all docker trash
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z0-9_-]+:.*?##' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+# CI CD commands
+ci-dev-test:
+	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test up --abort-on-container-exit --exit-code-from api-test
+ci-dev-test-down:
+	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test down
+ci-dev:
+	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile dev up --abort-on-container-exit --exit-code-from api-test
+ci-dev-down:
+	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile dev down
 

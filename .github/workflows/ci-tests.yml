@@ -78,11 +78,9 @@ jobs:
         run: |
           docker compose version
 
-      - name: Start services
+      - name: Start dev services
         run: |
-          docker compose -f docker-compose.yaml \
-            -f docker-compose.dev.yaml \
-            up -d --build mysqldb api web
+          make ci-dev
 
       - name: Wait for API health
         run: |
@@ -101,10 +99,9 @@ jobs:
           echo "Testing Web..."
           curl -f http://localhost:5173/ || exit 1
 
-      - name: Cleanup
+      - name: Clean up
         if: always()
-        run: |
-          docker compose down -v
+        run: make ci-dev-down
 
   migration-test:
     name: Database Migration Test
