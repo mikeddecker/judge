@@ -23,7 +23,7 @@ dev: check-ssd ## Run development environment (with volume hot reload)
 	$(COMPOSE_DEV) --profile dev up
 
 ci-dev-test: ## Run the tests
-	$(COMPOSE_DEV) --env-file .env.test --profile test up --abort-on-container-exit --exit-code-from api-test
+	ENV_FILE: .env.test $(COMPOSE_DEV) --env-file .env.test --profile test up --abort-on-container-exit --exit-code-from api-test
 
 dev-detached: check-ssd ## Run development environment in detached mode
 	$(COMPOSE_DEV) --profile dev up -d
