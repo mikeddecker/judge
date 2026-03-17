@@ -7,7 +7,7 @@ services:
       - dev
       - prod
       - test
-    env_file: .env
+    env_file: ${ENV_FILE:-.env}
     environment:
       - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
       - MYSQL_DATABASE=$MYSQL_DATABASE
@@ -152,7 +152,7 @@ services:
     profiles:
       - test
       - prod
-    env_file: .env.test
+    env_file: ${ENV_FILE:-.env.test}
     depends_on:
       mysqldb:
         condition: service_healthy
