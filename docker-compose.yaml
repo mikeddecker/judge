@@ -48,7 +48,7 @@ services:
     profiles:
       - dev
       - prod
-    env_file: .env
+    env_file: ${ENV_FILE:-.env}
     ports:
       - $API_LOCAL_PORT:$API_DOCKER_PORT
     depends_on:
@@ -73,7 +73,7 @@ services:
     profiles:
       - dev
       - prod
-    env_file: .env
+    env_file: ${ENV_FILE:-.env}
     ports:
       - $WEB_LOCAL_PORT:$WEB_DOCKER_PORT
     depends_on:
@@ -95,7 +95,7 @@ services:
       - prod
       - dev
     gpus: all
-    env_file: .env
+    env_file: ${ENV_FILE:-.env}
     depends_on:
       api:
         condition: service_healthy
@@ -121,7 +121,7 @@ services:
 
     profiles:
       - prod
-    env_file: .env
+    env_file: ${ENV_FILE:-.env}
     depends_on:
       mysqldb:
         condition: service_healthy
