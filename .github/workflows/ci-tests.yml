@@ -15,9 +15,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run API tests via Docker Compose
-        env:
-          ENV_FILE: .env.test
-        run: make ci-dev-test
+        run: |
+          set -a && source .env.test && set +a
+          make ci-dev-test
 
       - name: Clean up
         if: always()
