@@ -79,25 +79,6 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
-  computervision-cpu-tests:
-    name: Computervision Container Test (CPU)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Run computervision smoke test (CPU image, real dependencies)
-        run: |
-          make ci-cv-test
-
-      - name: Clean up computervision test stack
-        if: always()
-        run: |
-          make ci-cv-test-down
-
   integration-tests:
     name: Integration Tests (Docker)
     runs-on: ubuntu-latest

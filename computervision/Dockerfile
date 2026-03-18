@@ -1,8 +1,6 @@
-# syntax=docker/dockerfile:1
-# Use official PyTorch image: torch 2.6.0 + torchaudio 2.6.0 + torchvision 0.21.0
-# + CUDA 12.4 + cuDNN 9 are pre-installed, avoiding ~3 GB of downloads on cache misses.
-ARG BASE_IMAGE=pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime
-FROM ${BASE_IMAGE}
+# torch 2.6.0 + torchvision + torchaudio + CUDA 12.6 + cuDNN 9 pre-installed.
+# Requires NVIDIA driver >= 525 (local: driver 580 / CUDA 13 is compatible).
+FROM pytorch/pytorch:2.10.0-cuda13.0-cudnn9-runtime
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \

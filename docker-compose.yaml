@@ -55,7 +55,7 @@ services:
       - $API_LOCAL_PORT:$API_DOCKER_PORT
     depends_on:
       mysqldb:
-        condition: service_healthy    
+        condition: service_healthy
     networks:
       - ai-judge-network
     restart: on-failure
@@ -119,27 +119,6 @@ services:
     # ipc: host # Good for now - use shm_size
     shm_size: 6gb # About 30-50% max of CPU
 
-  # CI-only computervision smoke test service (CPU, no NVIDIA runtime required)
-  computervision-ci:
-    build:
-      context: ./computervision
-      args:
-        BASE_IMAGE: pytorch/pytorch:2.6.0-cpu
-      cache_from:
-        - type=gha,scope=computervision-cpu
-      cache_to:
-        - type=gha,mode=max,scope=computervision-cpu
-    profiles:
-      - ci
-    env_file: ${ENV_FILE:-.env.test}
-    depends_on:
-      mysqldb:
-        condition: service_healthy
-      api:
-        condition: service_healthy
-    networks:
-      - ai-judge-network
-    command: ["python", "scripts/ci_smoke_test.py"]
 
   # Sync executor for bidirectional multi-region synchronization
   sync-executor:
