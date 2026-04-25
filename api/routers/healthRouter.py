@@ -75,6 +75,7 @@ class ReplicationLagRouter(Resource):
             
             # Extract lag (Seconds_Behind_Master)
             lag_seconds = result.get('Seconds_Behind_Master')
+            print("lag_seconds", lag_seconds)
             
             if lag_seconds is None:
                 lag_seconds = 0  # Assumed synced if not available

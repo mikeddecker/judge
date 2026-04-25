@@ -119,7 +119,6 @@ services:
     # ipc: host # Good for now - use shm_size
     shm_size: 6gb # About 30-50% max of CPU
 
-
   # Sync executor for bidirectional multi-region synchronization
   sync-executor:
     container_name: ai-judge-sync-executor

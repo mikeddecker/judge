@@ -181,3 +181,32 @@ pytest -q
 
 If you want I can now scaffold the DB models and initial alembic migration for the permissions tables, then wire permission checks to allow `training` flag changes only for accounts with the appropriate capability.
 
+
+
+```bash
+judge-infra/          ← as described before, no changes
+judge-db-api/
+  .github/workflows/
+    ci.yml            ← test + lint on PR
+    publish-package.yml
+    deploy.yml        ← auto on merge to main
+  packages/
+    judge-db-models/  ← published, installed by judge-cv
+  migrations/         ← Flyway SQL files
+  api/                ← FastAPI app
+  AGENTS.md
+judge-web/
+  .github/workflows/
+    ci.yml
+    deploy.yml
+  src/                ← your existing Vue code
+  docs/               ← VitePress
+  AGENTS.md
+judge-cv/
+  .github/workflows/
+    ci.yml
+    build.yml         ← builds GPU Docker image
+  computervision/     ← your existing CV code
+  AGENTS.md
+```
+  

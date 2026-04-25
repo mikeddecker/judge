@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -64,7 +64,7 @@ jobs:
         service: [ api, web ]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -85,7 +85,7 @@ jobs:
     needs: [ api-tests, web-tests ]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -107,12 +107,16 @@ jobs:
 
       - name: Run smoke tests
         run: |
-          echo "Testing API endpoints..."
+          echo "Testing API endpoints... openapi"
           curl -f http://localhost:5566/openapi.json || exit 1
+          echo "Testing API endpoints... health"
           curl -f http://localhost:5566/health || exit 1
+          echo "Testing API endpoints... health readiness"
           curl -f http://localhost:5566/health/readiness || exit 1
 
           echo "Testing Web..."
+          curl -f http://localhost:5273/
+          curl -f https://localhost:5273/
           curl -f http://localhost:5273/ || exit 1
 
       - name: Clean up
@@ -137,7 +141,7 @@ jobs:
           - 3306:3306
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v4
