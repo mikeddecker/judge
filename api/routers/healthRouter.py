@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from flask import current_app, jsonify
 from flask_restful import Resource
 from repository.db import db
+from sqlalchemy import text
 import logging
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ class ReadinessRouter(Resource):
         """Check if all dependencies are reachable"""
         try:
             # Test database connectivity
-            db.session.execute("SELECT 1")
+            db.session.execute(text("SELECT 1"))
             db_status = "connected"
         except Exception as e:
             logger.error(f"Database connectivity check failed: {e}")
@@ -62,7 +63,7 @@ class ReplicationLagRouter(Resource):
             
             # Query replication status
             result = db.session.execute(
-                "SHOW SLAVE STATUS"
+                text("SHOW SLAVE STATUS")
             ).fetchone()
             
             if not result:
@@ -153,31 +154,31 @@ class MetricsRouter(Resource):
         
         try:
             # Database metrics
-            result = db.session.execute("SELECT COUNT(*) FROM Video").scalar()
+            result = db.session.execute(text("SELECT COUNT(*) FROM Video")).scalar()
             add_metric('videos_total', 'Total videos in database', 'gauge', float(result or 0))
             
-            result = db.session.execute("SELECT COUNT(*) FROM FrameLabel").scalar()
+            result = db.session.execute(text("SELECT COUNT(*) FROM FrameLabel")).scalar()
             add_metric('frame_labels_total', 'Total labeled frames', 'gauge', float(result or 0))
             
-            result = db.session.execute("SELECT COUNT(*) FROM Account").scalar()
+            result = db.session.execute(text("SELECT COUNT(*) FROM Account")).scalar()
             add_metric('accounts_total', 'Total accounts', 'gauge', float(result or 0))
             
-            result = db.session.execute("SELECT COUNT(*) FROM Jobs WHERE status='Created'").scalar()
+            result = db.session.execute(text("SELECT COUNT(*) FROM Jobs WHERE status='Created'")).scalar()
             add_metric('pending_jobs', 'Pending jobs in queue', 'gauge', float(result or 0), {'status': 'Created'})
             
-            result = db.session.execute("SELECT COUNT(*) FROM Jobs WHERE job_category='AI'").scalar()
+            result = db.session.execute(text("SELECT COUNT(*) FROM Jobs WHERE job_category='AI'")).scalar()
             add_metric('jobs_by_category_total', 'Jobs by category', 'gauge', float(result or 0), {'category': 'AI'})
             
-            result = db.session.execute("SELECT COUNT(*) FROM Jobs WHERE job_category='SYNC'").scalar()
+            result = db.session.execute(text("SELECT COUNT(*) FROM Jobs WHERE job_category='SYNC'")).scalar()
             add_metric('jobs_by_category_total', 'Jobs by category', 'gauge', float(result or 0), {'category': 'SYNC'})
             
-            result = db.session.execute("SELECT COUNT(*) FROM Jobs WHERE job_category='BACKUP'").scalar()
+            result = db.session.execute(text("SELECT COUNT(*) FROM Jobs WHERE job_category='BACKUP'")).scalar()
             add_metric('jobs_by_category_total', 'Jobs by category', 'gauge', float(result or 0), {'category': 'BACKUP'})
             
-            result = db.session.execute("SELECT COUNT(*) FROM ConflictLog WHERE auto_resolved=FALSE").scalar()
+            result = db.session.execute(text("SELECT COUNT(*) FROM ConflictLog WHERE auto_resolved=FALSE")).scalar()
             add_metric('unresolved_conflicts', 'Unresolved conflicts requiring user action', 'gauge', float(result or 0))
             
-            result = db.session.execute("SELECT COUNT(*) FROM DeletedVideos").scalar()
+            result = db.session.execute(text("SELECT COUNT(*) FROM DeletedVideos")).scalar()
             add_metric('soft_deleted_videos', 'Soft-deleted videos (30-day grace period)', 'gauge', float(result or 0))
             
         except Exception as e:

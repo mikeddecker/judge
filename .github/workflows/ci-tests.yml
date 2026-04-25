@@ -98,10 +98,29 @@ jobs:
         run: |
           make ci-dev
 
-      - name: Wait for API health
+      - name: Wait for API readiness
         run: |
+          echo "Waiting for API liveness..."
           for i in {1..30}; do
-            curl -f http://localhost:5566/health && break
+            if curl -fsS http://localhost:5566/health >/dev/null; then
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "API liveness check timed out"
+              exit 1
+            fi
+            sleep 5
+          done
+
+          echo "Waiting for API readiness..."
+          for i in {1..30}; do
+            if curl -fsS http://localhost:5566/health/readiness >/dev/null; then
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "API readiness check timed out"
+              exit 1
+            fi
             sleep 5
           done
 
@@ -111,7 +130,7 @@ jobs:
           curl -f http://localhost:5566/openapi.json || exit 1
           echo "Testing API endpoints... health"
           curl -f http://localhost:5566/health || exit 1
-          echo "Testing API endpoints... health readiness"
+          echo "Testing health readiness"
           curl -f http://localhost:5566/health/readiness || exit 1
 
           echo "Testing Web..."
