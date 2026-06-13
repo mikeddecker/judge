@@ -1,0 +1,144 @@
+{
+    "description": "Edge cases for frame labels: boundary values and corner scenarios",
+    "valid": [
+        {
+            "frameNr": 0,
+            "x": 0.0,
+            "y": 0.0,
+            "width": 0.5,
+            "height": 0.5,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Minimum frameNr and minimum x/y"
+        },
+        {
+            "frameNr": 65535,
+            "x": 1.0,
+            "y": 1.0,
+            "width": 0.5,
+            "height": 0.5,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Maximum frameNr and maximum x/y"
+        },
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.0,
+            "height": 0.5,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Zero width is allowed"
+        },
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 1.0,
+            "height": 1.0,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Full-view bounding box with visible jumper"
+        },
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 1.0,
+            "height": 1.0,
+            "jumperVisible": false,
+            "labeltype": 0,
+            "description": "Full-view bounding box with invisible jumper"
+        },
+        {
+            "frameNr": 500,
+            "x": 0.001,
+            "y": 0.999,
+            "width": 0.001,
+            "height": 0.999,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Very small box near bottom-left"
+        }
+    ],
+    "invalid": [
+        {
+            "frameNr": 65536,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.4,
+            "height": 0.3,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "frameNr exceeds maximum (65535)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 10,
+            "x": 0.3,
+            "y": 0.5,
+            "width": 1.0,
+            "height": 1.0,
+            "jumperVisible": false,
+            "labeltype": 0,
+            "description": "jumperVisible=false but x != 0.5 (violates full-view centering rule)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 10,
+            "x": 0.5,
+            "y": 0.2,
+            "width": 1.0,
+            "height": 1.0,
+            "jumperVisible": false,
+            "labeltype": 0,
+            "description": "jumperVisible=false but y != 0.5 (violates full-view centering rule)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 10,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.9,
+            "height": 1.0,
+            "jumperVisible": false,
+            "labeltype": 0,
+            "description": "jumperVisible=false but width != 1.0 (violates full-view centering rule)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 10,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 1.0,
+            "height": 0.5,
+            "jumperVisible": false,
+            "labeltype": 0,
+            "description": "jumperVisible=false but height != 1.0 (violates full-view centering rule)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 1.001,
+            "height": 0.5,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "width slightly above 1.0",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.5,
+            "height": 1.001,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "height slightly above 1.0",
+            "expected_error": "ValueError"
+        }
+    ]
+}
