@@ -3,6 +3,7 @@
 # -----------------------------
 COMPOSE_DEV = docker compose -f docker-compose.yaml -f docker-compose.dev.yaml --env-file .env.dev
 COMPOSE_PROD = docker compose -f docker-compose.yaml -f docker-compose.prod.yaml
+COMPOSE_TEST = docker compose -f docker-compose.yaml -f docker-compose.dev.yaml
 SERVICE = api
 SSD_MOUNT=/mnt/judge-drive
 
@@ -82,9 +83,9 @@ help: ## Show available commands
 
 # CI CD commands
 ci-dev-test:
-	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test up --abort-on-container-exit --exit-code-from api-test
+	ENV_FILE=.env.test $(COMPOSE_TEST) --env-file .env.test --profile test up --abort-on-container-exit --exit-code-from api-test
 ci-dev-test-down:
-	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile test down
+	ENV_FILE=.env.test $(COMPOSE_TEST) --env-file .env.test --profile test down
 ci-dev: ## Start CI integration test environment (no computervision - GPU not available on runners)
 	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile ci up -d
 ci-dev-down:
