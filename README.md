@@ -135,9 +135,15 @@ Enter the api & computervision containers:
 ```bash
 docker container exec -it $(docker ps -q --filter ancestor=judge-api) pip-compile --output-file=requirements.txt requirements.in
 docker container exec -it $(docker ps -q --filter ancestor=judge-computervision) pip-compile --output-file=requirements.txt requirements.in
+docker container exec -it $(docker ps -q --filter ancestor=judge-web) npm install -g npm@latest && npm update --save
+# For the last one check warnings!
 ```
 
 TODO: update process to not do this production in order to use the actual listed requirements.txt
+
+```bash
+TODO: npm warn deprecated @primevue/themes@4.5.4: Deprecated. This package is no longer maintained. Please migrate to @primeuix/themes: https://www.npmjs.com/package/@primeuix/themes
+```
 
 ---
 
