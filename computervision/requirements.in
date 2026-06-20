@@ -1,0 +1,16 @@
+colorama
+cryptography
+moviepy
+numpy
+opencv-python-headless
+pandas
+pip-chill
+pymysql
+pyodbc # likely needs unixodbc-dev
+python-dotenv
+pyyaml
+sqlalchemy
+# torchaudio pre-installed in pytorch/pytorch base image (2.6.0)
+torchmetrics
+ultralytics
+

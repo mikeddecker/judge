@@ -20,8 +20,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 WORKDIR /app
 
 # Copy and install dependencies
-COPY requirements.txt .
+COPY requirements.in .
+
 RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools wheel pip-tools && \
+    pip-compile requirements.in --output-file requirements.txt && \
     pip install -r requirements.txt
 
 # Copy code (only used in production via normal docker-compose)

@@ -1,7 +1,6 @@
 from colorama import Fore, Style
 import cv2
 import json
-import keras
 import math
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -96,84 +95,6 @@ def plot(imgs, bboxes=None, row_title=None, **imshow_kwargs):
 
     # No need for tight_layout() to avoid any unwanted resizing of images
     plt.show()
-
-def my_mse_loss_fn(y_true, y_pred):
-    """
-    A custom MSE loss function where x and y positions are multiplied by 2,
-    but w and h remain the same.
-    """
-    # Split y_true and y_pred into x, y, w, h components
-    x_true, y_true, w_true, h_true = y_true[:, 0], y_true[:, 1], y_true[:, 2], y_true[:, 3]
-    x_pred, y_pred, w_pred, h_pred = y_pred[:, 0], y_pred[:, 1], y_pred[:, 2], y_pred[:, 3]
-    
-    # Compute squared differences for each component (x, y, w, h)
-    squared_difference_x = keras.ops.square(x_true - x_pred) * 2
-    squared_difference_y = keras.ops.square(y_true - y_pred) * 2
-    squared_difference_w = keras.ops.square(w_true - w_pred)
-    squared_difference_h = keras.ops.square(h_true - h_pred)
-    
-    # Combine the squared differences (you could use mean or sum depending on your needs)
-    total_squared_difference = squared_difference_x + squared_difference_y + squared_difference_w + squared_difference_h
-    
-    # Return the mean of the squared differences as the loss
-    return keras.ops.mean(total_squared_difference)
-
-def metric_mse_max_numeric_accuracy(max: int, y_true, y_pred):
-    rounded_y_true = keras.ops.round(y_true * max)
-    rounded_y_pred = keras.ops.round(y_pred * max)
-    return keras.ops.mean(keras.ops.equal(rounded_y_pred, rounded_y_true))
-
-def metric_mse_segmentation_close_accuracy(N, y_true, y_pred):
-    rounded_y_true = keras.ops.round(y_true * N)
-    rounded_y_pred = keras.ops.round(y_pred * N)
-    return keras.ops.mean(keras.ops.equal(rounded_y_pred, rounded_y_true))
-
-def off_by_0_1(y_true, y_pred):
-    return metric_mse_segmentation_close_accuracy(10, y_true=y_true, y_pred=y_pred)
-
-def off_by_0_2(y_true, y_pred):
-    return metric_mse_segmentation_close_accuracy(5, y_true=y_true, y_pred=y_pred)
-
-def off_by_0_33(y_true, y_pred):
-    return metric_mse_segmentation_close_accuracy(3, y_true=y_true, y_pred=y_pred)
-
-def iou(y_true, y_pred):
-    """
-    Calculate IoU loss between the true and predicted bounding boxes.
-
-    y_true and y_pred should have the shape (batch_size, 4), where each element is
-    [center_x, center_y, width, height].
-    """
-    # Convert (center_x, center_y, width, height) to (xmin, ymin, xmax, ymax)
-    true_xmin = y_true[..., 0] - 0.5 * y_true[..., 2]
-    true_ymin = y_true[..., 1] - 0.5 * y_true[..., 3]
-    true_xmax = y_true[..., 0] + 0.5 * y_true[..., 2]
-    true_ymax = y_true[..., 1] + 0.5 * y_true[..., 3]
-
-    pred_xmin = y_pred[..., 0] - 0.5 * y_pred[..., 2]
-    pred_ymin = y_pred[..., 1] - 0.5 * y_pred[..., 3]
-    pred_xmax = y_pred[..., 0] + 0.5 * y_pred[..., 2]
-    pred_ymax = y_pred[..., 1] + 0.5 * y_pred[..., 3]
-
-    # Calculate the intersection area
-    inter_xmin = keras.ops.maximum(true_xmin, pred_xmin)
-    inter_ymin = keras.ops.maximum(true_ymin, pred_ymin)
-    inter_xmax = keras.ops.minimum(true_xmax, pred_xmax)
-    inter_ymax = keras.ops.minimum(true_ymax, pred_ymax)
-
-    inter_width = keras.ops.maximum(0.0, inter_xmax - inter_xmin)
-    inter_height = keras.ops.maximum(0.0, inter_ymax - inter_ymin)
-    intersection_area = inter_width * inter_height
-
-    # Calculate the union area
-    true_area = (true_xmax - true_xmin) * (true_ymax - true_ymin)
-    pred_area = (pred_xmax - pred_xmin) * (pred_ymax - pred_ymin)
-    union_area = true_area + pred_area - intersection_area
-
-    # Calculate IoU
-    iou = intersection_area / union_area
-
-    return iou
 
 def load_skill_batch_X_torch(frameloader:FrameLoader, videoId:UUID, dim:tuple[int,int], frameStart:int, frameEnd:int, timesteps:int, normalized:bool, augment:bool):
     try:

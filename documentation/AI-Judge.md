@@ -193,7 +193,7 @@ judge-db-api/
   packages/
     judge-db-models/  ← published, installed by judge-cv
   migrations/         ← Flyway SQL files
-  api/                ← FastAPI app
+  api/                ← Flask app
   AGENTS.md
 judge-web/
   .github/workflows/

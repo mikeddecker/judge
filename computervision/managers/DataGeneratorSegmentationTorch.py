@@ -7,7 +7,6 @@ from helpers import calculate_splitpoint_values, load_segment_batch_X_torch, loa
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# TODO : change to tf dataset, so prefetch is possible https://medium.com/analytics-vidhya/write-your-own-custom-data-generator-for-tensorflow-keras-1252b64e41c3
 class DataGeneratorSegmentation(torch.utils.data.Dataset):
     def __init__(self,
                  frameloader: FrameLoader,

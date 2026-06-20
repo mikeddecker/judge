@@ -1,0 +1,17 @@
+APScheduler
+colorama
+Flask
+flask-cors
+flask-migrate
+flask-restful
+flask-session
+flask-sqlalchemy
+flask-talisman
+mysqlclient
+numpy
+opencv-python-headless
+pandas
+pymysql
+python-dotenv
+pyyaml
+

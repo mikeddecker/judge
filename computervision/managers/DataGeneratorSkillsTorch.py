@@ -10,7 +10,6 @@ from types import SimpleNamespace
 
 TESTRUN_INSTANCES=100
 
-# TODO : change to tf dataset, so prefetch is possible https://medium.com/analytics-vidhya/write-your-own-custom-data-generator-for-tensorflow-keras-1252b64e41c3
 class DataGeneratorSkills(torch.utils.data.Dataset):
     def __init__(self,
                  recipe: SimpleNamespace,

@@ -20,7 +20,7 @@ Volume fallback:
 - Portainer for visual swarm management
 - Volume fallback logic. No application code lives here — just infrastructure as code. Private repo.
 
-**`judge-platform`** (start second) Contains three services that deploy together: the FastAPI backend, the Vue/Nuxt frontend, and the docs site. The docs site is a dead-simple service (VitePress or Docusaurus) that watches a `/docs` folder of markdown files and builds them into a navigable website — deployed automatically at `docs.yourdomain.com`. This is the repo you'll touch daily. Public or private — your call.
+**`judge-platform`** (start second) Contains three services that deploy together: the Flask backend, the Vue/Nuxt frontend, and the docs site. The docs site is a dead-simple service (VitePress or Docusaurus) that watches a `/docs` folder of markdown files and builds them into a navigable website — deployed automatically at `docs.yourdomain.com`. This is the repo you'll touch daily. Public or private — your call.
 
 **`judge-cv`** (start third) The computer vision worker. GPU-dependent, separate Python environment, CUDA base image. Communicates with the platform via the task queue (Redis/Celery or ARQ) and stores model metadata in the shared PostgreSQL. Private repo because it likely contains proprietary training data paths and model weights.
 

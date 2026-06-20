@@ -128,17 +128,16 @@ mysqldump -h 127.0.0.1 -P 3377 -u root -p judge > "/media/miked/Elements/Judge/F
 
 ### Clean requirements & update
 
-This is a set of commands to clean-up the requirements.txt file (in the api and computervision project)
-The last install is run again to make sure there aren't to much packages deleted.
+This is a set of commands to update the requirements.txt file (in the api and computervision project)
+
+Use `make dev-force-recreate` to let the containers build the next version \
+Enter the api & computervision containers:
 ```bash
-pip install --upgrade pip-chill
-pip-chill > requirements.txt
-pip install --upgrade -r requirements.txt
-comm -23 <(pip freeze | sort) <(pip-chill | sort) > unused.txt
-xargs pip uninstall -y < unused.txt
-pip install --upgrade -r requirements.txt
-rm unused.txt
+docker container exec -it $(docker ps -q --filter ancestor=judge-api) pip-compile --output-file=requirements.txt requirements.in
+docker container exec -it $(docker ps -q --filter ancestor=judge-computervision) pip-compile --output-file=requirements.txt requirements.in
 ```
+
+TODO: update process to not do this production in order to use the actual listed requirements.txt
 
 ---
 
@@ -161,4 +160,8 @@ rm unused.txt
 - Route not protected? → Verify router guard in `index.js`
 
 ---
+
+### Run CICD locally
+
+Use the `act` package and run `act` in bash.
 

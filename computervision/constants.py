@@ -2,7 +2,7 @@ import os
 
 from base_utils import load_json_file
 from dotenv import load_dotenv
-from models.SA_Conv3D_pytorch_1 import get_model as SA_Conv3D_pytorch_1
+from models.SA_Conv3D_pytorch import get_model as SA_Conv3D_pytorch
 from models.JudgeVisionModel import JudgeVisionModel
 from models.MViT import MViT, MViT_Dense
 from models.Resnet import get_get_model as Resnet_get_model
@@ -40,7 +40,7 @@ PYTORCH_MODELS_SKILLS: dict[str, JudgeVisionModel] = {
     "MViT" : MViT,
     "MViT_Dense" : MViT_Dense,
     "SwinTransformer" : SwinTransformer,
-    # "SA_Conv3D" : SA_Conv3D_pytorch_1,
+    # "SA_Conv3D" : SA_Conv3D_pytorch,
     # "Resnet_R3D" : Resnet_get_model('R3D'),
     # "Resnet_MC3" : Resnet_get_model('MC3'),
     # "Resnet_R2plus1" : Resnet_get_model('R2plus1'),
