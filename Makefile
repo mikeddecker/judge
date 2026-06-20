@@ -1,7 +1,7 @@
 # -----------------------------
 # Variables
 # -----------------------------
-COMPOSE_DEV = docker compose -f docker-compose.yaml -f docker-compose.dev.yaml
+COMPOSE_DEV = docker compose -f docker-compose.yaml -f docker-compose.dev.yaml --env-file .env.dev
 COMPOSE_PROD = docker compose -f docker-compose.yaml -f docker-compose.prod.yaml
 SERVICE = api
 SSD_MOUNT=/mnt/judge-drive

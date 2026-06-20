@@ -3,6 +3,7 @@ models/*
 *.pdf
 
 .env
+.env.dev
 
 **/__pycache__/*
 
