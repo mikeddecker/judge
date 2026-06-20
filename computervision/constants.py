@@ -54,7 +54,7 @@ RECIPES = {
         recipename: SimpleNamespace(**kwargs, name=recipename) 
         for recipename, kwargs in step_recipes.items()
     }
-    for step, step_recipes in load_json_file('recipes.json').items()
+    for step, step_recipes in load_json_file('/config/recipes.json').items()
 }
 
 JOB_TYPES = ['TRAIN', 'PREDICT']
