@@ -1,4 +1,5 @@
 import os
+import logging
 
 from config import ENVS
 from domain.folder import Folder
@@ -8,6 +9,8 @@ from repository.videoRepo import VideoRepository
 from helpers.ValueHelper import ValueHelper
 from typing import List
 from uuid import UUID
+
+logger = logging.getLogger(__name__)
 
 class FolderService:
     PROPERTIES = [
@@ -21,8 +24,13 @@ class FolderService:
 
         ValueHelper.check_raise_string(ENVS.DIRS.VIDEOS)
         if not os.path.exists(ENVS.DIRS.VIDEOS):
-            raise NotADirectoryError(f"StorageFolder {ENVS.DIRS.VIDEOS} does not exist")
+            try:
+                os.mkdir(ENVS.DIRS.VIDEOS)
+                logger.info(msg=f"Created videos folder {ENVS.DIRS.VIDEOS}")
+            except:
+                raise NotADirectoryError(f"Could not create video folder ({ENVS.DIRS.VIDEOS})")
         self.StorageFolder = ENVS.DIRS.VIDEOS
+        logger.info(msg=f"FolderService ready")
 
     def __setattr__(self, name, value):
         if hasattr(self, name):

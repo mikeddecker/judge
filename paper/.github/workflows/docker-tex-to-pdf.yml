@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Build the Docker image
       run: docker build -t bpimg -f docker/Dockerfile .
-      
+
     - name: Build the proposal
       run: docker run --rm -v "$PWD":/bp bpimg sh /bp/docker/render_thesis.sh voorstel
 

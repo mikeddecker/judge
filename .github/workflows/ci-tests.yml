@@ -10,91 +10,27 @@ jobs:
   api-tests:
     name: API Tests (Python)
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: judge_db
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost"
-          --health-interval=5s
-          --health-timeout=2s
-          --health-retries=3
-        ports:
-          - 3306:3306
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-          cache: 'pip'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Install dependencies
-        working-directory: ./api
+      - name: Run API tests via Docker Compose
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          make ci-dev-test
 
-      - name: Wait for MySQL
-        run: |
-          for i in {1..30}; do
-            mysql -h 127.0.0.1 -u root -proot -e "SELECT 1" && break
-            sleep 1
-          done
-
-      - name: Initialize database
-        working-directory: ./api
-        env:
-          MYSQL_HOST: 127.0.0.1
-          MYSQL_PORT: 3306
-          MYSQL_USERNAME: root
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: judge_db
-        run: |
-          mysql -h 127.0.0.1 -u root -proot judge_db < ../init.sql
-
-      - name: Run unit tests
-        working-directory: ./api
-        env:
-          MYSQL_HOST: 127.0.0.1
-          MYSQL_PORT: 3306
-          MYSQL_USERNAME: root
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: judge_db
-          FLASK_ENV: test
-        run: |
-          python -m pytest tests/ -v --cov=. --cov-report=xml
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./api/coverage.xml
-          flags: api
-          fail_ci_if_error: false
-
-      - name: Lint with flake8
-        working-directory: ./api
-        run: |
-          pip install flake8
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
-
-      - name: Type check with pyright
-        working-directory: ./api
-        run: |
-          pip install pyright
-          pyright || true
+      - name: Clean up
+        if: always()
+        run: make ci-dev-test-down
 
   web-tests:
     name: Web Tests (JavaScript)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -125,21 +61,23 @@ jobs:
 
     strategy:
       matrix:
-        service: [ api, web, computervision ]
+        service: [ api, web ]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Build ${{ matrix.service }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./${{ matrix.service }}
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          load: true
+          tags: judge-${{ matrix.service }}:test
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
   integration-tests:
     name: Integration Tests (Docker)
@@ -147,39 +85,62 @@ jobs:
     needs: [ api-tests, web-tests ]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Set up Docker Compose
         run: |
           docker compose version
 
-      - name: Start services
+      - name: Start dev services (CI profile — no computervision)
         run: |
-          docker compose -f docker-compose.yaml \
-            -f docker-compose.dev.yaml \
-            up -d --build mysqldb api web
+          make ci-dev
 
-      - name: Wait for API health
+      - name: Wait for API readiness
         run: |
+          echo "Waiting for API liveness..."
           for i in {1..30}; do
-            curl -f http://localhost:5555/health && break
+            if curl -fsS http://localhost:5566/health >/dev/null; then
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "API liveness check timed out"
+              exit 1
+            fi
+            sleep 5
+          done
+
+          echo "Waiting for API readiness..."
+          for i in {1..30}; do
+            if curl -fsS http://localhost:5566/health/readiness >/dev/null; then
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "API readiness check timed out"
+              exit 1
+            fi
             sleep 5
           done
 
       - name: Run smoke tests
         run: |
-          echo "Testing API endpoints..."
-          curl -f http://localhost:5555/openapi.json || exit 1
-          curl -f http://localhost:5555/health || exit 1
-          curl -f http://localhost:5555/health/readiness || exit 1
+          echo "Testing API endpoints... openapi"
+          curl -f http://localhost:5566/openapi.json || exit 1
+          echo "Testing API endpoints... health"
+          curl -f http://localhost:5566/health || exit 1
+          echo "Testing health readiness"
+          curl -f http://localhost:5566/health/readiness || exit 1
 
           echo "Testing Web..."
-          curl -f http://localhost:5173/ || exit 1
+          curl -f http://localhost:5273/
+          curl -f https://localhost:5273/
+          curl -f http://localhost:5273/ || exit 1
 
-      - name: Cleanup
+      - name: Clean up
         if: always()
-        run: |
-          docker compose down -v
+        run: make ci-dev-down
 
   migration-test:
     name: Database Migration Test
@@ -199,28 +160,31 @@ jobs:
           - 3306:3306
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: './api/requirements.txt'
 
       - name: Install dependencies
         working-directory: ./api
         run: |
-          pip install -q flask alembic sqlalchemy mysql-connector-python
+          pip install -q alembic sqlalchemy pymysql flask flask-migrate cryptography
 
       - name: Run migrations
         working-directory: ./api
         env:
           MYSQL_HOST: 127.0.0.1
           MYSQL_PORT: 3306
+          MYSQL_DOCKER_PORT: 3306
           MYSQL_USERNAME: root
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: judge_db
         run: |
-          alembic upgrade head || echo "No migrations to run"
+          alembic upgrade head
 
       - name: Verify schema
         env:

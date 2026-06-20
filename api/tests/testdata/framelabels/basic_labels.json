@@ -1,0 +1,155 @@
+{
+    "description": "Basic frame label cases covering common valid and invalid bounding boxes",
+    "valid": [
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.4,
+            "height": 0.3,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Centered jumper, typical bounding box"
+        },
+        {
+            "frameNr": 10,
+            "x": 0.3,
+            "y": 0.4,
+            "width": 0.2,
+            "height": 0.5,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Jumper on left side of frame"
+        },
+        {
+            "frameNr": 20,
+            "x": 0.7,
+            "y": 0.4,
+            "width": 0.2,
+            "height": 0.5,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Jumper on right side of frame"
+        },
+        {
+            "frameNr": 5,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 1.0,
+            "height": 1.0,
+            "jumperVisible": false,
+            "labeltype": 0,
+            "description": "Jumper not visible, full view required"
+        },
+        {
+            "frameNr": 0,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.3,
+            "height": 0.6,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "First frame of video"
+        },
+        {
+            "frameNr": 100,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.3,
+            "height": 0.6,
+            "jumperVisible": true,
+            "labeltype": 1,
+            "description": "Non-default label type"
+        }
+    ],
+    "invalid": [
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.4,
+            "height": 0.3,
+            "jumperVisible": false,
+            "labeltype": 0,
+            "description": "jumperVisible=false but width and height don't match the required full-view box (1.0, 1.0)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 1,
+            "x": -0.1,
+            "y": 0.5,
+            "width": 0.4,
+            "height": 0.3,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "x out of range (below 0)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 1,
+            "x": 1.1,
+            "y": 0.5,
+            "width": 0.4,
+            "height": 0.3,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "x out of range (above 1)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": -0.5,
+            "width": 0.4,
+            "height": 0.3,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "y out of range (below 0)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 1.5,
+            "width": 0.4,
+            "height": 0.3,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "y out of range (above 1)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": -0.1,
+            "height": 0.3,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "width out of range (below 0)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.4,
+            "height": -0.3,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "height out of range (below 0)",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": -1,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.4,
+            "height": 0.3,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Negative frame number",
+            "expected_error": "ValueError"
+        }
+    ]
+}

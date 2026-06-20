@@ -1,0 +1,99 @@
+{
+    "description": "Sport-specific frame label examples for gymnastics/rope-jumping skills. Add concrete bounding box examples here to improve model label quality.",
+    "valid": [
+        {
+            "frameNr": 15,
+            "x": 0.48,
+            "y": 0.45,
+            "width": 0.18,
+            "height": 0.55,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Standing jumper, slightly left of center"
+        },
+        {
+            "frameNr": 30,
+            "x": 0.52,
+            "y": 0.4,
+            "width": 0.2,
+            "height": 0.65,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Jumper at apex of jump, taller bounding box"
+        },
+        {
+            "frameNr": 45,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 0.22,
+            "height": 0.5,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Jumper in crouched position (landing)"
+        },
+        {
+            "frameNr": 60,
+            "x": 0.5,
+            "y": 0.5,
+            "width": 1.0,
+            "height": 1.0,
+            "jumperVisible": false,
+            "labeltype": 0,
+            "description": "Transition frame: jumper exited the field of view"
+        },
+        {
+            "frameNr": 75,
+            "x": 0.15,
+            "y": 0.45,
+            "width": 0.18,
+            "height": 0.55,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Jumper near left edge of frame"
+        },
+        {
+            "frameNr": 90,
+            "x": 0.85,
+            "y": 0.45,
+            "width": 0.18,
+            "height": 0.55,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Jumper near right edge of frame"
+        },
+        {
+            "frameNr": 120,
+            "x": 0.5,
+            "y": 0.35,
+            "width": 0.35,
+            "height": 0.5,
+            "jumperVisible": true,
+            "labeltype": 1,
+            "description": "Wide jump with arms spread, labeltype=1"
+        }
+    ],
+    "invalid": [
+        {
+            "frameNr": 15,
+            "x": 0.48,
+            "y": 0.45,
+            "width": 0.18,
+            "height": -0.05,
+            "jumperVisible": true,
+            "labeltype": 0,
+            "description": "Negative height — below allowed range [0..1]",
+            "expected_error": "ValueError"
+        },
+        {
+            "frameNr": 15,
+            "x": 0.48,
+            "y": 0.45,
+            "width": 0.18,
+            "height": 0.55,
+            "jumperVisible": false,
+            "labeltype": 0,
+            "description": "Sport example: jumper marked not visible but box is not full view",
+            "expected_error": "ValueError"
+        }
+    ]
+}

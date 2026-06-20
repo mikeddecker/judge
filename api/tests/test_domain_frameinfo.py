@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
 import unittest
+from uuid import UUID, uuid4
 from parameterized import parameterized
 from domain.folder import Folder
 from domain.frameinfo import FrameInfo
 from domain.videoinfo import VideoInfo
 from tests.TestHelper import TestHelper
 
-FOLDER_INSTANCE_VALID = Folder(id=1, name='competition', parent=None)
+_FOLDER_UUID = UUID('00000000-0000-0000-0000-000000000001')
+_VIDEO_UUID = UUID('00000000-0000-0000-0000-000000000002')
+
+FOLDER_INSTANCE_VALID = Folder(id=_FOLDER_UUID, name='competition', parent=None)
 MAX_FRAMENR = 65535
 VIDEO_CREATOR = lambda: VideoInfo(
-    id=1,
+    id=_VIDEO_UUID,
     name="dd3-potatoes.mp4",
     folder=FOLDER_INSTANCE_VALID,
     frameLength=500

@@ -7,7 +7,8 @@ services:
       - dev
       - prod
       - test
-    env_file: .env
+      - ci
+    env_file: ${ENV_FILE:-.env}
     environment:
       - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
       - MYSQL_DATABASE=$MYSQL_DATABASE
@@ -39,16 +40,22 @@ services:
       - ai-judge-network
   api:
     container_name: ai-judge-api
-    build: ./api
+    build:
+      context: ./api
+      cache_from:
+        - type=gha,scope=api
+      cache_to:
+        - type=gha,mode=max,scope=api
     profiles:
       - dev
       - prod
-    env_file: .env
+      - ci
+    env_file: ${ENV_FILE:-.env}
     ports:
       - $API_LOCAL_PORT:$API_DOCKER_PORT
     depends_on:
       mysqldb:
-        condition: service_healthy    
+        condition: service_healthy
     networks:
       - ai-judge-network
     restart: on-failure
@@ -61,14 +68,20 @@ services:
       - ${STORAGE_DIR_VIDEOS}:${STORAGE_DIR_VIDEOS}
       - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
       - ${MYSQL_BACKUP}:${MYSQL_BACKUP}
-      - ./computervision/recipes.json:/machine_learning_recipes.json:ro
+      - ./recipes.json:/machine_learning_recipes.json:ro
   web:
     container_name: ai-judge-web
-    build: ./web
+    build:
+      context: ./web
+      cache_from:
+        - type=gha,scope=web
+      cache_to:
+        - type=gha,mode=max,scope=web
     profiles:
       - dev
       - prod
-    env_file: .env
+      - ci
+    env_file: ${ENV_FILE:-.env}
     ports:
       - $WEB_LOCAL_PORT:$WEB_DOCKER_PORT
     depends_on:
@@ -79,12 +92,20 @@ services:
     restart: on-failure
   computervision:
     container_name: ai-judge-computer-vision
-    build: ./computervision
+    build:
+      context: ./computervision
+      cache_from:
+        - type=gha,scope=computervision
+      cache_to:
+        - type=gha,mode=max,scope=computervision
+
     profiles:
       - prod
       - dev
+    # GPU pass-through: requires NVIDIA Container Toolkit on the host.
+    # Intentionally NOT in the 'ci' profile — GitHub Actions runners have no GPU.
     gpus: all
-    env_file: .env
+    env_file: ${ENV_FILE:-.env}
     depends_on:
       api:
         condition: service_healthy
@@ -94,16 +115,23 @@ services:
       - ${STORAGE_DIR_VIDEOS}:${STORAGE_DIR_VIDEOS}
       - ${STORAGE_DIR_GENERATED_DATA}:${STORAGE_DIR_GENERATED_DATA}
       - torch_cache:/root/.cache/torch
+      - ./recipes.json:/app/recipes.json:ro
     # ipc: host # Good for now - use shm_size
     shm_size: 6gb # About 30-50% max of CPU
 
   # Sync executor for bidirectional multi-region synchronization
   sync-executor:
     container_name: ai-judge-sync-executor
-    build: ./api
+    build:
+      context: ./api
+      cache_from:
+        - type=gha,scope=api
+      cache_to:
+        - type=gha,mode=max,scope=api
+
     profiles:
       - prod
-    env_file: .env
+    env_file: ${ENV_FILE:-.env}
     depends_on:
       mysqldb:
         condition: service_healthy
@@ -125,11 +153,17 @@ services:
   # Testing services
   api-test:
     container_name: ai-judge-api-test
-    build: ./api
+    build:
+      context: ./api
+      cache_from:
+        - type=gha,scope=api
+      cache_to:
+        - type=gha,mode=max,scope=api
+
     profiles:
       - test
       - prod
-    env_file: .env.test
+    env_file: ${ENV_FILE:-.env.test}
     depends_on:
       mysqldb:
         condition: service_healthy
@@ -140,7 +174,7 @@ services:
       - api_test:${STORAGE_DIR_VIDEOS}
       - api_test:${STORAGE_DIR_GENERATED_DATA}
       - api_test:${MYSQL_BACKUP}
-      - ./computervision/recipes.json:/machine_learning_recipes.json:ro
+      - ./recipes.json:/machine_learning_recipes.json:ro
 
 networks:
   ai-judge-network:

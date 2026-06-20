@@ -12,7 +12,10 @@ from services.folderService import FolderService
 from services.videoService import VideoService
 from tests.TestHelper import TestHelper
 from typing import List
-from uuid import UUID
+from uuid import UUID, uuid4
+
+# A UUID that will never be present in the test database
+_NONEXISTENT_UUID = UUID('ffffffff-ffff-ffff-ffff-ffffffffffff')
 
 STORAGE_DIR_VIDEOS = os.getenv("STORAGE_DIR_VIDEOS")
 if os.path.exists(STORAGE_DIR_VIDEOS):
@@ -145,7 +148,7 @@ class VideoServiceTest(TestCase):
     def test_add_in_database_invalid_folderId_does_not_exist_in_database(self):
         testname = "test_add_in_database_invalid_folderId_does_not_exist_in_database"
         self.make_folder_in_storage_dir([testname])
-        invalid_folder = Folder(155, testname, None)
+        invalid_folder = Folder(uuid4(), testname, None)
         self.make_video_in_folder(videoname="jammer.mp4", folder=invalid_folder)
 
         with self.assertRaises(LookupError):
@@ -230,7 +233,7 @@ class VideoServiceTest(TestCase):
         assert self.videoService.exists_in_database(id=vidinfo.Id), f"VideoId {vidinfo.Id} does not exist in database"
 
     def test_exists_in_database_invalid_id_does_not_exists(self):
-        assert not self.videoService.exists_in_database(id=555), f"FolderId 555 somehow exists in database"
+        assert not self.videoService.exists_in_database(id=_NONEXISTENT_UUID), f"VideoId {_NONEXISTENT_UUID} somehow exists in database"
 
     ##################################
     # Test get (by id)
@@ -250,7 +253,7 @@ class VideoServiceTest(TestCase):
 
     def test_get_invalid_id_does_not_exist(self):
         with self.assertRaises(LookupError):
-            self.videoService.get(id=155)
+            self.videoService.get(id=_NONEXISTENT_UUID)
 
     def test_get_valid_loads_frameInfo(self):
         inserted_videoinfo = self.videoService.add(name=self.vidname, folder=self.some_folder, frameLength=500, width=1920, height=1080, fps=25.2)
@@ -307,7 +310,7 @@ class VideoServiceTest(TestCase):
 
     def test_get_videos_invalid_id_does_not_exist(self):
         with self.assertRaises(LookupError):
-            self.videoService.get_videos(folderId=155)
+            self.videoService.get_videos(folderId=_NONEXISTENT_UUID)
 
     ##################################
     # Test frameInfo (by frameNr)
@@ -388,5 +391,5 @@ class VideoServiceTest(TestCase):
 
         # Even another object doesn't work
         with self.assertRaises(AttributeError):
-            self.videoService.VideoRepo = Folder(1, "folderke")
+            self.videoService.VideoRepo = Folder(uuid4(), "folderke")
 

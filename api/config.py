@@ -18,28 +18,28 @@ class Config:
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
-    
+
     # Session configuration
     SESSION_COOKIE_SECURE = os.getenv('FLASK_ENV') == 'production'
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     PERMANENT_SESSION_LIFETIME = 86400 * 7  # 7 days in seconds (604800)
     SESSION_REFRESH_EACH_REQUEST = True
-    
+
     print(f"Using database URL: {SQLALCHEMY_DATABASE_URI}")
 
 class TestConfig:
     TESTING = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
-    
+
     # Session configuration for testing
     SESSION_COOKIE_SECURE = False  # Always False for testing (HTTP)
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     PERMANENT_SESSION_LIFETIME = 3600  # 1 hour for testing
     SESSION_REFRESH_EACH_REQUEST = True
-    
+
     print(f"Using database URL: {SQLALCHEMY_DATABASE_URI}")
 
 ENVS = SimpleNamespace(
@@ -65,12 +65,16 @@ ENVS = SimpleNamespace(
     SUPPORTED_IMAGE_FORMATS = os.getenv("SUPPORTED_IMAGE_FORMATS"),
 )
 
+_RECIPES_PATH = os.getenv('ML_RECIPES_PATH', '/machine_learning_recipes.json')
+_RECIPES_FALLBACK = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'recipes.json')
+_raw_recipes = load_json_file(_RECIPES_PATH) or load_json_file(_RECIPES_FALLBACK) or {}
+
 RECIPES = {
     step: {
-        recipename: SimpleNamespace(**kwargs, name=recipename) 
+        recipename: SimpleNamespace(**kwargs, name=recipename)
         for recipename, kwargs in step_recipes.items()
     }
-    for step, step_recipes in load_json_file('/machine_learning_recipes.json').items()
+    for step, step_recipes in _raw_recipes.items()
 }
 
 JOB_TYPES = ['TRAIN', 'PREDICT']
