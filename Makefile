@@ -87,7 +87,7 @@ ci-dev-test:
 ci-dev-test-down:
 	ENV_FILE=.env.test $(COMPOSE_TEST) --env-file .env.test --profile test down
 ci-dev: ## Start CI integration test environment (no computervision - GPU not available on runners)
-	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile ci up -d
+	ENV_FILE=.env.test $(COMPOSE_TEST) --env-file .env.test --profile ci up -d
 ci-dev-down:
-	ENV_FILE=.env.test $(COMPOSE_DEV) --env-file .env.test --profile ci down
+	ENV_FILE=.env.test $(COMPOSE_TEST) --env-file .env.test --profile ci down
 

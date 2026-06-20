@@ -133,9 +133,13 @@ jobs:
           echo "Testing health readiness"
           curl -f http://localhost:5566/health/readiness || exit 1
 
-          echo "Testing Web..."
+          echo "Testing Web (1/3)"
           curl -f http://localhost:5273/
+
+          echo "Testing Web (2/3)"
           curl -f https://localhost:5273/
+
+          echo "Testing Web (3/3)"
           curl -f http://localhost:5273/ || exit 1
 
       - name: Clean up
