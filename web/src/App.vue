@@ -87,6 +87,7 @@ const toggleAccountMenu = (event) => {
       <RouterLink v-if="authStore.isAuthenticated" to="/stats">Stats</RouterLink>
       <RouterLink v-if="authStore.isAuthenticated" to="/about">About</RouterLink>
       <RouterLink v-if="authStore.isAuthenticated" to="/config">Config</RouterLink>
+      <RouterLink v-if="authStore.isAuthenticated" to="/permissions">Permissions</RouterLink>
       <RouterLink v-if="!authStore.isAuthenticated" to="/login">Login</RouterLink>
       <RouterLink v-if="!authStore.isAuthenticated" to="/register">Register</RouterLink>
     </nav>

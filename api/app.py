@@ -31,6 +31,12 @@ from routers.statsRouter import StatsRouter
 from routers.tagRouter import TagRouter, TagGroupRouter
 from routers.accountRouter import AccountRegisterRouter, AccountLoginRouter, AccountMFAVerifyRouter, AccountLogoutRouter, AccountMeRouter, AccountForgotPasswordRouter, AccountResetPasswordRouter, AccountEnableMFARouter
 from routers.exportRouter import ExportDataRouter, ExportDownloadRouter, ExportStatusRouter
+from routers.permissionRouter import (
+    CapabilityRouter,
+    GroupListRouter, GroupDetailRouter, GroupMemberRouter,
+    AccessGrantListRouter, AccessGrantDetailRouter,
+    BlockListRouter, BlockDetailRouter,
+)
 from services.videoService import VideoService
 from typing import cast
 from werkzeug.routing import BaseConverter
@@ -225,6 +231,16 @@ api.add_resource(AccountEnableMFARouter, '/auth/enable-mfa')
 api.add_resource(ExportDataRouter, '/account/export-data')
 api.add_resource(ExportDownloadRouter, '/export/download/<string:job_id>')
 api.add_resource(ExportStatusRouter, '/export/status/<string:job_id>')
+
+# Permission routes
+api.add_resource(CapabilityRouter, '/capabilities/<string:account_id>')
+api.add_resource(GroupListRouter, '/groups')
+api.add_resource(GroupDetailRouter, '/groups/<string:group_id>')
+api.add_resource(GroupMemberRouter, '/groups/<string:group_id>/members')
+api.add_resource(AccessGrantListRouter, '/access-grants')
+api.add_resource(AccessGrantDetailRouter, '/access-grants/<string:grant_id>')
+api.add_resource(BlockListRouter, '/blocks')
+api.add_resource(BlockDetailRouter, '/blocks/<string:account_id>')
 
 # Attach lightweight OpenAPI generator and docs
 try:

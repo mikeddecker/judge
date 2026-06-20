@@ -1,92 +1,69 @@
-```markdown
-# Implementing Permissions — scaffold and migration plan
+# Implementing Permissions
 
-Goal
-- Provide a concrete starting point (SQLAlchemy models + migration plan) for `AccountCapability`, `AccessGrant`, and `AccountBlock` as described in `documentation/features/AI-Judge.Permissions.md`.
+## Status: Implemented
 
-Suggested SQLAlchemy models (place in `api/repository/models.py` or a new `permissions.py` and import in `models.py`):
+The permissions system has been implemented. See `documentation/features/AI-Judge.Permissions.md` for the full design.
 
-```python
-from sqlalchemy import Column, Boolean, Integer, Text, DateTime, Enum, UniqueConstraint, CheckConstraint, ForeignKey
-from sqlalchemy.dialects.mysql import JSON
-from repository.db import db
-from repository.models import UUIDType
-import uuid
+## What was added
 
-class AccountCapability(db.Model):
-    __tablename__ = 'AccountCapability'
-    id = db.Column(UUIDType, primary_key=True, default=lambda: uuid.uuid4().bytes)
-    account_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False, unique=True)
+- **`api/repository/models.py`** — Four new ORM models: `AccountCapability`, `GroupMembership`, `AccessGrant`, `AccountBlock`. The `Account` model gains two new fields: `accountType` and `owner_id`. Groups are `Account` rows with `accountType='group'` — no separate table needed.
+- **`api/repository/permissionRepo.py`** — Data-access layer (CRUD + 7-step access-check helper).
+- **`api/services/permissionService.py`** — Business-logic layer (access resolution, group/grant/block management).
+- **`api/routers/permissionRouter.py`** — REST endpoints (see below).
+- **`api/tests/test_permissions.py`** — Unit tests for the service layer.
+- **`web/src/services/permissionService.js`** — Frontend API service.
+- **`web/src/views/PermissionsView.vue`** — Vue3 permissions management page (groups, grants, blocks).
 
-    can_upload_video = Column(Boolean, nullable=False, default=False)
-    can_edit_video = Column(Boolean, nullable=False, default=False)
-    can_label_video = Column(Boolean, nullable=False, default=False)
-    can_train_model = Column(Boolean, nullable=False, default=False)
-    # limits
-    max_video_uploads = Column(Integer, nullable=False, default=100)
-    extra_flags = Column(JSON, nullable=True)
+## Account types
 
-    granted_by = Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
-    granted_at = Column(DateTime, nullable=False)
-    granted_until = Column(DateTime, nullable=True)
-    granted_reason = Column(Text, nullable=True)
+`Account.accountType` can be:
 
-class AccessGrant(db.Model):
-    __tablename__ = 'AccessGrant'
-    id = db.Column(UUIDType, primary_key=True, default=lambda: uuid.uuid4().bytes)
-    owner_id = db.Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
+| Value | Description |
+|---|---|
+| `user` | Regular user (default) |
+| `group` | Named group — members managed via `GroupMembership` |
+| `team` | Sports team / club |
+| `organisation` | Organisation/federation |
+| `admin` | Administrator |
 
-    granted_to = Column(Enum('everyone','account','group', name='grantedto'), nullable=False)
-    target_account_id = Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=True)
-    target_group_id = Column(UUIDType, db.ForeignKey('TagGroups.id'), nullable=True) # All
+Group accounts use `Account.owner_id` to record who created them. They cannot log in directly (synthetic email + unusable password hash).
 
-    video_id = Column(UUIDType, db.ForeignKey('Videos.id'), nullable=True)
-    folder_id = Column(UUIDType, db.ForeignKey('Folders.id'), nullable=True)
+## API endpoints
 
-    can_view = Column(Boolean, nullable=False, default=False)
-    can_label = Column(Boolean, nullable=False, default=False)
-    can_download = Column(Boolean, nullable=False, default=False)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/capabilities/<account_id>` | Get capability row for an account |
+| PUT | `/capabilities/<account_id>` | Upsert capabilities (admin operation) |
+| GET | `/groups` | List group accounts owned by caller |
+| POST | `/groups` | Create a group account |
+| DELETE | `/groups/<group_id>` | Delete a group account |
+| POST | `/groups/<group_id>/members` | Add member to group |
+| DELETE | `/groups/<group_id>/members` | Remove member from group |
+| GET | `/access-grants` | List caller's access grants |
+| POST | `/access-grants` | Create an access grant |
+| DELETE | `/access-grants/<grant_id>` | Revoke a grant |
+| GET | `/blocks` | List accounts blocked by caller |
+| POST | `/blocks` | Block an account |
+| DELETE | `/blocks/<account_id>` | Unblock an account |
 
-    granted_by = Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
-    granted_at = Column(DateTime, nullable=False)
-    granted_until = Column(DateTime, nullable=True)
+## Access resolution order
 
-    __table_args__ = (
-        CheckConstraint("NOT (video_id IS NOT NULL AND folder_id IS NOT NULL)", name='ck_access_grant_scope'),
-    )
+1. Content is public (`is_public = True`) → **ALLOW**
+2. Requester is blocked by owner → **DENY**
+3. Requester is the owner → **ALLOW**
+4. A valid `AccessGrant` exists (not expired, covers the content) → **ALLOW**
+5. Default → **DENY**
 
-class AccountBlock(db.Model):
-    __tablename__ = 'AccountBlock'
-    id = db.Column(UUIDType, primary_key=True, default=lambda: uuid.uuid4().bytes)
-    blocker_id = Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
-    blocked_id = Column(UUIDType, db.ForeignKey('Accounts.id'), nullable=False)
-    blocked_at = Column(DateTime, nullable=False)
+## Running migrations
 
-    __table_args__ = (
-        UniqueConstraint('blocker_id', 'blocked_id'),
-        CheckConstraint('blocker_id != blocked_id', name='ck_block_no_self'),
-    )
+Auto-generate and apply:
+
+```bash
+flask db migrate -m "add permissions and account type"
+flask db upgrade
 ```
 
-Migration plan (Alembic)
-1. Create a migration file `versions/xxxx_add_permissions_tables.py` that creates the three tables above using raw SQL or SQLAlchemy `op.create_table()`.
-2. Run `flask db upgrade` in your environment to apply.
+## Security notes
 
-Wiring into code
-- `repository/accountRepo.py`: add a helper `get_capabilities(account_id)` returning `AccountCapability` row.
-- `services/videoService.py` `__authorize_update`: replace current hardblock for `training` with a capability check:
-
-```python
-cap = AccountRepo.get_capabilities(account.id)
-if any(k in user_data for k in training_keys) and not cap.can_train_model:
-    raise PermissionError('Only accounts with can_train_model can change training flag')
-```
-
-Testing
-- Add unit tests for capability checks in `api/tests/test_service_video.py`.
-
-Security
-- Ensure migration and model code do not leak capability flags in public API responses. Only admin views should return raw capability rows.
-
-```
-
+- Capability rows should only be created/updated by admins. The `PUT /capabilities/<account_id>` endpoint sets `granted_by` to the calling session account — restrict this endpoint at the infrastructure level (IP whitelist or admin role) until an admin concept is added to the Account model.
+- Blocks are always enforced before grants.
