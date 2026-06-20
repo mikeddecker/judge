@@ -10,6 +10,7 @@ flask-talisman
 mysqlclient
 numpy
 opencv-python-headless
+parameterized # required by tests
 pandas
 pymysql
 python-dotenv
